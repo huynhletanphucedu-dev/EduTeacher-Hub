@@ -910,6 +910,23 @@ body.dark .sd-table tr:hover td{background:#162032;}
 .gt-btn-save:hover{background:#0284c7;}
 .gt-btn-sheet{padding:.55rem 1.2rem;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.4);border-radius:8px;color:#10b981;font-size:.82rem;font-weight:700;cursor:pointer;}
 .gt-btn-sheet:hover{background:rgba(16,185,129,.25);}
+.gt-btn-guide{padding:.55rem 1.2rem;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);border-radius:8px;color:#fbbf24;font-size:.82rem;font-weight:700;cursor:pointer;}
+.gt-btn-guide:hover{background:rgba(251,191,36,.2);}
+/* Guide modal */
+#gt-guide-modal{position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;padding:16px;}
+.gt-guide-box{background:#1e293b;border-radius:20px;padding:0;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.6);border:1px solid rgba(56,189,248,.2);}
+.gt-guide-head{padding:1.4rem 1.6rem 1rem;border-bottom:1px solid rgba(56,189,248,.15);position:sticky;top:0;background:#1e293b;z-index:1;display:flex;justify-content:space-between;align-items:center;}
+.gt-guide-head h3{color:#38bdf8;font-size:1.05rem;margin:0;}
+.gt-guide-head button{background:none;border:none;color:#64748b;font-size:1.3rem;cursor:pointer;line-height:1;}
+.gt-guide-head button:hover{color:#94a3b8;}
+.gt-guide-body{padding:1.2rem 1.6rem 1.6rem;}
+.gt-step{display:flex;gap:12px;margin-bottom:1.1rem;align-items:flex-start;}
+.gt-step-num{min-width:28px;height:28px;border-radius:50%;background:#0ea5e9;color:#fff;font-size:.82rem;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px;flex-shrink:0;}
+.gt-step-content{flex:1;}
+.gt-step-title{color:#f8fafc;font-size:.88rem;font-weight:700;margin-bottom:3px;}
+.gt-step-desc{color:#94a3b8;font-size:.78rem;line-height:1.5;}
+.gt-step-desc code{background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.2);border-radius:4px;padding:1px 6px;color:#38bdf8;font-size:.76rem;}
+.gt-step-warn{margin-top:5px;padding:6px 10px;background:rgba(251,191,36,.08);border-left:3px solid #fbbf24;border-radius:0 6px 6px 0;color:#fbbf24;font-size:.75rem;}
 .gt-link-badge{display:inline-flex;align-items:center;gap:4px;margin-top:8px;padding:5px 10px;border-radius:7px;background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.3);color:#0ea5e9;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .15s;width:100%;justify-content:center;box-sizing:border-box;}
 .gt-link-badge:hover{background:rgba(14,165,233,.25);border-color:#0ea5e9;}
 #gt-link-modal{position:fixed;inset:0;z-index:999998;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;}
@@ -4902,6 +4919,7 @@ function TC_noiseLoop(){
 
   if(fill){
     fill.style.width = pct+'%';
+    fill.style.width = pct+'%';
     fill.style.background = pct<thresh*0.6 ? '#10b981' : pct<thresh ? '#f59e0b' : '#ef4444';
   }
   if(val) val.textContent = pct+'%';
@@ -4917,9 +4935,7 @@ function TC_noiseLoop(){
   TC.noiseTimer = setTimeout(TC_noiseLoop, 120);
 }
 
-// GT2 init on page show is handled by existing showPage override below
-
-// ── GAME TRACKER – Link Sharing ──
+// ── GAME TRACKER – Link Sharing & Result Tracking ──
 (function(){
   function escH(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
 
@@ -4955,6 +4971,7 @@ function TC_noiseLoop(){
         <div class="gt-tracker-actions">
           <button onclick="gtSaveSettings()" class="gt-btn-save">💾 Lưu Cài Đặt</button>
           <button onclick="gtOpenSheet()" class="gt-btn-sheet">📊 Xem Kết Quả</button>
+          <button onclick="gtShowGuide()" class="gt-btn-guide">📖 Hướng Dẫn</button>
         </div>
         <div id="gt-settings-status" style="font-size:.75rem;color:#10b981;margin-top:8px;display:none;"></div>
       </div>`;
@@ -4985,17 +5002,101 @@ function TC_noiseLoop(){
 
   window.gtOpenSheet=function(){
     const url=localStorage.getItem('gt_sheet_url')||'';
-    if(!url){alert('Chưa nhập Google Sheet URL.\nHãy điền vào ô "Google Sheet URL" và nhấn Lưu Cài Đặt.');return;}
+    if(!url){alert('Chưa nhập Google Sheet URL.\nHãy điền vào ô bên trên và nhấn Lưu Cài Đặt.');return;}
     window.open(url,'_blank');
+  };
+
+  window.gtShowGuide=function(){
+    let m=document.getElementById('gt-guide-modal');
+    if(m){m.style.display='flex';return;}
+    m=document.createElement('div');
+    m.id='gt-guide-modal';
+    m.innerHTML=`
+      <div class="gt-guide-box">
+        <div class="gt-guide-head">
+          <h3>📖 Hướng Dẫn Cài Đặt – Theo Dõi Kết Quả Game</h3>
+          <button onclick="document.getElementById('gt-guide-modal').style.display='none'">✕</button>
+        </div>
+        <div class="gt-guide-body">
+          <div class="gt-step">
+            <div class="gt-step-num">1</div>
+            <div class="gt-step-content">
+              <div class="gt-step-title">Tạo Google Sheet mới</div>
+              <div class="gt-step-desc">Vào <strong>sheets.google.com</strong> → tạo một bảng tính mới (trống). Đây là nơi lưu kết quả của học sinh.</div>
+            </div>
+          </div>
+          <div class="gt-step">
+            <div class="gt-step-num">2</div>
+            <div class="gt-step-content">
+              <div class="gt-step-title">Mở Apps Script</div>
+              <div class="gt-step-desc">Trong Google Sheet: menu <strong>Phần mở rộng → Apps Script</strong>. Xóa toàn bộ code mặc định.</div>
+            </div>
+          </div>
+          <div class="gt-step">
+            <div class="gt-step-num">3</div>
+            <div class="gt-step-content">
+              <div class="gt-step-title">Dán code vào</div>
+              <div class="gt-step-desc">Copy toàn bộ nội dung file <code>apps_script_template.gs</code> (trong thư mục EduTeacher Hub) và dán vào Apps Script → nhấn <strong>Ctrl+S</strong> để lưu.</div>
+            </div>
+          </div>
+          <div class="gt-step">
+            <div class="gt-step-num">4</div>
+            <div class="gt-step-content">
+              <div class="gt-step-title">Triển khai làm Web App</div>
+              <div class="gt-step-desc">Nhấn <strong>Triển khai → Triển khai mới</strong>:<br>
+                • Loại: <strong>Ứng dụng web</strong><br>
+                • Thực thi với tư cách: <strong>Tôi</strong><br>
+                • Ai có quyền truy cập: <strong>Mọi người</strong><br>
+                → Nhấn <strong>Triển khai</strong>
+              </div>
+            </div>
+          </div>
+          <div class="gt-step">
+            <div class="gt-step-num">5</div>
+            <div class="gt-step-content">
+              <div class="gt-step-title">Cấp quyền (1 lần duy nhất)</div>
+              <div class="gt-step-desc">Nếu xuất hiện màn hình "Ủy quyền truy cập" → nhấn vào → chọn tài khoản Google → nhấn <strong>Advanced → Go to … (unsafe) → Allow</strong>.</div>
+              <div class="gt-step-warn">⚠️ Đây là script của chính bạn, hoàn toàn an toàn. Google chỉ cảnh báo vì chưa xác minh app.</div>
+            </div>
+          </div>
+          <div class="gt-step">
+            <div class="gt-step-num">6</div>
+            <div class="gt-step-content">
+              <div class="gt-step-title">Copy URL Web App</div>
+              <div class="gt-step-desc">Sau khi deploy thành công, copy URL dạng:<br><code>https://script.google.com/macros/s/…/exec</code><br>và dán vào ô <strong>Apps Script URL</strong> trong bảng cài đặt bên trên.</div>
+            </div>
+          </div>
+          <div class="gt-step">
+            <div class="gt-step-num">7</div>
+            <div class="gt-step-content">
+              <div class="gt-step-title">Cũng lưu URL của Google Sheet</div>
+              <div class="gt-step-desc">Copy URL của Google Sheet (ở thanh địa chỉ trình duyệt) và dán vào ô <strong>Google Sheet URL</strong> để dùng nút "📊 Xem Kết Quả".</div>
+            </div>
+          </div>
+          <div class="gt-step">
+            <div class="gt-step-num">8</div>
+            <div class="gt-step-content">
+              <div class="gt-step-title">Tạo link và chia sẻ cho học sinh</div>
+              <div class="gt-step-desc">Điền <strong>Tên Phiên / Lớp</strong> (VD: "Lớp 6A1 – 22/06") → nhấn <strong>💾 Lưu</strong> → bấm <strong>🔗 Tạo Link Chia Sẻ</strong> trên game bất kỳ → copy link gửi cho học sinh qua Zalo/nhóm lớp.</div>
+            </div>
+          </div>
+          <div style="margin-top:1rem;padding:12px 14px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);border-radius:10px;">
+            <div style="color:#10b981;font-size:.82rem;font-weight:700;margin-bottom:4px;">✅ Kết quả học sinh sẽ tự động xuất hiện trong Google Sheet</div>
+            <div style="color:#64748b;font-size:.75rem;">Mỗi lần chơi = 1 hàng mới: Thời gian · Lớp · Tên học sinh · Trò chơi · Điểm · Thời gian chơi</div>
+          </div>
+        </div>
+      </div>`;
+    m.addEventListener('click',function(e){if(e.target===m)m.style.display='none';});
+    document.body.appendChild(m);
   };
 
   function gtInjectLinkBtns(){
     document.querySelectorAll('#tro-choi .tool-card').forEach(function(card){
       if(card.querySelector('.gt-link-badge')) return;
       const oc=card.getAttribute('onclick')||'';
-      const m=oc.match(/window\.open\(['"](game_[^'"]+)['"]/);
-      if(!m) return;
-      const gameFile=m[1];
+      const m2=oc.match(/window\.open\(['"](game_[^'"]+)['"]/);
+      const gameFile=m2&&m2[1];
+      if(!gameFile) return;
       const titleEl=card.querySelector('.tool-card-title');
       const gameName=titleEl?titleEl.textContent.trim():gameFile;
       const btn=document.createElement('button');
@@ -5013,8 +5114,14 @@ function TC_noiseLoop(){
   window.gtCreateLink=function(gameFile,gameName){
     const script=localStorage.getItem('gt_script_url')||'';
     const session=localStorage.getItem('gt_session_name')||'';
-    if(!script){alert('⚠️ Chưa có Apps Script URL!\nMở bảng "🔗 Chia Sẻ Game" bên trên và điền URL.');return;}
-    if(!session){alert('⚠️ Chưa có Tên Phiên!\nMở bảng cài đặt và điền tên phiên / lớp.');return;}
+    if(!script){
+      if(confirm('⚠️ Chưa có Apps Script URL!\nMở bảng "🔗 Chia Sẻ Game" bên trên và điền URL.\n\nXem hướng dẫn ngay?')){gtShowGuide();}
+      return;
+    }
+    if(!session){
+      alert('⚠️ Chưa có Tên Phiên!\nMở bảng cài đặt và điền tên phiên / lớp.');
+      return;
+    }
     const base=(window.location.origin+window.location.pathname).replace(/[^/]*$/,'');
     const url=base+gameFile
       +'?gt_session='+encodeURIComponent(session)
@@ -5061,27 +5168,19 @@ function TC_noiseLoop(){
 
 <!-- ══ MODAL: Tạo Sổ Mới ══ -->
 <div class="modal-overlay" id="modal-create-book">
-  <div class="modal" style="max-width:480px">
+  <div class="modal-box" style="max-width:440px;">
     <div class="modal-head">
-      <h2>📒 Tạo Sổ Điểm Mới</h2>
+      <h3>📒 Tạo Sổ Điểm Mới</h3>
       <button class="modal-close" onclick="closeModal('modal-create-book')">✕</button>
     </div>
     <div class="modal-body">
       <div class="form-field">
         <label>Môn học</label>
         <select id="cb-mon" onchange="updateTXPreview()">
-          <option>Toán</option>
-          <option>Ngữ văn</option>
-          <option>Tiếng Anh</option>
-          <option>KHTN</option>
-          <option>Lịch sử &amp; Địa lý</option>
-          <option>Công nghệ</option>
-          <option>Tin</option>
-          <option>GDCD</option>
-          <option>Nghệ thuật</option>
-          <option>GDTC</option>
-          <option>GDĐP</option>
-          <option>HĐTN-HN</option>
+          <option>Toán</option><option>Ngữ văn</option><option>Tiếng Anh</option>
+          <option>KHTN</option><option>Lịch sử &amp; Địa lý</option>
+          <option>Công nghệ</option><option>Tin</option><option>GDCD</option>
+          <option>Nghệ thuật</option><option>GDTC</option><option>GDĐP</option><option>HĐTN-HN</option>
         </select>
       </div>
       <div class="cb-row">
@@ -5092,10 +5191,8 @@ function TC_noiseLoop(){
         <div class="form-field">
           <label>Khối</label>
           <select id="cb-khoi" onchange="updateTXPreview()">
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-            <option value="9">9</option>
+            <option value="6">6</option><option value="7">7</option>
+            <option value="8">8</option><option value="9">9</option>
           </select>
         </div>
       </div>
@@ -5103,72 +5200,56 @@ function TC_noiseLoop(){
         <label>Năm học</label>
         <input type="text" id="cb-namhoc" placeholder="VD: 2025-2026"/>
       </div>
-      <div id="tx-preview" style="background:var(--blue-lt);border:1px solid var(--blue);border-radius:8px;padding:10px 14px;font-size:.82rem;color:var(--blue);margin-bottom:12px;"></div>
-      <button class="drawer-save-btn" onclick="createBook()">📒 Tạo Sổ Điểm</button>
+      <div id="tx-preview" style="margin-top:10px;padding:10px 12px;background:rgba(59,130,246,.06);border-radius:8px;font-size:.8rem;color:var(--text);line-height:1.6;"></div>
+      <div style="display:flex;gap:8px;margin-top:16px;">
+        <button class="btn btn-blue" onclick="createBook()" style="flex:1;">✅ Tạo Sổ</button>
+        <button class="btn" onclick="closeModal('modal-create-book')" style="flex:1;">Hủy</button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ══ MODAL: Import danh sách ══ -->
+<!-- ══ MODAL: Nhập Danh Sách Học Sinh ══ -->
 <div class="modal-overlay" id="modal-import">
-  <div class="modal" style="max-width:560px">
+  <div class="modal-box" style="max-width:420px;">
     <div class="modal-head">
-      <h2>📥 Import Danh Sách Học Sinh</h2>
+      <h3>📋 Nhập Danh Sách Học Sinh</h3>
       <button class="modal-close" onclick="closeModal('modal-import')">✕</button>
     </div>
     <div class="modal-body">
-      <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">
-        Copy cột <strong>Họ và Tên</strong> từ Excel, mỗi tên một dòng, rồi dán vào đây. Hệ thống sẽ tự đánh STT.
-      </p>
       <div class="form-field">
-        <label>Chọn sổ điểm để import vào</label>
+        <label>Sổ điểm</label>
         <select id="import-book-sel"></select>
       </div>
       <div class="form-field">
-        <label>Danh sách học sinh (dán từ Excel)</label>
-        <textarea id="import-names" style="min-height:180px;font-size:.85rem;" placeholder="Nguyễn Văn An&#10;Trần Thị Bình&#10;Lê Minh Chi&#10;..."></textarea>
+        <label>Danh sách (mỗi tên 1 dòng)</label>
+        <textarea id="import-names" rows="8" placeholder="Nguyễn Văn A&#10;Trần Thị B&#10;Lê Văn C&#10;..." style="width:100%;padding:.6rem;border-radius:8px;border:1.5px solid var(--border);background:var(--input-bg);color:var(--text);font-size:.85rem;resize:vertical;box-sizing:border-box;"></textarea>
       </div>
-      <p style="font-size:.76rem;color:var(--muted);margin-bottom:12px;">⚠️ Import sẽ <strong>thêm vào</strong> danh sách hiện tại, không xóa dữ liệu cũ.</p>
-      <button class="drawer-save-btn" onclick="doImport()">📥 Import</button>
-      <div class="drawer-saved-toast" id="import-toast"></div>
+      <div id="import-toast" style="color:#10b981;font-size:.82rem;font-weight:700;margin:6px 0;opacity:0;transition:opacity .3s;min-height:1.2em;"></div>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="btn btn-blue" onclick="doImport()" style="flex:1;">➕ Thêm Học Sinh</button>
+        <button class="btn" onclick="closeModal('modal-import')" style="flex:1;">Đóng</button>
+      </div>
     </div>
   </div>
 </div>
 
-
-<!-- ══ MODAL: Xóa học sinh ══ -->
+<!-- ══ MODAL: Xóa Học Sinh ══ -->
 <div class="modal-overlay" id="modal-del-students">
-  <div class="modal" style="max-width:480px">
+  <div class="modal-box" style="max-width:360px;">
     <div class="modal-head">
-      <h2>👤 Xóa Học Sinh</h2>
+      <h3>🗑️ Xóa Học Sinh</h3>
       <button class="modal-close" onclick="closeModal('modal-del-students')">✕</button>
     </div>
     <div class="modal-body">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <span style="font-size:.8rem;color:var(--muted)" id="del-sel-count">Chọn học sinh cần xóa</span>
-        <div style="display:flex;gap:6px;">
-          <button class="btn btn-ghost" style="font-size:.76rem;padding:5px 10px" onclick="delSelectAll(true)">Chọn tất cả</button>
-          <button class="btn btn-ghost" style="font-size:.76rem;padding:5px 10px" onclick="delSelectAll(false)">Bỏ chọn</button>
-        </div>
-      </div>
-      <div id="del-student-list" style="max-height:320px;overflow-y:auto;border:1px solid var(--border);border-radius:9px;"></div>
-      <div style="margin-top:14px;display:flex;gap:8px;">
-        <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-del-students')">Hủy</button>
-        <button class="btn" style="flex:1;background:var(--red);color:#fff;font-weight:700" onclick="confirmDeleteStudents()">🗑 Xóa đã chọn</button>
+      <p style="color:var(--muted);font-size:.88rem;margin-bottom:16px;">Xóa toàn bộ học sinh trong sổ điểm này? Hành động không thể hoàn tác.</p>
+      <div style="display:flex;gap:8px;">
+        <button class="btn" style="flex:1;background:#ef4444;color:#fff;border-color:#ef4444;" onclick="confirmDeleteStudents()">🗑️ Xóa Tất Cả</button>
+        <button class="btn" onclick="closeModal('modal-del-students')" style="flex:1;">Hủy</button>
       </div>
     </div>
   </div>
 </div>
-<script>
-// Global footer on all pages
-(function(){
-  var footerHTML = '<div class="page-foot" style="margin-top:40px;padding:16px 0 0;border-top:1px solid var(--border,#e5e7eb);text-align:center;font-size:13px;color:#888;">📚 EduTeacher Hub được phát triển bởi <strong style="color:var(--text,#222);font-weight:800;">ThS. Huỳnh Lê Tấn Phúc</strong> · Trường THCS Long Thọ</div>';
-  document.querySelectorAll('.page').forEach(function(pg){
-    // Skip iframe pages
-    if(pg.querySelector('iframe')) return;
-    if(!pg.querySelector('.page-foot')) pg.insertAdjacentHTML('beforeend', footerHTML);
-  });
-})();
-</script>
+
 </body>
 </html>
