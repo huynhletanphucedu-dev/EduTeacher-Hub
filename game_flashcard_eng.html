@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Flashcard Tiếng Anh</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#0f172a;color:#e2e8f0;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;display:flex;justify-content:center;align-items:flex-start}
+#app{width:100%;max-width:420px;min-height:100vh;display:flex;flex-direction:column;padding:0 12px 24px}
+
+/* START SCREEN */
+#start-screen{display:flex;flex-direction:column;gap:16px;padding-top:32px}
+.logo{text-align:center;padding:24px 0 8px}
+.logo h1{font-size:22px;font-weight:700;color:#6366f1;letter-spacing:1px}
+.logo p{font-size:13px;color:#94a3b8;margin-top:4px}
+.panel{background:#1e293b;border-radius:16px;padding:16px}
+.panel-title{font-size:13px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.radio-group{display:flex;flex-direction:column;gap:8px}
+.radio-opt{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:10px;border:1.5px solid #334155;cursor:pointer;transition:border-color .2s,background .2s;min-height:48px}
+.radio-opt.selected{border-color:#6366f1;background:#312e81}
+.radio-opt input{display:none}
+.radio-dot{width:18px;height:18px;border-radius:50%;border:2px solid #475569;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.radio-opt.selected .radio-dot{border-color:#6366f1}
+.radio-dot-inner{width:9px;height:9px;border-radius:50%;background:#6366f1;display:none}
+.radio-opt.selected .radio-dot-inner{display:block}
+.radio-label{font-size:15px;font-weight:500}
+textarea{width:100%;background:#0f172a;border:1.5px solid #334155;border-radius:10px;color:#e2e8f0;font-size:13px;padding:12px;resize:vertical;min-height:80px;font-family:inherit;outline:none}
+textarea:focus{border-color:#6366f1}
+textarea::placeholder{color:#475569}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;min-height:48px}
+.toggle-label{font-size:15px;font-weight:500}
+.toggle{position:relative;width:48px;height:26px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:#334155;border-radius:13px;cursor:pointer;transition:background .2s}
+.toggle-slider:before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s}
+.toggle input:checked+.toggle-slider{background:#6366f1}
+.toggle input:checked+.toggle-slider:before{transform:translateX(22px)}
+.btn-start{background:#6366f1;color:#fff;border:none;border-radius:14px;font-size:18px;font-weight:700;padding:16px;width:100%;cursor:pointer;min-height:56px;letter-spacing:.5px;transition:background .15s,transform .1s}
+.btn-start:active{background:#4f46e5;transform:scale(.97)}
+
+/* GAME SCREEN */
+#game-screen{display:none;flex-direction:column;gap:0;padding-top:16px}
+.top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.back-btn{background:none;border:none;color:#94a3b8;font-size:24px;cursor:pointer;min-width:40px;min-height:40px;display:flex;align-items:center;justify-content:center;border-radius:8px}
+.back-btn:active{background:#1e293b}
+.deck-count{font-size:14px;color:#94a3b8}
+.deck-count span{color:#6366f1;font-weight:700}
+.progress-bar-wrap{height:6px;background:#1e293b;border-radius:3px;margin-bottom:20px;overflow:hidden}
+.progress-bar{height:100%;background:linear-gradient(90deg,#6366f1,#818cf8);border-radius:3px;transition:width .4s ease}
+.mode-badge{text-align:center;font-size:12px;color:#94a3b8;margin-bottom:10px;min-height:18px}
+
+/* CARD AREA */
+.card-area{perspective:1000px;height:220px;display:flex;align-items:center;justify-content:center;margin-bottom:24px;position:relative}
+.card-wrapper{width:340px;height:210px;position:relative;transform-style:preserve-3d;transition:transform .5s cubic-bezier(.4,0,.2,1);cursor:pointer;user-select:none}
+.card-wrapper.flipped{transform:rotateY(180deg)}
+.card-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 24px}
+.card-front{background:#fff;border-top:5px solid #6366f1;box-shadow:0 4px 32px rgba(0,0,0,.3)}
+.card-back{background:#fff;border-top:5px solid #10b981;transform:rotateY(180deg);box-shadow:0 4px 32px rgba(0,0,0,.3)}
+.card-front .word{font-size:30px;font-weight:800;color:#1e293b;text-align:center;line-height:1.2;word-break:break-word}
+.card-front .hint{font-size:12px;color:#94a3b8;margin-top:12px;text-align:center}
+.card-back .meaning{font-size:24px;font-weight:700;color:#1e293b;text-align:center;line-height:1.3;word-break:break-word}
+.card-back .badge{font-size:11px;font-weight:600;background:#ede9fe;color:#6d28d9;padding:3px 10px;border-radius:20px;margin-top:10px}
+.card-back .sub{font-size:13px;color:#64748b;margin-top:6px;text-align:center}
+
+/* slide animations */
+@keyframes slideRight{to{transform:translateX(130%) rotateZ(10deg);opacity:0}}
+@keyframes slideLeft{to{transform:translateX(-130%) rotateZ(-10deg);opacity:0}}
+.slide-right{animation:slideRight .35s ease-in forwards}
+.slide-left{animation:slideLeft .35s ease-in forwards}
+
+/* ACTION BUTTONS */
+.action-row{display:flex;gap:12px;margin-bottom:16px}
+.action-btn{flex:1;border:none;border-radius:14px;font-size:16px;font-weight:700;min-height:56px;cursor:pointer;transition:transform .1s,opacity .2s;opacity:0;pointer-events:none;display:flex;align-items:center;justify-content:center;gap:6px}
+.action-btn.visible{opacity:1;pointer-events:auto}
+.btn-know{background:#10b981;color:#fff}
+.btn-know:active{transform:scale(.96)}
+.btn-dontknow{background:#ef4444;color:#fff}
+.btn-dontknow:active{transform:scale(.96)}
+.swipe-hint{text-align:center;font-size:12px;color:#475569;min-height:16px}
+
+/* STATS */
+.mini-stats{display:flex;gap:10px;margin-bottom:4px}
+.stat-box{flex:1;background:#1e293b;border-radius:10px;padding:10px;text-align:center}
+.stat-val{font-size:18px;font-weight:700;color:#6366f1}
+.stat-lbl{font-size:11px;color:#64748b;margin-top:2px}
+
+/* END SCREEN */
+#end-screen{display:none;flex-direction:column;gap:16px;padding-top:32px}
+.end-hero{text-align:center;padding:24px 0}
+.end-hero .emoji{font-size:56px;display:block;margin-bottom:8px}
+.end-hero h2{font-size:24px;font-weight:800;color:#6366f1}
+.end-hero p{font-size:14px;color:#94a3b8;margin-top:4px}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card-list{background:#1e293b;border-radius:14px;padding:14px;max-height:280px;overflow-y:auto}
+.card-list-title{font-size:13px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.card-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #0f172a;font-size:13px;gap:8px}
+.card-item:last-child{border-bottom:none}
+.card-item-word{color:#e2e8f0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card-item-times{font-size:12px;color:#94a3b8;flex-shrink:0}
+.card-item-times.many{color:#ef4444}
+.btn-restart{background:#6366f1;color:#fff;border:none;border-radius:14px;font-size:17px;font-weight:700;padding:16px;width:100%;cursor:pointer;min-height:56px;transition:background .15s}
+.btn-restart:active{background:#4f46e5}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- START SCREEN -->
+<div id="start-screen">
+  <div class="logo">
+    <h1>FLASHCARD TIẾNG ANH</h1>
+    <p>Lật thẻ — ghi nhớ từ vựng</p>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Chọn chế độ</div>
+    <div class="radio-group" id="mode-group">
+      <label class="radio-opt selected" data-val="vocab">
+        <input type="radio" name="mode" value="vocab" checked>
+        <div class="radio-dot"><div class="radio-dot-inner"></div></div>
+        <span class="radio-label">📚 Từ vựng (Anh → Việt)</span>
+      </label>
+      <label class="radio-opt" data-val="v1v2">
+        <input type="radio" name="mode" value="v1v2">
+        <div class="radio-dot"><div class="radio-dot-inner"></div></div>
+        <span class="radio-label">🔄 Động từ V1 → V2</span>
+      </label>
+      <label class="radio-opt" data-val="v1v3">
+        <input type="radio" name="mode" value="v1v3">
+        <div class="radio-dot"><div class="radio-dot-inner"></div></div>
+        <span class="radio-label">✅ Động từ V1 → V3</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Nhập bộ thẻ tuỳ ý</div>
+    <textarea id="custom-input" placeholder="Mỗi dòng: mặt trước|mặt sau&#10;Ví dụ:&#10;apple|quả táo&#10;run|chạy"></textarea>
+    <div style="font-size:11px;color:#475569;margin-top:6px">Để trống = dùng bộ thẻ mặc định</div>
+  </div>
+
+  <div class="panel">
+    <div class="toggle-row">
+      <span class="toggle-label">🔀 Xáo trộn thẻ</span>
+      <label class="toggle"><input type="checkbox" id="shuffle-toggle" checked><div class="toggle-slider"></div></label>
+    </div>
+  </div>
+
+  <button class="btn-start" id="btn-start">BẮT ĐẦU</button>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game-screen">
+  <div class="top-bar">
+    <button class="back-btn" id="btn-back">&#8592;</button>
+    <div class="deck-count">Còn lại: <span id="remaining-count">0</span>/<span id="total-count">0</span></div>
+    <div style="width:40px"></div>
+  </div>
+  <div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+  <div class="mode-badge" id="mode-badge"></div>
+
+  <div class="mini-stats">
+    <div class="stat-box"><div class="stat-val" id="stat-done">0</div><div class="stat-lbl">Biết rồi ✓</div></div>
+    <div class="stat-box"><div class="stat-val" id="stat-left">0</div><div class="stat-lbl">Chưa biết ✗</div></div>
+    <div class="stat-box"><div class="stat-val" id="stat-time">0:00</div><div class="stat-lbl">Thời gian</div></div>
+  </div>
+
+  <div style="height:12px"></div>
+
+  <div class="card-area">
+    <div class="card-wrapper" id="card-wrapper">
+      <div class="card-face card-front">
+        <div class="word" id="card-front-word"></div>
+        <div class="hint">chạm để lật ↻</div>
+      </div>
+      <div class="card-face card-back">
+        <div class="meaning" id="card-back-meaning"></div>
+        <div class="badge" id="card-back-badge"></div>
+        <div class="sub" id="card-back-sub"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="action-row">
+    <button class="action-btn btn-know" id="btn-know">✓ Biết rồi</button>
+    <button class="action-btn btn-dontknow" id="btn-dontknow">✗ Chưa biết</button>
+  </div>
+  <div class="swipe-hint">Vuốt phải = Biết · Vuốt trái = Chưa biết</div>
+</div>
+
+<!-- END SCREEN -->
+<div id="end-screen">
+  <div class="end-hero">
+    <span class="emoji">🎉</span>
+    <h2>Hoàn thành!</h2>
+    <p id="end-subtitle">Bạn đã thuộc hết bộ thẻ</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-box"><div class="stat-val" id="end-time">-</div><div class="stat-lbl">Tổng thời gian</div></div>
+    <div class="stat-box"><div class="stat-val" id="end-cards">-</div><div class="stat-lbl">Số thẻ</div></div>
+    <div class="stat-box"><div class="stat-val" id="end-rounds">-</div><div class="stat-lbl">Lần ôn tổng</div></div>
+    <div class="stat-box"><div class="stat-val" id="end-avg">-</div><div class="stat-lbl">TB lần/thẻ</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="stat-box" style="background:#0f172a;border-radius:10px;padding:10px;margin-bottom:10px">
+      <div style="font-size:12px;color:#94a3b8;margin-bottom:4px">⚡ Nhanh nhất</div>
+      <div style="font-size:15px;font-weight:700;color:#10b981" id="end-fastest">-</div>
+    </div>
+    <div class="stat-box" style="background:#0f172a;border-radius:10px;padding:10px">
+      <div style="font-size:12px;color:#94a3b8;margin-bottom:4px">🐢 Khó nhất</div>
+      <div style="font-size:15px;font-weight:700;color:#ef4444" id="end-slowest">-</div>
+    </div>
+  </div>
+
+  <div class="card-list">
+    <div class="card-list-title">Số lần xem mỗi thẻ</div>
+    <div id="card-list-body"></div>
+  </div>
+
+  <button class="btn-restart" id="btn-restart">🔁 Chơi lại</button>
+</div>
+
+</div><!-- #app -->
+
+<script>
+// ===== DATA =====
+const VOCAB = [
+  ['school','trường học'],['teacher','giáo viên'],['student','học sinh'],
+  ['book','sách'],['pen','bút'],['desk','bàn'],['chair','ghế'],
+  ['class','lớp học'],['homework','bài tập về nhà'],['test','bài kiểm tra'],
+  ['library','thư viện'],['friend','bạn bè'],['family','gia đình'],
+  ['mother','mẹ'],['father','bố'],['sister','chị/em gái'],['brother','anh/em trai'],
+  ['house','ngôi nhà'],['food','thức ăn'],['water','nước'],
+  ['morning','buổi sáng'],['evening','buổi tối'],['time','thời gian'],
+  ['day','ngày'],['week','tuần'],['month','tháng'],['year','năm'],
+  ['color','màu sắc'],['number','số'],['word','từ']
+];
+
+const VERBS = [
+  ['am/is','was','been'],['are','were','been'],['go','went','gone'],
+  ['come','came','come'],['do','did','done'],['have','had','had'],
+  ['make','made','made'],['get','got','got/gotten'],['know','knew','known'],
+  ['think','thought','thought'],['take','took','taken'],['see','saw','seen'],
+  ['give','gave','given'],['find','found','found'],['tell','told','told'],
+  ['become','became','become'],['begin','began','begun'],['bring','brought','brought'],
+  ['buy','bought','bought'],['catch','caught','caught'],['choose','chose','chosen'],
+  ['draw','drew','drawn'],['drink','drank','drunk'],['drive','drove','driven'],
+  ['eat','ate','eaten'],['fall','fell','fallen'],['feel','felt','felt'],
+  ['fly','flew','flown'],['forget','forgot','forgotten'],['grow','grew','grown']
+];
+
+// ===== STATE =====
+let deck=[], done=[], seenCount={}, cardTimes={}, cardStart={};
+let startTime=0, timerInterval=null, flipped=false, animating=false;
+let currentMode='vocab', totalCards=0;
+let touchStartX=0, touchStartY=0;
+
+// ===== DOM =====
+const $=id=>document.getElementById(id);
+const startScreen=$('start-screen'), gameScreen=$('game-screen'), endScreen=$('end-screen');
+
+// ===== INIT =====
+document.querySelectorAll('.radio-opt').forEach(opt=>{
+  opt.addEventListener('click',()=>{
+    document.querySelectorAll('.radio-opt').forEach(o=>o.classList.remove('selected'));
+    opt.classList.add('selected');
+    opt.querySelector('input').checked=true;
+  });
+});
+
+$('btn-start').addEventListener('click',startGame);
+$('btn-back').addEventListener('click',()=>{clearInterval(timerInterval);showScreen(startScreen)});
+$('btn-restart').addEventListener('click',()=>showScreen(startScreen));
+$('btn-know').addEventListener('click',()=>answer(true));
+$('btn-dontknow').addEventListener('click',()=>answer(false));
+
+// Card tap to flip
+$('card-wrapper').addEventListener('click',()=>{
+  if(animating)return;
+  if(!flipped)flipCard(true);
+});
+
+// Swipe
+const cw=$('card-wrapper');
+cw.addEventListener('touchstart',e=>{
+  touchStartX=e.touches[0].clientX;
+  touchStartY=e.touches[0].clientY;
+},{passive:true});
+cw.addEventListener('touchend',e=>{
+  if(animating)return;
+  const dx=e.changedTouches[0].clientX-touchStartX;
+  const dy=e.changedTouches[0].clientY-touchStartY;
+  if(Math.abs(dx)<30||Math.abs(dy)>Math.abs(dx)*1.5)return;
+  if(!flipped){flipCard(true);return;}
+  if(dx>40)answer(true);
+  else if(dx<-40)answer(false);
+},{passive:true});
+
+// ===== FUNCTIONS =====
+function showScreen(scr){
+  [startScreen,gameScreen,endScreen].forEach(s=>s.style.display='none');
+  scr.style.display='flex';
+}
+
+function buildDeck(){
+  const mode=document.querySelector('input[name="mode"]:checked').value;
+  currentMode=mode;
+  const custom=$('custom-input').value.trim();
+  let cards=[];
+  if(custom){
+    custom.split('\n').forEach(line=>{
+      const parts=line.split('|');
+      if(parts.length>=2)cards.push({front:parts[0].trim(),back:parts[1].trim(),sub:''});
+    });
+  } else {
+    if(mode==='vocab'){
+      cards=VOCAB.map(([en,vi])=>({front:en,back:vi,sub:'',badge:'Từ vựng'}));
+    } else if(mode==='v1v2'){
+      cards=VERBS.map(([v1,v2])=>({front:v1,back:v2,sub:'V2 (quá khứ đơn)',badge:'Động từ bất quy tắc'}));
+    } else {
+      cards=VERBS.map(([v1,,v3])=>({front:v1,back:v3,sub:'V3 (quá khứ phân từ)',badge:'Động từ bất quy tắc'}));
+    }
+  }
+  if($('shuffle-toggle').checked)cards=shuffle(cards);
+  return cards;
+}
+
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function startGame(){
+  deck=buildDeck();
+  if(!deck.length){alert('Không có thẻ nào! Hãy nhập dữ liệu hoặc chọn chế độ.');return;}
+  done=[];
+  seenCount={};
+  cardTimes={};
+  deck.forEach(c=>{seenCount[c.front]=0;cardTimes[c.front]=[];});
+  totalCards=deck.length;
+  flipped=false;
+  animating=false;
+  startTime=Date.now();
+  clearInterval(timerInterval);
+  timerInterval=setInterval(updateTimer,500);
+  showScreen(gameScreen);
+  updateBadge();
+  showCard();
+}
+
+function updateBadge(){
+  const labels={vocab:'Từ vựng: Anh → Việt',v1v2:'Động từ: V1 → V2',v1v3:'Động từ: V1 → V3'};
+  $('mode-badge').textContent=labels[currentMode]||'';
+}
+
+function showCard(){
+  if(!deck.length){endGame();return;}
+  const card=deck[0];
+  seenCount[card.front]=(seenCount[card.front]||0)+1;
+  cardStart[card.front]=Date.now();
+
+  const cw=$('card-wrapper');
+  cw.classList.remove('flipped','slide-right','slide-left');
+  flipped=false;
+  animating=false;
+
+  $('card-front-word').textContent=card.front;
+  $('card-back-meaning').textContent=card.back;
+  $('card-back-badge').textContent=card.badge||'';
+  $('card-back-sub').textContent=card.sub||'';
+
+  $('btn-know').classList.remove('visible');
+  $('btn-dontknow').classList.remove('visible');
+
+  updateProgress();
+}
+
+function flipCard(show){
+  if(animating)return;
+  const cw=$('card-wrapper');
+  if(show){
+    cw.classList.add('flipped');
+    flipped=true;
+    setTimeout(()=>{
+      $('btn-know').classList.add('visible');
+      $('btn-dontknow').classList.add('visible');
+    },200);
+  }
+}
+
+function answer(know){
+  if(animating||!flipped)return;
+  animating=true;
+  const card=deck.shift();
+  if(cardStart[card.front]){
+    cardTimes[card.front]=cardTimes[card.front]||[];
+    cardTimes[card.front].push(Date.now()-cardStart[card.front]);
+  }
+  const cw=$('card-wrapper');
+  cw.classList.add(know?'slide-right':'slide-left');
+  if(know) done.push(card);
+  else deck.push(card);
+  updateStats();
+  setTimeout(()=>{
+    cw.classList.remove('slide-right','slide-left','flipped');
+    flipped=false;
+    animating=false;
+    showCard();
+  },380);
+}
+
+function updateProgress(){
+  const left=deck.length;
+  const total=totalCards;
+  $('remaining-count').textContent=left;
+  $('total-count').textContent=total;
+  const pct=total?((total-left)/total*100):0;
+  $('progress-bar').style.width=pct+'%';
+  $('stat-done').textContent=done.length;
+  $('stat-left').textContent=deck.length;
+}
+
+function updateStats(){
+  $('stat-done').textContent=done.length;
+  $('stat-left').textContent=deck.length;
+}
+
+function updateTimer(){
+  const secs=Math.floor((Date.now()-startTime)/1000);
+  $('stat-time').textContent=formatTime(secs);
+}
+
+function formatTime(secs){
+  const m=Math.floor(secs/60),s=secs%60;
+  return m+':'+(s<10?'0':'')+s;
+}
+
+function endGame(){
+  clearInterval(timerInterval);
+  const totalSecs=Math.floor((Date.now()-startTime)/1000);
+  $('end-time').textContent=formatTime(totalSecs);
+  $('end-cards').textContent=totalCards;
+  const totalSeen=Object.values(seenCount).reduce((a,b)=>a+b,0);
+  $('end-rounds').textContent=totalSeen;
+  $('end-avg').textContent=(totalSeen/totalCards).toFixed(1);
+  $('end-subtitle').textContent='Ôn '+totalCards+' thẻ trong '+formatTime(totalSecs);
+
+  // fastest/slowest by avg time per card
+  let fastest=null,slowest=null,fTime=Infinity,sTime=0;
+  Object.entries(cardTimes).forEach(([word,times])=>{
+    if(!times.length)return;
+    const avg=times.reduce((a,b)=>a+b,0)/times.length;
+    if(avg<fTime){fTime=avg;fastest=word;}
+    if(avg>sTime){sTime=avg;slowest=word;}
+  });
+  $('end-fastest').textContent=fastest?fastest+' ('+Math.round(fTime/1000)+'s)':'-';
+  $('end-slowest').textContent=slowest?slowest+' ('+Math.round(sTime/1000)+'s)':'-';
+
+  // card list sorted by seen count desc
+  const sorted=Object.entries(seenCount).sort((a,b)=>b[1]-a[1]);
+  $('card-list-body').innerHTML=sorted.map(([w,n])=>`
+    <div class="card-item">
+      <span class="card-item-word">${w}</span>
+      <span class="card-item-times${n>3?' many':''}">${n} lần</span>
+    </div>`).join('');
+
+  showScreen(endScreen);
+}
+
+showScreen(startScreen);
+</script>
+</body>
+</html>

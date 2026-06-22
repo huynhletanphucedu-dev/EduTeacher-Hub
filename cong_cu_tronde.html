@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Công Cụ Trộn Đề Thi</title>
+<script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100vh;
+    padding: 24px;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #f59e0b;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    color: #94a3b8;
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 1300px;
+  }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+  .panel {
+    background: #1e293b;
+    border-radius: 10px;
+    border: 1px solid #334155;
+    padding: 20px;
+  }
+  .panel h2 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f59e0b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 14px;
+  }
+  textarea {
+    width: 100%;
+    height: 360px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    color: #e2e8f0;
+    font-family: 'Consolas', monospace;
+    font-size: 13px;
+    padding: 12px;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  textarea:focus { border-color: #f59e0b; }
+  textarea::placeholder { color: #475569; }
+  .settings-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 16px;
+    align-items: flex-start;
+  }
+  .settings-group { display: flex; flex-direction: column; gap: 8px; }
+  .settings-group label {
+    font-size: 13px;
+    color: #94a3b8;
+    font-weight: 500;
+    margin-bottom: 2px;
+  }
+  .radio-row, .check-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .radio-row label, .check-row label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: #cbd5e1;
+    font-size: 14px;
+    font-weight: 400;
+  }
+  input[type=radio], input[type=checkbox] {
+    accent-color: #f59e0b;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+  .btn-parse {
+    margin-top: 16px;
+    padding: 10px 22px;
+    background: #334155;
+    color: #e2e8f0;
+    border: 1px solid #475569;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .btn-parse:hover { background: #3d4f65; border-color: #64748b; }
+  .btn-generate {
+    margin-top: 16px;
+    padding: 11px 26px;
+    background: #f59e0b;
+    color: #0f172a;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-generate:hover { background: #fbbf24; }
+  .btn-generate:active { transform: scale(0.98); }
+  .btn-generate:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
+  .error-msg {
+    background: #450a0a;
+    border: 1px solid #b91c1c;
+    color: #fca5a5;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  .success-msg {
+    background: #052e16;
+    border: 1px solid #16a34a;
+    color: #86efac;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  .preview-area {
+    height: 440px;
+    overflow-y: auto;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 13px;
+  }
+  .preview-area::-webkit-scrollbar { width: 6px; }
+  .preview-area::-webkit-scrollbar-track { background: #0f172a; }
+  .preview-area::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+  .q-block {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #1e293b;
+  }
+  .q-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .q-num {
+    font-weight: 600;
+    color: #f59e0b;
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+  .q-text { color: #e2e8f0; margin-bottom: 6px; }
+  .q-opt { color: #94a3b8; padding-left: 8px; font-size: 12px; line-height: 1.8; }
+  .q-ans {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #4ade80;
+    font-weight: 600;
+  }
+  .stats-bar {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .stat-pill {
+    background: #334155;
+    border-radius: 999px;
+    padding: 3px 12px;
+    font-size: 12px;
+    color: #cbd5e1;
+  }
+  .stat-pill span { color: #f59e0b; font-weight: 600; }
+  .empty-state {
+    color: #475569;
+    font-size: 13px;
+    text-align: center;
+    padding: 60px 0;
+  }
+  .progress-wrap { margin-top: 12px; }
+  .progress-label { font-size: 12px; color: #64748b; margin-bottom: 6px; }
+  .progress-bar-bg {
+    background: #0f172a;
+    border-radius: 999px;
+    height: 6px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    background: #f59e0b;
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.3s;
+    width: 0%;
+  }
+</style>
+</head>
+<body>
+
+<h1>&#x1F4DD; Công Cụ Trộn Đề Thi</h1>
+<p class="subtitle">Dán đề trắc nghiệm vào ô bên dưới, chọn thiết lập, rồi nhấn "Trộn Đề" để tạo các mã đề Word.</p>
+
+<div class="layout">
+  <!-- LEFT: Input + Settings -->
+  <div>
+    <div class="panel">
+      <h2>&#x1F4CB; Nhập Đề Gốc</h2>
+      <textarea id="examInput" placeholder="Dán đề thi vào đây...
+
+Ví dụ:
+Câu 1: Đây là câu hỏi đầu tiên?
+A. Đáp án A
+B. Đáp án B
+C. Đáp án C
+D. Đáp án D
+Đáp án: D
+
+Câu 2: Đây là câu hỏi thứ hai?
+A. Lựa chọn một
+B. Lựa chọn hai
+C. Lựa chọn ba
+D. Lựa chọn bốn
+Đáp án: B"></textarea>
+
+      <div id="parseError" class="error-msg" style="display:none;"></div>
+
+      <button class="btn-parse" onclick="parseExam()">&#x1F50D; Phân Tích Đề</button>
+    </div>
+
+    <div class="panel" style="margin-top:20px;">
+      <h2>&#x2699;&#xFE0F; Thiết Lập</h2>
+      <div class="settings-row">
+        <div class="settings-group">
+          <label>Số mã đề:</label>
+          <div class="radio-row">
+            <label><input type="radio" name="numVersions" value="2" checked> 2 mã đề</label>
+            <label><input type="radio" name="numVersions" value="3"> 3 mã đề</label>
+            <label><input type="radio" name="numVersions" value="4"> 4 mã đề</label>
+          </div>
+        </div>
+        <div class="settings-group">
+          <label>Tùy chọn xáo trộn:</label>
+          <div class="check-row">
+            <label><input type="checkbox" id="shuffleQs" checked> Xáo thứ tự câu hỏi</label>
+          </div>
+          <div class="check-row">
+            <label><input type="checkbox" id="shuffleOpts" checked> Xáo thứ tự đáp án</label>
+          </div>
+        </div>
+      </div>
+
+      <div id="genError" class="error-msg" style="display:none;"></div>
+      <div id="genSuccess" class="success-msg" style="display:none;"></div>
+
+      <div class="progress-wrap" id="progressWrap" style="display:none;">
+        <div class="progress-label" id="progressLabel">Đang tạo đề...</div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="progressBar"></div></div>
+      </div>
+
+      <button class="btn-generate" id="genBtn" onclick="generateVersions()" disabled>
+        &#x1F500; Trộn Đề &amp; Tải Xuống ZIP
+      </button>
+    </div>
+  </div>
+
+  <!-- RIGHT: Preview -->
+  <div class="panel">
+    <h2>&#x1F441; Xem Trước Câu Hỏi Đã Phân Tích</h2>
+    <div class="stats-bar" id="statsBar" style="display:none;">
+      <div class="stat-pill">Tổng câu: <span id="statTotal">0</span></div>
+      <div class="stat-pill">Có đáp án: <span id="statWithAns">0</span></div>
+    </div>
+    <div class="preview-area" id="previewArea">
+      <div class="empty-state">Nhập đề và nhấn "Phân Tích Đề" để xem kết quả tại đây.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+let parsedQuestions = [];
+
+function parseExam() {
+  const raw = document.getElementById('examInput').value.trim();
+  const errEl = document.getElementById('parseError');
+  errEl.style.display = 'none';
+
+  if (!raw) {
+    errEl.textContent = 'Vui lòng nhập nội dung đề thi.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const questions = parseQuestions(raw);
+
+  if (questions.length < 2) {
+    errEl.textContent = 'Không nhận diện được câu hỏi. Hãy kiểm tra định dạng. (Cần ít nhất 2 câu)';
+    errEl.style.display = 'block';
+    parsedQuestions = [];
+    renderPreview([]);
+    document.getElementById('genBtn').disabled = true;
+    return;
+  }
+
+  parsedQuestions = questions;
+  renderPreview(questions);
+  document.getElementById('genBtn').disabled = false;
+
+  const withAns = questions.filter(q => q.answer).length;
+  document.getElementById('statTotal').textContent = questions.length;
+  document.getElementById('statWithAns').textContent = withAns;
+  document.getElementById('statsBar').style.display = 'flex';
+}
+
+function parseQuestions(text) {
+  const lines = text.split('\n');
+  const questions = [];
+  let current = null;
+
+  const questionRe = /^(?:Câu\s*(\d+)[.:)]|(\d+)[.)]\s+)(.+)/i;
+  const optionRe = /^([A-Da-d])[.)]\s*(.*)/;
+  const answerRe = /^(?:Đáp án|ĐA|Đáp án đúng)\s*[:\-]\s*([A-Da-d])/i;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    const qMatch = line.match(questionRe);
+    if (qMatch) {
+      if (current) questions.push(current);
+      const qNum = parseInt(qMatch[1] || qMatch[2]);
+      const qText = qMatch[3] ? qMatch[3].trim() : '';
+      current = { num: qNum, text: qText, options: [], answer: null, originalAnswer: null };
+      continue;
+    }
+
+    const optMatch = line.match(optionRe);
+    if (optMatch && current) {
+      current.options.push({ letter: optMatch[1].toUpperCase(), text: optMatch[2].trim() });
+      continue;
+    }
+
+    const ansMatch = line.match(answerRe);
+    if (ansMatch && current) {
+      current.answer = ansMatch[1].toUpperCase();
+      current.originalAnswer = ansMatch[1].toUpperCase();
+      continue;
+    }
+
+    if (current && current.options.length === 0 && !line.match(answerRe)) {
+      current.text += ' ' + line;
+    }
+  }
+
+  if (current) questions.push(current);
+
+  return questions.filter(q => q.text && q.options.length >= 2);
+}
+
+function renderPreview(questions) {
+  const area = document.getElementById('previewArea');
+  if (!questions.length) {
+    area.innerHTML = '<div class="empty-state">Nhập đề và nhấn "Phân Tích Đề" để xem kết quả tại đây.</div>';
+    return;
+  }
+
+  area.innerHTML = questions.map((q, i) => {
+    const opts = q.options.map(o =>
+      `<div class="q-opt">${o.letter}. ${escHtml(o.text)}</div>`
+    ).join('');
+    const ans = q.answer ? `<div class="q-ans">&#x2713; Đáp án: ${q.answer}</div>` : '';
+    return `<div class="q-block">
+      <div class="q-num">Câu ${i + 1}</div>
+      <div class="q-text">${escHtml(q.text)}</div>
+      ${opts}
+      ${ans}
+    </div>`;
+  }).join('');
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function deepCloneQuestion(q) {
+  return {
+    num: q.num,
+    text: q.text,
+    options: q.options.map(o => ({ ...o })),
+    answer: q.answer,
+    originalAnswer: q.originalAnswer
+  };
+}
+
+function buildVersion(originalQuestions, versionNum, shuffleQs, shuffleOpts) {
+  let questions = originalQuestions.map(deepCloneQuestion);
+
+  if (shuffleQs) questions = shuffleArray(questions);
+
+  if (shuffleOpts) {
+    questions = questions.map(q => {
+      const correctLetter = q.answer;
+      const shuffledOpts = shuffleArray(q.options);
+      const newLetters = ['A', 'B', 'C', 'D', 'E', 'F'];
+      let newAnswer = null;
+      const remapped = shuffledOpts.map((opt, idx) => {
+        const newLetter = newLetters[idx];
+        if (opt.letter === correctLetter) newAnswer = newLetter;
+        return { letter: newLetter, text: opt.text };
+      });
+      return { ...q, options: remapped, answer: newAnswer };
+    });
+  }
+
+  return questions;
+}
+
+async function generateVersions() {
+  const errEl = document.getElementById('genError');
+  const sucEl = document.getElementById('genSuccess');
+  const progWrap = document.getElementById('progressWrap');
+  const progBar = document.getElementById('progressBar');
+  const progLabel = document.getElementById('progressLabel');
+  const genBtn = document.getElementById('genBtn');
+
+  errEl.style.display = 'none';
+  sucEl.style.display = 'none';
+
+  if (!parsedQuestions.length) {
+    errEl.textContent = 'Chưa có câu hỏi. Vui lòng phân tích đề trước.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const numVersions = parseInt(document.querySelector('input[name=numVersions]:checked').value);
+  const shuffleQs = document.getElementById('shuffleQs').checked;
+  const shuffleOpts = document.getElementById('shuffleOpts').checked;
+
+  genBtn.disabled = true;
+  progWrap.style.display = 'block';
+  progBar.style.width = '0%';
+
+  try {
+    const zip = new JSZip();
+    const answerMatrix = [];
+
+    for (let v = 0; v < numVersions; v++) {
+      const versionCode = String(v + 1).padStart(2, '0');
+      progLabel.textContent = `Đang tạo mã đề ${versionCode}...`;
+      progBar.style.width = `${Math.round(((v) / numVersions) * 90)}%`;
+
+      await new Promise(r => setTimeout(r, 10));
+
+      const versionQuestions = buildVersion(parsedQuestions, v + 1, shuffleQs, shuffleOpts);
+
+      const docBytes = await buildWordDoc(versionCode, versionQuestions);
+      zip.file(`Ma_de_${versionCode}.docx`, docBytes);
+
+      answerMatrix.push({ code: versionCode, questions: versionQuestions });
+    }
+
+    progLabel.textContent = 'Đang tạo bảng đáp án...';
+    progBar.style.width = '93%';
+    await new Promise(r => setTimeout(r, 10));
+
+    const ansKey = buildAnswerKeyText(answerMatrix);
+    zip.file('Bang_dap_an.txt', ansKey);
+
+    progLabel.textContent = 'Đang nén file ZIP...';
+    progBar.style.width = '97%';
+    await new Promise(r => setTimeout(r, 10));
+
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    progBar.style.width = '100%';
+    progLabel.textContent = 'Hoàn thành!';
+
+    saveAs(zipBlob, 'Tron_de_thi.zip');
+
+    sucEl.textContent = `Đã tạo thành công ${numVersions} mã đề và bảng đáp án. File ZIP đang được tải xuống.`;
+    sucEl.style.display = 'block';
+  } catch (e) {
+    errEl.textContent = 'Lỗi khi tạo file: ' + e.message;
+    errEl.style.display = 'block';
+    console.error(e);
+  } finally {
+    genBtn.disabled = false;
+    setTimeout(() => { progWrap.style.display = 'none'; }, 2000);
+  }
+}
+
+async function buildWordDoc(versionCode, questions) {
+  const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+          WidthType, AlignmentType, HeadingLevel, BorderStyle } = docx;
+
+  const children = [];
+
+  children.push(new Paragraph({
+    children: [new TextRun({ text: `MÃ ĐỀ: ${versionCode}`, bold: true, size: 32, color: '7C3AED' })],
+    alignment: AlignmentType.CENTER,
+    spacing: { after: 240 }
+  }));
+
+  children.push(new Paragraph({
+    children: [new TextRun({ text: 'ĐỀ THI TRẮC NGHIỆM', bold: true, size: 28 })],
+    alignment: AlignmentType.CENTER,
+    spacing: { after: 400 }
+  }));
+
+  questions.forEach((q, idx) => {
+    children.push(new Paragraph({
+      children: [
+        new TextRun({ text: `Câu ${idx + 1}: `, bold: true, size: 24 }),
+        new TextRun({ text: q.text, size: 24 })
+      ],
+      spacing: { before: 200, after: 80 }
+    }));
+
+    q.options.forEach(opt => {
+      children.push(new Paragraph({
+        children: [
+          new TextRun({ text: `  ${opt.letter}. `, bold: true, size: 22 }),
+          new TextRun({ text: opt.text, size: 22 })
+        ],
+        spacing: { before: 40, after: 40 },
+        indent: { left: 360 }
+      }));
+    });
+  });
+
+  children.push(new Paragraph({
+    children: [new TextRun({ text: '' })],
+    spacing: { before: 600, after: 200 }
+  }));
+
+  children.push(new Paragraph({
+    children: [new TextRun({ text: `BẢNG ĐÁP ÁN — MÃ ĐỀ ${versionCode}`, bold: true, size: 26, color: '7C3AED' })],
+    alignment: AlignmentType.CENTER,
+    spacing: { after: 200 }
+  }));
+
+  const cols = 5;
+  const rows = Math.ceil(questions.length / cols);
+  const tableRows = [];
+
+  const headerCells = [];
+  for (let c = 0; c < cols; c++) {
+    headerCells.push(new TableCell({
+      children: [new Paragraph({
+        children: [new TextRun({ text: 'Câu', bold: true, size: 18 })],
+        alignment: AlignmentType.CENTER
+      })],
+      width: { size: 18, type: WidthType.PERCENTAGE }
+    }));
+    headerCells.push(new TableCell({
+      children: [new Paragraph({
+        children: [new TextRun({ text: 'Đáp án', bold: true, size: 18 })],
+        alignment: AlignmentType.CENTER
+      })],
+      width: { size: 22, type: WidthType.PERCENTAGE }
+    }));
+  }
+  tableRows.push(new TableRow({ children: headerCells, tableHeader: true }));
+
+  for (let r = 0; r < rows; r++) {
+    const cells = [];
+    for (let c = 0; c < cols; c++) {
+      const qIdx = r + c * rows;
+      if (qIdx < questions.length) {
+        const q = questions[qIdx];
+        cells.push(new TableCell({
+          children: [new Paragraph({
+            children: [new TextRun({ text: String(qIdx + 1), size: 18 })],
+            alignment: AlignmentType.CENTER
+          })]
+        }));
+        cells.push(new TableCell({
+          children: [new Paragraph({
+            children: [new TextRun({ text: q.answer || '?', bold: true, size: 18, color: '16A34A' })],
+            alignment: AlignmentType.CENTER
+          })]
+        }));
+      } else {
+        cells.push(new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: '' })] })] }));
+        cells.push(new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: '' })] })] }));
+      }
+    }
+    tableRows.push(new TableRow({ children: cells }));
+  }
+
+  children.push(new Table({
+    rows: tableRows,
+    width: { size: 100, type: WidthType.PERCENTAGE }
+  }));
+
+  const doc = new Document({
+    sections: [{
+      properties: {
+        page: {
+          margin: { top: 720, right: 720, bottom: 720, left: 720 }
+        }
+      },
+      children
+    }]
+  });
+
+  return await Packer.toArrayBuffer(doc);
+}
+
+function buildAnswerKeyText(answerMatrix) {
+  const numQ = answerMatrix[0].questions.length;
+  let lines = [];
+  lines.push('BẢNG ĐÁP ÁN TỔNG HỢP');
+  lines.push('='.repeat(60));
+
+  const header = 'Câu'.padEnd(6) + answerMatrix.map(v => `Mã ${v.code}`.padEnd(10)).join('');
+  lines.push(header);
+  lines.push('-'.repeat(header.length));
+
+  for (let i = 0; i < numQ; i++) {
+    const row = String(i + 1).padEnd(6) +
+      answerMatrix.map(v => (v.questions[i]?.answer || '?').padEnd(10)).join('');
+    lines.push(row);
+  }
+
+  lines.push('');
+  lines.push('='.repeat(60));
+  lines.push('Chi tiết từng mã đề:');
+  lines.push('');
+
+  answerMatrix.forEach(v => {
+    lines.push(`--- Mã đề ${v.code} ---`);
+    v.questions.forEach((q, i) => {
+      lines.push(`Câu ${i + 1}: ${q.answer || '?'}`);
+    });
+    lines.push('');
+  });
+
+  return lines.join('\n');
+}
+</script>
+</body>
+</html>

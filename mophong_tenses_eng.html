@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>English Tense Explorer</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:#0f172a;color:#e2e8f0;font-family:'Segoe UI',Arial,sans-serif;min-height:100vh;overflow-x:hidden;}
+header{background:#1e293b;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #334155;}
+header h1{font-size:1.15rem;color:#38bdf8;font-weight:800;}
+.badge{background:#0ea5e9;color:#fff;padding:3px 10px;border-radius:6px;font-size:.72rem;font-weight:700;}
+
+/* Timeline */
+.timeline-wrap{padding:18px 16px 8px;position:relative;}
+.timeline-label{display:flex;justify-content:space-between;font-size:.7rem;color:#64748b;margin-bottom:6px;padding:0 6px;}
+.timeline-rail{height:6px;background:#1e293b;border-radius:3px;border:1px solid #334155;position:relative;margin-bottom:14px;}
+.timeline-now{position:absolute;top:-4px;left:50%;transform:translateX(-50%);width:14px;height:14px;background:#f59e0b;border-radius:50%;border:2px solid #0f172a;}
+.timeline-now-label{position:absolute;top:10px;left:50%;transform:translateX(-50%);font-size:.65rem;color:#f59e0b;font-weight:700;white-space:nowrap;}
+
+/* Tense category tabs */
+.cat-bar{display:flex;gap:6px;padding:0 16px 14px;overflow-x:auto;scrollbar-width:none;}
+.cat-bar::-webkit-scrollbar{display:none;}
+.cat-btn{flex-shrink:0;padding:8px 16px;border-radius:8px;border:1px solid #334155;background:#1e293b;color:#94a3b8;font-size:.8rem;cursor:pointer;font-weight:600;transition:all .2s;}
+.cat-btn.active{color:#fff;}
+.cat-btn.past.active{background:#7c3aed;border-color:#7c3aed;}
+.cat-btn.present.active{background:#059669;border-color:#059669;}
+.cat-btn.future.active{background:#dc2626;border-color:#dc2626;}
+
+/* Tense grid */
+.tense-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 16px 20px;}
+@media(min-width:600px){.tense-grid{grid-template-columns:repeat(4,1fr);}}
+.tense-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:12px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.tense-card:active{transform:scale(.97);}
+.tense-card.past{border-left:3px solid #7c3aed;}
+.tense-card.present{border-left:3px solid #059669;}
+.tense-card.future{border-left:3px solid #dc2626;}
+.tense-card.selected{box-shadow:0 0 0 2px #38bdf8;border-color:#38bdf8;}
+.tc-name{font-size:.78rem;font-weight:700;color:#e2e8f0;margin-bottom:3px;}
+.tc-formula{font-size:.68rem;color:#64748b;font-family:monospace;margin-bottom:5px;}
+.tc-signal{display:flex;flex-wrap:wrap;gap:3px;}
+.tc-signal span{font-size:.6rem;background:#0f172a;border:1px solid #334155;border-radius:4px;padding:1px 5px;color:#94a3b8;}
+
+/* Detail panel */
+#detail{background:#1e293b;border-top:2px solid #38bdf8;padding:16px;display:none;}
+#det-name{font-size:1.1rem;font-weight:800;color:#38bdf8;margin-bottom:4px;}
+#det-formula{font-size:.85rem;color:#f59e0b;font-family:monospace;background:#0f172a;padding:6px 10px;border-radius:6px;margin-bottom:10px;}
+.det-section{margin-bottom:10px;}
+.det-section h4{font-size:.75rem;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.det-examples{display:flex;flex-direction:column;gap:6px;}
+.ex-row{background:#0f172a;border-radius:8px;padding:8px 10px;}
+.ex-en{font-size:.88rem;color:#e2e8f0;}
+.ex-signal{font-size:.72rem;color:#94a3b8;margin-top:2px;}
+.signal-chips{display:flex;flex-wrap:wrap;gap:5px;}
+.signal-chip{background:#0f172a;border:1px solid #334155;border-radius:99px;padding:3px 10px;font-size:.75rem;color:#94a3b8;}
+.use-list{list-style:none;display:flex;flex-direction:column;gap:5px;}
+.use-list li{font-size:.82rem;color:#e2e8f0;padding-left:12px;position:relative;}
+.use-list li::before{content:'→';position:absolute;left:0;color:#38bdf8;}
+.play-ex-btn{background:#0ea5e9;border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:.72rem;cursor:pointer;margin-top:4px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🕐 English Tense Explorer</h1>
+  <span class="badge">12 Tenses</span>
+</header>
+
+<!-- Timeline bar -->
+<div class="timeline-wrap">
+  <div class="timeline-label"><span>PAST</span><span>NOW</span><span>FUTURE</span></div>
+  <div class="timeline-rail">
+    <div class="timeline-now"><div class="timeline-now-label">NOW</div></div>
+  </div>
+</div>
+
+<!-- Category buttons -->
+<div class="cat-bar">
+  <button class="cat-btn past active" onclick="filterCat('past',this)">⬅ Past</button>
+  <button class="cat-btn present" onclick="filterCat('present',this)">● Present</button>
+  <button class="cat-btn future" onclick="filterCat('future',this)">➡ Future</button>
+  <button class="cat-btn" style="" onclick="filterCat('all',this)">All 12</button>
+</div>
+
+<!-- Tense cards -->
+<div class="tense-grid" id="tenseGrid"></div>
+
+<!-- Detail panel -->
+<div id="detail">
+  <div id="det-name"></div>
+  <div id="det-formula"></div>
+  <div class="det-section">
+    <h4>📌 When to use</h4>
+    <ul class="use-list" id="det-uses"></ul>
+  </div>
+  <div class="det-section">
+    <h4>⚡ Signal words</h4>
+    <div class="signal-chips" id="det-signals"></div>
+  </div>
+  <div class="det-section">
+    <h4>💬 Examples</h4>
+    <div class="det-examples" id="det-examples"></div>
+  </div>
+</div>
+
+<script>
+const TENSES = [
+  // ── PAST ──────────────────────────────────────────────────────────────
+  {
+    id:'psi', cat:'past', name:'Past Simple',
+    formula:'S + V₂ / did not + V₁',
+    signals:['yesterday','last week','last year','ago','in 2010','once','when I was...'],
+    uses:['A completed action in the past','A series of past actions','Past habits or states'],
+    examples:[
+      {en:'She walked to school yesterday.', sig:'yesterday'},
+      {en:'I didn\'t watch TV last night.', sig:'last night'},
+      {en:'We lived in Ha Noi for five years.', sig:'for (past period)'},
+    ]
+  },
+  {
+    id:'pco', cat:'past', name:'Past Continuous',
+    formula:'S + was/were + V-ing',
+    signals:['while','when','at 8 p.m. last night','at that time','as'],
+    uses:['An action in progress at a past moment','Background action interrupted by another event'],
+    examples:[
+      {en:'I was reading when she called.', sig:'when'},
+      {en:'They were playing football at 5 p.m.', sig:'at 5 p.m.'},
+      {en:'While he was cooking, I was cleaning.', sig:'while'},
+    ]
+  },
+  {
+    id:'ppe', cat:'past', name:'Past Perfect',
+    formula:'S + had + V₃',
+    signals:['before','after','by the time','already','just','when (earlier action)'],
+    uses:['An action completed BEFORE another past action','Often used with Past Simple in the same sentence'],
+    examples:[
+      {en:'She had left before he arrived.', sig:'before'},
+      {en:'By the time I came, they had eaten.', sig:'by the time'},
+      {en:'I had never seen snow before 2010.', sig:'never...before'},
+    ]
+  },
+  {
+    id:'ppc', cat:'past', name:'Past Perfect Continuous',
+    formula:'S + had been + V-ing',
+    signals:['for','since','how long','before','until'],
+    uses:['An action that was ongoing before a past point','Emphasises duration up to a past moment'],
+    examples:[
+      {en:'I had been waiting for two hours when she came.', sig:'for + when'},
+      {en:'He had been studying since morning before he took a break.', sig:'since...before'},
+    ]
+  },
+  // ── PRESENT ───────────────────────────────────────────────────────────
+  {
+    id:'prsi', cat:'present', name:'Present Simple',
+    formula:'S + V₁(s/es) / do/does not + V₁',
+    signals:['every day','always','usually','often','sometimes','never','on Mondays'],
+    uses:['Habits and routines','General truths / facts','Permanent states','Timetables and schedules'],
+    examples:[
+      {en:'The sun rises in the east.', sig:'general truth'},
+      {en:'She goes to school every day.', sig:'every day'},
+      {en:'The train leaves at 7 a.m.', sig:'timetable'},
+    ]
+  },
+  {
+    id:'prco', cat:'present', name:'Present Continuous',
+    formula:'S + am/is/are + V-ing',
+    signals:['now','right now','at the moment','currently','Look!','Listen!'],
+    uses:['Action happening NOW','Temporary situations','Future arrangements (plans)','Changing/developing situations'],
+    examples:[
+      {en:'She is talking on the phone right now.', sig:'right now'},
+      {en:'I am staying with my aunt this week.', sig:'this week (temporary)'},
+      {en:'We are meeting at 5 p.m. tomorrow.', sig:'tomorrow (plan)'},
+    ]
+  },
+  {
+    id:'prpe', cat:'present', name:'Present Perfect',
+    formula:'S + have/has + V₃',
+    signals:['just','already','yet','ever','never','recently','so far','for','since'],
+    uses:['Past action with present result','Experience (ever/never)','Unfinished time period (for/since)','Recent events (just/already)'],
+    examples:[
+      {en:'I have just finished my homework.', sig:'just'},
+      {en:'Have you ever been to Paris?', sig:'ever'},
+      {en:'She has lived here since 2015.', sig:'since'},
+    ]
+  },
+  {
+    id:'prpc', cat:'present', name:'Present Perfect Continuous',
+    formula:'S + have/has been + V-ing',
+    signals:['for','since','how long','all day','lately','recently'],
+    uses:['Action that started in the past and is STILL continuing','Emphasises duration','Recent continuous activity with present result'],
+    examples:[
+      {en:'I have been studying English for three years.', sig:'for'},
+      {en:'She has been waiting since 9 a.m.', sig:'since'},
+      {en:'They have been playing football all afternoon.', sig:'all afternoon'},
+    ]
+  },
+  // ── FUTURE ────────────────────────────────────────────────────────────
+  {
+    id:'fwill', cat:'future', name:'Future Simple (will)',
+    formula:'S + will + V₁',
+    signals:['tomorrow','next week','soon','in the future','I think','I believe','probably'],
+    uses:['Spontaneous decisions (at moment of speaking)','Predictions based on opinion','Promises, offers, requests','Future facts'],
+    examples:[
+      {en:'I will help you with that.', sig:'spontaneous offer'},
+      {en:'I think it will rain tomorrow.', sig:'prediction'},
+      {en:'She will be 15 next birthday.', sig:'future fact'},
+    ]
+  },
+  {
+    id:'fgoing', cat:'future', name:'Future (be going to)',
+    formula:'S + am/is/are going to + V₁',
+    signals:['soon','tomorrow','next','this weekend','Look! (evidence)'],
+    uses:['Plans and intentions decided before speaking','Predictions based on EVIDENCE (you can see it now)'],
+    examples:[
+      {en:'I am going to study medicine.', sig:'intention (decided)'},
+      {en:'Look at those clouds — it is going to rain.', sig:'evidence'},
+      {en:'They are going to open a new school next year.', sig:'plan'},
+    ]
+  },
+  {
+    id:'fco', cat:'future', name:'Future Continuous',
+    formula:'S + will be + V-ing',
+    signals:['at this time tomorrow','at 8 p.m. tonight','this time next week'],
+    uses:['Action that will be IN PROGRESS at a specific future moment','Polite questions about plans'],
+    examples:[
+      {en:'This time tomorrow, I will be flying to Ha Noi.', sig:'this time tomorrow'},
+      {en:'At 9 p.m., she will be watching the match.', sig:'at 9 p.m.'},
+    ]
+  },
+  {
+    id:'fpe', cat:'future', name:'Future Perfect',
+    formula:'S + will have + V₃',
+    signals:['by + future time','by then','by the time','before'],
+    uses:['An action completed BEFORE a specific future point'],
+    examples:[
+      {en:'I will have finished by 5 p.m.', sig:'by 5 p.m.'},
+      {en:'By the time she arrives, we will have eaten.', sig:'by the time'},
+    ]
+  },
+];
+
+let selectedId = null;
+
+function filterCat(cat, btn){
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGrid(cat);
+  document.getElementById('detail').style.display='none';
+  selectedId = null;
+}
+
+function renderGrid(cat){
+  const tenses = cat==='all' ? TENSES : TENSES.filter(t=>t.cat===cat);
+  let h='';
+  tenses.forEach(t=>{
+    h+=`<div class="tense-card ${t.cat}${selectedId===t.id?' selected':''}" id="tc_${t.id}" onclick="selectTense('${t.id}')">
+      <div class="tc-name">${t.name}</div>
+      <div class="tc-formula">${t.formula}</div>
+      <div class="tc-signal">${t.signals.slice(0,3).map(s=>`<span>${s}</span>`).join('')}</div>
+    </div>`;
+  });
+  document.getElementById('tenseGrid').innerHTML=h;
+}
+
+function selectTense(id){
+  const t = TENSES.find(x=>x.id===id);
+  if(!t) return;
+  selectedId = id;
+  // re-render to show selected state
+  document.querySelectorAll('.tense-card').forEach(c=>c.classList.remove('selected'));
+  const card = document.getElementById('tc_'+id);
+  if(card){card.classList.add('selected'); card.scrollIntoView({behavior:'smooth',block:'nearest'});}
+
+  const det = document.getElementById('detail');
+  det.style.display='block';
+  document.getElementById('det-name').textContent=t.name;
+  document.getElementById('det-formula').textContent=t.formula;
+
+  document.getElementById('det-uses').innerHTML=t.uses.map(u=>`<li>${u}</li>`).join('');
+  document.getElementById('det-signals').innerHTML=t.signals.map(s=>`<span class="signal-chip">${s}</span>`).join('');
+  document.getElementById('det-examples').innerHTML=t.examples.map(ex=>`
+    <div class="ex-row">
+      <div class="ex-en">"${ex.en}"</div>
+      <div class="ex-signal">⚡ ${ex.sig}</div>
+      <button class="play-ex-btn" onclick="speak(\`${ex.en.replace(/`/g,'\\`')}\`)">🔊 Listen</button>
+    </div>`).join('');
+
+  det.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function speak(text){
+  if('speechSynthesis' in window){
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang='en-US'; u.rate=0.85;
+    speechSynthesis.speak(u);
+  }
+}
+
+// init
+renderGrid('past');
+</script>
+</body>
+</html>

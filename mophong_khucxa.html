@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Khúc Xạ Ánh Sáng - KHTN Lớp 7</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f172a;color:#f1f5f9;font-family:'Segoe UI',sans-serif;min-height:100vh;padding:20px}
+h1{font-size:28px;font-weight:700;color:#f8fafc;text-align:center;margin-bottom:4px}
+.subtitle{text-align:center;color:#94a3b8;font-size:14px;margin-bottom:24px}
+.main-layout{display:flex;flex-direction:column;align-items:center;gap:20px;max-width:900px;margin:0 auto}
+.canvas-wrap{position:relative;border:1px solid #334155;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px #00000055}
+canvas{display:block}
+.controls{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;width:100%;max-width:640px}
+.ctrl-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.ctrl-row:last-child{margin-bottom:0}
+label{font-size:13px;color:#94a3b8;min-width:120px}
+select{background:#0f172a;color:#f1f5f9;border:1px solid #475569;border-radius:6px;padding:6px 10px;font-size:13px;flex:1;min-width:160px}
+select:focus{outline:2px solid #3b82f6;border-color:transparent}
+.slider-wrap{display:flex;align-items:center;gap:10px;flex:1}
+input[type=range]{flex:1;accent-color:#fbbf24;height:4px}
+.val-badge{background:#0f172a;border:1px solid #475569;border-radius:6px;padding:4px 10px;font-size:13px;font-weight:600;color:#fbbf24;min-width:50px;text-align:center}
+.info-panel{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;width:100%;max-width:640px}
+.info-panel h3{font-size:14px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.info-item{background:#0f172a;border-radius:8px;padding:10px 14px}
+.info-item .ilabel{font-size:11px;color:#64748b;margin-bottom:2px}
+.info-item .ivalue{font-size:16px;font-weight:600;color:#f1f5f9}
+.formula-box{background:#0f172a;border-radius:8px;padding:12px 16px;font-size:13px;color:#94a3b8;line-height:1.6}
+.formula-box .eq{color:#22d3ee;font-weight:600}
+.warn-box{background:#7f1d1d44;border:1px solid #ef444466;border-radius:8px;padding:10px 14px;font-size:13px;color:#fca5a5;margin-top:10px;display:none}
+.critical-box{background:#1e3a5f44;border:1px solid #3b82f666;border-radius:8px;padding:10px 14px;font-size:13px;color:#93c5fd;margin-top:10px;display:none}
+.scenarios{width:100%;max-width:640px}
+.scenarios h3{font-size:13px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.scenario-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sc-card{background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px;cursor:pointer;transition:border-color .15s,background .15s}
+.sc-card:hover{background:#263348;border-color:#475569}
+.sc-card.active{border-color:#fbbf24;background:#1e293b}
+.sc-card .sc-title{font-size:13px;font-weight:600;color:#f1f5f9;margin-bottom:4px}
+.sc-card .sc-note{font-size:11px;color:#64748b;line-height:1.4}
+.facts{width:100%;max-width:640px}
+.facts h3{font-size:13px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.fact-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.fact-card{background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px}
+.fact-card .ft{font-size:12px;font-weight:600;color:#38bdf8;margin-bottom:6px}
+.fact-card .fb{font-size:11px;color:#94a3b8;line-height:1.5}
+@media(max-width:660px){
+  .info-grid{grid-template-columns:1fr}
+  .scenario-grid{grid-template-columns:1fr}
+  .fact-grid{grid-template-columns:1fr}
+  canvas{width:100%;height:auto}
+}
+</style>
+</head>
+<body>
+<div class="main-layout">
+  <div>
+    <h1>🔬 Khúc Xạ Ánh Sáng</h1>
+    <p class="subtitle">Kéo slider hoặc chọn kịch bản để xem tia sáng bẻ cong</p>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="cv" width="640" height="400"></canvas>
+  </div>
+
+  <div class="controls">
+    <div class="ctrl-row">
+      <label>Môi trường 1 (trên):</label>
+      <select id="n1sel">
+        <option value="1.00|Không khí" selected>Không khí — n = 1.00</option>
+        <option value="1.33|Nước">Nước — n = 1.33</option>
+        <option value="1.50|Thủy tinh">Thủy tinh — n = 1.50</option>
+        <option value="2.42|Kim cương">Kim cương — n = 2.42</option>
+      </select>
+    </div>
+    <div class="ctrl-row">
+      <label>Môi trường 2 (dưới):</label>
+      <select id="n2sel">
+        <option value="1.00|Không khí">Không khí — n = 1.00</option>
+        <option value="1.33|Nước" selected>Nước — n = 1.33</option>
+        <option value="1.50|Thủy tinh">Thủy tinh — n = 1.50</option>
+        <option value="2.42|Kim cương">Kim cương — n = 2.42</option>
+      </select>
+    </div>
+    <div class="ctrl-row">
+      <label>Góc tới θ₁:</label>
+      <div class="slider-wrap">
+        <input type="range" id="angleSlider" min="0" max="89" value="30" step="1">
+        <span class="val-badge" id="angleVal">30°</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-panel">
+    <h3>Thông số tính toán</h3>
+    <div class="info-grid">
+      <div class="info-item"><div class="ilabel">n₁ (môi trường 1)</div><div class="ivalue" id="iN1">1.00 — Không khí</div></div>
+      <div class="info-item"><div class="ilabel">n₂ (môi trường 2)</div><div class="ivalue" id="iN2">1.33 — Nước</div></div>
+      <div class="info-item"><div class="ilabel">θ₁ — Góc tới</div><div class="ivalue" id="iT1" style="color:#fbbf24">30.0°</div></div>
+      <div class="info-item"><div class="ilabel">θ₂ — Góc khúc xạ</div><div class="ivalue" id="iT2" style="color:#22d3ee">22.1°</div></div>
+    </div>
+    <div class="formula-box">
+      <span class="eq" id="formulaLine">n₁ sin θ₁ = n₂ sin θ₂ &nbsp;→&nbsp; 1.00 × sin(30°) = 1.33 × sin(22.1°)</span>
+    </div>
+    <div class="critical-box" id="critBox"></div>
+    <div class="warn-box" id="warnBox">⚠️ PHẢN XẠ TOÀN PHẦN — θ₁ vượt quá góc tới hạn!</div>
+  </div>
+
+  <div class="scenarios">
+    <h3>Kịch bản minh họa</h3>
+    <div class="scenario-grid">
+      <div class="sc-card" onclick="loadScenario(1.00,1.33,40,'sc0')" id="sc0">
+        <div class="sc-title">🥢 Đũa trong nước</div>
+        <div class="sc-note">Không khí → Nước, θ = 40° — Giải thích tại sao đũa trông bị gãy</div>
+      </div>
+      <div class="sc-card" onclick="loadScenario(1.00,1.33,60,'sc1')" id="sc1">
+        <div class="sc-title">🌈 Cầu vồng</div>
+        <div class="sc-note">Không khí → Nước, θ = 60° — Ánh sáng khúc xạ qua giọt nước</div>
+      </div>
+      <div class="sc-card" onclick="loadScenario(1.50,1.00,50,'sc2')" id="sc2">
+        <div class="sc-title">💡 Phản xạ toàn phần</div>
+        <div class="sc-note">Thủy tinh → Không khí, θ = 50° — Cáp quang dùng nguyên lý này</div>
+      </div>
+      <div class="sc-card" onclick="loadScenario(1.00,2.42,20,'sc3')" id="sc3">
+        <div class="sc-title">💎 Kim cương lấp lánh</div>
+        <div class="sc-note">Không khí → Kim cương, θ = 20° — Góc khúc xạ rất nhỏ, ánh sáng bẻ cong mạnh</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="facts">
+    <h3>Kiến thức trọng tâm</h3>
+    <div class="fact-grid">
+      <div class="fact-card">
+        <div class="ft">Định luật khúc xạ</div>
+        <div class="fb">n₁sinθ₁ = n₂sinθ₂. Tia khúc xạ nằm trong mặt phẳng tới. Khi n₂ &gt; n₁: tia bẻ lại gần pháp tuyến hơn.</div>
+      </div>
+      <div class="fact-card">
+        <div class="ft">Chiết suất n</div>
+        <div class="fb">Tỉ số vận tốc ánh sáng trong chân không / vận tốc trong môi trường. n = c/v. Môi trường đặc hơn thì n lớn hơn.</div>
+      </div>
+      <div class="fact-card">
+        <div class="ft">Phản xạ toàn phần</div>
+        <div class="fb">Xảy ra khi n₁ &gt; n₂ và θ₁ &gt; θc. Ứng dụng: cáp quang, gương thủy tinh, mắt cá nhìn lên.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const W = 640, H = 400, CX = 320, IY = 200;
+
+let state = { n1: 1.00, n2: 1.33, name1: 'Không khí', name2: 'Nước', theta1: 30 };
+
+function parseSelect(sel) {
+  const [n, name] = sel.value.split('|');
+  return { n: parseFloat(n), name };
+}
+
+function deg2rad(d) { return d * Math.PI / 180; }
+function rad2deg(r) { return r * 180 / Math.PI; }
+
+function drawArrow(x1, y1, x2, y2, color, dashed) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.2;
+  if (dashed) ctx.setLineDash([6, 5]);
+  else ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+  const angle = Math.atan2(y2 - y1, x2 - x1);
+  const al = 12, aw = 5;
+  ctx.setLineDash([]);
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - al * Math.cos(angle - aw * 0.22), y2 - al * Math.sin(angle - aw * 0.22));
+  ctx.lineTo(x2 - al * Math.cos(angle + aw * 0.22), y2 - al * Math.sin(angle + aw * 0.22));
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
+function drawArc(cx, cy, r, startAngle, endAngle, color, label, labelSide) {
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, startAngle, endAngle);
+  ctx.stroke();
+  const midAngle = (startAngle + endAngle) / 2;
+  const lx = cx + (r + 18) * Math.cos(midAngle);
+  const ly = cy + (r + 18) * Math.sin(midAngle);
+  ctx.fillStyle = color;
+  ctx.font = 'bold 12px Segoe UI';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, lx, ly);
+  ctx.restore();
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  ctx.fillStyle = '#0c1a2e';
+  ctx.fillRect(0, 0, W, IY);
+  ctx.fillStyle = '#0d2a4a';
+  ctx.fillRect(0, IY, W, H - IY);
+
+  ctx.save();
+  ctx.globalAlpha = 0.08;
+  for (let y = IY + 10; y < H; y += 22) {
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+  ctx.restore();
+
+  ctx.save();
+  ctx.setLineDash([8, 6]);
+  ctx.strokeStyle = '#e2e8f077';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(0, IY); ctx.lineTo(W, IY); ctx.stroke();
+  ctx.restore();
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '12px Segoe UI';
+  ctx.textAlign = 'left';
+  ctx.fillText('Mặt phân cách', 8, IY - 6);
+
+  ctx.save();
+  ctx.setLineDash([5, 5]);
+  ctx.strokeStyle = '#47556988';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(CX, 40); ctx.lineTo(CX, H - 20); ctx.stroke();
+  ctx.restore();
+  ctx.fillStyle = '#64748b';
+  ctx.font = '11px Segoe UI';
+  ctx.textAlign = 'center';
+  ctx.fillText('Pháp tuyến', CX, 30);
+
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = '13px Segoe UI';
+  ctx.textAlign = 'left';
+  ctx.fillText(state.name1 + '  n₁=' + state.n1.toFixed(2), 10, 20);
+  ctx.fillStyle = '#7dd3fc';
+  ctx.fillText(state.name2 + '  n₂=' + state.n2.toFixed(2), 10, IY + 20);
+
+  const { n1, n2, theta1 } = state;
+  const t1r = deg2rad(theta1);
+  const sinT2 = (n1 / n2) * Math.sin(t1r);
+  const tir = sinT2 >= 1.0;
+
+  const rayLen = 160;
+  const incX = CX - Math.sin(t1r) * rayLen;
+  const incY = IY - Math.cos(t1r) * rayLen;
+  drawArrow(incX, incY, CX, IY, '#fbbf24', false);
+
+  ctx.fillStyle = '#fbbf24';
+  ctx.font = 'bold 12px Segoe UI';
+  ctx.textAlign = 'right';
+  ctx.fillText('Tia tới', incX + Math.sin(t1r) * 30 - 6, incY + Math.cos(t1r) * 30 - 6);
+
+  const refRayLen = 130;
+  const refX = CX + Math.sin(t1r) * refRayLen;
+  const refY = IY - Math.cos(t1r) * refRayLen;
+  drawArrow(CX, IY, refX, refY, '#f87171', true);
+  ctx.fillStyle = '#f87171';
+  ctx.font = '11px Segoe UI';
+  ctx.textAlign = 'left';
+  ctx.fillText('Tia phản xạ', refX + 4, refY - 4);
+
+  if (!tir) {
+    const t2r = Math.asin(sinT2);
+    const t2deg = rad2deg(t2r);
+    const refracX = CX + Math.sin(t2r) * rayLen;
+    const refracY = IY + Math.cos(t2r) * rayLen;
+    drawArrow(CX, IY, refracX, refracY, '#22d3ee', false);
+    ctx.fillStyle = '#22d3ee';
+    ctx.font = 'bold 12px Segoe UI';
+    ctx.textAlign = 'left';
+    ctx.fillText('Tia khúc xạ', refracX + 6, refracY - 4);
+
+    const arcR = 44;
+    const t2Start = Math.PI / 2;
+    const t2End = Math.PI / 2 + t2r;
+    drawArc(CX, IY, arcR, t2Start, t2End, '#22d3ee', 'θ₂=' + t2deg.toFixed(1) + '°', 1);
+
+    updateInfo(n1, n2, theta1, t2deg, false);
+  } else {
+    ctx.save();
+    ctx.fillStyle = '#ef4444cc';
+    ctx.font = 'bold 15px Segoe UI';
+    ctx.textAlign = 'center';
+    ctx.fillText('⚡ PHẢN XẠ TOÀN PHẦN', CX, IY + 60);
+    ctx.font = '12px Segoe UI';
+    ctx.fillStyle = '#fca5a5';
+    ctx.fillText('Không có tia khúc xạ', CX, IY + 82);
+    ctx.restore();
+    updateInfo(n1, n2, theta1, null, true);
+  }
+
+  const arcR1 = 48;
+  const t1Start = -Math.PI / 2 - t1r;
+  const t1End = -Math.PI / 2;
+  drawArc(CX, IY, arcR1, t1Start, t1End, '#fbbf24', 'θ₁=' + theta1.toFixed(0) + '°', -1);
+
+  ctx.save();
+  ctx.fillStyle = '#fbbf24cc';
+  ctx.beginPath(); ctx.arc(CX, IY, 5, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+function updateInfo(n1, n2, t1, t2, isTIR) {
+  document.getElementById('iN1').textContent = n1.toFixed(2) + ' — ' + state.name1;
+  document.getElementById('iN2').textContent = n2.toFixed(2) + ' — ' + state.name2;
+  document.getElementById('iT1').textContent = t1.toFixed(1) + '°';
+
+  const t1r = deg2rad(t1);
+  if (!isTIR && t2 !== null) {
+    document.getElementById('iT2').textContent = t2.toFixed(1) + '°';
+    const lhs = (n1 * Math.sin(t1r)).toFixed(4);
+    const t2r = deg2rad(t2);
+    const rhs = (n2 * Math.sin(t2r)).toFixed(4);
+    document.getElementById('formulaLine').innerHTML =
+      `n₁ sin θ₁ = n₂ sin θ₂ &nbsp;→&nbsp; <span style="color:#fbbf24">${n1.toFixed(2)} × sin(${t1.toFixed(0)}°)</span> = <span style="color:#22d3ee">${n2.toFixed(2)} × sin(${t2.toFixed(1)}°)</span> &nbsp;[${lhs} ≈ ${rhs}]`;
+    document.getElementById('warnBox').style.display = 'none';
+  } else {
+    document.getElementById('iT2').textContent = '— (PXTP)';
+    document.getElementById('formulaLine').innerHTML = `<span style="color:#ef4444">sin θ₂ = (n₁/n₂)·sin θ₁ > 1 → Phản xạ toàn phần xảy ra</span>`;
+    document.getElementById('warnBox').style.display = 'block';
+  }
+
+  const critBox = document.getElementById('critBox');
+  if (n1 > n2) {
+    const tc = rad2deg(Math.asin(n2 / n1));
+    critBox.style.display = 'block';
+    critBox.innerHTML = `Góc tới hạn θc = arcsin(n₂/n₁) = arcsin(${n2.toFixed(2)}/${n1.toFixed(2)}) = <strong>${tc.toFixed(1)}°</strong>. Nếu θ₁ &gt; θc → Phản xạ toàn phần`;
+  } else {
+    critBox.style.display = 'none';
+  }
+}
+
+function refresh() {
+  const s1 = parseSelect(document.getElementById('n1sel'));
+  const s2 = parseSelect(document.getElementById('n2sel'));
+  const ang = parseInt(document.getElementById('angleSlider').value);
+  state = { n1: s1.n, n2: s2.n, name1: s1.name, name2: s2.name, theta1: ang };
+  document.getElementById('angleVal').textContent = ang + '°';
+  draw();
+}
+
+function loadScenario(n1, n2, angle, scId) {
+  const n1map = { 1.00: 'Không khí|0', 1.33: 'Nước|1', 1.50: 'Thủy tinh|2', 2.42: 'Kim cương|3' };
+  const n1sel = document.getElementById('n1sel');
+  const n2sel = document.getElementById('n2sel');
+  n1sel.selectedIndex = { 1.00: 0, 1.33: 1, 1.50: 2, 2.42: 3 }[n1];
+  n2sel.selectedIndex = { 1.00: 0, 1.33: 1, 1.50: 2, 2.42: 3 }[n2];
+  document.getElementById('angleSlider').value = angle;
+  document.querySelectorAll('.sc-card').forEach(c => c.classList.remove('active'));
+  document.getElementById(scId).classList.add('active');
+  refresh();
+}
+
+document.getElementById('n1sel').addEventListener('change', refresh);
+document.getElementById('n2sel').addEventListener('change', refresh);
+document.getElementById('angleSlider').addEventListener('input', refresh);
+
+refresh();
+</script>
+</body>
+</html>

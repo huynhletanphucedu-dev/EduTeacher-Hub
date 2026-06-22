@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Quiz Pháp Luật – GDCD</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0f172a;color:#e2e8f0;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+header{width:100%;background:#1e293b;padding:.75rem 1rem;text-align:center;border-bottom:1px solid #334155}
+header h1{font-size:1.05rem;font-weight:700;color:#4ade80;letter-spacing:.04em}
+header h2{font-size:.72rem;color:#94a3b8;margin-top:2px}
+.cats{display:flex;gap:7px;padding:.5rem .8rem;width:100%;max-width:440px;overflow-x:auto;scrollbar-width:none}
+.cats::-webkit-scrollbar{display:none}
+.cat-btn{flex-shrink:0;background:#1e293b;border:1px solid #334155;border-radius:20px;padding:.3rem .75rem;font-size:.72rem;color:#94a3b8;cursor:pointer;white-space:nowrap}
+.cat-btn.active{background:#14532d;border-color:#4ade80;color:#bbf7d0}
+.stats{display:flex;gap:.8rem;justify-content:center;padding:.3rem 1rem .2rem;width:100%;max-width:440px}
+.stat{background:#1e293b;border-radius:10px;padding:.3rem .8rem;font-size:.78rem;color:#94a3b8;text-align:center}
+.stat span{display:block;font-size:1rem;font-weight:700;color:#f8fafc}
+.prog-wrap{width:100%;max-width:440px;padding:0 1rem .5rem}
+.prog-bar{height:5px;background:#1e293b;border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#166534,#4ade80);border-radius:3px;transition:width .3s}
+/* Question */
+.q-card{background:#1e293b;border-radius:16px;margin:.3rem 1rem;padding:1.1rem 1rem;width:calc(100% - 2rem);max-width:440px}
+.cat-badge{display:inline-block;font-size:.68rem;background:#14532d;color:#86efac;border-radius:20px;padding:2px 9px;margin-bottom:.5rem}
+.q-text{font-size:.95rem;color:#f8fafc;line-height:1.6}
+.opts{display:flex;flex-direction:column;gap:8px;padding:.4rem 1rem;width:100%;max-width:440px}
+.opt{background:#1e293b;border:2px solid #334155;border-radius:12px;padding:.8rem 1rem;font-size:.88rem;color:#e2e8f0;cursor:pointer;text-align:left;line-height:1.4;transition:all .15s;display:flex;align-items:flex-start;gap:.7rem}
+.opt-letter{width:24px;height:24px;border-radius:50%;background:#334155;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;flex-shrink:0;margin-top:1px}
+.opt:active{transform:scale(.98)}
+.opt.correct{background:#052e16;border-color:#16a34a;color:#4ade80}
+.opt.correct .opt-letter{background:#16a34a}
+.opt.wrong{background:#450a0a;border-color:#dc2626;color:#f87171}
+.opt.wrong .opt-letter{background:#dc2626}
+.opt:disabled{cursor:default}
+.explain{background:#052e16;border-radius:12px;padding:.8rem 1rem;margin:.3rem 1rem;font-size:.82rem;color:#86efac;line-height:1.6;width:calc(100% - 2rem);max-width:440px;display:none}
+.explain strong{color:#4ade80;display:block;margin-bottom:.2rem}
+.explain .law{font-size:.76rem;color:#6ee7b7;margin-top:.3rem;font-style:italic}
+.btn-next{display:none;margin:.4rem 1rem;width:calc(100% - 2rem);max-width:440px;background:#166534;color:#fff;border:none;border-radius:12px;padding:.8rem;font-size:.95rem;font-weight:700;cursor:pointer}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:50}
+.result-card{background:#1e293b;border-radius:18px;padding:2rem;text-align:center;max-width:310px;width:90%}
+.re{font-size:3rem;margin-bottom:.5rem}.rt{font-size:1.3rem;font-weight:700;margin-bottom:.4rem}.rs{font-size:.9rem;color:#94a3b8;margin-bottom:1rem}
+.btn-re{background:#166534;color:#fff;border:none;border-radius:10px;padding:.75rem 2rem;font-size:1rem;font-weight:700;cursor:pointer;width:100%}
+</style>
+</head>
+<body>
+<header>
+  <h1>📋 QUIZ PHÁP LUẬT & QUYỀN CÔNG DÂN</h1>
+  <h2>GIÁO DỤC CÔNG DÂN – THCS</h2>
+</header>
+<div class="cats" id="cats"></div>
+<div class="stats">
+  <div class="stat"><span id="qNum">1</span>Câu</div>
+  <div class="stat"><span id="correct">0</span>Đúng</div>
+  <div class="stat"><span id="total">15</span>Tổng</div>
+</div>
+<div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div></div>
+<div class="q-card">
+  <div class="cat-badge" id="catBadge"></div>
+  <div class="q-text" id="qText"></div>
+</div>
+<div class="opts" id="opts"></div>
+<div class="explain" id="explain"></div>
+<button class="btn-next" id="btnNext" onclick="nextQ()">Câu tiếp →</button>
+<div class="overlay" id="overlay">
+  <div class="result-card">
+    <div class="re" id="re"></div><div class="rt" id="rt"></div><div class="rs" id="rs"></div>
+    <button class="btn-re" onclick="restart()">Chơi lại</button>
+  </div>
+</div>
+<script>
+const BANK = {
+  'Quyền trẻ em': [
+    {q:'Theo Luật Trẻ em 2016, trẻ em là người dưới bao nhiêu tuổi?',a:'16 tuổi',opts:['14 tuổi','15 tuổi','16 tuổi','18 tuổi'],e:'Luật Trẻ em 2016, Điều 1: Trẻ em là người dưới 16 tuổi.',law:'Luật Trẻ em 2016, Điều 1.'},
+    {q:'Quyền nào sau đây KHÔNG phải là quyền cơ bản của trẻ em?',a:'Quyền tự do kinh doanh',opts:['Quyền được học tập','Quyền được vui chơi','Quyền được bảo vệ','Quyền tự do kinh doanh'],e:'Quyền tự do kinh doanh áp dụng cho công dân từ đủ tuổi, không phải quyền riêng của trẻ em.',law:'Luật Trẻ em 2016 quy định 25 quyền cơ bản.'},
+    {q:'Bạo lực học đường có thể bị xử lý theo hình thức nào?',a:'Cả ba hình thức trên',opts:['Xử phạt hành chính','Bồi thường dân sự','Truy cứu hình sự','Cả ba hình thức trên'],e:'Tùy mức độ, bạo lực học đường có thể bị xử phạt hành chính, bồi thường dân sự hoặc hình sự.',law:'Nghị định 144/2021/NĐ-CP; Bộ luật Hình sự 2015.'},
+    {q:'Trẻ em từ bao nhiêu tuổi phải chịu trách nhiệm hình sự về tội rất nghiêm trọng?',a:'Từ đủ 14 tuổi',opts:['Từ đủ 12 tuổi','Từ đủ 14 tuổi','Từ đủ 16 tuổi','Từ đủ 18 tuổi'],e:'BLHS 2015, Điều 12: Trẻ từ đủ 14 đến dưới 16 tuổi chịu TNHS về tội rất nghiêm trọng và đặc biệt nghiêm trọng.',law:'Bộ luật Hình sự 2015, Điều 12.'},
+    {q:'Đường dây tư vấn và hỗ trợ trẻ em quốc gia là số nào?',a:'111',opts:['111','113','115','911'],e:'Tổng đài quốc gia bảo vệ trẻ em: 111 — hoạt động 24/7, miễn phí.',law:'Quyết định 830/QĐ-TTg 2011.'},
+  ],
+  'Luật Giao thông': [
+    {q:'Người điều khiển xe đạp điện phải đủ bao nhiêu tuổi?',a:'Từ đủ 16 tuổi',opts:['Từ đủ 12 tuổi','Từ đủ 14 tuổi','Từ đủ 16 tuổi','Từ đủ 18 tuổi'],e:'Luật GTĐB 2008: Người điều khiển xe đạp điện, xe máy điện dưới 50cc phải từ đủ 16 tuổi.',law:'Luật GTĐB 2008, Điều 60.'},
+    {q:'Khi đi xe đạp điện, học sinh bắt buộc phải đội gì?',a:'Mũ bảo hiểm',opts:['Mũ bảo hiểm','Mũ lưỡi trai','Không cần đội mũ','Áo phản quang'],e:'Người điều khiển và người ngồi sau xe đạp điện đều phải đội mũ bảo hiểm đúng tiêu chuẩn.',law:'Luật GTĐB 2008 sửa đổi 2018.'},
+    {q:'Tín hiệu đèn vàng trong giao thông có nghĩa là?',a:'Chuẩn bị dừng, chú ý',opts:['Tiếp tục nhanh hơn','Chuẩn bị dừng, chú ý','Được phép đi','Không áp dụng cho người đi bộ'],e:'Đèn vàng báo hiệu sắp chuyển sang đỏ — người điều khiển phải giảm tốc và chuẩn bị dừng.',law:'Luật GTĐB 2008, Điều 10.'},
+    {q:'Hành vi nào không vi phạm Luật Giao thông đường bộ?',a:'Đi bộ trên vỉa hè',opts:['Vượt đèn đỏ','Lạng lách đánh võng','Đi bộ trên vỉa hè','Đi xe sai làn'],e:'Đi bộ trên vỉa hè là đúng quy định giao thông, an toàn cho người đi bộ.',law:'Luật GTĐB 2008.'},
+    {q:'Tốc độ tối đa cho phép xe máy trong khu dân cư là?',a:'40 km/h',opts:['30 km/h','40 km/h','60 km/h','80 km/h'],e:'Trong khu dân cư, tốc độ tối đa cho xe mô tô, xe gắn máy là 40 km/h.',law:'Nghị định 46/2016/NĐ-CP.'},
+  ],
+  'Quyền công dân': [
+    {q:'Công dân Việt Nam đủ bao nhiêu tuổi có quyền bầu cử?',a:'Đủ 18 tuổi',opts:['Đủ 16 tuổi','Đủ 18 tuổi','Đủ 20 tuổi','Đủ 21 tuổi'],e:'Hiến pháp 2013, Điều 27: Công dân đủ 18 tuổi trở lên có quyền bầu cử.',law:'Hiến pháp 2013, Điều 27.'},
+    {q:'Quyền tự do ngôn luận của công dân có giới hạn không?',a:'Có, không được xâm phạm lợi ích của Nhà nước và người khác',opts:['Không, hoàn toàn tự do','Có, không được xâm phạm lợi ích của Nhà nước và người khác','Chỉ áp dụng cho người trưởng thành','Không được nói về chính trị'],e:'Tự do ngôn luận là quyền công dân nhưng phải trong khuôn khổ pháp luật, không xâm phạm quyền người khác.',law:'Hiến pháp 2013, Điều 25.'},
+    {q:'Nghĩa vụ học tập được quy định dành cho người bao nhiêu tuổi?',a:'Từ 6 đến 14 tuổi',opts:['Từ 5 đến 12 tuổi','Từ 6 đến 14 tuổi','Từ 6 đến 18 tuổi','Từ 7 đến 15 tuổi'],e:'Luật Giáo dục 2019: Giáo dục tiểu học và THCS là bắt buộc từ 6 đến 14 tuổi.',law:'Luật Giáo dục 2019, Điều 14.'},
+    {q:'Đăng tải thông tin sai sự thật lên mạng xã hội có thể bị xử lý như thế nào?',a:'Phạt hành chính và có thể truy cứu hình sự',opts:['Không bị xử lý gì','Chỉ bị nhắc nhở','Phạt hành chính và có thể truy cứu hình sự','Bị cấm dùng internet'],e:'Tung tin giả gây hại có thể bị phạt đến 20 triệu đồng (hành chính) hoặc tù giam (hình sự).',law:'Nghị định 15/2020/NĐ-CP; Bộ luật Hình sự 2015.'},
+    {q:'Hành vi xâm phạm đời tư của người khác khi đăng ảnh chụp trộm lên mạng là?',a:'Vi phạm pháp luật và đạo đức',opts:['Bình thường nếu không có mục đích xấu','Vi phạm pháp luật và đạo đức','Chỉ sai về đạo đức','Được phép nếu là nơi công cộng'],e:'Quyền bí mật đời tư được pháp luật bảo vệ. Đăng ảnh người khác không có sự đồng ý là vi phạm.',law:'Bộ luật Dân sự 2015, Điều 38; Luật An ninh mạng 2018.'},
+  ],
+};
+
+const TOTAL=15;
+let catKeys=Object.keys(BANK), currentCat=null, queue=[], qIdx=0, correctCount=0, answered=false;
+
+function buildCats(){
+  const bar=document.getElementById('cats');
+  const all=document.createElement('button');all.className='cat-btn active';all.textContent='🔀 Tất cả';
+  all.onclick=()=>selectCat(null,all);bar.appendChild(all);
+  catKeys.forEach(k=>{const b=document.createElement('button');b.className='cat-btn';b.textContent=k;b.onclick=()=>selectCat(k,b);bar.appendChild(b);});
+}
+function selectCat(key,btn){currentCat=key;document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');restart();}
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+function restart(){
+  let pool=[];if(currentCat)pool=[...BANK[currentCat]];else catKeys.forEach(k=>pool.push(...BANK[k]));
+  shuffle(pool);queue=pool.slice(0,Math.min(TOTAL,pool.length));
+  qIdx=0;correctCount=0;answered=false;
+  document.getElementById('overlay').style.display='none';document.getElementById('correct').textContent=0;document.getElementById('total').textContent=queue.length;nextQ();
+}
+function nextQ(){
+  if(qIdx>=queue.length){showFinal();return;}
+  answered=false;
+  document.getElementById('explain').style.display='none';document.getElementById('btnNext').style.display='none';
+  const q=queue[qIdx];qIdx++;
+  document.getElementById('qNum').textContent=qIdx;
+  document.getElementById('progFill').style.width=((qIdx-1)/queue.length*100)+'%';
+  let cat=currentCat||'';if(!cat)catKeys.forEach(k=>{if(BANK[k].some(x=>x.q===q.q))cat=k;});
+  document.getElementById('catBadge').textContent=cat;
+  document.getElementById('qText').textContent=q.q;
+  const opts=[...q.opts];shuffle(opts);
+  const labels=['A','B','C','D'];
+  const div=document.getElementById('opts');div.innerHTML='';
+  opts.forEach((o,i)=>{
+    const b=document.createElement('button');b.className='opt';
+    b.innerHTML=`<span class="opt-letter">${labels[i]}</span><span>${o}</span>`;
+    b.onclick=()=>pick(o,q,b);div.appendChild(b);
+  });
+}
+function pick(choice,q,btn){
+  if(answered)return;answered=true;
+  document.querySelectorAll('.opt').forEach(b=>{
+    b.disabled=true;
+    if(b.querySelector('span:last-child').textContent===q.a)b.classList.add('correct');
+  });
+  if(choice===q.a){correctCount++;document.getElementById('correct').textContent=correctCount;playSound(true);}
+  else{btn.classList.add('wrong');playSound(false);}
+  const ex=document.getElementById('explain');ex.style.display='block';
+  ex.innerHTML=`<strong>💡 Giải thích:</strong>${q.e}<div class="law">📜 ${q.law}</div>`;
+  document.getElementById('btnNext').style.display='block';
+}
+function showFinal(){
+  document.getElementById('progFill').style.width='100%';
+  const pct=Math.round(correctCount/queue.length*100);
+  let e='😊',t='Hoàn thành!';
+  if(pct>=90){e='🏆';t='Xuất sắc!';}else if(pct>=70){e='🎉';t='Tốt lắm!';}else if(pct<50){e='📚';t='Cần học thêm!';}
+  document.getElementById('re').textContent=e;document.getElementById('rt').textContent=t;
+  document.getElementById('rs').textContent=`${correctCount}/${queue.length} câu đúng (${pct}%)`;
+  document.getElementById('overlay').style.display='flex';
+}
+const AC=new (window.AudioContext||window.webkitAudioContext)();
+function playSound(win){
+  const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);
+  if(win){o.frequency.setValueAtTime(523,AC.currentTime);o.frequency.setValueAtTime(659,AC.currentTime+.1);}
+  else{o.frequency.setValueAtTime(250,AC.currentTime);}
+  g.gain.setValueAtTime(.2,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.4);
+  o.start();o.stop(AC.currentTime+.4);
+}
+buildCats();restart();
+</script>
+</body>
+</html>

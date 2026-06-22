@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Công Cụ Ảnh - Trợ Lý Giáo Viên</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel2: #243044;
+    --accent: #a855f7;
+    --accent-dim: #7c3aed;
+    --accent-light: #d8b4fe;
+    --text: #e2e8f0;
+    --text-dim: #94a3b8;
+    --border: #334155;
+    --success: #22c55e;
+    --danger: #ef4444;
+    --input-bg: #0f172a;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    text-align: center;
+  }
+  header h1 { font-size: 1.3rem; color: var(--accent-light); font-weight: 700; letter-spacing: .5px; }
+  header p { font-size: .8rem; color: var(--text-dim); margin-top: 2px; }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 20px 16px; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 6px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 0; }
+  .tab-btn {
+    background: none; border: none; color: var(--text-dim); cursor: pointer;
+    padding: 10px 20px; font-size: .9rem; font-weight: 600; border-bottom: 3px solid transparent;
+    margin-bottom: -2px; transition: color .2s, border-color .2s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent-light); border-bottom-color: var(--accent); }
+
+  .tab-panel { display: none; animation: fadeIn .2s ease; }
+  .tab-panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  /* TWO PANEL */
+  .two-panel { display: grid; grid-template-columns: 280px 1fr; gap: 16px; }
+  @media (max-width: 700px) { .two-panel { grid-template-columns: 1fr; } }
+
+  .ctrl-panel {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; display: flex; flex-direction: column; gap: 14px;
+  }
+  .preview-panel {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; display: flex; flex-direction: column; gap: 10px; min-height: 400px;
+  }
+
+  /* DROP ZONE */
+  .drop-zone {
+    border: 2px dashed var(--border); border-radius: 8px; padding: 24px 16px;
+    text-align: center; cursor: pointer; transition: border-color .2s, background .2s;
+    background: var(--input-bg);
+  }
+  .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: #1a103a; }
+  .drop-zone input[type=file] { display: none; }
+  .drop-zone .dz-icon { font-size: 2rem; margin-bottom: 8px; }
+  .drop-zone p { color: var(--text-dim); font-size: .82rem; }
+  .drop-zone strong { color: var(--accent-light); }
+
+  /* FILE INFO */
+  .file-info {
+    background: var(--input-bg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 8px 10px; font-size: .78rem; color: var(--text-dim); display: none;
+  }
+  .file-info.show { display: block; }
+  .file-info span { display: block; margin-bottom: 2px; }
+  .file-info span strong { color: var(--text); }
+
+  /* SECTION LABEL */
+  .section-label { font-size: .72rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .8px; }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    border: none; border-radius: 6px; cursor: pointer; font-size: .85rem; font-weight: 600;
+    padding: 8px 14px; transition: background .15s, opacity .15s;
+  }
+  .btn:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover:not(:disabled) { background: #9333ea; }
+  .btn-secondary { background: var(--panel2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover:not(:disabled) { background: var(--border); }
+  .btn-success { background: #15803d; color: #fff; }
+  .btn-success:hover:not(:disabled) { background: #166534; }
+  .btn-sm { padding: 5px 10px; font-size: .78rem; }
+  .btn-toggle { background: var(--panel2); color: var(--text-dim); border: 1px solid var(--border); }
+  .btn-toggle.on { background: var(--accent-dim); color: #fff; border-color: var(--accent); }
+
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* RATIO BUTTONS */
+  .ratio-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ratio-btn {
+    background: var(--panel2); border: 1px solid var(--border); color: var(--text-dim);
+    border-radius: 5px; padding: 5px 10px; cursor: pointer; font-size: .78rem; font-weight: 600;
+    transition: all .15s;
+  }
+  .ratio-btn.active { background: var(--accent-dim); color: #fff; border-color: var(--accent); }
+
+  /* SLIDER */
+  .slider-row { display: flex; flex-direction: column; gap: 4px; }
+  .slider-row label { display: flex; justify-content: space-between; font-size: .82rem; color: var(--text-dim); }
+  .slider-row label span { color: var(--accent-light); font-weight: 600; }
+  input[type=range] {
+    width: 100%; accent-color: var(--accent); height: 4px; cursor: pointer;
+  }
+
+  /* RADIO GROUP */
+  .radio-group { display: flex; flex-direction: column; gap: 6px; }
+  .radio-group label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: .83rem; color: var(--text-dim); }
+  .radio-group input[type=radio] { accent-color: var(--accent); width: 14px; height: 14px; }
+  .radio-group label:has(input:checked) { color: var(--text); }
+
+  /* CROP DIM */
+  .crop-dim { font-size: .8rem; color: var(--text-dim); text-align: center; }
+  .crop-dim strong { color: var(--accent-light); }
+
+  /* CANVAS WRAPPER */
+  .canvas-wrap {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    background: #0a0f1c; border-radius: 8px; overflow: hidden; min-height: 300px;
+    position: relative;
+  }
+  .canvas-wrap canvas { display: block; max-width: 100%; max-height: 500px; object-fit: contain; }
+  .no-image { color: var(--text-dim); font-size: .85rem; text-align: center; opacity: .6; }
+
+  /* CONVERT EXTRAS */
+  .quality-row { display: flex; align-items: center; gap: 8px; }
+  .number-input {
+    background: var(--input-bg); border: 1px solid var(--border); color: var(--text);
+    border-radius: 5px; padding: 5px 8px; font-size: .83rem; width: 80px;
+  }
+  .number-input:focus { outline: none; border-color: var(--accent); }
+  .checkbox-row { display: flex; align-items: center; gap: 8px; font-size: .83rem; cursor: pointer; }
+  .checkbox-row input[type=checkbox] { accent-color: var(--accent); width: 14px; height: 14px; }
+  .resize-inputs { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .resize-inputs label { font-size: .78rem; color: var(--text-dim); }
+
+  .est-size { font-size: .78rem; color: var(--text-dim); padding: 4px 0; }
+  .est-size strong { color: var(--success); }
+
+  hr.divider { border: none; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<header>
+  <h1>🖼 Công Cụ Ảnh</h1>
+  <p>Cắt · Làm rõ · Chuyển định dạng — Hoàn toàn offline, không cần tải lên</p>
+</header>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="crop">✂️ Cắt ảnh</button>
+    <button class="tab-btn" data-tab="enhance">✨ Làm rõ ảnh</button>
+    <button class="tab-btn" data-tab="convert">🔄 Chuyển định dạng</button>
+  </div>
+
+  <!-- ===== TAB 1: CẮT ẢNH ===== -->
+  <div class="tab-panel active" id="tab-crop">
+    <div class="two-panel">
+      <div class="ctrl-panel">
+        <div class="section-label">Tải ảnh lên</div>
+        <div class="drop-zone" id="crop-dz">
+          <input type="file" id="crop-file" accept="image/*">
+          <div class="dz-icon">📁</div>
+          <p><strong>Nhấp để chọn ảnh</strong></p>
+          <p>hoặc kéo thả vào đây</p>
+        </div>
+        <div class="file-info" id="crop-info"></div>
+
+        <div class="section-label">Tỷ lệ khung cắt</div>
+        <div class="ratio-btns" id="crop-ratios">
+          <button class="ratio-btn active" data-ratio="free">Tự do</button>
+          <button class="ratio-btn" data-ratio="1:1">1:1</button>
+          <button class="ratio-btn" data-ratio="4:3">4:3</button>
+          <button class="ratio-btn" data-ratio="16:9">16:9</button>
+          <button class="ratio-btn" data-ratio="a4v">A4 dọc</button>
+          <button class="ratio-btn" data-ratio="a4h">A4 ngang</button>
+        </div>
+
+        <div class="crop-dim" id="crop-dim">Chưa có ảnh</div>
+
+        <hr class="divider">
+        <div class="btn-row">
+          <button class="btn btn-primary" id="crop-btn" disabled>✂️ Cắt ảnh</button>
+          <button class="btn btn-success" id="crop-dl" disabled>⬇ Tải về</button>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="crop-reset" disabled>↺ Đặt lại</button>
+      </div>
+
+      <div class="preview-panel">
+        <div class="section-label">Xem trước</div>
+        <div class="canvas-wrap" id="crop-wrap">
+          <div class="no-image">← Tải ảnh lên để bắt đầu</div>
+          <canvas id="crop-canvas" style="display:none;cursor:crosshair;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 2: LÀM RÕ ẢNH ===== -->
+  <div class="tab-panel" id="tab-enhance">
+    <div class="two-panel">
+      <div class="ctrl-panel">
+        <div class="section-label">Tải ảnh lên</div>
+        <div class="drop-zone" id="enh-dz">
+          <input type="file" id="enh-file" accept="image/*">
+          <div class="dz-icon">📁</div>
+          <p><strong>Nhấp để chọn ảnh</strong></p>
+          <p>hoặc kéo thả vào đây</p>
+        </div>
+        <div class="file-info" id="enh-info"></div>
+
+        <div class="section-label">Điều chỉnh</div>
+        <div class="slider-row">
+          <label>Độ sáng <span id="brightness-val">0</span></label>
+          <input type="range" id="brightness" min="-100" max="100" value="0">
+        </div>
+        <div class="slider-row">
+          <label>Độ tương phản <span id="contrast-val">0</span></label>
+          <input type="range" id="contrast" min="-100" max="100" value="0">
+        </div>
+        <div class="slider-row">
+          <label>Độ bão hòa <span id="saturation-val">0</span></label>
+          <input type="range" id="saturation" min="-100" max="100" value="0">
+        </div>
+
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:.82rem;color:var(--text-dim);">Làm sắc nét</span>
+          <button class="btn btn-toggle btn-sm" id="sharpen-btn">Tắt</button>
+        </div>
+
+        <div class="section-label">Lọc ảnh</div>
+        <div class="radio-group" id="filter-group">
+          <label><input type="radio" name="enh-filter" value="none" checked> Không lọc</label>
+          <label><input type="radio" name="enh-filter" value="grayscale"> Đen trắng</label>
+          <label><input type="radio" name="enh-filter" value="sepia"> Sepia</label>
+          <label><input type="radio" name="enh-filter" value="invert"> Đảo màu</label>
+        </div>
+
+        <hr class="divider">
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="enh-reset" disabled>↺ Đặt lại</button>
+          <button class="btn btn-success" id="enh-dl" disabled>⬇ Tải về</button>
+        </div>
+      </div>
+
+      <div class="preview-panel">
+        <div class="section-label">Xem trước</div>
+        <div class="canvas-wrap">
+          <div class="no-image" id="enh-placeholder">← Tải ảnh lên để bắt đầu</div>
+          <canvas id="enh-canvas" style="display:none;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TAB 3: CHUYỂN ĐỊNH DẠNG ===== -->
+  <div class="tab-panel" id="tab-convert">
+    <div class="two-panel">
+      <div class="ctrl-panel">
+        <div class="section-label">Tải ảnh lên</div>
+        <div class="drop-zone" id="conv-dz">
+          <input type="file" id="conv-file" accept="image/*">
+          <div class="dz-icon">📁</div>
+          <p><strong>Nhấp để chọn ảnh</strong></p>
+          <p>hoặc kéo thả vào đây</p>
+        </div>
+        <div class="file-info" id="conv-info"></div>
+
+        <div class="section-label">Định dạng đầu ra</div>
+        <div class="radio-group" id="fmt-group">
+          <label><input type="radio" name="conv-fmt" value="png" checked> PNG (không mất chất lượng)</label>
+          <label><input type="radio" name="conv-fmt" value="jpeg"> JPEG (nhỏ hơn)</label>
+          <label><input type="radio" name="conv-fmt" value="webp"> WEBP (nhỏ nhất)</label>
+        </div>
+
+        <div id="quality-section" style="display:none;">
+          <div class="slider-row">
+            <label>Chất lượng <span id="quality-val">85</span>%</label>
+            <input type="range" id="quality-slider" min="60" max="100" value="85">
+          </div>
+          <div class="est-size" id="est-size-label"></div>
+        </div>
+
+        <div class="section-label">Thay đổi kích thước</div>
+        <label class="checkbox-row">
+          <input type="checkbox" id="resize-check"> Thay đổi kích thước
+        </label>
+        <div id="resize-section" style="display:none;margin-top:8px;">
+          <div class="resize-inputs">
+            <label>Rộng<br><input type="number" class="number-input" id="resize-w" placeholder="px" min="1"></label>
+            <div style="margin-top:18px;">
+              <button class="btn btn-toggle btn-sm" id="ar-lock" title="Khóa tỷ lệ">🔒</button>
+            </div>
+            <label>Cao<br><input type="number" class="number-input" id="resize-h" placeholder="px" min="1"></label>
+          </div>
+        </div>
+
+        <hr class="divider">
+        <button class="btn btn-primary" id="conv-btn" disabled>🔄 Chuyển đổi & Tải về</button>
+      </div>
+
+      <div class="preview-panel">
+        <div class="section-label">Xem trước</div>
+        <div class="canvas-wrap">
+          <div class="no-image" id="conv-placeholder">← Tải ảnh lên để bắt đầu</div>
+          <canvas id="conv-canvas" style="display:none;"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// UTILITIES
+// ─────────────────────────────────────────────
+function clamp(v, min, max) { return Math.min(max, Math.max(min, v)); }
+
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b / 1024).toFixed(1) + ' KB';
+  return (b / 1048576).toFixed(2) + ' MB';
+}
+
+function showFileInfo(el, file, img) {
+  el.classList.add('show');
+  el.innerHTML = `
+    <span>📄 <strong>${file.name}</strong></span>
+    <span>💾 Dung lượng: <strong>${formatBytes(file.size)}</strong></span>
+    <span>📐 Độ phân giải: <strong>${img.naturalWidth} × ${img.naturalHeight} px</strong></span>
+    <span>🗂 Định dạng: <strong>${file.type || 'không xác định'}</strong></span>
+  `;
+}
+
+function setupDropZone(dz, input, cb) {
+  dz.addEventListener('click', () => input.click());
+  input.addEventListener('change', () => { if (input.files[0]) cb(input.files[0]); });
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f && f.type.startsWith('image/')) cb(f);
+  });
+}
+
+function loadImageFromFile(file, cb) {
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = () => { cb(img, url); };
+  img.src = url;
+}
+
+function downloadCanvas(canvas, filename) {
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = filename;
+  a.click();
+}
+
+// ─────────────────────────────────────────────
+// TAB SWITCHING
+// ─────────────────────────────────────────────
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ─────────────────────────────────────────────
+// TAB 1: CROP
+// ─────────────────────────────────────────────
+(function() {
+  const dz = document.getElementById('crop-dz');
+  const fileInput = document.getElementById('crop-file');
+  const infoEl = document.getElementById('crop-info');
+  const dimEl = document.getElementById('crop-dim');
+  const cropBtn = document.getElementById('crop-btn');
+  const dlBtn = document.getElementById('crop-dl');
+  const resetBtn = document.getElementById('crop-reset');
+  const canvas = document.getElementById('crop-canvas');
+  const ctx = canvas.getContext('2d');
+  const wrap = document.getElementById('crop-wrap');
+
+  let srcImg = null;
+  let scale = 1;
+  let cropRect = { x: 0, y: 0, w: 0, h: 0 };
+  let activeRatio = 'free';
+  let croppedDataUrl = null;
+
+  // Drag state
+  let drag = null; // { type: 'move'|handle, startX, startY, origRect }
+
+  const RATIOS = {
+    'free': null, '1:1': 1, '4:3': 4/3, '16:9': 16/9,
+    'a4v': 210/297, 'a4h': 297/210
+  };
+
+  const HANDLE_SIZE = 8;
+
+  setupDropZone(dz, fileInput, loadFile);
+
+  function loadFile(file) {
+    loadImageFromFile(file, (img) => {
+      srcImg = img;
+      showFileInfo(infoEl, file, img);
+      renderCanvas();
+      cropBtn.disabled = false;
+      resetBtn.disabled = false;
+      dlBtn.disabled = true;
+      croppedDataUrl = null;
+    });
+  }
+
+  function renderCanvas() {
+    if (!srcImg) return;
+    const maxW = wrap.clientWidth - 32 || 600;
+    const maxH = 500;
+    scale = Math.min(maxW / srcImg.naturalWidth, maxH / srcImg.naturalHeight, 1);
+
+    const dw = Math.round(srcImg.naturalWidth * scale);
+    const dh = Math.round(srcImg.naturalHeight * scale);
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = dw * dpr;
+    canvas.height = dh * dpr;
+    canvas.style.width = dw + 'px';
+    canvas.style.height = dh + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    canvas.style.display = 'block';
+    wrap.querySelector('.no-image').style.display = 'none';
+
+    // Init crop rect
+    cropRect = { x: Math.round(dw * 0.1), y: Math.round(dh * 0.1),
+                 w: Math.round(dw * 0.8), h: Math.round(dh * 0.8) };
+    applyRatio();
+    draw();
+  }
+
+  function applyRatio() {
+    const ratio = RATIOS[activeRatio];
+    if (!ratio) return;
+    const dw = parseInt(canvas.style.width);
+    const dh = parseInt(canvas.style.height);
+    let w = cropRect.w, h = Math.round(w / ratio);
+    if (h > dh * 0.9) { h = Math.round(dh * 0.9); w = Math.round(h * ratio); }
+    cropRect.w = w; cropRect.h = h;
+    cropRect.x = Math.round((dw - w) / 2);
+    cropRect.y = Math.round((dh - h) / 2);
+  }
+
+  function draw() {
+    const dw = parseInt(canvas.style.width);
+    const dh = parseInt(canvas.style.height);
+    ctx.clearRect(0, 0, dw, dh);
+
+    // Draw image
+    ctx.drawImage(srcImg, 0, 0, dw, dh);
+
+    // Dim outside
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(0, 0, dw, dh);
+
+    // Clear crop area
+    ctx.drawImage(srcImg, 0, 0, dw, dh);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(cropRect.x, cropRect.y, cropRect.w, cropRect.h);
+    ctx.clip();
+    ctx.drawImage(srcImg, 0, 0, dw, dh);
+    ctx.restore();
+
+    // Re-apply dim
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(0, 0, dw, dh);
+    const r = cropRect;
+    ctx.clearRect(r.x, r.y, r.w, r.h);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(r.x, r.y, r.w, r.h);
+    ctx.clip();
+    ctx.drawImage(srcImg, 0, 0, dw, dh);
+    ctx.restore();
+
+    // Border
+    ctx.strokeStyle = '#a855f7';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(r.x, r.y, r.w, r.h);
+
+    // Rule of thirds
+    ctx.strokeStyle = 'rgba(168,85,247,0.35)';
+    ctx.lineWidth = 1;
+    for (let i = 1; i <= 2; i++) {
+      ctx.beginPath(); ctx.moveTo(r.x + r.w * i/3, r.y); ctx.lineTo(r.x + r.w * i/3, r.y + r.h); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(r.x, r.y + r.h * i/3); ctx.lineTo(r.x + r.w, r.y + r.h * i/3); ctx.stroke();
+    }
+
+    // Handles
+    const handles = getHandles();
+    handles.forEach(h => {
+      ctx.fillStyle = '#a855f7';
+      ctx.beginPath();
+      ctx.arc(h.x, h.y, HANDLE_SIZE/2 + 1, 0, Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(h.x, h.y, HANDLE_SIZE/2 - 1, 0, Math.PI*2);
+      ctx.fill();
+    });
+
+    // Dim info
+    const pw = Math.round(cropRect.w / scale);
+    const ph = Math.round(cropRect.h / scale);
+    dimEl.innerHTML = `Vùng cắt: <strong>${pw} × ${ph} px</strong>`;
+  }
+
+  function getHandles() {
+    const r = cropRect;
+    return [
+      { id: 'nw', x: r.x,           y: r.y },
+      { id: 'n',  x: r.x + r.w/2,   y: r.y },
+      { id: 'ne', x: r.x + r.w,     y: r.y },
+      { id: 'e',  x: r.x + r.w,     y: r.y + r.h/2 },
+      { id: 'se', x: r.x + r.w,     y: r.y + r.h },
+      { id: 's',  x: r.x + r.w/2,   y: r.y + r.h },
+      { id: 'sw', x: r.x,           y: r.y + r.h },
+      { id: 'w',  x: r.x,           y: r.y + r.h/2 },
+    ];
+  }
+
+  function hitHandle(mx, my) {
+    return getHandles().find(h => Math.hypot(h.x - mx, h.y - my) <= HANDLE_SIZE + 2) || null;
+  }
+
+  function inCrop(mx, my) {
+    return mx >= cropRect.x && mx <= cropRect.x + cropRect.w &&
+           my >= cropRect.y && my <= cropRect.y + cropRect.h;
+  }
+
+  function canvasPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return { x: t.clientX - rect.left, y: t.clientY - rect.top };
+  }
+
+  function onDown(e) {
+    if (!srcImg) return;
+    e.preventDefault();
+    const { x, y } = canvasPos(e);
+    const h = hitHandle(x, y);
+    if (h) {
+      drag = { type: 'handle', id: h.id, startX: x, startY: y, orig: { ...cropRect } };
+    } else if (inCrop(x, y)) {
+      drag = { type: 'move', startX: x, startY: y, orig: { ...cropRect } };
+    }
+  }
+
+  function onMove(e) {
+    if (!drag) {
+      if (!srcImg) return;
+      const { x, y } = canvasPos(e);
+      const h = hitHandle(x, y);
+      if (h) canvas.style.cursor = getCursor(h.id);
+      else if (inCrop(x, y)) canvas.style.cursor = 'move';
+      else canvas.style.cursor = 'crosshair';
+      return;
+    }
+    e.preventDefault();
+    const { x, y } = canvasPos(e);
+    const dx = x - drag.startX, dy = y - drag.startY;
+    const dw = parseInt(canvas.style.width), dh = parseInt(canvas.style.height);
+    const o = drag.orig;
+
+    if (drag.type === 'move') {
+      cropRect.x = clamp(o.x + dx, 0, dw - cropRect.w);
+      cropRect.y = clamp(o.y + dy, 0, dh - cropRect.h);
+    } else {
+      let { x: rx, y: ry, w: rw, h: rh } = o;
+      const id = drag.id;
+
+      if (id.includes('e')) { rw = clamp(o.w + dx, 20, dw - rx); }
+      if (id.includes('w')) { const nw = clamp(o.w - dx, 20, o.x + o.w); rx = o.x + o.w - nw; rw = nw; }
+      if (id.includes('s')) { rh = clamp(o.h + dy, 20, dh - ry); }
+      if (id.includes('n')) { const nh = clamp(o.h - dy, 20, o.y + o.h); ry = o.y + o.h - nh; rh = nh; }
+
+      const ratio = RATIOS[activeRatio];
+      if (ratio) {
+        if (id === 'n' || id === 's') { rw = Math.round(rh * ratio); }
+        else if (id === 'e' || id === 'w') { rh = Math.round(rw / ratio); }
+        else { rh = Math.round(rw / ratio); }
+        rw = clamp(rw, 20, dw); rh = clamp(rh, 20, dh);
+      }
+
+      cropRect = { x: clamp(rx, 0, dw - rw), y: clamp(ry, 0, dh - rh), w: rw, h: rh };
+    }
+    draw();
+  }
+
+  function onUp() { drag = null; }
+
+  function getCursor(id) {
+    const map = { nw:'nw-resize', n:'n-resize', ne:'ne-resize', e:'e-resize',
+                  se:'se-resize', s:'s-resize', sw:'sw-resize', w:'w-resize' };
+    return map[id] || 'pointer';
+  }
+
+  canvas.addEventListener('mousedown', onDown);
+  canvas.addEventListener('mousemove', onMove);
+  canvas.addEventListener('mouseup', onUp);
+  canvas.addEventListener('touchstart', onDown, { passive: false });
+  canvas.addEventListener('touchmove', onMove, { passive: false });
+  canvas.addEventListener('touchend', onUp);
+
+  // Ratio buttons
+  document.querySelectorAll('#crop-ratios .ratio-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#crop-ratios .ratio-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeRatio = btn.dataset.ratio;
+      if (srcImg) { applyRatio(); draw(); }
+    });
+  });
+
+  // Crop
+  cropBtn.addEventListener('click', () => {
+    if (!srcImg) return;
+    const offCanvas = document.createElement('canvas');
+    const srcX = Math.round(cropRect.x / scale);
+    const srcY = Math.round(cropRect.y / scale);
+    const srcW = Math.round(cropRect.w / scale);
+    const srcH = Math.round(cropRect.h / scale);
+    offCanvas.width = srcW; offCanvas.height = srcH;
+    const offCtx = offCanvas.getContext('2d');
+    offCtx.drawImage(srcImg, srcX, srcY, srcW, srcH, 0, 0, srcW, srcH);
+    croppedDataUrl = offCanvas.toDataURL('image/png');
+
+    // Show result on canvas
+    const resultImg = new Image();
+    resultImg.onload = () => {
+      srcImg = resultImg;
+      cropRect = { x: 0, y: 0, w: parseInt(canvas.style.width), h: parseInt(canvas.style.height) };
+      renderCanvas();
+      dlBtn.disabled = false;
+    };
+    resultImg.src = croppedDataUrl;
+  });
+
+  dlBtn.addEventListener('click', () => {
+    if (!croppedDataUrl) return;
+    const a = document.createElement('a');
+    a.href = croppedDataUrl;
+    a.download = 'anh-cat.png';
+    a.click();
+  });
+
+  resetBtn.addEventListener('click', () => {
+    if (!srcImg) return;
+    renderCanvas();
+    croppedDataUrl = null;
+    dlBtn.disabled = true;
+  });
+})();
+
+// ─────────────────────────────────────────────
+// TAB 2: ENHANCE
+// ─────────────────────────────────────────────
+(function() {
+  const dz = document.getElementById('enh-dz');
+  const fileInput = document.getElementById('enh-file');
+  const infoEl = document.getElementById('enh-info');
+  const canvas = document.getElementById('enh-canvas');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const placeholder = document.getElementById('enh-placeholder');
+  const resetBtn = document.getElementById('enh-reset');
+  const dlBtn = document.getElementById('enh-dl');
+  const sharpenBtn = document.getElementById('sharpen-btn');
+
+  let srcImg = null;
+  let srcData = null; // original pixel data
+  let sharpenOn = false;
+  let debounceTimer = null;
+
+  const sliders = {
+    brightness: document.getElementById('brightness'),
+    contrast: document.getElementById('contrast'),
+    saturation: document.getElementById('saturation'),
+  };
+
+  setupDropZone(dz, fileInput, loadFile);
+
+  function loadFile(file) {
+    loadImageFromFile(file, (img) => {
+      srcImg = img;
+      showFileInfo(infoEl, file, img);
+      renderBase();
+      resetBtn.disabled = false;
+      dlBtn.disabled = false;
+    });
+  }
+
+  function renderBase() {
+    const dpr = window.devicePixelRatio || 1;
+    const maxW = 600, maxH = 500;
+    const scale = Math.min(maxW / srcImg.naturalWidth, maxH / srcImg.naturalHeight, 1);
+    const dw = Math.round(srcImg.naturalWidth * scale);
+    const dh = Math.round(srcImg.naturalHeight * scale);
+    canvas.width = dw * dpr; canvas.height = dh * dpr;
+    canvas.style.width = dw + 'px'; canvas.style.height = dh + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.drawImage(srcImg, 0, 0, dw, dh);
+    srcData = ctx.getImageData(0, 0, dw * dpr, dh * dpr);
+    canvas.style.display = 'block';
+    placeholder.style.display = 'none';
+    applyEffects();
+  }
+
+  function applyEffects() {
+    if (!srcData) return;
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(_apply, 100);
+  }
+
+  function _apply() {
+    if (!srcData) return;
+    const brightness = parseInt(sliders.brightness.value);
+    const contrast = parseInt(sliders.contrast.value);
+    const saturation = parseInt(sliders.saturation.value);
+    const filter = document.querySelector('input[name="enh-filter"]:checked').value;
+
+    const data = new Uint8ClampedArray(srcData.data);
+    const len = data.length;
+
+    for (let i = 0; i < len; i += 4) {
+      let r = data[i], g = data[i+1], b = data[i+2];
+
+      // Brightness
+      if (brightness !== 0) {
+        r = clamp(r + brightness, 0, 255);
+        g = clamp(g + brightness, 0, 255);
+        b = clamp(b + brightness, 0, 255);
+      }
+
+      // Contrast
+      if (contrast !== 0) {
+        const f = (259 * (contrast + 255)) / (255 * (259 - contrast));
+        r = clamp(f * (r - 128) + 128, 0, 255);
+        g = clamp(f * (g - 128) + 128, 0, 255);
+        b = clamp(f * (b - 128) + 128, 0, 255);
+      }
+
+      // Saturation (via HSL)
+      if (saturation !== 0) {
+        const [h, s, l] = rgbToHsl(r, g, b);
+        const ns = clamp(s + saturation / 100, 0, 1);
+        [r, g, b] = hslToRgb(h, ns, l);
+      }
+
+      // Filter
+      if (filter === 'grayscale') {
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        r = g = b = lum;
+      } else if (filter === 'sepia') {
+        const or = r, og = g, ob = b;
+        r = clamp(or * 0.393 + og * 0.769 + ob * 0.189, 0, 255);
+        g = clamp(or * 0.349 + og * 0.686 + ob * 0.168, 0, 255);
+        b = clamp(or * 0.272 + og * 0.534 + ob * 0.131, 0, 255);
+      } else if (filter === 'invert') {
+        r = 255 - r; g = 255 - g; b = 255 - b;
+      }
+
+      data[i] = r; data[i+1] = g; data[i+2] = b;
+    }
+
+    let imgData = new ImageData(data, srcData.width, srcData.height);
+
+    // Sharpen (convolution)
+    if (sharpenOn) {
+      imgData = applyKernel(imgData, [0, -1, 0, -1, 5, -1, 0, -1, 0]);
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+  }
+
+  function applyKernel(imgData, kernel) {
+    const w = imgData.width, h = imgData.height;
+    const src = imgData.data;
+    const out = new Uint8ClampedArray(src.length);
+    for (let y = 0; y < h; y++) {
+      for (let x = 0; x < w; x++) {
+        let r = 0, g = 0, b = 0;
+        for (let ky = -1; ky <= 1; ky++) {
+          for (let kx = -1; kx <= 1; kx++) {
+            const sx = clamp(x + kx, 0, w - 1);
+            const sy = clamp(y + ky, 0, h - 1);
+            const idx = (sy * w + sx) * 4;
+            const k = kernel[(ky + 1) * 3 + (kx + 1)];
+            r += src[idx] * k;
+            g += src[idx+1] * k;
+            b += src[idx+2] * k;
+          }
+        }
+        const oi = (y * w + x) * 4;
+        out[oi] = clamp(r, 0, 255);
+        out[oi+1] = clamp(g, 0, 255);
+        out[oi+2] = clamp(b, 0, 255);
+        out[oi+3] = src[oi+3];
+      }
+    }
+    return new ImageData(out, w, h);
+  }
+
+  function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+    if (max === min) { h = s = 0; }
+    else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      h /= 6;
+    }
+    return [h, s, l];
+  }
+
+  function hslToRgb(h, s, l) {
+    let r, g, b;
+    if (s === 0) { r = g = b = l; }
+    else {
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1; if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1/3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1/3);
+    }
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+  }
+
+  // Slider live update
+  Object.entries(sliders).forEach(([key, el]) => {
+    const valEl = document.getElementById(key + '-val');
+    el.addEventListener('input', () => {
+      valEl.textContent = el.value;
+      applyEffects();
+    });
+  });
+
+  document.querySelectorAll('input[name="enh-filter"]').forEach(el => {
+    el.addEventListener('change', applyEffects);
+  });
+
+  sharpenBtn.addEventListener('click', () => {
+    sharpenOn = !sharpenOn;
+    sharpenBtn.textContent = sharpenOn ? 'Bật' : 'Tắt';
+    sharpenBtn.classList.toggle('on', sharpenOn);
+    applyEffects();
+  });
+
+  resetBtn.addEventListener('click', () => {
+    sliders.brightness.value = 0; document.getElementById('brightness-val').textContent = '0';
+    sliders.contrast.value = 0;   document.getElementById('contrast-val').textContent = '0';
+    sliders.saturation.value = 0; document.getElementById('saturation-val').textContent = '0';
+    sharpenOn = false; sharpenBtn.textContent = 'Tắt'; sharpenBtn.classList.remove('on');
+    document.querySelector('input[name="enh-filter"][value="none"]').checked = true;
+    applyEffects();
+  });
+
+  dlBtn.addEventListener('click', () => {
+    if (!srcImg) return;
+    downloadCanvas(canvas, 'anh-lam-ro.png');
+  });
+})();
+
+// ─────────────────────────────────────────────
+// TAB 3: CONVERT
+// ─────────────────────────────────────────────
+(function() {
+  const dz = document.getElementById('conv-dz');
+  const fileInput = document.getElementById('conv-file');
+  const infoEl = document.getElementById('conv-info');
+  const canvas = document.getElementById('conv-canvas');
+  const ctx = canvas.getContext('2d');
+  const placeholder = document.getElementById('conv-placeholder');
+  const convBtn = document.getElementById('conv-btn');
+  const qualitySection = document.getElementById('quality-section');
+  const qualitySlider = document.getElementById('quality-slider');
+  const qualityVal = document.getElementById('quality-val');
+  const estSizeEl = document.getElementById('est-size-label');
+  const resizeCheck = document.getElementById('resize-check');
+  const resizeSection = document.getElementById('resize-section');
+  const resizeW = document.getElementById('resize-w');
+  const resizeH = document.getElementById('resize-h');
+  const arLock = document.getElementById('ar-lock');
+
+  let srcImg = null;
+  let srcFile = null;
+  let arLocked = true;
+  let naturalW = 0, naturalH = 0;
+
+  setupDropZone(dz, fileInput, loadFile);
+
+  function loadFile(file) {
+    srcFile = file;
+    loadImageFromFile(file, (img) => {
+      srcImg = img;
+      naturalW = img.naturalWidth;
+      naturalH = img.naturalHeight;
+      showFileInfo(infoEl, file, img);
+      resizeW.value = naturalW;
+      resizeH.value = naturalH;
+      renderPreview();
+      convBtn.disabled = false;
+      updateEstSize();
+    });
+  }
+
+  function renderPreview() {
+    const dpr = window.devicePixelRatio || 1;
+    const maxW = 600, maxH = 500;
+    const scale = Math.min(maxW / naturalW, maxH / naturalH, 1);
+    const dw = Math.round(naturalW * scale), dh = Math.round(naturalH * scale);
+    canvas.width = dw * dpr; canvas.height = dh * dpr;
+    canvas.style.width = dw + 'px'; canvas.style.height = dh + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.drawImage(srcImg, 0, 0, dw, dh);
+    canvas.style.display = 'block';
+    placeholder.style.display = 'none';
+  }
+
+  // Format toggle
+  document.querySelectorAll('input[name="conv-fmt"]').forEach(el => {
+    el.addEventListener('change', () => {
+      const fmt = el.value;
+      qualitySection.style.display = fmt === 'png' ? 'none' : 'block';
+      updateEstSize();
+    });
+  });
+
+  qualitySlider.addEventListener('input', () => {
+    qualityVal.textContent = qualitySlider.value;
+    updateEstSize();
+  });
+
+  function updateEstSize() {
+    if (!srcFile) return;
+    const fmt = document.querySelector('input[name="conv-fmt"]:checked').value;
+    const q = parseInt(qualitySlider.value) / 100;
+    let est;
+    if (fmt === 'png') est = srcFile.size * 1.1;
+    else if (fmt === 'jpeg') est = srcFile.size * q * 0.5;
+    else est = srcFile.size * q * 0.35;
+    estSizeEl.innerHTML = `Dung lượng ước tính: <strong>~${formatBytes(Math.round(est))}</strong>`;
+  }
+
+  resizeCheck.addEventListener('change', () => {
+    resizeSection.style.display = resizeCheck.checked ? 'block' : 'none';
+  });
+
+  arLock.addEventListener('click', () => {
+    arLocked = !arLocked;
+    arLock.textContent = arLocked ? '🔒' : '🔓';
+    arLock.classList.toggle('on', !arLocked);
+  });
+
+  resizeW.addEventListener('input', () => {
+    if (arLocked && naturalH) {
+      resizeH.value = Math.round(parseInt(resizeW.value || naturalW) * naturalH / naturalW);
+    }
+  });
+  resizeH.addEventListener('input', () => {
+    if (arLocked && naturalW) {
+      resizeW.value = Math.round(parseInt(resizeH.value || naturalH) * naturalW / naturalH);
+    }
+  });
+
+  convBtn.addEventListener('click', () => {
+    if (!srcImg) return;
+    const fmt = document.querySelector('input[name="conv-fmt"]:checked').value;
+    const q = parseInt(qualitySlider.value) / 100;
+    const ext = fmt === 'jpeg' ? 'jpg' : fmt;
+    const mimeType = fmt === 'jpeg' ? 'image/jpeg' : (fmt === 'webp' ? 'image/webp' : 'image/png');
+
+    let outW = naturalW, outH = naturalH;
+    if (resizeCheck.checked) {
+      outW = parseInt(resizeW.value) || naturalW;
+      outH = parseInt(resizeH.value) || naturalH;
+    }
+
+    const offCanvas = document.createElement('canvas');
+    offCanvas.width = outW; offCanvas.height = outH;
+    const offCtx = offCanvas.getContext('2d');
+    offCtx.drawImage(srcImg, 0, 0, outW, outH);
+
+    const dataUrl = offCanvas.toDataURL(mimeType, q);
+    const baseName = (srcFile ? srcFile.name.replace(/\.[^.]+$/, '') : 'anh') + '.' + ext;
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = baseName;
+    a.click();
+  });
+})();
+</script>
+</body>
+</html>

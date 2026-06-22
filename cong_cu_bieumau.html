@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kho Biểu Mẫu — THCS Long Thọ</title>
+<script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;display:flex;flex-direction:column}
+a{color:#3b82f6}
+
+/* ── HEADER ── */
+.top-bar{background:#1e293b;border-bottom:1px solid #334155;padding:12px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.top-bar h1{font-size:18px;font-weight:700;color:#f1f5f9}
+.top-bar .sub{font-size:12px;color:#64748b;margin-top:2px}
+.logo{width:36px;height:36px;background:linear-gradient(135deg,#3b82f6,#6366f1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+
+/* ── LAYOUT ── */
+.main{display:flex;flex:1;overflow:hidden}
+.sidebar{width:260px;background:#1e293b;border-right:1px solid #334155;overflow-y:auto;flex-shrink:0;padding:12px}
+.content{flex:1;overflow-y:auto;padding:24px}
+
+/* ── SIDEBAR CARDS ── */
+.sidebar-title{font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;padding:0 4px}
+.tpl-card{background:#0f172a;border:1px solid #334155;border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:10px}
+.tpl-card:hover{border-color:#3b82f6;background:#1a2744}
+.tpl-card.active{border-color:#3b82f6;background:#1a2744;box-shadow:0 0 0 1px #3b82f6}
+.tpl-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.tpl-info{flex:1;min-width:0}
+.tpl-name{font-size:13px;font-weight:600;color:#f1f5f9;line-height:1.3;margin-bottom:3px}
+.tpl-desc{font-size:11px;color:#64748b;line-height:1.4}
+
+/* ── OVERVIEW GRID ── */
+.overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:8px}
+.overview-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;cursor:pointer;transition:all .15s;text-align:center}
+.overview-card:hover{border-color:#3b82f6;transform:translateY(-2px);box-shadow:0 4px 20px rgba(59,130,246,.15)}
+.overview-card .ov-icon{font-size:32px;margin-bottom:10px}
+.overview-card .ov-name{font-size:14px;font-weight:600;color:#f1f5f9;margin-bottom:6px;line-height:1.3}
+.overview-card .ov-desc{font-size:12px;color:#64748b;line-height:1.4}
+
+/* ── FORM PANEL ── */
+.form-panel{display:none;max-width:780px}
+.form-panel.active{display:block}
+.form-header{margin-bottom:24px}
+.form-header h2{font-size:20px;font-weight:700;color:#f1f5f9;margin-bottom:4px}
+.form-header p{font-size:13px;color:#64748b}
+.form-section{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;margin-bottom:16px}
+.form-section-title{font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px}
+.form-row{display:grid;gap:12px;margin-bottom:12px}
+.form-row.cols-2{grid-template-columns:1fr 1fr}
+.form-row.cols-3{grid-template-columns:1fr 1fr 1fr}
+.form-row.cols-4{grid-template-columns:1fr 1fr 1fr 1fr}
+.form-row:last-child{margin-bottom:0}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;font-weight:500;color:#94a3b8}
+.field input,.field textarea,.field select{background:#0f172a;border:1px solid #334155;border-radius:7px;color:#f1f5f9;padding:8px 11px;font-size:13px;font-family:inherit;transition:border-color .15s;width:100%}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.field textarea{resize:vertical;min-height:80px}
+.radio-group{display:flex;gap:16px;align-items:center;margin-top:4px}
+.radio-group label{display:flex;align-items:center;gap:6px;font-size:13px;color:#e2e8f0;cursor:pointer;font-weight:400}
+.radio-group input[type=radio]{width:auto;accent-color:#3b82f6}
+
+/* ── BUTTONS ── */
+.btn-row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.btn{padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;display:flex;align-items:center;gap:6px}
+.btn-primary{background:#3b82f6;color:#fff}
+.btn-primary:hover{background:#2563eb}
+.btn-secondary{background:#334155;color:#e2e8f0;border:1px solid #475569}
+.btn-secondary:hover{background:#475569}
+.btn-back{background:transparent;color:#64748b;border:1px solid #334155;padding:7px 14px;font-size:12px;margin-bottom:16px}
+.btn-back:hover{color:#e2e8f0;border-color:#64748b}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:#1e293b;border:1px solid #334155;border-radius:14px;width:100%;max-width:680px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column}
+.modal-header{padding:16px 20px;border-bottom:1px solid #334155;display:flex;align-items:center;justify-content:space-between}
+.modal-header h3{font-size:15px;font-weight:600}
+.modal-close{background:none;border:none;color:#64748b;font-size:20px;cursor:pointer;padding:2px 6px;border-radius:4px}
+.modal-close:hover{color:#f1f5f9;background:#334155}
+.modal-body{padding:20px;overflow-y:auto;flex:1}
+.preview-doc{background:#fff;color:#000;padding:30px;border-radius:8px;font-family:"Times New Roman",serif;font-size:13pt;line-height:1.6;white-space:pre-wrap;min-height:300px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:700px){
+  .main{flex-direction:column}
+  .sidebar{width:100%;border-right:none;border-bottom:1px solid #334155;overflow-x:auto;white-space:nowrap;display:flex;gap:8px;padding:10px;flex-shrink:0}
+  .sidebar-title{display:none}
+  .tpl-card{flex-direction:column;text-align:center;min-width:100px;flex-shrink:0}
+  .tpl-desc{display:none}
+  .overview-grid{grid-template-columns:1fr 1fr}
+  .form-row.cols-2,.form-row.cols-3,.form-row.cols-4{grid-template-columns:1fr}
+}
+
+.hint{font-size:11px;color:#475569;margin-top:3px}
+.divider{border:none;border-top:1px dashed #334155;margin:8px 0}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo">📋</div>
+  <div>
+    <div class="top-bar h1" style="font-size:17px;font-weight:700;color:#f1f5f9">Kho Biểu Mẫu — THCS Long Thọ</div>
+    <div class="sub">Tạo và xuất biểu mẫu chuẩn Word cho giáo viên chủ nhiệm</div>
+  </div>
+</div>
+
+<div class="main">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-title">Biểu Mẫu</div>
+
+    <div class="tpl-card" onclick="showTemplate(1)">
+      <div class="tpl-icon" style="background:#fef3c7">⚖️</div>
+      <div class="tpl-info">
+        <div class="tpl-name">BB Xử lý HS vi phạm</div>
+        <div class="tpl-desc">Biên bản GVCN lập khi HS vi phạm nội quy</div>
+      </div>
+    </div>
+
+    <div class="tpl-card" onclick="showTemplate(2)">
+      <div class="tpl-icon" style="background:#dbeafe">🤝</div>
+      <div class="tpl-info">
+        <div class="tpl-name">BB Làm việc với HS</div>
+        <div class="tpl-desc">Biên bản cuộc họp/làm việc với học sinh</div>
+      </div>
+    </div>
+
+    <div class="tpl-card" onclick="showTemplate(3)">
+      <div class="tpl-icon" style="background:#f0fdf4">👨‍👩‍👧</div>
+      <div class="tpl-info">
+        <div class="tpl-name">BB Làm việc với PH</div>
+        <div class="tpl-desc">Biên bản họp/làm việc với phụ huynh</div>
+      </div>
+    </div>
+
+    <div class="tpl-card" onclick="showTemplate(4)">
+      <div class="tpl-icon" style="background:#fce7f3">✍️</div>
+      <div class="tpl-info">
+        <div class="tpl-name">Bản kiểm điểm</div>
+        <div class="tpl-desc">Học sinh tự kiểm điểm hành vi vi phạm</div>
+      </div>
+    </div>
+
+    <div class="tpl-card" onclick="showTemplate(5)">
+      <div class="tpl-icon" style="background:#ede9fe">📝</div>
+      <div class="tpl-info">
+        <div class="tpl-name">Bản tường trình</div>
+        <div class="tpl-desc">Tường trình sự việc xảy ra</div>
+      </div>
+    </div>
+
+    <div class="tpl-card" onclick="showTemplate(6)">
+      <div class="tpl-icon" style="background:#ecfdf5">🏠</div>
+      <div class="tpl-info">
+        <div class="tpl-name">Đơn xin nghỉ học</div>
+        <div class="tpl-desc">Đơn xin phép vắng mặt buổi học</div>
+      </div>
+    </div>
+
+    <div class="tpl-card" onclick="showTemplate(7)">
+      <div class="tpl-icon" style="background:#fff7ed">🚪</div>
+      <div class="tpl-info">
+        <div class="tpl-name">Giấy ra cổng</div>
+        <div class="tpl-desc">Phiếu cho phép HS ra khỏi trường</div>
+      </div>
+    </div>
+
+    <div class="tpl-card" onclick="showTemplate(8)">
+      <div class="tpl-icon" style="background:#f0f9ff">💙</div>
+      <div class="tpl-info">
+        <div class="tpl-name">Nhật ký tư vấn</div>
+        <div class="tpl-desc">Nhật ký tư vấn học đường GVCN</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTENT AREA -->
+  <div class="content">
+
+    <!-- OVERVIEW -->
+    <div id="overview">
+      <h2 style="font-size:22px;font-weight:700;color:#f1f5f9;margin-bottom:6px">Chọn biểu mẫu</h2>
+      <p style="color:#64748b;font-size:13px;margin-bottom:20px">Nhấn vào biểu mẫu để điền thông tin và xuất file Word</p>
+      <div class="overview-grid">
+        <div class="overview-card" onclick="showTemplate(1)">
+          <div class="ov-icon">⚖️</div>
+          <div class="ov-name">BB Xử lý HS vi phạm</div>
+          <div class="ov-desc">Biên bản GVCN lập khi HS vi phạm nội quy nhà trường</div>
+        </div>
+        <div class="overview-card" onclick="showTemplate(2)">
+          <div class="ov-icon">🤝</div>
+          <div class="ov-name">BB Làm việc với HS</div>
+          <div class="ov-desc">Biên bản cuộc làm việc/họp có học sinh tham dự</div>
+        </div>
+        <div class="overview-card" onclick="showTemplate(3)">
+          <div class="ov-icon">👨‍👩‍👧</div>
+          <div class="ov-name">BB Làm việc với PH</div>
+          <div class="ov-desc">Biên bản họp/làm việc với phụ huynh học sinh</div>
+        </div>
+        <div class="overview-card" onclick="showTemplate(4)">
+          <div class="ov-icon">✍️</div>
+          <div class="ov-name">Bản kiểm điểm</div>
+          <div class="ov-desc">Học sinh tự kiểm điểm hành vi vi phạm</div>
+        </div>
+        <div class="overview-card" onclick="showTemplate(5)">
+          <div class="ov-icon">📝</div>
+          <div class="ov-name">Bản tường trình</div>
+          <div class="ov-desc">Tường trình sự việc theo quan điểm học sinh</div>
+        </div>
+        <div class="overview-card" onclick="showTemplate(6)">
+          <div class="ov-icon">🏠</div>
+          <div class="ov-name">Đơn xin nghỉ học</div>
+          <div class="ov-desc">Xin phép vắng mặt một hoặc nhiều buổi học</div>
+        </div>
+        <div class="overview-card" onclick="showTemplate(7)">
+          <div class="ov-icon">🚪</div>
+          <div class="ov-name">Giấy ra cổng</div>
+          <div class="ov-desc">Phiếu cho phép học sinh rời khỏi trường trong giờ học</div>
+        </div>
+        <div class="overview-card" onclick="showTemplate(8)">
+          <div class="ov-icon">💙</div>
+          <div class="ov-name">Nhật ký tư vấn học đường</div>
+          <div class="ov-desc">Ghi chép quá trình tư vấn, hỗ trợ học sinh</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TEMPLATE 1 ===== -->
+    <div class="form-panel" id="panel-1">
+      <button class="btn btn-back" onclick="backToOverview()">← Quay lại</button>
+      <div class="form-header">
+        <h2>⚖️ Biên bản xử lý HS vi phạm (BB GVCN)</h2>
+        <p>Biên bản do Giáo viên chủ nhiệm lập khi học sinh vi phạm nội quy nhà trường</p>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Thời gian & địa điểm</div>
+        <div class="form-row cols-2">
+          <div class="field"><label>Giờ bắt đầu</label><input type="time" id="t1-giobatdau"></div>
+          <div class="field"><label>Ngày</label><input type="number" id="t1-ngay" placeholder="VD: 20" min="1" max="31"></div>
+        </div>
+        <div class="form-row cols-3">
+          <div class="field"><label>Tháng</label><input type="number" id="t1-thang" placeholder="VD: 6" min="1" max="12"></div>
+          <div class="field"><label>Năm</label><input type="number" id="t1-nam" placeholder="VD: 2025"></div>
+          <div class="field"><label>Lớp</label><input type="text" id="t1-lop" placeholder="VD: 6/3"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Thành phần tham dự</div>
+        <div class="form-row cols-2">
+          <div class="field"><label>Tên GVCN</label><input type="text" id="t1-gvcn" placeholder="Họ và tên GVCN"></div>
+          <div class="field"><label>Tên Lớp trưởng</label><input type="text" id="t1-loptuong" placeholder="Họ và tên Lớp trưởng"></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Thành viên khác <span style="color:#475569">(tuỳ chọn)</span></label><textarea id="t1-thanhvien" placeholder="Mỗi người một dòng, VD: Nguyễn Văn A — Lớp phó học tập" rows="2"></textarea></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Học sinh vi phạm</div>
+        <div class="form-row cols-2">
+          <div class="field"><label>Tên HS vi phạm</label><input type="text" id="t1-tenhs" placeholder="Họ và tên học sinh"></div>
+          <div class="field"><label>Vi phạm lần thứ</label><input type="number" id="t1-lanthus" value="1" min="1"></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Nội dung vi phạm</label><textarea id="t1-noidung" placeholder="Mô tả chi tiết hành vi vi phạm..." rows="3"></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Cam kết của học sinh</label><textarea id="t1-camket" placeholder="Nội dung cam kết của học sinh vi phạm..." rows="3"></textarea></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Kết thúc biên bản</div>
+        <div class="form-row cols-2">
+          <div class="field"><label>Giờ kết thúc</label><input type="time" id="t1-gioketthuc"></div>
+          <div class="field"><label>Ngày ký biên bản</label><input type="date" id="t1-ngayky"></div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="previewTemplate(1)">👁 Xem trước</button>
+        <button class="btn btn-primary" onclick="exportTemplate(1)">📄 Xuất Word</button>
+      </div>
+    </div>
+
+    <!-- ===== TEMPLATE 2 ===== -->
+    <div class="form-panel" id="panel-2">
+      <button class="btn btn-back" onclick="backToOverview()">← Quay lại</button>
+      <div class="form-header">
+        <h2>🤝 Biên bản làm việc với Học sinh</h2>
+        <p>Ghi nhận nội dung buổi làm việc/cuộc họp có học sinh tham dự</p>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Thông tin chung</div>
+        <div class="form-row cols-3">
+          <div class="field"><label>Số biên bản</label><input type="text" id="t2-sobb" placeholder="VD: 01"></div>
+          <div class="field"><label>Lớp</label><input type="text" id="t2-lop" placeholder="VD: 6/3"></div>
+          <div class="field"><label>Ngày</label><input type="date" id="t2-ngay"></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="field"><label>Giờ bắt đầu</label><input type="time" id="t2-giobatdau"></div>
+          <div class="field"><label>Địa điểm</label><input type="text" id="t2-diadiem" placeholder="VD: Phòng GVCN, Lớp 6/3"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Thành phần chủ trì</div>
+        <div class="form-row cols-2">
+          <div class="field"><label>GVCN (họ tên)</label><input type="text" id="t2-gvcn" placeholder="Họ và tên GVCN"></div>
+          <div class="field"><label>Lớp GVCN</label><input type="text" id="t2-gvcn-lop" placeholder="VD: 6/3"></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="field"><label>GV khác 1 <span style="color:#475569">(tuỳ chọn)</span></label><input type="text" id="t2-gv1" placeholder="Họ tên — Chức vụ"></div>
+          <div class="field"><label>GV khác 2 <span style="color:#475569">(tuỳ chọn)</span></label><input type="text" id="t2-gv2" placeholder="Họ tên — Chức vụ"></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="field"><label>Chủ tọa</label><input type="text" id="t2-chutoa" placeholder="Họ và tên chủ tọa"></div>
+          <div class="field"><label>Thư ký</label><input type="text" id="t2-thuki" placeholder="Họ và tên thư ký"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Học sinh tham dự</div>
+        <div class="form-row cols-2">
+          <div class="field"><label>HS 1 — Họ tên</label><input type="text" id="t2-hs1-ten" placeholder="Họ và tên"></div>
+          <div class="field"><label>HS 1 — Lớp</label><input type="text" id="t2-hs1-lop" placeholder="Lớp"></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="field"><label>HS 2 — Họ tên <span style="color:#475569">(tuỳ chọn)</span></label><input type="text" id="t2-hs2-ten" placeholder="Họ và tên"></div>
+          <div class="field"><label>HS 2 — Lớp</label><input type="text" id="t2-hs2-lop" placeholder="Lớp"></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="field"><label>HS 3 — Họ tên <span style="color:#475569">(tuỳ chọn)</span></label><input type="text" id="t2-hs3-ten" placeholder="Họ và tên"></div>
+          <div class="field"><label>HS 3 — Lớp</label><input type="text" id="t2-hs3-lop" placeholder="Lớp"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Nội dung buổi làm việc</div>
+        <div class="form-row">
+          <div class="field"><label>Lý do buổi làm việc</label><textarea id="t2-lydo" placeholder="Lý do tổ chức buổi làm việc..." rows="2"></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Nội dung</label><textarea id="t2-noidung" placeholder="Nội dung được thảo luận trong buổi làm việc..." rows="4"></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Ý kiến học sinh</label><textarea id="t2-ykienhs" placeholder="Ý kiến, phát biểu của học sinh..." rows="3"></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Kết luận của chủ tọa</label><textarea id="t2-ketluan" placeholder="Kết luận sau buổi làm việc..." rows="3"></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Giờ kết thúc</label><input type="time" id="t2-gioketthuc"></div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="previewTemplate(2)">👁 Xem trước</button>
+        <button class="btn btn-primary" onclick="exportTemplate(2)">📄 Xuất Word</button>
+      </div>
+    </div>
+
+    <!-- ===== TEMPLATE 3 ===== -->
+    <div class="form-panel" id="panel-3">
+      <button class="btn btn-back" onclick="backToOverview()">← Quay lại</button>
+      <div class="form-header">
+        <h2>👨‍👩‍👧 Biên bản làm việc với Phụ huynh</h2>
+        <p>Ghi nhận nội dung buổi làm việc/cuộc họp có phụ huynh tham dự</p>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Thông tin chung</div>
+        <div class="form-row cols-3">
+          <div class="field"><label>Số biên bản</label><input type="text" id="t3-sobb" placeholder="VD: 01"></div>
+          <div class="field"><label>Lớp</label><input type="text" id="t3-lop" placeholder="VD: 6/3"></div>
+          <div class="field"><label>Ngày</label><input type="date" id="t3-ngay"></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="field"><label>Giờ bắt đầu</label><input type="time" id="t3-giobatdau"></div>
+          <div class="field"><label>Địa điểm</label><input type="text" id="t3-diadiem" placeholder="VD: Phòng GVCN"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Thành phần chủ trì</div>
+        <div class="form-row cols-2">
+          <div class="field"><label>GVCN (họ tên)</label><input type="text" id="t3-gvcn" placeholder="Họ và tên GVCN"></div>
+          <div class="field"><label>Lớp GVCN</label><input type="text" id="t3-gvcn-lop" placeholder="VD: 6/3"></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="field"><label>GV khác 1 <span style="color:#475569">(tuỳ chọn)</span></label><input type="text" id="t3-gv1" placeholder="Họ tên — Chức vụ"></div>
+          <div class="field"><label>GV khác 2 <span style="color:#475569">(tuỳ chọn)</span></label><input type="text" id="t3-gv2" placeholder="Họ tên — Chức vụ"></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="field"><label>Chủ tọa</label><input type="text" id="t3-chutoa" placeholder="Họ và tên chủ tọa"></div>
+          <div class="field"><label>Thư ký</label><input type="text" id="t3-thuki" placeholder="Họ và tên thư ký"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Phụ huynh & Học sinh liên quan</div>
+        <div class="form-row cols-2">
+          <div class="field"><label>PH 1 — Họ tên</label><input type="text" id="t3-ph1-ten" placeholder="Họ và tên phụ huynh"></div>
+          <div class="field"><label>PH 1 — Quan hệ với HS</label><input type="text" id="t3-ph1-quanhe" placeholder="VD: Cha / Mẹ của em ..."></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="field"><label>PH 2 — Họ tên <span style="color:#475569">(tuỳ chọn)</span></label><input type="text" id="t3-ph2-ten" placeholder="Họ và tên phụ huynh"></div>
+          <div class="field"><label>PH 2 — Quan hệ với HS</label><input type="text" id="t3-ph2-quanhe" placeholder="Quan hệ với học sinh"></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="field"><label>HS liên quan — Họ tên</label><input type="text" id="t3-hs-ten" placeholder="Họ và tên học sinh"></div>
+          <div class="field"><label>HS liên quan — Lớp</label><input type="text" id="t3-hs-lop" placeholder="Lớp của học sinh"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Nội dung buổi làm việc</div>
+        <div class="form-row">
+          <div class="field"><label>Lý do buổi làm việc</label><textarea id="t3-lydo" placeholder="Lý do tổ chức buổi làm việc..." rows="2"></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Nội dung</label><textarea id="t3-noidung" placeholder="Nội dung được thảo luận trong buổi làm việc..." rows="4"></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Ý kiến phụ huynh</label><textarea id="t3-ykienph" placeholder="Ý kiến, phát biểu của phụ huynh..." rows="3"></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Kết luận của chủ tọa</label><textarea id="t3-ketluan" placeholder="Kết luận sau buổi làm việc..." rows="3"></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Giờ kết thúc</label><input type="time" id="t3-gioketthuc"></div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="previewTemplate(3)">👁 Xem trước</button>
+        <button class="btn btn-primary" onclick="exportTemplate(3)">📄 Xuất Word</button>
+      </div>
+    </div>
+
+    <!-- ===== TEMPLATE 4 ===== -->
+    <div class="form-panel" id="panel-4">
+      <button class="btn btn-back" onclick="backToOverview()">← Quay lại</button>
+      <div class="form-header">
+        <h2>✍️ Bản kiểm điểm</h2>
+        <p>Học sinh tự kiểm điểm hành vi vi phạm và cam kết sửa chữa</p>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Thông tin học sinh</div>
+        <div class="form-row">
+          <div class="field"><label>Kính gửi</label><input type="text" id="t4-kinggui" value="Thầy (Cô) giáo viên chủ nhiệm"></div>
+        </div>
+        <div class="form-row cols-3">
+          <div class="field"><label>Họ tên học sinh</label><input type="text" id="t4-tenhs" placeholder="Họ và tên đầy đủ"></div>
+          <div class="field"><label>Lớp</label><input type="text" id="t4-lop" placeholder="VD: 6/3"></div>
+          <div class="field"><label>Năm học</label><input type="text" id="t4-namhoc" value="2025-2026"></div>
+        </div>
+        <div class="form-row cols-3">
+          <div class="field"><label>Ngày sinh (ngày)</label><input type="number" id="t4-ngaysinh-ngay" min="1" max="31" placeholder="Ngày"></div>
+          <div class="field"><label>Tháng sinh</label><input type="number" id="t4-ngaysinh-thang" min="1" max="12" placeholder="Tháng"></div>
+          <div class="field"><label>Năm sinh</label><input type="number" id="t4-ngaysinh-nam" placeholder="Năm"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Địa chỉ & Gia đình</div>
+        <div class="form-row cols-3">
+          <div class="field"><label>Ấp/Khu phố</label><input type="text" id="t4-ap" placeholder="Ấp / Khu phố"></div>
+          <div class="field"><label>Xã/Phường</label><input type="text" id="t4-xa" placeholder="Xã / Phường"></div>
+          <div class="field"><label>Huyện/Thành phố</label><input type="text" id="t4-huyen" placeholder="Huyện / TP"></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="field"><label>Họ tên cha/mẹ</label><input type="text" id="t4-chamme" placeholder="Họ và tên cha hoặc mẹ"></div>
+          <div class="field"><label>Số điện thoại</label><input type="text" id="t4-sdt" placeholder="Số điện thoại liên hệ"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Nội dung kiểm điểm</div>
+        <div class="form-row">
+          <div class="field"><label>Nội dung kiểm điểm</label><textarea id="t4-noidung" placeholder="Mô tả chi tiết hành vi vi phạm của bản thân..." rows="4"></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Hình thức kỷ luật xin nhận</label><textarea id="t4-hinhthuc" placeholder="Hình thức kỷ luật học sinh xin nhận..." rows="2"></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Lời hứa</label><textarea id="t4-loihua" placeholder="Lời hứa, cam kết của học sinh..." rows="3"></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Ngày viết kiểm điểm</label><input type="date" id="t4-ngayky"></div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="previewTemplate(4)">👁 Xem trước</button>
+        <button class="btn btn-primary" onclick="exportTemplate(4)">📄 Xuất Word</button>
+      </div>
+    </div>
+
+    <!-- ===== TEMPLATE 5 ===== -->
+    <div class="form-panel" id="panel-5">
+      <button class="btn btn-back" onclick="backToOverview()">← Quay lại</button>
+      <div class="form-header">
+        <h2>📝 Bản tường trình</h2>
+        <p>Học sinh tường trình lại sự việc theo quan điểm của mình</p>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Thông tin học sinh</div>
+        <div class="form-row">
+          <div class="field"><label>Kính gửi</label><input type="text" id="t5-kinggui" value="Thầy (Cô) giáo viên chủ nhiệm"></div>
+        </div>
+        <div class="form-row cols-3">
+          <div class="field"><label>Họ tên học sinh</label><input type="text" id="t5-tenhs" placeholder="Họ và tên đầy đủ"></div>
+          <div class="field"><label>Lớp</label><input type="text" id="t5-lop" placeholder="VD: 6/3"></div>
+          <div class="field"><label>Năm học</label><input type="text" id="t5-namhoc" value="2025-2026"></div>
+        </div>
+        <div class="form-row cols-3">
+          <div class="field"><label>Ngày sinh (ngày)</label><input type="number" id="t5-ngaysinh-ngay" min="1" max="31" placeholder="Ngày"></div>
+          <div class="field"><label>Tháng sinh</label><input type="number" id="t5-ngaysinh-thang" min="1" max="12" placeholder="Tháng"></div>
+          <div class="field"><label>Năm sinh</label><input type="number" id="t5-ngaysinh-nam" placeholder="Năm"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Địa chỉ & Gia đình</div>
+        <div class="form-row cols-3">
+          <div class="field"><label>Ấp/Khu phố</label><input type="text" id="t5-ap" placeholder="Ấp / Khu phố"></div>
+          <div class="field"><label>Xã/Phường</label><input type="text" id="t5-xa" placeholder="Xã / Phường"></div>
+          <div class="field"><label>Huyện/Thành phố</label><input type="text" id="t5-huyen" placeholder="Huyện / TP"></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="field"><label>Họ tên cha/mẹ</label><input type="text" id="t5-chamme" placeholder="Họ và tên cha hoặc mẹ"></div>
+          <div class="field"><label>Số điện thoại</label><input type="text" id="t5-sdt" placeholder="Số điện thoại liên hệ"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Nội dung tường trình</div>
+        <div class="form-row">
+          <div class="field"><label>Nội dung sự việc tường trình</label><textarea id="t5-noidung" placeholder="Trình bày đầy đủ diễn biến sự việc theo quan điểm của học sinh. Ghi rõ thời gian, địa điểm, những người có liên quan và toàn bộ sự việc..." rows="8"></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Ngày viết tường trình</label><input type="date" id="t5-ngayky"></div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="previewTemplate(5)">👁 Xem trước</button>
+        <button class="btn btn-primary" onclick="exportTemplate(5)">📄 Xuất Word</button>
+      </div>
+    </div>
+
+    <!-- ===== TEMPLATE 6 ===== -->
+    <div class="form-panel" id="panel-6">
+      <button class="btn btn-back" onclick="backToOverview()">← Quay lại</button>
+      <div class="form-header">
+        <h2>🏠 Đơn xin phép nghỉ học</h2>
+        <p>Đơn xin phép vắng mặt một hoặc nhiều buổi học</p>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Thông tin học sinh</div>
+        <div class="form-row cols-3">
+          <div class="field"><label>Tên học sinh</label><input type="text" id="t6-tenhs" placeholder="Họ và tên đầy đủ"></div>
+          <div class="field"><label>Lớp</label><input type="text" id="t6-lop" value="6/3"></div>
+          <div class="field"><label>Năm học</label><input type="text" id="t6-namhoc" value="2025-2026"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Thông tin nghỉ học</div>
+        <div class="form-row cols-2">
+          <div class="field">
+            <label>Buổi nghỉ</label>
+            <div class="radio-group">
+              <label><input type="radio" name="t6-buoi" value="Sáng" id="t6-sang" checked> Sáng</label>
+              <label><input type="radio" name="t6-buoi" value="Chiều" id="t6-chieu"> Chiều</label>
+            </div>
+          </div>
+          <div class="field"><label>Ngày nghỉ</label><input type="date" id="t6-ngaychi"></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Lý do nghỉ</label><textarea id="t6-lydo" placeholder="Lý do xin nghỉ học..." rows="3"></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Ngày làm đơn</label><input type="date" id="t6-ngaydon"></div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="previewTemplate(6)">👁 Xem trước</button>
+        <button class="btn btn-primary" onclick="exportTemplate(6)">📄 Xuất Word</button>
+      </div>
+    </div>
+
+    <!-- ===== TEMPLATE 7 ===== -->
+    <div class="form-panel" id="panel-7">
+      <button class="btn btn-back" onclick="backToOverview()">← Quay lại</button>
+      <div class="form-header">
+        <h2>🚪 Giấy ra cổng</h2>
+        <p>Phiếu cho phép học sinh ra khỏi cổng trường trong giờ học (2 liên trên 1 trang)</p>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">Thông tin</div>
+        <div class="form-row cols-2">
+          <div class="field"><label>Tên học sinh</label><input type="text" id="t7-tenhs" placeholder="Họ và tên học sinh"></div>
+          <div class="field"><label>Lớp</label><input type="text" id="t7-lop" placeholder="VD: 6/3"></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="field"><label>Giờ ra cổng</label><input type="time" id="t7-giora"></div>
+          <div class="field"><label>Ngày ra cổng</label><input type="date" id="t7-ngayra"></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Lý do</label><input type="text" id="t7-lydo" placeholder="Lý do ra ngoài..."></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="field"><label>Tên giáo viên ký</label><input type="text" id="t7-tengv" placeholder="Họ và tên GV"></div>
+          <div class="field"><label>Ngày ký</label><input type="date" id="t7-ngayky"></div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="previewTemplate(7)">👁 Xem trước</button>
+        <button class="btn btn-primary" onclick="exportTemplate(7)">📄 Xuất Word</button>
+      </div>
+    </div>
+
+    <!-- ===== TEMPLATE 8 ===== -->
+    <div class="form-panel" id="panel-8">
+      <button class="btn btn-back" onclick="backToOverview()">← Quay lại</button>
+      <div class="form-header">
+        <h2>💙 Nhật ký tư vấn học đường</h2>
+        <p>Ghi chép quá trình tư vấn, hỗ trợ tâm lý và học tập cho học sinh</p>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">1. Thông tin học sinh</div>
+        <div class="form-row cols-3">
+          <div class="field"><label>Họ tên học sinh</label><input type="text" id="t8-tenhs" placeholder="Họ và tên đầy đủ"></div>
+          <div class="field"><label>Ngày sinh</label><input type="date" id="t8-ngaysinh"></div>
+          <div class="field">
+            <label>Giới tính</label>
+            <div class="radio-group">
+              <label><input type="radio" name="t8-gt" value="Nam" checked> Nam</label>
+              <label><input type="radio" name="t8-gt" value="Nữ"> Nữ</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">2. Thông tin gia đình</div>
+        <div class="form-row cols-3">
+          <div class="field"><label>Họ tên cha</label><input type="text" id="t8-cha-ten" placeholder="Họ và tên"></div>
+          <div class="field"><label>Tuổi cha</label><input type="number" id="t8-cha-tuoi" placeholder="Tuổi"></div>
+          <div class="field"><label>Nghề nghiệp cha</label><input type="text" id="t8-cha-nghe" placeholder="Nghề nghiệp"></div>
+        </div>
+        <div class="form-row cols-3">
+          <div class="field"><label>Họ tên mẹ</label><input type="text" id="t8-me-ten" placeholder="Họ và tên"></div>
+          <div class="field"><label>Tuổi mẹ</label><input type="number" id="t8-me-tuoi" placeholder="Tuổi"></div>
+          <div class="field"><label>Nghề nghiệp mẹ</label><input type="text" id="t8-me-nghe" placeholder="Nghề nghiệp"></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="field"><label>Hoàn cảnh gia đình</label><textarea id="t8-hoancaph" placeholder="Mô tả hoàn cảnh gia đình..." rows="2"></textarea></div>
+          <div class="field"><label>Người chăm sóc trực tiếp <span style="color:#475569">(tuỳ chọn)</span></label><input type="text" id="t8-nguoichamsoc" placeholder="Nếu không phải cha/mẹ"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">3. Nhu cầu và thông tin thu thập</div>
+        <div class="form-row">
+          <div class="field"><label>Khó khăn và nhu cầu của học sinh</label><textarea id="t8-khokhan" placeholder="Các khó khăn học sinh gặp phải và nhu cầu cần hỗ trợ..." rows="3"></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Thông tin thu thập qua trao đổi</label><textarea id="t8-thongtinthuthap" placeholder="Thông tin thu thập được qua trò chuyện, quan sát..." rows="3"></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Nhận định sơ bộ</label><textarea id="t8-nhandinh" placeholder="Nhận định ban đầu của GVCN về trường hợp học sinh..." rows="3"></textarea></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="form-section-title">4. Quá trình tư vấn</div>
+        <div class="form-row">
+          <div class="field"><label>Hình thức tư vấn đã áp dụng</label><textarea id="t8-hinhthuc" placeholder="Các phương pháp, hình thức tư vấn đã sử dụng..." rows="3"></textarea></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Đánh giá hiệu quả</label><textarea id="t8-danhgia" placeholder="Đánh giá kết quả sau quá trình tư vấn..." rows="3"></textarea></div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="field"><label>Lịch hẹn tiếp theo <span style="color:#475569">(tuỳ chọn)</span></label><input type="date" id="t8-lichhennext"></div>
+          <div class="field"><label>Ngày lập nhật ký</label><input type="date" id="t8-ngaylap"></div>
+        </div>
+        <div class="form-row">
+          <div class="field"><label>Người lập nhật ký (GVCN)</label><input type="text" id="t8-nguoilap" placeholder="Họ và tên GVCN"></div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="previewTemplate(8)">👁 Xem trước</button>
+        <button class="btn btn-primary" onclick="exportTemplate(8)">📄 Xuất Word</button>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- PREVIEW MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modal-title">Xem trước biên bản</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="preview-doc" id="modal-content"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── HELPERS ───────────────────────────────────────────────
+const {
+  Document, Packer, Paragraph, TextRun, AlignmentType, Table, TableRow, TableCell,
+  WidthType, BorderStyle, HeadingLevel, ShadingType, VerticalAlign
+} = docx;
+
+const A4_W = 11906, A4_H = 16838;
+const MARGIN = { top: 1440, bottom: 1440, left: 1700, right: 1134 }; // ~25mm top/bot, 30mm left, 20mm right
+
+function v(id){ const el=document.getElementById(id); return el ? el.value.trim() : ''; }
+function radioVal(name){ const el=document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : ''; }
+
+function fmtDate(dateStr){
+  if(!dateStr) return '....../......./........';
+  const [y,m,d]=dateStr.split('-');
+  return `${d} tháng ${m} năm ${y}`;
+}
+function fmtTime(timeStr){
+  if(!timeStr) return '......giờ......phút';
+  const [h,mi]=timeStr.split(':');
+  return `${h} giờ ${mi} phút`;
+}
+function fmtDay(dateStr){ if(!dateStr)return '...'; const[,, d]=dateStr.split('-'); return d; }
+function fmtMonth(dateStr){ if(!dateStr)return '...'; const[,m]=dateStr.split('-'); return m; }
+function fmtYear(dateStr){ if(!dateStr)return '....'; const[y]=dateStr.split('-'); return y; }
+
+// page properties shorthand
+function pageProps(){ return { page:{ size:{width:A4_W,height:A4_H}, margin:MARGIN } }; }
+
+function makeDoc(children){
+  return new Document({
+    sections:[{ properties: pageProps(), children }]
+  });
+}
+
+function p(text, opts={}){
+  const runs=[];
+  if(opts.bold && opts.underline){
+    runs.push(new TextRun({text, bold:true, underline:{}, font:'Times New Roman', size:26}));
+  } else {
+    runs.push(new TextRun({text, bold:!!opts.bold, font:'Times New Roman', size:26, underline: opts.underline?{}:undefined}));
+  }
+  return new Paragraph({
+    alignment: opts.align || AlignmentType.LEFT,
+    spacing:{ after: opts.after||0, before: opts.before||0, line: opts.line||276 },
+    children: runs
+  });
+}
+
+function pRuns(runs, opts={}){
+  return new Paragraph({
+    alignment: opts.align || AlignmentType.LEFT,
+    spacing:{ after: opts.after||0, before: opts.before||0, line: opts.line||276 },
+    children: runs.map(r => new TextRun({
+      text: r.text,
+      bold: !!r.bold,
+      underline: r.underline ? {} : undefined,
+      font:'Times New Roman',
+      size:26
+    }))
+  });
+}
+
+function blank(n=1){ return new Paragraph({children:[new TextRun({text:'',font:'Times New Roman',size:26})], spacing:{after:0,before:0,line:276}}); }
+
+// CỘNG HÒA header block
+function headerVN(){
+  return [
+    p('CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM', {align:AlignmentType.CENTER, bold:true}),
+    p('Độc lập - Tự do - Hạnh phúc', {align:AlignmentType.CENTER, bold:true}),
+    p('───────────────────────', {align:AlignmentType.CENTER}),
+    blank()
+  ];
+}
+
+// Signature row as paragraph with tabs
+function sigRow(labels){
+  // simple: just text centered for each
+  return new Paragraph({
+    alignment: AlignmentType.LEFT,
+    children: labels.map((l,i)=>[
+      new TextRun({text: l, bold:true, font:'Times New Roman', size:26}),
+      ...(i<labels.length-1 ? [new TextRun({text:'          ', font:'Times New Roman', size:26})] : [])
+    ]).flat(),
+    spacing:{after:0, before:200, line:276}
+  });
+}
+
+function threeColSig(l1,l2,l3){
+  const tblW = A4_W - MARGIN.left - MARGIN.right;
+  const cw = Math.floor(tblW/3);
+  const noBorder = { style:BorderStyle.NONE, size:0, color:'FFFFFF' };
+  const nb = { top:noBorder, bottom:noBorder, left:noBorder, right:noBorder };
+  const cell=(txt)=> new TableCell({
+    borders: nb,
+    width:{size:cw, type:WidthType.DXA},
+    children:[
+      new Paragraph({alignment:AlignmentType.CENTER, spacing:{after:0,before:200,line:276}, children:[new TextRun({text:txt, bold:true, font:'Times New Roman', size:26})]}),
+      new Paragraph({alignment:AlignmentType.CENTER, spacing:{after:0,line:276}, children:[new TextRun({text:'(Ký, ghi rõ họ tên)', font:'Times New Roman', size:22, italics:true})]}),
+    ]
+  });
+  return new Table({
+    width:{size:tblW,type:WidthType.DXA},
+    columnWidths:[cw,cw,cw],
+    rows:[new TableRow({children:[cell(l1),cell(l2),cell(l3)]})]
+  });
+}
+
+function twoColSig(l1,l2){
+  const tblW = A4_W - MARGIN.left - MARGIN.right;
+  const cw = Math.floor(tblW/2);
+  const noBorder = { style:BorderStyle.NONE, size:0, color:'FFFFFF' };
+  const nb = { top:noBorder, bottom:noBorder, left:noBorder, right:noBorder };
+  const cell=(txt)=> new TableCell({
+    borders: nb,
+    width:{size:cw, type:WidthType.DXA},
+    children:[
+      new Paragraph({alignment:AlignmentType.CENTER, spacing:{after:0,before:200,line:276}, children:[new TextRun({text:txt, bold:true, font:'Times New Roman', size:26})]}),
+      new Paragraph({alignment:AlignmentType.CENTER, spacing:{after:0,line:276}, children:[new TextRun({text:'(Ký, ghi rõ họ tên)', font:'Times New Roman', size:22, italics:true})]}),
+    ]
+  });
+  return new Table({
+    width:{size:tblW,type:WidthType.DXA},
+    columnWidths:[cw,cw],
+    rows:[new TableRow({children:[cell(l1),cell(l2)]})]
+  });
+}
+
+// ─── TEMPLATE DATA GETTERS ─────────────────────────────────
+function getData1(){
+  return {
+    gioBatDau: fmtTime(v('t1-giobatdau')),
+    ngay: v('t1-ngay')||'.....',
+    thang: v('t1-thang')||'......',
+    nam: v('t1-nam')||'......',
+    lop: v('t1-lop')||'......',
+    gvcn: v('t1-gvcn')||'[Tên GVCN]',
+    lopTruong: v('t1-loptuong')||'[Tên Lớp trưởng]',
+    thanhVien: v('t1-thanhvien'),
+    tenHS: v('t1-tenhs')||'[Tên học sinh]',
+    lanThu: v('t1-lanthus')||'1',
+    noiDung: v('t1-noidung')||'[Nội dung vi phạm]',
+    camKet: v('t1-camket')||'[Cam kết của học sinh]',
+    gioKetThuc: fmtTime(v('t1-gioketthuc')),
+    ngayKy: v('t1-ngayky'),
+  };
+}
+
+function getData2(){
+  return {
+    soBB: v('t2-sobb')||'...',
+    lop: v('t2-lop')||'......',
+    ngay: v('t2-ngay'),
+    gioBatDau: fmtTime(v('t2-giobatdau')),
+    diaDiem: v('t2-diadiem')||'......',
+    gvcn: v('t2-gvcn')||'[GVCN]',
+    gvcnLop: v('t2-gvcn-lop')||'......',
+    gv1: v('t2-gv1'),
+    gv2: v('t2-gv2'),
+    hs1Ten: v('t2-hs1-ten'), hs1Lop: v('t2-hs1-lop'),
+    hs2Ten: v('t2-hs2-ten'), hs2Lop: v('t2-hs2-lop'),
+    hs3Ten: v('t2-hs3-ten'), hs3Lop: v('t2-hs3-lop'),
+    chuToa: v('t2-chutoa')||'[Chủ tọa]',
+    thuKy: v('t2-thuki')||'[Thư ký]',
+    lyDo: v('t2-lydo')||'......',
+    noiDung: v('t2-noidung')||'......',
+    ykienHS: v('t2-ykienhs')||'......',
+    ketLuan: v('t2-ketluan')||'......',
+    gioKetThuc: fmtTime(v('t2-gioketthuc')),
+  };
+}
+
+function getData3(){
+  return {
+    soBB: v('t3-sobb')||'...',
+    lop: v('t3-lop')||'......',
+    ngay: v('t3-ngay'),
+    gioBatDau: fmtTime(v('t3-giobatdau')),
+    diaDiem: v('t3-diadiem')||'......',
+    gvcn: v('t3-gvcn')||'[GVCN]',
+    gvcnLop: v('t3-gvcn-lop')||'......',
+    gv1: v('t3-gv1'),
+    gv2: v('t3-gv2'),
+    ph1Ten: v('t3-ph1-ten'), ph1QuanHe: v('t3-ph1-quanhe'),
+    ph2Ten: v('t3-ph2-ten'), ph2QuanHe: v('t3-ph2-quanhe'),
+    hsTen: v('t3-hs-ten'), hsLop: v('t3-hs-lop'),
+    chuToa: v('t3-chutoa')||'[Chủ tọa]',
+    thuKy: v('t3-thuki')||'[Thư ký]',
+    lyDo: v('t3-lydo')||'......',
+    noiDung: v('t3-noidung')||'......',
+    ykienPH: v('t3-ykienph')||'......',
+    ketLuan: v('t3-ketluan')||'......',
+    gioKetThuc: fmtTime(v('t3-gioketthuc')),
+  };
+}
+
+// ─── BUILD DOCX CHILDREN ───────────────────────────────────
+function buildChildren1(){
+  const d = getData1();
+  const thanhVienLines = d.thanhVien ? d.thanhVien.split('\n').filter(x=>x.trim()) : [];
+  const dateKy = d.ngayKy;
+
+  const children = [
+    ...headerVN(),
+    p('BIÊN BẢN', {align:AlignmentType.CENTER, bold:true}),
+    p('V/v Xử lý học sinh vi phạm nội quy nhà trường', {align:AlignmentType.CENTER, bold:true, after:200}),
+    blank(),
+    pRuns([
+      {text:`Hôm nay vào lúc ${d.gioBatDau} ngày ${d.ngay} tháng ${d.thang} năm ${d.nam.length<=4?'20'+d.nam.slice(-2):d.nam}`}
+    ]),
+    pRuns([{text:`Tại lớp ${d.lop} trường THCS Long Thọ`}]),
+    p('Chúng tôi gồm có:'),
+    pRuns([{text:`1. ${d.gvcn}`, bold:false}, {text:' — Chức vụ: Giáo viên chủ nhiệm'}]),
+    pRuns([{text:`2. ${d.lopTruong}`, bold:false}, {text:' — Chức vụ: Lớp trưởng'}]),
+    ...thanhVienLines.map((line,i)=>pRuns([{text:`${i+3}. ${line}`}])),
+    pRuns([
+      {text:'Tiến hành lập biên bản học sinh vi phạm nội quy nhà trường lần thứ '},
+      {text:d.lanThu, bold:true},
+      {text:' đối với em '},
+      {text:d.tenHS, bold:true}
+    ], {after:100}),
+    blank(),
+    p('NỘI DUNG', {bold:true, underline:true, after:100}),
+    ...d.noiDung.split('\n').map(line=>p(line||' ')),
+    blank(),
+    p('CAM KẾT CỦA HỌC SINH VI PHẠM', {bold:true, underline:true, after:100}),
+    ...d.camKet.split('\n').map(line=>p(line||' ')),
+    blank(),
+    p('Biên bản đã đọc cho cả lớp cùng nghe, đồng ý và ký.'),
+    pRuns([{text:`Biên bản kết thúc vào lúc ${d.gioKetThuc} cùng ngày.`}]),
+    blank(),
+    p(`Long Thọ, ngày ${fmtDay(dateKy)||d.ngay} tháng ${fmtMonth(dateKy)||d.thang} năm ${dateKy?fmtYear(dateKy):d.nam}`, {align:AlignmentType.CENTER, after:100}),
+    blank(),
+    threeColSig('HS vi phạm','Lớp trưởng','GVCN')
+  ];
+  return children;
+}
+
+function buildChildren2(){
+  const d = getData2();
+  const ngayFmt = fmtDate(d.ngay);
+  let memberIdx = 1;
+  const members = [];
+  members.push(pRuns([{text:`${memberIdx++}. ${d.gvcn}`},{text:` — Giáo viên chủ nhiệm lớp ${d.gvcnLop}`}]));
+  if(d.gv1) members.push(pRuns([{text:`${memberIdx++}. ${d.gv1}`}]));
+  if(d.gv2) members.push(pRuns([{text:`${memberIdx++}. ${d.gv2}`}]));
+  if(d.hs1Ten) members.push(pRuns([{text:`${memberIdx++}. ${d.hs1Ten}`},{text:d.hs1Lop?` — Học sinh lớp ${d.hs1Lop}`:''}]));
+  if(d.hs2Ten) members.push(pRuns([{text:`${memberIdx++}. ${d.hs2Ten}`},{text:d.hs2Lop?` — Học sinh lớp ${d.hs2Lop}`:''}]));
+  if(d.hs3Ten) members.push(pRuns([{text:`${memberIdx++}. ${d.hs3Ten}`},{text:d.hs3Lop?` — Học sinh lớp ${d.hs3Lop}`:''}]));
+
+  return [
+    p('TRƯỜNG THCS LONG THỌ', {bold:true, after:100}),
+    p(`BIÊN BẢN SỐ: ${d.soBB}`, {align:AlignmentType.CENTER, bold:true}),
+    p('Làm việc với học sinh', {align:AlignmentType.CENTER, bold:true, after:200}),
+    blank(),
+    pRuns([{text:`Hôm nay vào lúc ${d.gioBatDau}, ngày ${ngayFmt}`}]),
+    pRuns([{text:`Tại: ${d.diaDiem}`}]),
+    p('Thành phần tham dự:'),
+    ...members,
+    pRuns([{text:'Chủ tọa: '},{text:d.chuToa, bold:true},{text:'   —   Thư ký: '},{text:d.thuKy, bold:true}]),
+    blank(),
+    p('LÝ DO BUỔI LÀM VIỆC', {bold:true, underline:true, after:100}),
+    ...d.lyDo.split('\n').map(l=>p(l||' ')),
+    blank(),
+    p('NỘI DUNG', {bold:true, underline:true, after:100}),
+    ...d.noiDung.split('\n').map(l=>p(l||' ')),
+    blank(),
+    p('Ý KIẾN HỌC SINH', {bold:true, underline:true, after:100}),
+    ...d.ykienHS.split('\n').map(l=>p(l||' ')),
+    blank(),
+    p('KẾT LUẬN CỦA CHỦ TỌA', {bold:true, underline:true, after:100}),
+    ...d.ketLuan.split('\n').map(l=>p(l||' ')),
+    blank(),
+    pRuns([{text:`Biên bản kết thúc lúc ${d.gioKetThuc} cùng ngày.`}]),
+    pRuns([{text:'Biên bản đã được thông qua và các thành phần nhất trí ký tên.'}]),
+    blank(),
+    p(`Long Thọ, ngày ${fmtDay(d.ngay)||'...'} tháng ${fmtMonth(d.ngay)||'...'} năm ${fmtYear(d.ngay)||'....'}`  , {align:AlignmentType.CENTER, after:100}),
+    blank(),
+    threeColSig('Học sinh','Thư ký','Chủ tọa')
+  ];
+}
+
+function buildChildren3(){
+  const d = getData3();
+  const ngayFmt = fmtDate(d.ngay);
+  let memberIdx = 1;
+  const members = [];
+  members.push(pRuns([{text:`${memberIdx++}. ${d.gvcn}`},{text:` — Giáo viên chủ nhiệm lớp ${d.gvcnLop}`}]));
+  if(d.gv1) members.push(pRuns([{text:`${memberIdx++}. ${d.gv1}`}]));
+  if(d.gv2) members.push(pRuns([{text:`${memberIdx++}. ${d.gv2}`}]));
+  if(d.ph1Ten) members.push(pRuns([{text:`${memberIdx++}. ${d.ph1Ten}`},{text:d.ph1QuanHe?` — ${d.ph1QuanHe}`:''}]));
+  if(d.ph2Ten) members.push(pRuns([{text:`${memberIdx++}. ${d.ph2Ten}`},{text:d.ph2QuanHe?` — ${d.ph2QuanHe}`:''}]));
+  if(d.hsTen) members.push(pRuns([{text:`${memberIdx++}. ${d.hsTen}`},{text:d.hsLop?` — Học sinh lớp ${d.hsLop}`:''}]));
+
+  return [
+    p('TRƯỜNG THCS LONG THỌ', {bold:true, after:100}),
+    p(`BIÊN BẢN SỐ: ${d.soBB}`, {align:AlignmentType.CENTER, bold:true}),
+    p('Làm việc với phụ huynh học sinh', {align:AlignmentType.CENTER, bold:true, after:200}),
+    blank(),
+    pRuns([{text:`Hôm nay vào lúc ${d.gioBatDau}, ngày ${ngayFmt}`}]),
+    pRuns([{text:`Tại: ${d.diaDiem}`}]),
+    p('Thành phần tham dự:'),
+    ...members,
+    pRuns([{text:'Chủ tọa: '},{text:d.chuToa, bold:true},{text:'   —   Thư ký: '},{text:d.thuKy, bold:true}]),
+    blank(),
+    p('LÝ DO BUỔI LÀM VIỆC', {bold:true, underline:true, after:100}),
+    ...d.lyDo.split('\n').map(l=>p(l||' ')),
+    blank(),
+    p('NỘI DUNG', {bold:true, underline:true, after:100}),
+    ...d.noiDung.split('\n').map(l=>p(l||' ')),
+    blank(),
+    p('Ý KIẾN PHỤ HUYNH', {bold:true, underline:true, after:100}),
+    ...d.ykienPH.split('\n').map(l=>p(l||' ')),
+    blank(),
+    p('KẾT LUẬN CỦA CHỦ TỌA', {bold:true, underline:true, after:100}),
+    ...d.ketLuan.split('\n').map(l=>p(l||' ')),
+    blank(),
+    pRuns([{text:`Biên bản kết thúc lúc ${d.gioKetThuc} cùng ngày.`}]),
+    pRuns([{text:'Biên bản đã được thông qua và các thành phần nhất trí ký tên.'}]),
+    blank(),
+    p(`Long Thọ, ngày ${fmtDay(d.ngay)||'...'} tháng ${fmtMonth(d.ngay)||'...'} năm ${fmtYear(d.ngay)||'....'}`  , {align:AlignmentType.CENTER, after:100}),
+    blank(),
+    threeColSig('Phụ huynh','Thư ký','Chủ tọa')
+  ];
+}
+
+function buildChildren4(){
+  const tenHS = v('t4-tenhs')||'[Tên học sinh]';
+  const lop = v('t4-lop')||'......';
+  const namHoc = v('t4-namhoc')||'2025-2026';
+  const nsNgay = v('t4-ngaysinh-ngay')||'....';
+  const nsThang = v('t4-ngaysinh-thang')||'....';
+  const nsNam = v('t4-ngaysinh-nam')||'........';
+  const ap = v('t4-ap')||'......';
+  const xa = v('t4-xa')||'......';
+  const huyen = v('t4-huyen')||'......';
+  const chamMe = v('t4-chamme')||'......';
+  const sdt = v('t4-sdt')||'......';
+  const noiDung = v('t4-noidung')||'......';
+  const hinhThuc = v('t4-hinhthuc')||'......';
+  const loiHua = v('t4-loihua')||'......';
+  const ngayKy = v('t4-ngayky');
+
+  return [
+    ...headerVN(),
+    p('BẢN KIỂM ĐIỂM', {align:AlignmentType.CENTER, bold:true, after:200}),
+    blank(),
+    pRuns([{text:'Kính gửi: '},{text:v('t4-kinggui')||'Thầy (Cô) giáo viên chủ nhiệm', bold:true}]),
+    blank(),
+    pRuns([{text:'Tên em là: '},{text:tenHS, bold:true},{text:`   Lớp: ${lop}   Năm học: ${namHoc}`}]),
+    pRuns([{text:`Ngày sinh: ${nsNgay}/${nsThang}/${nsNam}`}]),
+    pRuns([{text:`Địa chỉ: Ấp ${ap}, xã ${xa}, huyện ${huyen}`}]),
+    pRuns([{text:`Họ tên cha/mẹ: ${chamMe}   Điện thoại: ${sdt}`}]),
+    blank(),
+    p('NỘI DUNG KIỂM ĐIỂM', {bold:true, underline:true, after:100}),
+    ...noiDung.split('\n').map(l=>p(l||' ')),
+    blank(),
+    p('HÌNH THỨC KỶ LUẬT XIN NHẬN', {bold:true, underline:true, after:100}),
+    ...hinhThuc.split('\n').map(l=>p(l||' ')),
+    blank(),
+    p('LỜI HỨA', {bold:true, underline:true, after:100}),
+    ...loiHua.split('\n').map(l=>p(l||' ')),
+    blank(),
+    p(`Long Thọ, ngày ${fmtDay(ngayKy)||'...'} tháng ${fmtMonth(ngayKy)||'...'} năm ${fmtYear(ngayKy)||'....'}`  , {align:AlignmentType.CENTER, after:100}),
+    twoColSig('Cha/Mẹ học sinh','Học sinh')
+  ];
+}
+
+function buildChildren5(){
+  const tenHS = v('t5-tenhs')||'[Tên học sinh]';
+  const lop = v('t5-lop')||'......';
+  const namHoc = v('t5-namhoc')||'2025-2026';
+  const nsNgay = v('t5-ngaysinh-ngay')||'....';
+  const nsThang = v('t5-ngaysinh-thang')||'....';
+  const nsNam = v('t5-ngaysinh-nam')||'........';
+  const ap = v('t5-ap')||'......';
+  const xa = v('t5-xa')||'......';
+  const huyen = v('t5-huyen')||'......';
+  const chamMe = v('t5-chamme')||'......';
+  const sdt = v('t5-sdt')||'......';
+  const noiDung = v('t5-noidung')||'......';
+  const ngayKy = v('t5-ngayky');
+
+  return [
+    ...headerVN(),
+    p('BẢN TƯỜNG TRÌNH', {align:AlignmentType.CENTER, bold:true, after:200}),
+    blank(),
+    pRuns([{text:'Kính gửi: '},{text:v('t5-kinggui')||'Thầy (Cô) giáo viên chủ nhiệm', bold:true}]),
+    blank(),
+    pRuns([{text:'Tên em là: '},{text:tenHS, bold:true},{text:`   Lớp: ${lop}   Năm học: ${namHoc}`}]),
+    pRuns([{text:`Ngày sinh: ${nsNgay}/${nsThang}/${nsNam}`}]),
+    pRuns([{text:`Địa chỉ: Ấp ${ap}, xã ${xa}, huyện ${huyen}`}]),
+    pRuns([{text:`Họ tên cha/mẹ: ${chamMe}   Điện thoại: ${sdt}`}]),
+    blank(),
+    p('NỘI DUNG SỰ VIỆC TƯỜNG TRÌNH', {bold:true, underline:true, after:100}),
+    ...noiDung.split('\n').map(l=>p(l||' ')),
+    blank(),
+    p(`Long Thọ, ngày ${fmtDay(ngayKy)||'...'} tháng ${fmtMonth(ngayKy)||'...'} năm ${fmtYear(ngayKy)||'....'}`  , {align:AlignmentType.CENTER, after:100}),
+    twoColSig('Cha/Mẹ học sinh','Học sinh')
+  ];
+}
+
+function buildChildren6(){
+  const tenHS = v('t6-tenhs')||'[Tên học sinh]';
+  const lop = v('t6-lop')||'6/3';
+  const namHoc = v('t6-namhoc')||'2025-2026';
+  const buoi = radioVal('t6-buoi')||'Sáng';
+  const ngayChi = v('t6-ngaychi');
+  const lyDo = v('t6-lydo')||'......';
+  const ngayDon = v('t6-ngaydon');
+
+  return [
+    ...headerVN(),
+    p('ĐƠN XIN PHÉP NGHỈ HỌC', {align:AlignmentType.CENTER, bold:true, after:200}),
+    blank(),
+    pRuns([{text:'Kính gửi: '},{text:'Ban Giám hiệu Trường THCS Long Thọ', bold:true}]),
+    pRuns([{text:'Và Giáo viên chủ nhiệm lớp ', bold:false},{text:lop, bold:true}]),
+    blank(),
+    pRuns([{text:'Tên tôi là: '},{text:tenHS, bold:true}]),
+    pRuns([{text:`Là học sinh lớp: ${lop}   Năm học: ${namHoc}`}]),
+    blank(),
+    pRuns([{text:`Tôi viết đơn này kính xin phép cho con/em được nghỉ học buổi `},{text:buoi, bold:true},{text:` ngày ${ngayChi ? fmtDate(ngayChi) : '....../......./........'}.`}]),
+    blank(),
+    p('LÝ DO:', {bold:true}),
+    ...lyDo.split('\n').map(l=>p(l||' ')),
+    blank(),
+    p('Kính mong Ban Giám hiệu và quý Thầy Cô xem xét chấp thuận.'),
+    p('Tôi xin chân thành cảm ơn!'),
+    blank(),
+    p(`Long Thọ, ngày ${fmtDay(ngayDon)||'...'} tháng ${fmtMonth(ngayDon)||'...'} năm ${fmtYear(ngayDon)||'....'}`  , {align:AlignmentType.CENTER, after:100}),
+    twoColSig('Cha/Mẹ học sinh','Học sinh')
+  ];
+}
+
+function buildChildren7(){
+  const tenHS = v('t7-tenhs')||'...........................';
+  const lop = v('t7-lop')||'......';
+  const gioRa = fmtTime(v('t7-giora'));
+  const ngayRa = v('t7-ngayra');
+  const lyDo = v('t7-lydo')||'......................................................................';
+  const tenGV = v('t7-tengv')||'[Tên GV]';
+  const ngayKy = v('t7-ngayky');
+
+  const ngayStr = ngayRa ? `ngày ${fmtDay(ngayRa)} tháng ${fmtMonth(ngayRa)} năm ${fmtYear(ngayRa)}` : 'ngày ......tháng......năm......';
+  const ngayKyStr = ngayKy ? `Long Thọ, ngày ${fmtDay(ngayKy)} tháng ${fmtMonth(ngayKy)} năm ${fmtYear(ngayKy)}` : 'Long Thọ, ngày......tháng......năm......';
+
+  const ticketChildren = [
+    p('TRƯỜNG THCS LONG THỌ', {bold:true, align:AlignmentType.CENTER}),
+    p('GIẤY CHO PHÉP RA CỔNG', {bold:true, align:AlignmentType.CENTER, after:100}),
+    pRuns([{text:'Học sinh: '},{text:tenHS, bold:true},{text:'   Lớp: '},{text:lop, bold:true}]),
+    pRuns([{text:`Được phép ra khỏi cổng lúc: ${gioRa}, ${ngayStr}`}]),
+    pRuns([{text:'Lý do: '},{text:lyDo}]),
+    p('Đề nghị bộ phận bảo vệ giải quyết.'),
+    blank(),
+    p(ngayKyStr, {align:AlignmentType.CENTER, after:100}),
+    twoColSig('Người đón học sinh','Giáo viên'),
+    new Paragraph({
+      children:[new TextRun({text:'(ký, ghi rõ họ tên và mối quan hệ với HS)', font:'Times New Roman', size:20, italics:true})],
+      alignment:AlignmentType.LEFT, spacing:{after:0,line:276}
+    })
+  ];
+
+  return [
+    ...ticketChildren,
+    blank(),
+    p('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -', {align:AlignmentType.CENTER, after:100}),
+    blank(),
+    ...ticketChildren
+  ];
+}
+
+function buildChildren8(){
+  const tenHS = v('t8-tenhs')||'...........................';
+  const ngaySinh = v('t8-ngaysinh');
+  const gioiTinh = radioVal('t8-gt')||'Nam';
+  const chaTen = v('t8-cha-ten')||'...........................';
+  const chaTuoi = v('t8-cha-tuoi')||'......';
+  const chaNghe = v('t8-cha-nghe')||'......';
+  const meTen = v('t8-me-ten')||'...........................';
+  const meTuoi = v('t8-me-tuoi')||'......';
+  const meNghe = v('t8-me-nghe')||'......';
+  const hoanCanh = v('t8-hoancaph')||'......';
+  const nguoiChamsoc = v('t8-nguoichamsoc');
+  const khoKhan = v('t8-khokhan')||'......';
+  const thongTin = v('t8-thongtinthuthap')||'......';
+  const nhanDinh = v('t8-nhandinh')||'......';
+  const hinhThuc = v('t8-hinhthuc')||'......';
+  const danhGia = v('t8-danhgia')||'......';
+  const lichHen = v('t8-lichhennext');
+  const ngayLap = v('t8-ngaylap');
+  const nguoiLap = v('t8-nguoilap')||'[GVCN]';
+
+  return [
+    p('TRƯỜNG THCS LONG THỌ', {bold:true, align:AlignmentType.CENTER}),
+    p('NHẬT KÝ TƯ VẤN HỌC ĐƯỜNG', {bold:true, align:AlignmentType.CENTER, after:200}),
+    blank(),
+    p('1. THÔNG TIN HỌC SINH', {bold:true, underline:true, after:80}),
+    pRuns([{text:'Họ tên: '},{text:tenHS, bold:true},{text:`   Ngày sinh: ${ngaySinh?fmtDate(ngaySinh):'....../......./........'}   Giới tính: ${gioiTinh}`}]),
+    blank(),
+    p('2. THÔNG TIN GIA ĐÌNH', {bold:true, underline:true, after:80}),
+    pRuns([{text:'Họ tên cha: '},{text:chaTen},{text:`   Tuổi: ${chaTuoi}   Nghề nghiệp: ${chaNghe}`}]),
+    pRuns([{text:'Họ tên mẹ: '},{text:meTen},{text:`   Tuổi: ${meTuoi}   Nghề nghiệp: ${meNghe}`}]),
+    pRuns([{text:'Hoàn cảnh gia đình: '},{text:hoanCanh}]),
+    ...(nguoiChamsoc ? [pRuns([{text:'Người chăm sóc trực tiếp: '},{text:nguoiChamsoc}])] : []),
+    blank(),
+    p('3. KHÓ KHĂN VÀ NHU CẦU CỦA HỌC SINH', {bold:true, underline:true, after:80}),
+    ...khoKhan.split('\n').map(l=>p(l||' ')),
+    blank(),
+    p('4. THÔNG TIN THU THẬP QUA TRAO ĐỔI', {bold:true, underline:true, after:80}),
+    ...thongTin.split('\n').map(l=>p(l||' ')),
+    blank(),
+    p('5. NHẬN ĐỊNH SƠ BỘ', {bold:true, underline:true, after:80}),
+    ...nhanDinh.split('\n').map(l=>p(l||' ')),
+    blank(),
+    p('6. HÌNH THỨC TƯ VẤN ĐÃ ÁP DỤNG', {bold:true, underline:true, after:80}),
+    ...hinhThuc.split('\n').map(l=>p(l||' ')),
+    blank(),
+    p('7. ĐÁNH GIÁ HIỆU QUẢ', {bold:true, underline:true, after:80}),
+    ...danhGia.split('\n').map(l=>p(l||' ')),
+    blank(),
+    ...(lichHen ? [pRuns([{text:'8. LỊCH HẸN TIẾP THEO: ', bold:true},{text:fmtDate(lichHen)}]), blank()] : []),
+    p(`Long Thọ, ngày ${fmtDay(ngayLap)||'...'} tháng ${fmtMonth(ngayLap)||'...'} năm ${fmtYear(ngayLap)||'....'}`  , {align:AlignmentType.CENTER, after:100}),
+    pRuns([{text:`Người lập nhật ký: `, bold:true},{text:nguoiLap}], {align:AlignmentType.CENTER})
+  ];
+}
+
+// ─── PREVIEW TEXT BUILDERS ─────────────────────────────────
+function previewText1(){
+  const d = getData1();
+  const thanhVienLines = d.thanhVien ? d.thanhVien.split('\n').filter(x=>x.trim()) : [];
+  let thanhVienBlock = thanhVienLines.map((l,i)=>`${i+3}. ${l}`).join('\n');
+  const dateKy = d.ngayKy;
+  return `
+        CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+           Độc lập - Tự do - Hạnh phúc
+                   ─────────────
+
+                       BIÊN BẢN
+   V/v Xử lý học sinh vi phạm nội quy nhà trường
+
+Hôm nay vào lúc ${d.gioBatDau} ngày ${d.ngay} tháng ${d.thang} năm ${d.nam}
+Tại lớp ${d.lop} trường THCS Long Thọ
+Chúng tôi gồm có:
+1. ${d.gvcn} — Chức vụ: Giáo viên chủ nhiệm
+2. ${d.lopTruong} — Chức vụ: Lớp trưởng
+${thanhVienBlock}
+Tiến hành lập biên bản học sinh vi phạm nội quy nhà trường lần thứ ${d.lanThu} đối với em ${d.tenHS}
+
+NỘI DUNG
+${d.noiDung}
+
+CAM KẾT CỦA HỌC SINH VI PHẠM
+${d.camKet}
+
+Biên bản đã đọc cho cả lớp cùng nghe, đồng ý và ký.
+Biên bản kết thúc vào lúc ${d.gioKetThuc} cùng ngày.
+
+              Long Thọ, ngày ${fmtDay(dateKy)||d.ngay} tháng ${fmtMonth(dateKy)||d.thang} năm ${dateKy?fmtYear(dateKy):d.nam}
+HS vi phạm         Lớp trưởng              GVCN
+(Ký, ghi rõ họ tên)  (Ký, ghi rõ họ tên)  (Ký, ghi rõ họ tên)
+`.trim();
+}
+
+function previewText2(){
+  const d = getData2();
+  return `
+UBND HUYỆN NHƠN TRẠCH
+TRƯỜNG THCS LONG THỌ
+
+                  BIÊN BẢN SỐ: ${d.soBB}
+               Làm việc với học sinh
+
+Hôm nay vào lúc ${d.gioBatDau}, ngày ${fmtDate(d.ngay)}
+Tại: ${d.diaDiem}
+Thành phần tham dự:
+1. ${d.gvcn} — Giáo viên chủ nhiệm lớp ${d.gvcnLop}
+${d.gv1 ? '2. '+d.gv1+'\n' : ''}${d.gv2 ? '3. '+d.gv2+'\n' : ''}${d.hs1Ten ? '- HS: '+d.hs1Ten+(d.hs1Lop?' lớp '+d.hs1Lop:'')+'\n' : ''}
+Chủ tọa: ${d.chuToa}   —   Thư ký: ${d.thuKy}
+
+LÝ DO BUỔI LÀM VIỆC:
+${d.lyDo}
+
+NỘI DUNG:
+${d.noiDung}
+
+Ý KIẾN HỌC SINH:
+${d.ykienHS}
+
+KẾT LUẬN CỦA CHỦ TỌA:
+${d.ketLuan}
+
+Biên bản kết thúc lúc ${d.gioKetThuc} cùng ngày.
+
+        Long Thọ, ngày ${fmtDay(d.ngay)} tháng ${fmtMonth(d.ngay)} năm ${fmtYear(d.ngay)}
+Học sinh         Thư ký              Chủ tọa
+`.trim();
+}
+
+function previewText3(){
+  const d = getData3();
+  return `
+UBND HUYỆN NHƠN TRẠCH
+TRƯỜNG THCS LONG THỌ
+
+              BIÊN BẢN SỐ: ${d.soBB}
+         Làm việc với phụ huynh học sinh
+
+Hôm nay vào lúc ${d.gioBatDau}, ngày ${fmtDate(d.ngay)}
+Tại: ${d.diaDiem}
+Thành phần tham dự:
+1. ${d.gvcn} — Giáo viên chủ nhiệm lớp ${d.gvcnLop}
+${d.gv1 ? '2. '+d.gv1+'\n' : ''}${d.ph1Ten ? '- PH: '+d.ph1Ten+(d.ph1QuanHe?' ('+d.ph1QuanHe+')':'')+'\n' : ''}
+Chủ tọa: ${d.chuToa}   —   Thư ký: ${d.thuKy}
+
+LÝ DO BUỔI LÀM VIỆC:
+${d.lyDo}
+
+NỘI DUNG:
+${d.noiDung}
+
+Ý KIẾN PHỤ HUYNH:
+${d.ykienPH}
+
+KẾT LUẬN CỦA CHỦ TỌA:
+${d.ketLuan}
+
+Biên bản kết thúc lúc ${d.gioKetThuc} cùng ngày.
+
+     Long Thọ, ngày ${fmtDay(d.ngay)} tháng ${fmtMonth(d.ngay)} năm ${fmtYear(d.ngay)}
+Phụ huynh        Thư ký              Chủ tọa
+`.trim();
+}
+
+function previewText4(){
+  const ngayKy = v('t4-ngayky');
+  return `
+        CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+           Độc lập - Tự do - Hạnh phúc
+                   ─────────────
+
+                   BẢN KIỂM ĐIỂM
+
+Kính gửi: ${v('t4-kinggui')||'Thầy (Cô) giáo viên chủ nhiệm'}
+
+Tên em là: ${v('t4-tenhs')||'..........'}   Lớp: ${v('t4-lop')||'...'}   Năm học: ${v('t4-namhoc')||'2025-2026'}
+Ngày sinh: ${v('t4-ngaysinh-ngay')||'..'}/${v('t4-ngaysinh-thang')||'..'}/${v('t4-ngaysinh-nam')||'........'}
+Địa chỉ: Ấp ${v('t4-ap')||'......'}, xã ${v('t4-xa')||'......'}, huyện ${v('t4-huyen')||'......'}
+Họ tên cha/mẹ: ${v('t4-chamme')||'......'}   Điện thoại: ${v('t4-sdt')||'......'}
+
+NỘI DUNG KIỂM ĐIỂM:
+${v('t4-noidung')||'......'}
+
+HÌNH THỨC KỶ LUẬT XIN NHẬN:
+${v('t4-hinhthuc')||'......'}
+
+LỜI HỨA:
+${v('t4-loihua')||'......'}
+
+       Long Thọ, ngày ${fmtDay(ngayKy)||'...'} tháng ${fmtMonth(ngayKy)||'...'} năm ${fmtYear(ngayKy)||'....'}
+Cha/Mẹ học sinh                      Học sinh
+`.trim();
+}
+
+function previewText5(){
+  const ngayKy = v('t5-ngayky');
+  return `
+        CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+           Độc lập - Tự do - Hạnh phúc
+                   ─────────────
+
+                   BẢN TƯỜNG TRÌNH
+
+Kính gửi: ${v('t5-kinggui')||'Thầy (Cô) giáo viên chủ nhiệm'}
+
+Tên em là: ${v('t5-tenhs')||'..........'}   Lớp: ${v('t5-lop')||'...'}   Năm học: ${v('t5-namhoc')||'2025-2026'}
+Ngày sinh: ${v('t5-ngaysinh-ngay')||'..'}/${v('t5-ngaysinh-thang')||'..'}/${v('t5-ngaysinh-nam')||'........'}
+Địa chỉ: Ấp ${v('t5-ap')||'......'}, xã ${v('t5-xa')||'......'}, huyện ${v('t5-huyen')||'......'}
+Họ tên cha/mẹ: ${v('t5-chamme')||'......'}   Điện thoại: ${v('t5-sdt')||'......'}
+
+NỘI DUNG SỰ VIỆC TƯỜNG TRÌNH:
+${v('t5-noidung')||'......'}
+
+       Long Thọ, ngày ${fmtDay(ngayKy)||'...'} tháng ${fmtMonth(ngayKy)||'...'} năm ${fmtYear(ngayKy)||'....'}
+Cha/Mẹ học sinh                      Học sinh
+`.trim();
+}
+
+function previewText6(){
+  const ngayDon = v('t6-ngaydon');
+  const ngayChi = v('t6-ngaychi');
+  return `
+        CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM
+           Độc lập - Tự do - Hạnh phúc
+                   ─────────────
+
+               ĐƠN XIN PHÉP NGHỈ HỌC
+
+Kính gửi: Ban Giám hiệu Trường THCS Long Thọ
+Và Giáo viên chủ nhiệm lớp ${v('t6-lop')||'6/3'}
+
+Tên tôi là: ${v('t6-tenhs')||'..........'}
+Là học sinh lớp: ${v('t6-lop')||'6/3'}   Năm học: ${v('t6-namhoc')||'2025-2026'}
+
+Tôi viết đơn này kính xin phép cho con/em được nghỉ học
+buổi ${radioVal('t6-buoi')||'Sáng'} ngày ${ngayChi?fmtDate(ngayChi):'....../......./........'}.
+
+LÝ DO:
+${v('t6-lydo')||'......'}
+
+Kính mong Ban Giám hiệu và quý Thầy Cô xem xét chấp thuận.
+Tôi xin chân thành cảm ơn!
+
+       Long Thọ, ngày ${fmtDay(ngayDon)||'...'} tháng ${fmtMonth(ngayDon)||'...'} năm ${fmtYear(ngayDon)||'....'}
+Cha/Mẹ học sinh                      Học sinh
+`.trim();
+}
+
+function previewText7(){
+  const tenHS = v('t7-tenhs')||'...........................';
+  const lop = v('t7-lop')||'......';
+  const gioRa = fmtTime(v('t7-giora'));
+  const ngayRa = v('t7-ngayra');
+  const lyDo = v('t7-lydo')||'......';
+  const ngayKy = v('t7-ngayky');
+  const ticket = `TRƯỜNG THCS LONG THỌ
+        GIẤY CHO PHÉP RA CỔNG
+Học sinh: ${tenHS}   lớp: ${lop}
+Được phép ra khỏi cổng lúc: ${gioRa}, ${ngayRa?`ngày ${fmtDay(ngayRa)} tháng ${fmtMonth(ngayRa)} năm ${fmtYear(ngayRa)}`:'ngày.....tháng.....năm.....'}
+Lý do: ${lyDo}
+Đề nghị bộ phận bảo vệ giải quyết.
+   ${ngayKy?`Long Thọ, ngày ${fmtDay(ngayKy)} tháng ${fmtMonth(ngayKy)} năm ${fmtYear(ngayKy)}`:'Long Thọ, ngày.....tháng.....năm.....'}
+NGƯỜI ĐÓN HỌC SINH               GIÁO VIÊN
+(ký, ghi rõ họ tên và quan hệ với HS)    (ký, ghi rõ họ tên)`;
+  return ticket + '\n\n─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─\n\n' + ticket;
+}
+
+function previewText8(){
+  const ngayLap = v('t8-ngaylap');
+  return `
+TRƯỜNG THCS LONG THỌ
+         NHẬT KÝ TƯ VẤN HỌC ĐƯỜNG
+
+1. THÔNG TIN HỌC SINH
+Họ tên: ${v('t8-tenhs')||'..........'}
+Ngày sinh: ${v('t8-ngaysinh')?fmtDate(v('t8-ngaysinh')):'....../......./........'}   Giới tính: ${radioVal('t8-gt')||'Nam'}
+
+2. THÔNG TIN GIA ĐÌNH
+Họ tên cha: ${v('t8-cha-ten')||'......'}   Tuổi: ${v('t8-cha-tuoi')||'..'}   Nghề nghiệp: ${v('t8-cha-nghe')||'......'}
+Họ tên mẹ: ${v('t8-me-ten')||'......'}   Tuổi: ${v('t8-me-tuoi')||'..'}   Nghề nghiệp: ${v('t8-me-nghe')||'......'}
+Hoàn cảnh gia đình: ${v('t8-hoancaph')||'......'}
+${v('t8-nguoichamsoc')?'Người chăm sóc: '+v('t8-nguoichamsoc'):''}
+
+3. KHÓ KHĂN VÀ NHU CẦU
+${v('t8-khokhan')||'......'}
+
+4. THÔNG TIN THU THẬP QUA TRAO ĐỔI
+${v('t8-thongtinthuthap')||'......'}
+
+5. NHẬN ĐỊNH SƠ BỘ
+${v('t8-nhandinh')||'......'}
+
+6. HÌNH THỨC TƯ VẤN ĐÃ ÁP DỤNG
+${v('t8-hinhthuc')||'......'}
+
+7. ĐÁNH GIÁ HIỆU QUẢ
+${v('t8-danhgia')||'......'}
+${v('t8-lichhennext')?'\n8. LỊCH HẸN TIẾP THEO: '+fmtDate(v('t8-lichhennext')):''}
+
+      Long Thọ, ngày ${fmtDay(ngayLap)||'...'} tháng ${fmtMonth(ngayLap)||'...'} năm ${fmtYear(ngayLap)||'....'}
+                Người lập nhật ký: ${v('t8-nguoilap')||'[GVCN]'}
+`.trim();
+}
+
+// ─── UI CONTROL ────────────────────────────────────────────
+let currentTemplate = 0;
+const previewFns = [null,previewText1,previewText2,previewText3,previewText4,previewText5,previewText6,previewText7,previewText8];
+const buildFns = [null,buildChildren1,buildChildren2,buildChildren3,buildChildren4,buildChildren5,buildChildren6,buildChildren7,buildChildren8];
+const titles = ['','BB Xử lý HS vi phạm','BB Làm việc với HS','BB Làm việc với PH','Bản kiểm điểm','Bản tường trình','Đơn xin phép nghỉ học','Giấy ra cổng','Nhật ký tư vấn học đường'];
+
+function showTemplate(n){
+  document.getElementById('overview').style.display = 'none';
+  document.querySelectorAll('.form-panel').forEach(el=>el.classList.remove('active'));
+  document.getElementById('panel-'+n).classList.add('active');
+  document.querySelectorAll('.tpl-card').forEach((el,i)=>{
+    el.classList.toggle('active', i===n-1);
+  });
+  currentTemplate = n;
+  // Set today as default for date fields if empty
+  const today = new Date().toISOString().split('T')[0];
+  ['t1-ngayky','t4-ngayky','t5-ngayky','t6-ngaydon','t7-ngayky','t8-ngaylap'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el && !el.value) el.value = today;
+  });
+}
+
+function backToOverview(){
+  document.getElementById('overview').style.display = 'block';
+  document.querySelectorAll('.form-panel').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.tpl-card').forEach(el=>el.classList.remove('active'));
+  currentTemplate = 0;
+}
+
+function previewTemplate(n){
+  const fn = previewFns[n];
+  if(!fn) return;
+  document.getElementById('modal-title').textContent = 'Xem trước: ' + titles[n];
+  document.getElementById('modal-content').textContent = fn();
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(){
+  document.getElementById('modal').classList.remove('open');
+}
+
+document.getElementById('modal').addEventListener('click', function(e){
+  if(e.target===this) closeModal();
+});
+
+async function exportTemplate(n){
+  const fn = buildFns[n];
+  if(!fn) return;
+  try {
+    const children = fn();
+    const doc = makeDoc(children);
+    const buffer = await docx.Packer.toBlob(doc);
+    const fileName = titles[n].replace(/\s+/g,'_') + '_' + new Date().toISOString().slice(0,10) + '.docx';
+    saveAs(buffer, fileName);
+  } catch(err){
+    alert('Lỗi xuất file: ' + err.message);
+    console.error(err);
+  }
+}
+
+// Set current year defaults
+document.getElementById('t1-nam').value = new Date().getFullYear();
+document.getElementById('t1-ngay').value = new Date().getDate();
+document.getElementById('t1-thang').value = new Date().getMonth()+1;
+</script>
+</body>
+</html>

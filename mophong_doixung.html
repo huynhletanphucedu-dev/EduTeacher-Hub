@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Đối Xứng – EduTeacher Hub</title>
+<style>
+:root{
+  --bg:#0f172a;--card:#1e293b;--border:#334155;
+  --teal:#06b6d4;--purple:#8b5cf6;--orange:#f59e0b;
+  --green:#10b981;--red:#ef4444;--text:#e2e8f0;--sub:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);
+     height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.header{background:var(--card);border-bottom:1px solid var(--border);
+        padding:11px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.header h1{font-size:.98rem;font-weight:800;}
+.back-link{color:var(--sub);text-decoration:none;font-size:.78rem;font-weight:600;
+           padding:5px 10px;border-radius:7px;border:1px solid var(--border);}
+.btn-fs{background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:8px;
+        padding:6px 14px;color:var(--text);cursor:pointer;font-size:.78rem;font-weight:700;font-family:inherit;}
+.tab-bar{display:flex;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;}
+.mbar-tab{flex:1;padding:12px 8px;border:none;font-size:.9rem;font-weight:800;cursor:pointer;
+          background:transparent;color:var(--sub);border-bottom:3px solid transparent;
+          transition:all .15s;font-family:inherit;}
+.mbar-tab.active{color:var(--teal);border-bottom-color:var(--teal);background:rgba(6,182,212,.05);}
+.body-wrap{flex:1;display:flex;overflow:hidden;}
+.stage-area{flex:1;display:flex;align-items:center;justify-content:center;
+            background:var(--bg);padding:16px;}
+.controls{width:296px;flex-shrink:0;background:var(--card);border-left:1px solid var(--border);
+          padding:18px 16px;display:flex;flex-direction:column;gap:13px;overflow-y:auto;}
+#svg-stage{display:block;border-radius:18px;
+           box-shadow:0 10px 40px rgba(0,0,0,.55);background:#f8fafc;}
+.sec-title{font-size:.68rem;font-weight:800;color:var(--sub);
+           text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px;}
+.shape-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;}
+.shape-btn{padding:7px 2px;background:rgba(255,255,255,.05);border:1.5px solid var(--border);
+           border-radius:8px;color:var(--text);font-size:.65rem;font-weight:700;
+           cursor:pointer;text-align:center;transition:all .12s;font-family:inherit;line-height:1.3;}
+.shape-btn:hover{border-color:var(--teal);color:var(--teal);}
+.shape-btn.active{border-color:var(--teal);background:rgba(6,182,212,.12);color:var(--teal);}
+.axis-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:5px;}
+.axis-btn{padding:9px 6px;background:rgba(255,255,255,.05);border:1.5px solid var(--border);
+          border-radius:9px;color:var(--text);font-size:.8rem;font-weight:700;
+          cursor:pointer;transition:all .12s;text-align:center;font-family:inherit;}
+.axis-btn:hover{border-color:var(--purple);color:var(--purple);}
+.axis-btn.active{border-color:var(--purple);background:rgba(139,92,246,.15);color:var(--purple);}
+.action-btn{width:100%;padding:12px;border:none;border-radius:12px;font-size:.92rem;
+            font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;
+            display:flex;align-items:center;justify-content:center;gap:7px;}
+.action-btn:hover{transform:translateY(-1px);}
+.btn-fold{background:linear-gradient(135deg,#06b6d4,#3b82f6);color:#fff;
+          box-shadow:0 4px 14px rgba(6,182,212,.3);}
+.btn-rotate{background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#fff;
+            box-shadow:0 4px 14px rgba(139,92,246,.3);}
+.btn-reset{background:rgba(255,255,255,.07);color:var(--sub);border:1px solid var(--border);}
+.info-box{border-radius:10px;padding:12px 13px;font-size:.8rem;line-height:1.65;
+          background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.2);}
+.info-box.ok{background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.3);}
+.info-box.no{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);}
+.sym-row{display:flex;gap:5px;flex-wrap:wrap;}
+.sym-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;
+           font-size:.7rem;font-weight:800;}
+.badge-has{background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.25);}
+.badge-none{background:rgba(248,113,113,.1);color:#f87171;border:1px solid rgba(248,113,113,.2);}
+.axis-hint{font-size:.72rem;color:var(--purple);text-align:center;font-weight:600;min-height:16px;}
+</style>
+</head>
+<body>
+<div class="header">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <a href="dashboard.html" class="back-link">← Dashboard</a>
+    <h1>📐 Đối Xứng</h1>
+  </div>
+  <button class="btn-fs" onclick="toggleFS()">⛶ Toàn màn hình</button>
+</div>
+<div class="tab-bar">
+  <button class="mbar-tab active" id="tab-truc" onclick="switchTab('truc')">📏 Trục Đối Xứng</button>
+  <button class="mbar-tab" id="tab-tam" onclick="switchTab('tam')">⭕ Tâm Đối Xứng</button>
+</div>
+<div id="instruction-bar" style="background:rgba(168,85,247,.12);border-bottom:1px solid rgba(168,85,247,.25);
+     padding:8px 20px;font-size:.78rem;color:#c4b5fd;text-align:center;flex-shrink:0;
+     display:flex;align-items:center;justify-content:center;gap:18px;">
+  <span id="instr-truc">✋ Kéo đường trục tím để dịch chuyển trục · Chọn hình → chọn trục → nhấn <b>Gập</b></span>
+  <span id="instr-tam" style="display:none">✋ Chọn hình → nhấn <b>Xoay 180°</b> để kiểm tra tâm đối xứng</span>
+</div>
+<div class="body-wrap">
+  <div class="stage-area">
+    <svg id="svg-stage" width="430" height="430" viewBox="-215 -215 430 430">
+      <defs>
+        <!-- clip-fold: the half that folds, clip-stay: the half that stays -->
+        <clipPath id="clip-fold"><polygon id="fold-poly" points="-215,-215 215,-215 215,0 -215,0"/></clipPath>
+        <clipPath id="clip-stay"><polygon id="stay-poly" points="-215,0 215,0 215,215 -215,215"/></clipPath>
+      </defs>
+      <!-- grid -->
+      <g id="g-grid" opacity="0.07" stroke="#64748b" stroke-width="1"></g>
+      <!-- stay-side of original -->
+      <g id="g-stay" clip-path="url(#clip-stay)" fill="#06b6d4" stroke="#0891b2" stroke-width="2.5" opacity="0.9"></g>
+      <!-- fold-side of original (this half animates) -->
+      <g id="g-fold" clip-path="url(#clip-fold)" fill="#06b6d4" stroke="#0891b2" stroke-width="2.5" opacity="0.9"></g>
+      <!-- reflected/rotated copy -->
+      <g id="g-copy" fill="#f59e0b" stroke="#d97706" stroke-width="2.5" opacity="0"></g>
+      <!-- axis visible line -->
+      <line id="axis-line" x1="-215" y1="0" x2="215" y2="0"
+            stroke="#a855f7" stroke-width="2.5" stroke-dasharray="10 6" opacity="0"/>
+      <!-- axis invisible fat hit area – easy to grab anywhere along the line -->
+      <line id="axis-hit" x1="-215" y1="0" x2="215" y2="0"
+            stroke="transparent" stroke-width="28" opacity="0"
+            style="cursor:grab"/>
+      <!-- drag handle dot (visual indicator at center) -->
+      <circle id="axis-handle" cx="0" cy="0" r="9" fill="#a855f7" stroke="#fff"
+              stroke-width="2.5" opacity="0"/>
+      <!-- center O (for tam tab) -->
+      <g id="g-center" opacity="0">
+        <circle cx="0" cy="0" r="8" fill="#ef4444" stroke="#fff" stroke-width="2.5"/>
+        <text x="13" y="5" font-size="17" font-weight="800" fill="#ef4444"
+              font-family="Segoe UI,sans-serif">O</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- TRỤC controls -->
+  <div class="controls" id="ctrl-truc">
+    <div>
+      <div class="sec-title">1 · Chọn hình</div>
+      <div class="shape-grid" id="sg-truc"></div>
+    </div>
+    <div>
+      <div class="sec-title">2 · Chọn trục kiểm tra</div>
+      <div class="axis-grid" id="axis-grid"></div>
+      <div class="axis-hint" id="axis-hint">Chọn một trục ở trên</div>
+    </div>
+    <div class="sym-row" id="truc-badges"></div>
+    <button class="action-btn btn-fold" id="btn-fold" onclick="doFold()">📏 Gập theo trục</button>
+    <div class="info-box" id="truc-info">Chọn hình và trục, rồi nhấn <b>Gập</b> để xem hai nửa có khớp nhau không.</div>
+    <button class="action-btn btn-reset" onclick="resetTruc()">↺ Đặt lại</button>
+  </div>
+
+  <!-- TÂM controls -->
+  <div class="controls" id="ctrl-tam" style="display:none">
+    <div>
+      <div class="sec-title">Chọn hình</div>
+      <div class="shape-grid" id="sg-tam"></div>
+    </div>
+    <div class="sym-row" id="tam-badges"></div>
+    <button class="action-btn btn-rotate" onclick="doRotate()">⭕ Xoay 180°</button>
+    <div class="info-box" id="tam-info">Nhấn <b>Xoay 180°</b> để xem hình có trùng khít với vị trí ban đầu không.</div>
+    <button class="action-btn btn-reset" onclick="resetTam()">↺ Đặt lại</button>
+  </div>
+</div>
+
+<script>
+/* ═══ DATA ═══ */
+const SHAPES = [
+  {id:'square',   name:'Vuông',      svg:`<rect x="-85" y="-85" width="170" height="170" rx="3"/>`,             truc:4, tam:true},
+  {id:'rect',     name:'Chữ nhật',   svg:`<rect x="-115" y="-58" width="230" height="116" rx="3"/>`,           truc:2, tam:true},
+  {id:'circle',   name:'Tròn',       svg:`<circle r="90"/>`,                                                     truc:99,tam:true},
+  {id:'triangle', name:'TG đều',     svg:`<polygon points="0,-100 87,50 -87,50"/>`,                             truc:3, tam:false},
+  {id:'rhombus',  name:'Hình thoi',  svg:`<polygon points="0,-95 80,0 0,95 -80,0"/>`,                          truc:2, tam:true},
+  {id:'trapezoid',name:'TH cân',     svg:`<polygon points="-60,-62 60,-62 108,62 -108,62"/>`,                  truc:1, tam:false},
+  {id:'para',     name:'Bình hành',  svg:`<polygon points="-50,-62 130,-62 50,62 -130,62"/>`,                  truc:0, tam:true},
+  {id:'hex',      name:'LG đều',     svg:`<polygon points="0,-100 87,-50 87,50 0,100 -87,50 -87,-50"/>`,      truc:6, tam:true},
+  {id:'txt-A',    name:'Chữ A',      svg:`<text y="0" text-anchor="middle" dominant-baseline="central" font-size="170" font-weight="900" font-family="Arial">A</text>`, truc:1,tam:false},
+  {id:'txt-H',    name:'Chữ H',      svg:`<text y="0" text-anchor="middle" dominant-baseline="central" font-size="170" font-weight="900" font-family="Arial">H</text>`, truc:2,tam:true},
+  {id:'txt-S',    name:'Chữ S',      svg:`<text y="0" text-anchor="middle" dominant-baseline="central" font-size="170" font-weight="900" font-family="Arial">S</text>`, truc:0,tam:true},
+  {id:'txt-N',    name:'Chữ N',      svg:`<text y="0" text-anchor="middle" dominant-baseline="central" font-size="170" font-weight="900" font-family="Arial">N</text>`, truc:0,tam:true},
+  {id:'txt-Z',    name:'Chữ Z',      svg:`<text y="0" text-anchor="middle" dominant-baseline="central" font-size="170" font-weight="900" font-family="Arial">Z</text>`, truc:0,tam:true},
+  {id:'txt-M',    name:'Chữ M',      svg:`<text y="0" text-anchor="middle" dominant-baseline="central" font-size="170" font-weight="900" font-family="Arial">M</text>`, truc:1,tam:false},
+  {id:'star',     name:'Sao 5 cánh', svg:`<polygon points="0,-105 25,-38 95,-38 40,15 60,82 0,45 -60,82 -40,15 -95,-38 -25,-38"/>`, truc:5,tam:false},
+  {id:'heart',    name:'Trái tim',   svg:`<path d="M0,80 C-115,-20 -125,-100 -52,-100 C-22,-100 0,-76 0,-76 C0,-76 22,-100 52,-100 C125,-100 115,-20 0,80Z"/>`, truc:1,tam:false},
+];
+
+const AXES = [
+  {id:'h',  angle:0,   label:'Ngang ─', hint:'Trục nằm ngang (y = 0)',
+   fold_poly:'-215,-215 215,-215 215,0 -215,0',
+   stay_poly:'-215,0 215,0 215,215 -215,215'},
+  {id:'v',  angle:90,  label:'Dọc │', hint:'Trục thẳng đứng (x = 0)',
+   fold_poly:'-215,-215 0,-215 0,215 -215,215',
+   stay_poly:'0,-215 215,-215 215,215 0,215'},
+  {id:'d1', angle:45,  label:'Chéo ╱', hint:'Trục chéo 45° (y = −x)',
+   fold_poly:'-215,-215 215,-215 215,215',
+   stay_poly:'-215,-215 -215,215 215,215'},
+  {id:'d2', angle:135, label:'Chéo ╲', hint:'Trục chéo 135° (y = x)',
+   fold_poly:'215,-215 215,215 -215,215',
+   stay_poly:'-215,-215 215,-215 -215,215'},
+];
+
+// Which shapes have each axis as sym axis
+const HAS_AXIS = {
+  h:  ['square','rect','circle','rhombus','trapezoid','hex','txt-A','txt-H','txt-M','triangle'],
+  v:  ['square','rect','circle','rhombus','hex','txt-H','txt-M'],
+  d1: ['square','circle','hex','rhombus'],
+  d2: ['square','circle','hex','rhombus'],
+};
+
+let curTab='truc', selTruc='square', selTam='square', selAxis='h';
+let folded=false, tamRotating=false, rotAF=null, foldAF=null;
+let axisOffset=0;
+let draggingAxis=false, dragStartSVG=null;
+let tamCX=0, tamCY=0; // actual center of current tam shape (from getBBox)
+
+/* ═══ INIT ═══ */
+(function drawGrid(){
+  let h='';
+  for(let i=-200;i<=200;i+=40){
+    h+=`<line x1="${i}" y1="-215" x2="${i}" y2="215"/>`;
+    h+=`<line x1="-215" y1="${i}" x2="215" y2="${i}"/>`;
+  }
+  h+=`<line x1="-215" y1="0" x2="215" y2="0" stroke="#475569" stroke-width="1.5"/>`;
+  h+=`<line x1="0" y1="-215" x2="0" y2="215" stroke="#475569" stroke-width="1.5"/>`;
+  document.getElementById('g-grid').innerHTML=h;
+})();
+
+buildShapeGrids(); buildAxisGrid(); renderTruc();
+
+function sh(id){return SHAPES.find(s=>s.id===id);}
+function ax(id){return AXES.find(a=>a.id===id);}
+
+/* ═══ BUILDERS ═══ */
+function buildShapeGrids(){
+  ['truc','tam'].forEach(tab=>{
+    const cur=tab==='truc'?selTruc:selTam;
+    document.getElementById('sg-'+tab).innerHTML=
+      SHAPES.map(s=>`<button class="shape-btn${s.id===cur?' active':''}" onclick="selShape('${tab}','${s.id}')">${s.name}</button>`).join('');
+  });
+}
+function buildAxisGrid(){
+  document.getElementById('axis-grid').innerHTML=
+    AXES.map(a=>`<button class="axis-btn${a.id===selAxis?' active':''}" onclick="selAx('${a.id}')">${a.label}</button>`).join('');
+}
+
+/* ═══ RENDER ═══ */
+function renderTruc(){
+  const s=sh(selTruc); const a=ax(selAxis);
+  ['g-stay','g-fold','g-copy'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.innerHTML=s.svg;
+    el.setAttribute('transform','');
+    el.setAttribute('opacity', id==='g-copy'?'0':'0.9');
+  });
+  document.getElementById('g-stay').setAttribute('clip-path','url(#clip-stay)');
+  document.getElementById('g-fold').setAttribute('clip-path','url(#clip-fold)');
+  document.getElementById('g-copy').setAttribute('clip-path','');
+  updateClips(a.angle, axisOffset);
+  updateAxisLine();
+  document.getElementById('g-center').setAttribute('opacity','0');
+  folded=false;
+  updateBadgesTruc();
+  setInfo('truc','Chọn trục rồi nhấn <b>Gập theo trục</b> để xem hai nửa có khớp nhau không.','');
+}
+
+function renderTam(){
+  const s=sh(selTam);
+  ['g-fold'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.innerHTML=''; el.setAttribute('clip-path',''); el.setAttribute('transform','');
+  });
+
+  // Render original into g-copy first (no transform) to measure bbox
+  const orig=document.getElementById('g-copy');
+  orig.innerHTML=s.svg;
+  orig.setAttribute('transform','');
+  orig.setAttribute('fill','#06b6d4');
+  orig.setAttribute('stroke','#0891b2');
+  orig.setAttribute('opacity','0.9');
+  orig.setAttribute('clip-path','');
+
+  // Use getBBox to find the actual visual center of this shape
+  try{
+    const b=orig.getBBox();
+    tamCX=b.x+b.width/2;
+    tamCY=b.y+b.height/2;
+  } catch(e){ tamCX=0; tamCY=0; }
+
+  // Center both groups at origin via translate
+  const centerTf=`translate(${(-tamCX).toFixed(2)},${(-tamCY).toFixed(2)})`;
+  orig.setAttribute('transform', centerTf);
+
+  // Rotated copy in g-stay
+  const copy=document.getElementById('g-stay');
+  copy.innerHTML=s.svg;
+  copy.setAttribute('fill','#f59e0b');
+  copy.setAttribute('stroke','#d97706');
+  copy.setAttribute('opacity','0');
+  copy.setAttribute('clip-path','');
+  copy.setAttribute('transform', centerTf);
+
+  document.getElementById('axis-line').setAttribute('opacity','0');
+  document.getElementById('g-center').setAttribute('opacity','1');
+  tamRotating=false;
+  updateBadgesTam();
+  setInfo('tam','Nhấn <b>Xoay 180°</b> để xem hình có trùng khít với vị trí ban đầu không.','');
+}
+
+function updateAxisLine(){
+  const a=ax(selAxis);
+  const th=a.angle*Math.PI/180, c=Math.cos(th), s=Math.sin(th), L=215;
+  const [ox,oy]=axisOrigin(a.angle, axisOffset);
+  ['axis-line','axis-hit'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.setAttribute('x1',ox-L*c); el.setAttribute('y1',oy-L*s);
+    el.setAttribute('x2',ox+L*c); el.setAttribute('y2',oy+L*s);
+    el.setAttribute('opacity','1');
+  });
+  const handle=document.getElementById('axis-handle');
+  handle.setAttribute('cx',ox); handle.setAttribute('cy',oy);
+  handle.setAttribute('opacity','1');
+  document.getElementById('axis-hint').textContent=a.hint+(axisOffset!==0?' (đã dịch chuyển)':'');
+}
+
+function updateBadgesTruc(){
+  const s=sh(selTruc);
+  const hasThis=HAS_AXIS[selAxis]?.includes(s.id)||s.truc===99;
+  document.getElementById('truc-badges').innerHTML=
+    `<span class="sym-badge ${s.truc>0?'badge-has':'badge-none'}">${s.truc===99?'∞':s.truc} trục đối xứng</span>`+
+    `<span class="sym-badge ${hasThis?'badge-has':'badge-none'}">${hasThis?'✓ Trục này đúng':'✗ Trục này sai'}</span>`;
+}
+function updateBadgesTam(){
+  const s=sh(selTam);
+  document.getElementById('tam-badges').innerHTML=
+    `<span class="sym-badge ${s.tam?'badge-has':'badge-none'}">${s.tam?'✓ Có tâm đối xứng':'✗ Không có tâm ĐX'}</span>`;
+}
+function setInfo(tab,html,type){
+  const el=document.getElementById(tab+'-info');
+  el.innerHTML=html; el.className='info-box'+(type?' '+type:'');
+}
+
+/* ═══ CLIP POLYGON for half-plane nx·x + ny·y < d ═══ */
+function halfPlaneClip(nx, ny, d, B=215){
+  const corners=[[-B,-B],[B,-B],[B,B],[-B,B]];
+  const pts=[];
+  for(let i=0;i<4;i++){
+    const a=corners[i], b=corners[(i+1)%4];
+    const da=nx*a[0]+ny*a[1], db=nx*b[0]+ny*b[1];
+    if(da<d) pts.push([...a]);
+    if((da<d)!==(db<d)){
+      const t2=(d-da)/(db-da);
+      pts.push([a[0]+(b[0]-a[0])*t2, a[1]+(b[1]-a[1])*t2]);
+    }
+  }
+  return pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+}
+function updateClips(angleDeg, offset){
+  const th=angleDeg*Math.PI/180;
+  const nx=-Math.sin(th), ny=Math.cos(th);
+  document.getElementById('fold-poly').setAttribute('points', halfPlaneClip(nx,ny,offset));
+  document.getElementById('stay-poly').setAttribute('points', halfPlaneClip(-nx,-ny,-offset));
+}
+
+/* ═══ AXIS POINT (foot of offset on perpendicular) ═══ */
+function axisOrigin(angleDeg, offset){
+  const th=angleDeg*Math.PI/180;
+  return [-offset*Math.sin(th), offset*Math.cos(th)];
+}
+
+/* ═══ FOLD MATH (with axis offset = translation) ═══
+   Scale perpendicular to axis (factor t), axis passes through (ox,oy).
+   new_pt = M2x2 * (pt - O) + O → adds translation e,f
+*/
+function scaleMat2x2(t, angleDeg){
+  const th=angleDeg*Math.PI/180, c=Math.cos(th), s=Math.sin(th);
+  return [c*c+t*s*s, s*c*(1-t), s*c*(1-t), s*s+t*c*c];
+}
+function combinedMat2x2(t, angleDeg){
+  const th=angleDeg*Math.PI/180;
+  const c2=Math.cos(2*th), s2=Math.sin(2*th);
+  const [a,b,cc,d]=scaleMat2x2(t,angleDeg);
+  return [a*c2+cc*s2, b*c2+d*s2, a*s2+cc*(-c2), b*s2+d*(-c2)];
+}
+function mat6(m4, angleDeg, offset){
+  const [ox,oy]=axisOrigin(angleDeg,offset);
+  const [a,b,c,d]=m4;
+  // e = ox - (a*ox + c*oy),  f = oy - (b*ox + d*oy)
+  return [a,b,c,d, ox-(a*ox+c*oy), oy-(b*ox+d*oy)];
+}
+function toSVGMatrix([a,b,c,d,e=0,f=0]){
+  return `matrix(${a.toFixed(5)},${b.toFixed(5)},${c.toFixed(5)},${d.toFixed(5)},${e.toFixed(3)},${f.toFixed(3)})`;
+}
+
+/* ═══ AXIS DRAG ═══ */
+function svgPoint(evt){
+  const svg=document.getElementById('svg-stage');
+  const pt=svg.createSVGPoint();
+  pt.x=evt.clientX; pt.y=evt.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function perpComponent(x,y,angleDeg){
+  // projection of (x,y) onto perpendicular (-sinθ, cosθ)
+  const th=angleDeg*Math.PI/180;
+  return -Math.sin(th)*x + Math.cos(th)*y;
+}
+(function setupAxisDrag(){
+  // Drag works on the fat invisible hit-line OR the visible dot
+  const hitLine=document.getElementById('axis-hit');
+  const handle=document.getElementById('axis-handle');
+  const svg=document.getElementById('svg-stage');
+
+  function startDrag(e){
+    if(folded) return;
+    draggingAxis=true;
+    const src=e.touches?e.touches[0]:e;
+    const pt=svgPoint(src);
+    dragStartSVG={x:pt.x, y:pt.y, offset:axisOffset};
+    hitLine.style.cursor='grabbing';
+    handle.style.cursor='grabbing';
+    e.preventDefault();
+  }
+  function moveDrag(e){
+    if(!draggingAxis) return;
+    const src=e.touches?e.touches[0]:e;
+    const pt=svgPoint(src);
+    const dx=pt.x-dragStartSVG.x, dy=pt.y-dragStartSVG.y;
+    const delta=perpComponent(dx,dy,ax(selAxis).angle);
+    axisOffset=Math.max(-160,Math.min(160, dragStartSVG.offset+delta));
+    updateClips(ax(selAxis).angle, axisOffset);
+    updateAxisLine();
+    e.preventDefault();
+  }
+  function endDrag(){
+    draggingAxis=false;
+    hitLine.style.cursor='grab';
+    handle.style.cursor='grab';
+  }
+  // Attach start to BOTH hit-line and handle dot
+  [hitLine, handle].forEach(el=>{
+    el.addEventListener('mousedown',startDrag);
+    el.addEventListener('touchstart',startDrag,{passive:false});
+  });
+  svg.addEventListener('mousemove',moveDrag);
+  svg.addEventListener('mouseup',endDrag);
+  svg.addEventListener('touchmove',moveDrag,{passive:false});
+  svg.addEventListener('touchend',endDrag);
+})();
+
+/* ═══ ACTIONS ═══ */
+function doFold(){
+  if(folded){resetTruc();return;}
+  folded=true;
+  cancelAnimationFrame(foldAF);
+
+  const a=ax(selAxis);
+  const gFold=document.getElementById('g-fold');
+  // g-copy stays hidden always
+  document.getElementById('g-copy').setAttribute('opacity','0');
+
+  const TOTAL=55; let frame=0;
+  const ease=t=>t<0.5?2*t*t:(-1+(4-2*t)*t); // ease-in-out
+
+  function animate(){
+    frame++;
+    const raw=frame/TOTAL;
+    const t=ease(Math.min(raw,1));
+
+    if(t<=0.5){
+      // Phase 1: fold-half squishes toward axis (scale 1→0)
+      const scale=1-t*2;
+      gFold.setAttribute('transform', toSVGMatrix(mat6(scaleMat2x2(scale,a.angle),a.angle,axisOffset)));
+    } else {
+      // Phase 2: fold-half expands on reflected side (scale 0→1)
+      const scale=(t-0.5)*2;
+      gFold.setAttribute('transform', toSVGMatrix(mat6(combinedMat2x2(scale,a.angle),a.angle,axisOffset)));
+      gFold.setAttribute('opacity','0.9');
+    }
+
+    if(frame<TOTAL) foldAF=requestAnimationFrame(animate);
+    else showFoldResult();
+  }
+  foldAF=requestAnimationFrame(animate);
+}
+
+function showFoldResult(){
+  const s=sh(selTruc);
+  const hasThis=HAS_AXIS[selAxis]?.includes(s.id)||s.truc===99;
+  if(hasThis){
+    setInfo('truc','✅ <b>Hai nửa khớp nhau hoàn toàn!</b><br>→ Đây là <b>trục đối xứng</b> của hình.','ok');
+  } else {
+    setInfo('truc','⚠️ <b>Hai nửa không khớp nhau.</b><br>→ Đây <b>không phải</b> trục đối xứng của hình này.','no');
+  }
+}
+
+function doRotate(){
+  if(tamRotating) return;
+  tamRotating=true;
+  const s=sh(selTam);
+  const copy=document.getElementById('g-stay');
+  copy.setAttribute('opacity','0.65');
+  let angle=0;
+  cancelAnimationFrame(rotAF);
+  // Compose rotate(angle) with the centering translate so rotation is around shape center
+  const cTf=`translate(${(-tamCX).toFixed(2)},${(-tamCY).toFixed(2)})`;
+  function step(){
+    angle+=2.5;
+    // rotate(θ) translate(-cx,-cy): first translate to center, then rotate around O
+    copy.setAttribute('transform',`rotate(${angle}) ${cTf}`);
+    if(angle<180){ rotAF=requestAnimationFrame(step); }
+    else{
+      copy.setAttribute('transform',`rotate(180) ${cTf}`);
+      if(s.tam){
+        setInfo('tam','✅ <b>Hình xoay 180° trùng khít với hình ban đầu!</b><br>→ Điểm O là <b>tâm đối xứng</b> của hình.','ok');
+      } else {
+        setInfo('tam','⚠️ <b>Hình xoay không trùng với hình ban đầu.</b><br>→ Hình này <b>không có tâm đối xứng</b>.','no');
+      }
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+function selShape(tab,id){
+  if(tab==='truc'){selTruc=id; resetTruc();}
+  else{selTam=id; resetTam();}
+  buildShapeGrids();
+}
+function selAx(id){
+  selAxis=id; buildAxisGrid();
+  if(folded){resetTruc();return;}
+  // Update clips and axis
+  const a=ax(id);
+  axisOffset=0; // reset offset when changing axis type
+  updateClips(a.angle, axisOffset);
+  updateAxisLine(); updateBadgesTruc();
+}
+function resetTruc(){cancelAnimationFrame(foldAF); folded=false; axisOffset=0; renderTruc(); buildShapeGrids();}
+function resetTam(){cancelAnimationFrame(rotAF); tamRotating=false; renderTam(); buildShapeGrids();}
+
+function switchTab(t){
+  curTab=t;
+  ['truc','tam'].forEach(x=>{
+    document.getElementById('tab-'+x).classList.toggle('active',x===t);
+    document.getElementById('ctrl-'+x).style.display=x===t?'flex':'none';
+    document.getElementById('ctrl-'+x).style.flexDirection='column';
+    document.getElementById('instr-'+x).style.display=x===t?'':'none';
+  });
+  // hide axis-hit line when in tam tab
+  document.getElementById('axis-hit').setAttribute('opacity', t==='truc'?'1':'0');
+  document.getElementById('axis-handle').setAttribute('opacity', t==='truc'?'1':'0');
+  if(t==='truc') renderTruc(); else renderTam();
+}
+function toggleFS(){
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tạo QR Code</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 48px;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 8px 0 4px;
+  }
+  .header h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    letter-spacing: -0.5px;
+  }
+  .header p {
+    margin-top: 6px;
+    font-size: 0.875rem;
+    color: #94a3b8;
+  }
+
+  /* Card */
+  .card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #334155;
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: #0f172a;
+    border-radius: 10px;
+    padding: 4px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 9px 8px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #94a3b8;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { color: #e2e8f0; }
+  .tab-btn.active {
+    background: #3b82f6;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.4);
+  }
+
+  /* Tab panels */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Form elements */
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  input[type="text"],
+  input[type="url"],
+  input[type="password"],
+  textarea,
+  select {
+    width: 100%;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    color: #f1f5f9;
+    font-size: 0.9rem;
+    font-family: inherit;
+    padding: 10px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  input[type="text"]:focus,
+  input[type="url"]:focus,
+  input[type="password"]:focus,
+  textarea:focus,
+  select:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+  }
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+  }
+
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* Options row */
+  .options-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+  }
+  .options-row .field { margin-bottom: 0; flex: 1; }
+
+  .size-group {
+    display: flex;
+    gap: 4px;
+  }
+  .size-btn {
+    flex: 1;
+    padding: 8px 6px;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    background: #0f172a;
+    color: #94a3b8;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .size-btn:hover { border-color: #3b82f6; color: #e2e8f0; }
+  .size-btn.active {
+    background: #1e3a5f;
+    border-color: #3b82f6;
+    color: #93c5fd;
+  }
+
+  /* Color picker */
+  .color-field {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .color-field:focus-within { border-color: #3b82f6; }
+  input[type="color"] {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    padding: 0;
+    cursor: pointer;
+    background: none;
+  }
+  input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+  input[type="color"]::-webkit-color-swatch { border: none; border-radius: 4px; }
+  .color-label-text { font-size: 0.82rem; color: #94a3b8; }
+
+  /* Generate button */
+  .btn-generate {
+    width: 100%;
+    padding: 13px;
+    background: #3b82f6;
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(59,130,246,0.35);
+  }
+  .btn-generate:hover {
+    background: #2563eb;
+    box-shadow: 0 6px 20px rgba(59,130,246,0.45);
+    transform: translateY(-1px);
+  }
+  .btn-generate:active { transform: translateY(0); }
+
+  /* QR result */
+  .qr-result {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .qr-result.visible { display: flex; }
+
+  .qr-wrapper {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+  #qr-container canvas,
+  #qr-container img { display: block; }
+
+  .qr-actions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+  }
+  .btn-action {
+    flex: 1;
+    padding: 11px;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    background: #1e293b;
+    color: #e2e8f0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .btn-action:hover {
+    background: #334155;
+    border-color: #475569;
+  }
+  .btn-action.primary {
+    background: #1e3a5f;
+    border-color: #3b82f6;
+    color: #93c5fd;
+  }
+  .btn-action.primary:hover {
+    background: #1d4ed8;
+    color: #fff;
+  }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: transform 0.3s ease;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: #334155;
+    margin: 4px 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>📱 Tạo QR Code</h1>
+    <p>Công cụ tạo mã QR nhanh dành cho giáo viên — hoạt động offline</p>
+  </div>
+
+  <!-- Tab selector -->
+  <div class="card" style="padding: 6px;">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="url">🔗 Link / URL</button>
+      <button class="tab-btn" data-tab="text">📝 Văn bản</button>
+      <button class="tab-btn" data-tab="wifi">📶 WiFi</button>
+    </div>
+  </div>
+
+  <!-- Input card -->
+  <div class="card">
+
+    <!-- URL panel -->
+    <div class="tab-panel active" id="panel-url">
+      <div class="field">
+        <label>Địa chỉ URL</label>
+        <input type="url" id="input-url" placeholder="https://example.com" autocomplete="off" spellcheck="false">
+      </div>
+    </div>
+
+    <!-- Text panel -->
+    <div class="tab-panel" id="panel-text">
+      <div class="field">
+        <label>Nội dung văn bản</label>
+        <textarea id="input-text" placeholder="Nhập nội dung cần tạo QR Code..."></textarea>
+      </div>
+    </div>
+
+    <!-- WiFi panel -->
+    <div class="tab-panel" id="panel-wifi">
+      <div class="field">
+        <label>Tên mạng WiFi (SSID)</label>
+        <input type="text" id="wifi-ssid" placeholder="Tên mạng WiFi" autocomplete="off">
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Mật khẩu</label>
+          <input type="password" id="wifi-password" placeholder="••••••••" autocomplete="off">
+        </div>
+        <div class="field">
+          <label>Bảo mật</label>
+          <select id="wifi-security">
+            <option value="WPA">WPA / WPA2</option>
+            <option value="WEP">WEP</option>
+            <option value="">Không có</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Options -->
+  <div class="card">
+    <div class="options-row">
+      <div class="field">
+        <label>Kích thước</label>
+        <div class="size-group">
+          <button class="size-btn" data-size="128">Nhỏ</button>
+          <button class="size-btn active" data-size="256">Vừa</button>
+          <button class="size-btn" data-size="512">Lớn</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Màu mã QR</label>
+        <div class="color-field">
+          <input type="color" id="fg-color" value="#1e40af">
+          <span class="color-label-text">Chọn màu</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Generate button -->
+  <button class="btn-generate" id="btn-generate">✨ Tạo QR Code</button>
+
+  <!-- QR Result -->
+  <div class="card" id="result-card" style="display:none;">
+    <div class="qr-result visible">
+      <div class="qr-wrapper">
+        <div id="qr-container"></div>
+      </div>
+      <div class="qr-actions">
+        <button class="btn-action primary" id="btn-download">⬇ Tải PNG</button>
+        <button class="btn-action" id="btn-copy">📋 Sao chép nội dung</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  // --- State ---
+  let currentTab = 'url';
+  let currentSize = 256;
+  let qrInstance = null;
+  let lastInputText = '';
+
+  // --- Tab switching ---
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      currentTab = tab;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel-' + tab).classList.add('active');
+    });
+  });
+
+  // --- Size buttons ---
+  document.querySelectorAll('.size-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentSize = parseInt(btn.dataset.size);
+      document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // --- Get input text ---
+  function getInputText() {
+    if (currentTab === 'url') {
+      return document.getElementById('input-url').value.trim();
+    } else if (currentTab === 'text') {
+      return document.getElementById('input-text').value.trim();
+    } else {
+      const ssid = document.getElementById('wifi-ssid').value.trim();
+      const password = document.getElementById('wifi-password').value;
+      const security = document.getElementById('wifi-security').value;
+      if (!ssid) return '';
+      const escapedSsid = ssid.replace(/[\\;,"]/g, c => '\\' + c);
+      const escapedPwd = password.replace(/[\\;,"]/g, c => '\\' + c);
+      return `WIFI:S:${escapedSsid};T:${security};P:${escapedPwd};;`;
+    }
+  }
+
+  // --- Generate QR ---
+  document.getElementById('btn-generate').addEventListener('click', () => {
+    const text = getInputText();
+    if (!text) {
+      showToast('⚠️ Vui lòng nhập nội dung trước khi tạo QR Code');
+      return;
+    }
+
+    lastInputText = text;
+    const fgColor = document.getElementById('fg-color').value;
+    const container = document.getElementById('qr-container');
+
+    // Clear previous
+    container.innerHTML = '';
+    if (qrInstance) {
+      qrInstance = null;
+    }
+
+    try {
+      qrInstance = new QRCode(container, {
+        text: text,
+        width: currentSize,
+        height: currentSize,
+        colorDark: fgColor,
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+
+      document.getElementById('result-card').style.display = 'block';
+      document.getElementById('result-card').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      showToast('✅ Đã tạo QR Code thành công!');
+    } catch (e) {
+      showToast('❌ Lỗi: Không thể tạo QR Code. Nội dung có thể quá dài.');
+    }
+  });
+
+  // --- Download PNG ---
+  document.getElementById('btn-download').addEventListener('click', () => {
+    const canvas = document.querySelector('#qr-container canvas');
+    if (!canvas) {
+      showToast('⚠️ Chưa có QR Code để tải xuống');
+      return;
+    }
+    const link = document.createElement('a');
+    link.download = 'qr-code.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('⬇ Đang tải file PNG...');
+  });
+
+  // --- Copy to clipboard ---
+  document.getElementById('btn-copy').addEventListener('click', () => {
+    const text = lastInputText || getInputText();
+    if (!text) {
+      showToast('⚠️ Không có nội dung để sao chép');
+      return;
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('📋 Đã sao chép vào bộ nhớ tạm!');
+      });
+    } else {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('📋 Đã sao chép vào bộ nhớ tạm!');
+    }
+  });
+
+  // --- Toast ---
+  let toastTimer = null;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  }
+</script>
+</body>
+</html>

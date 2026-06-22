@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Tình Huống Đúng/Sai – GDCD</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0f172a;color:#e2e8f0;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+header{width:100%;background:#1e293b;padding:.75rem 1rem;text-align:center;border-bottom:1px solid #334155}
+header h1{font-size:1.05rem;font-weight:700;color:#fb923c;letter-spacing:.04em}
+header h2{font-size:.72rem;color:#94a3b8;margin-top:2px}
+
+.cats{display:flex;gap:7px;padding:.5rem .8rem;width:100%;max-width:440px;overflow-x:auto;scrollbar-width:none}
+.cats::-webkit-scrollbar{display:none}
+.cat-btn{flex-shrink:0;background:#1e293b;border:1px solid #334155;border-radius:20px;padding:.3rem .75rem;font-size:.72rem;color:#94a3b8;cursor:pointer;white-space:nowrap}
+.cat-btn.active{background:#7c2d12;border-color:#fb923c;color:#fed7aa}
+
+.stats{display:flex;gap:.8rem;justify-content:center;padding:.3rem 1rem .2rem;width:100%;max-width:440px}
+.stat{background:#1e293b;border-radius:10px;padding:.3rem .8rem;font-size:.78rem;color:#94a3b8;text-align:center}
+.stat span{display:block;font-size:1rem;font-weight:700;color:#f8fafc}
+.prog-wrap{width:100%;max-width:440px;padding:0 1rem .5rem}
+.prog-bar{height:5px;background:#1e293b;border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#c2410c,#fb923c);border-radius:3px;transition:width .3s}
+
+/* Scenario */
+.scene-card{background:#1e293b;border-radius:16px;margin:.3rem 1rem;padding:1.1rem 1rem;width:calc(100% - 2rem);max-width:440px}
+.scene-topic{display:inline-block;font-size:.68rem;background:#7c2d12;color:#fca5a5;border-radius:20px;padding:2px 9px;margin-bottom:.6rem}
+.scene-text{font-size:.95rem;color:#f8fafc;line-height:1.65}
+
+/* Answer buttons */
+.answer-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:.4rem 1rem;width:100%;max-width:440px}
+.ans-btn{background:#1e293b;border:2.5px solid #334155;border-radius:14px;padding:1rem .5rem;font-size:1.1rem;font-weight:700;cursor:pointer;text-align:center;transition:all .15s}
+.ans-btn:active{transform:scale(.94)}
+.ans-btn.dung{border-color:#16a34a}
+.ans-btn.sai{border-color:#dc2626}
+.ans-btn.dung:hover{background:rgba(22,163,74,.1)}
+.ans-btn.sai:hover{background:rgba(220,38,38,.1)}
+.ans-btn.correct-pick{background:#052e16;border-color:#16a34a;color:#4ade80}
+.ans-btn.wrong-pick{background:#450a0a;border-color:#dc2626;color:#f87171}
+.ans-btn.reveal{background:#052e16;border-color:#16a34a;color:#4ade80}
+.ans-btn:disabled{cursor:default}
+
+/* Explanation */
+.explain{background:#1c0e05;border-radius:12px;padding:.8rem 1rem;margin:.3rem 1rem;font-size:.85rem;color:#fdba74;line-height:1.6;width:calc(100% - 2rem);max-width:440px;display:none}
+.explain strong{color:#fb923c;display:block;margin-bottom:.3rem}
+.explain .law{font-size:.78rem;color:#94a3b8;margin-top:.4rem;font-style:italic}
+
+.btn-next{display:none;margin:.4rem 1rem;width:calc(100% - 2rem);max-width:440px;background:#c2410c;color:#fff;border:none;border-radius:12px;padding:.8rem;font-size:.95rem;font-weight:700;cursor:pointer}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:50}
+.result-card{background:#1e293b;border-radius:18px;padding:2rem;text-align:center;max-width:310px;width:90%}
+.re{font-size:3rem;margin-bottom:.5rem}.rt{font-size:1.3rem;font-weight:700;margin-bottom:.4rem}.rs{font-size:.9rem;color:#94a3b8;margin-bottom:1rem}
+.btn-re{background:#c2410c;color:#fff;border:none;border-radius:10px;padding:.75rem 2rem;font-size:1rem;font-weight:700;cursor:pointer;width:100%}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚖️ TÌNH HUỐNG ĐÚNG / SAI</h1>
+  <h2>GIÁO DỤC CÔNG DÂN – THCS</h2>
+</header>
+
+<div class="cats" id="cats"></div>
+<div class="stats">
+  <div class="stat"><span id="qNum">1</span>Câu</div>
+  <div class="stat"><span id="correct">0</span>Đúng</div>
+  <div class="stat"><span id="total">15</span>Tổng</div>
+</div>
+<div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div></div>
+
+<div class="scene-card">
+  <div class="scene-topic" id="topicBadge"></div>
+  <div class="scene-text" id="sceneText"></div>
+</div>
+
+<div class="answer-row">
+  <button class="ans-btn dung" id="btnDung" onclick="pick(true)">✅ ĐÚNG</button>
+  <button class="ans-btn sai" id="btnSai" onclick="pick(false)">❌ SAI</button>
+</div>
+
+<div class="explain" id="explain"></div>
+<button class="btn-next" id="btnNext" onclick="nextQ()">Câu tiếp →</button>
+
+<div class="overlay" id="overlay">
+  <div class="result-card">
+    <div class="re" id="re"></div><div class="rt" id="rt"></div><div class="rs" id="rs"></div>
+    <button class="btn-re" onclick="restart()">Chơi lại</button>
+  </div>
+</div>
+
+<script>
+const BANK = {
+  'Đạo đức & Lối sống': [
+    {s:'Bạn An thấy ví tiền rơi trên đường, liền nhặt lên và mang nộp cho công an phường.',ans:true,e:'Hành động trung thực, có trách nhiệm — đúng với chuẩn mực đạo đức và pháp luật.',law:'Điều 7, Luật Phòng chống tham nhũng: có trách nhiệm với tài sản người khác.'},
+    {s:'Minh biết bạn bè quay cóp bài trong giờ kiểm tra nhưng không nói gì để giữ tình bạn.',ans:false,e:'Không tố cáo hành vi gian lận là tiếp tay cho sự không trung thực. Cần nhắc nhở bạn một cách tế nhị.',law:'Trung thực là đức tính cần thiết trong học tập và cuộc sống.'},
+    {s:'Lan trả lời lễ phép khi thầy cô hỏi, dù không thích môn học đó.',ans:true,e:'Lễ phép với thầy cô là biểu hiện của văn hóa học đường và đạo đức tốt.',law:'Tôn sư trọng đạo — truyền thống đạo đức tốt đẹp của người Việt.'},
+    {s:'Để đỡ mất thời gian, Hùng chép nguyên bài văn trên mạng rồi nộp cho thầy.',ans:false,e:'Đây là hành vi gian lận, vi phạm quyền tác giả và tính trung thực trong học tập.',law:'Luật Sở hữu trí tuệ 2005, điều cấm sao chép tác phẩm không phép.'},
+    {s:'Nhóm bạn tổ chức quyên góp sách vở giúp học sinh vùng lũ.',ans:true,e:'Hành động nhân ái, thể hiện tinh thần tương thân tương ái, chia sẻ với người khó khăn.',law:'Giá trị nhân đạo — giúp đỡ cộng đồng là trách nhiệm công dân.'},
+  ],
+  'An toàn & Pháp luật': [
+    {s:'Nam 15 tuổi điều khiển xe máy 50cc vì nhà gần trường chỉ 2km.',ans:false,e:'Người dưới 16 tuổi không được phép điều khiển xe máy bất kể phân khối. Vi phạm Luật Giao thông.',law:'Luật GTĐB 2008, Điều 60: Người đủ 16 tuổi mới được lái xe máy dưới 50cc.'},
+    {s:'Khi gặp tai nạn giao thông, học sinh nên gọi 113 hoặc 115 và báo cho người lớn.',ans:true,e:'Hành động đúng đắn: gọi cứu thương (115) hoặc cảnh sát (113) khi xảy ra tai nạn.',law:'Điều 38, Luật GTĐB: Người có mặt tại hiện trường có trách nhiệm báo tin và hỗ trợ.'},
+    {s:'Bình ném rác xuống sông vì nghĩ "sông to, một chút không sao".',ans:false,e:'Xả rác xuống sông là vi phạm pháp luật bảo vệ môi trường và gây ô nhiễm nguồn nước.',law:'Luật Bảo vệ Môi trường 2020 nghiêm cấm hành vi xả chất thải ra nguồn nước.'},
+    {s:'Học sinh tham gia đánh nhau theo lời rủ của bạn bè để "bảo vệ bạn".',ans:false,e:'Tham gia đánh nhau là hành vi vi phạm pháp luật dù lý do gì. Nên báo thầy cô hoặc công an.',law:'Bộ luật Hình sự 2015: cố ý gây thương tích có thể bị truy cứu hình sự kể cả người chưa thành niên.'},
+    {s:'Khi mua hàng online và nhận được hàng kém chất lượng, người tiêu dùng có quyền khiếu nại.',ans:true,e:'Người tiêu dùng có đầy đủ quyền khiếu nại và được bảo vệ theo pháp luật.',law:'Luật Bảo vệ quyền lợi người tiêu dùng 2010, Điều 8.'},
+  ],
+  'Quyền trẻ em': [
+    {s:'Trẻ em có quyền được đi học dù gia đình nghèo hay giàu.',ans:true,e:'Quyền học tập là quyền cơ bản của mọi trẻ em, nhà nước có trách nhiệm đảm bảo.',law:'Luật Trẻ em 2016, Điều 16: Quyền được giáo dục.'},
+    {s:'Bố mẹ có quyền bắt con nghỉ học để phụ giúp việc nhà vì đây là chuyện gia đình.',ans:false,e:'Không ai có quyền tước đoạt quyền học tập của trẻ em, kể cả bố mẹ.',law:'Luật Trẻ em 2016, Điều 27: Nghiêm cấm xâm hại, cản trở việc học của trẻ.'},
+    {s:'Trẻ em có quyền nói lên ý kiến của mình trong các vấn đề liên quan đến bản thân.',ans:true,e:'Quyền tham gia và bày tỏ ý kiến là một trong những quyền cơ bản của trẻ em.',law:'Luật Trẻ em 2016, Điều 34: Quyền được tham gia vào các vấn đề về trẻ em.'},
+    {s:'Một doanh nghiệp thuê trẻ em 13 tuổi làm việc nhẹ nhàng 4 tiếng mỗi ngày.',ans:false,e:'Sử dụng lao động trẻ em dưới 15 tuổi là vi phạm pháp luật lao động Việt Nam.',law:'Bộ luật Lao động 2019, Điều 145: Cấm sử dụng người dưới 15 tuổi làm việc.'},
+    {s:'Trẻ em bị bạo lực gia đình có quyền cầu cứu cơ quan chức năng và nhà trường.',ans:true,e:'Trẻ em có quyền được bảo vệ khỏi bạo lực và có quyền nhờ hỗ trợ từ cơ quan chức năng.',law:'Luật Phòng chống bạo lực gia đình 2022; Luật Trẻ em 2016.'},
+  ],
+  'Môi trường & Cộng đồng': [
+    {s:'Tình nguyện dọn rác ven đường mà không được trả thù lao là hành động không cần thiết.',ans:false,e:'Tình nguyện là biểu hiện của tinh thần trách nhiệm với cộng đồng, rất đáng khuyến khích.',law:'Tinh thần tình nguyện phù hợp với Điều 3, Luật Thanh niên 2020.'},
+    {s:'Phân loại rác tại nguồn (rác hữu cơ, tái chế, nguy hại) giúp bảo vệ môi trường.',ans:true,e:'Phân loại rác đúng cách giảm thiểu ô nhiễm và tăng hiệu quả tái chế.',law:'Luật Bảo vệ Môi trường 2020, Điều 75: Hộ gia đình có trách nhiệm phân loại rác.'},
+    {s:'Đốt rơm rạ sau mùa gặt là cách xử lý nhanh, không vi phạm gì.',ans:false,e:'Đốt rơm rạ gây ô nhiễm không khí, ảnh hưởng sức khỏe và vi phạm quy định môi trường.',law:'Nghị định 45/2022/NĐ-CP xử phạt hành vi đốt chất thải ngoài trời không đúng quy định.'},
+    {s:'Học sinh tiết kiệm điện, nước ở trường là hành động vô nghĩa vì trường không phải nhà mình.',ans:false,e:'Tiết kiệm tài nguyên là trách nhiệm của mọi người dù ở đâu. Đây là ý thức công dân tốt.',law:'Luật Sử dụng năng lượng tiết kiệm và hiệu quả 2010.'},
+  ],
+};
+
+const TOTAL=15;
+let catKeys=Object.keys(BANK);
+let currentCat=null, queue=[], qIdx=0, correctCount=0, answered=false;
+
+function buildCats(){
+  const bar=document.getElementById('cats');
+  const all=document.createElement('button');all.className='cat-btn active';all.textContent='🔀 Tất cả';
+  all.onclick=()=>selectCat(null,all);bar.appendChild(all);
+  catKeys.forEach(k=>{const b=document.createElement('button');b.className='cat-btn';b.textContent=k;b.onclick=()=>selectCat(k,b);bar.appendChild(b);});
+}
+
+function selectCat(key,btn){
+  currentCat=key;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');restart();
+}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+
+function restart(){
+  let pool=[];
+  if(currentCat)pool=[...BANK[currentCat]];
+  else catKeys.forEach(k=>pool.push(...BANK[k]));
+  shuffle(pool);queue=pool.slice(0,Math.min(TOTAL,pool.length));
+  qIdx=0;correctCount=0;answered=false;
+  document.getElementById('overlay').style.display='none';
+  document.getElementById('correct').textContent=0;
+  document.getElementById('total').textContent=queue.length;
+  nextQ();
+}
+
+function nextQ(){
+  if(qIdx>=queue.length){showFinal();return;}
+  answered=false;
+  document.getElementById('explain').style.display='none';
+  document.getElementById('btnNext').style.display='none';
+  document.getElementById('btnDung').className='ans-btn dung';
+  document.getElementById('btnSai').className='ans-btn sai';
+  document.getElementById('btnDung').disabled=false;
+  document.getElementById('btnSai').disabled=false;
+  const q=queue[qIdx];qIdx++;
+  document.getElementById('qNum').textContent=qIdx;
+  document.getElementById('progFill').style.width=((qIdx-1)/queue.length*100)+'%';
+  let cat=currentCat||'GDCD';
+  if(!currentCat)catKeys.forEach(k=>{if(BANK[k].some(x=>x.s===q.s))cat=k;});
+  document.getElementById('topicBadge').textContent=cat;
+  document.getElementById('sceneText').textContent=q.s;
+}
+
+function pick(isDung){
+  if(answered)return;answered=true;
+  const q=queue[qIdx-1];
+  const correct=q.ans;
+  document.getElementById('btnDung').disabled=true;
+  document.getElementById('btnSai').disabled=true;
+  if(isDung===correct){
+    const btn=isDung?document.getElementById('btnDung'):document.getElementById('btnSai');
+    btn.classList.add('correct-pick');correctCount++;document.getElementById('correct').textContent=correctCount;playSound(true);
+  } else {
+    const wrongBtn=isDung?document.getElementById('btnDung'):document.getElementById('btnSai');
+    const rightBtn=correct?document.getElementById('btnDung'):document.getElementById('btnSai');
+    wrongBtn.classList.add('wrong-pick');rightBtn.classList.add('reveal');playSound(false);
+  }
+  const ex=document.getElementById('explain');ex.style.display='block';
+  ex.innerHTML=`<strong>${correct?'✅ ĐÚNG':'❌ SAI'} — ${cat(q)}</strong>${q.e}<div class="law">📜 Cơ sở pháp lý: ${q.law}</div>`;
+  document.getElementById('btnNext').style.display='block';
+}
+
+function cat(q){
+  for(const k of catKeys)if(BANK[k].some(x=>x.s===q.s))return k;
+  return '';
+}
+
+function showFinal(){
+  document.getElementById('progFill').style.width='100%';
+  const pct=Math.round(correctCount/queue.length*100);
+  let e='😊',t='Hoàn thành!';
+  if(pct>=90){e='🏆';t='Xuất sắc!';}else if(pct>=70){e='🎉';t='Tốt lắm!';}else if(pct<50){e='📚';t='Cần học thêm!';}
+  document.getElementById('re').textContent=e;document.getElementById('rt').textContent=t;
+  document.getElementById('rs').textContent=`${correctCount}/${queue.length} câu đúng (${pct}%)`;
+  document.getElementById('overlay').style.display='flex';
+}
+
+const AC=new (window.AudioContext||window.webkitAudioContext)();
+function playSound(win){
+  const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);
+  if(win){o.frequency.setValueAtTime(523,AC.currentTime);o.frequency.setValueAtTime(659,AC.currentTime+.1);}
+  else{o.frequency.setValueAtTime(250,AC.currentTime);}
+  g.gain.setValueAtTime(.2,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.45);
+  o.start();o.stop(AC.currentTime+.45);
+}
+
+buildCats();restart();
+</script>
+</body>
+</html>

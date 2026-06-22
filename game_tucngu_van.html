@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Ghép Tục Ngữ – Ngữ Văn</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0f172a;color:#e2e8f0;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+header{width:100%;background:#1e293b;padding:.75rem 1rem;text-align:center;border-bottom:1px solid #334155}
+header h1{font-size:1.05rem;font-weight:700;color:#fbbf24;letter-spacing:.04em}
+header h2{font-size:.72rem;color:#94a3b8;margin-top:2px}
+
+.stats{display:flex;gap:.8rem;justify-content:center;padding:.55rem 1rem;width:100%;max-width:440px}
+.stat{background:#1e293b;border-radius:10px;padding:.3rem .8rem;font-size:.78rem;color:#94a3b8;text-align:center}
+.stat span{display:block;font-size:1rem;font-weight:700;color:#f8fafc}
+
+.prog-wrap{width:100%;max-width:440px;padding:0 1rem .5rem}
+.prog-bar{height:5px;background:#1e293b;border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#b45309,#fbbf24);border-radius:3px;transition:width .3s}
+
+/* Tabs */
+.tabs{display:flex;gap:6px;padding:0 1rem .5rem;width:100%;max-width:440px}
+.tab{flex:1;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:.35rem;font-size:.72rem;color:#94a3b8;cursor:pointer;text-align:center}
+.tab.active{background:#78350f;border-color:#fbbf24;color:#fef3c7}
+
+/* Instruction */
+.instruction{font-size:.8rem;color:#94a3b8;text-align:center;padding:.2rem 1rem .5rem;width:100%;max-width:440px}
+
+/* Mode A: tap-to-match columns */
+.match-wrap{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 1rem;width:100%;max-width:440px}
+.col-label{font-size:.7rem;color:#64748b;margin-bottom:5px;text-align:center;letter-spacing:.05em;text-transform:uppercase}
+.col{display:flex;flex-direction:column;gap:7px}
+.ve{background:#1e293b;border:2px solid #334155;border-radius:12px;padding:.65rem .7rem;font-size:.85rem;color:#e2e8f0;cursor:pointer;transition:all .15s;line-height:1.4;min-height:52px;display:flex;align-items:center;justify-content:center;text-align:center}
+.ve:active{transform:scale(.96)}
+.ve.selected{border-color:#fbbf24;background:#78350f;color:#fef3c7}
+.ve.matched{border-color:#16a34a;background:#052e16;color:#4ade80;cursor:default}
+.ve.wrong-flash{border-color:#dc2626;background:#450a0a}
+.ve.disabled{opacity:.35;cursor:default}
+
+/* Mode B: full sentence + 4 options */
+.q-card{background:#1e293b;border-radius:16px;margin:.3rem 1rem;padding:1.1rem 1rem;width:calc(100% - 2rem);max-width:440px}
+.ve-part{font-size:1.05rem;color:#fbbf24;font-style:italic;text-align:center;margin-bottom:.5rem;line-height:1.5}
+.q-prompt{font-size:.82rem;color:#94a3b8;text-align:center}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:.4rem 1rem;width:100%;max-width:440px}
+.opt{background:#1e293b;border:2px solid #334155;border-radius:12px;padding:.8rem .6rem;font-size:.88rem;color:#e2e8f0;cursor:pointer;text-align:center;line-height:1.4;transition:all .15s}
+.opt:active{transform:scale(.96)}
+.opt.correct{background:#052e16;border-color:#16a34a;color:#4ade80}
+.opt.wrong{background:#450a0a;border-color:#dc2626;color:#f87171}
+.opt:disabled,.opt[disabled]{cursor:default}
+.explain{background:#1c1917;border-radius:12px;padding:.7rem 1rem;margin:.3rem 1rem;font-size:.82rem;color:#fcd34d;line-height:1.55;width:calc(100% - 2rem);max-width:440px;display:none}
+.explain em{color:#fdba74;display:block;margin-top:.3rem;font-style:normal}
+.btn-next{display:none;margin:.4rem 1rem;width:calc(100% - 2rem);max-width:440px;background:#b45309;color:#fff;border:none;border-radius:12px;padding:.8rem;font-size:.95rem;font-weight:700;cursor:pointer}
+
+/* Overlay */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:50}
+.result-card{background:#1e293b;border-radius:18px;padding:2rem;text-align:center;max-width:310px;width:90%}
+.re{font-size:3rem;margin-bottom:.5rem}.rt{font-size:1.3rem;font-weight:700;margin-bottom:.4rem}.rs{font-size:.9rem;color:#94a3b8;margin-bottom:1rem}
+.btn-re{background:#b45309;color:#fff;border:none;border-radius:10px;padding:.75rem 2rem;font-size:1rem;font-weight:700;cursor:pointer;width:100%}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔗 GHÉP TỤC NGỮ — THÀNH NGỮ</h1>
+  <h2>NGỮ VĂN THCS</h2>
+</header>
+
+<div class="tabs">
+  <button class="tab active" id="tab0" onclick="setMode(0,this)">Nối vế (chạm)</button>
+  <button class="tab" id="tab1" onclick="setMode(1,this)">Điền vế còn thiếu</button>
+</div>
+<div class="stats">
+  <div class="stat"><span id="qNum">1</span>Câu</div>
+  <div class="stat"><span id="correct">0</span>Đúng</div>
+  <div class="stat"><span id="total">10</span>Tổng</div>
+</div>
+<div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div></div>
+
+<!-- Mode A: matching columns -->
+<div id="modeA">
+  <div class="instruction">Chạm vế trái → chạm vế phải tương ứng để ghép đôi</div>
+  <div class="match-wrap">
+    <div><div class="col-label">Vế đầu</div><div class="col" id="colLeft"></div></div>
+    <div><div class="col-label">Vế sau</div><div class="col" id="colRight"></div></div>
+  </div>
+</div>
+
+<!-- Mode B: fill-in -->
+<div id="modeB" style="display:none">
+  <div class="q-card">
+    <div class="ve-part" id="vePart"></div>
+    <div class="q-prompt">Vế còn lại là gì?</div>
+  </div>
+  <div class="opts" id="opts"></div>
+  <div class="explain" id="explain"></div>
+  <button class="btn-next" id="btnNext" onclick="nextQ()">Câu tiếp →</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="result-card">
+    <div class="re" id="re"></div><div class="rt" id="rt"></div><div class="rs" id="rs"></div>
+    <button class="btn-re" onclick="restart()">Chơi lại</button>
+  </div>
+</div>
+
+<script>
+const DATA = [
+  {a:'Có công mài sắt,',b:'có ngày nên kim.',note:'Kiên trì bền bỉ sẽ thành công.'},
+  {a:'Uống nước',b:'nhớ nguồn.',note:'Biết ơn người đã giúp đỡ mình.'},
+  {a:'Lá lành đùm',b:'lá rách.',note:'Người có điều kiện hơn giúp đỡ người khó khăn.'},
+  {a:'Một cây làm chẳng nên non,',b:'ba cây chụm lại nên hòn núi cao.',note:'Sức mạnh của sự đoàn kết.'},
+  {a:'Đi một ngày đàng,',b:'học một sàng khôn.',note:'Đi nhiều, trải nghiệm nhiều sẽ học được nhiều điều.'},
+  {a:'Ăn quả',b:'nhớ kẻ trồng cây.',note:'Biết ơn người đã tạo ra thành quả cho mình hưởng.'},
+  {a:'Học thầy không tày',b:'học bạn.',note:'Học từ bạn bè cũng rất quan trọng.'},
+  {a:'Không thầy',b:'đố mày làm nên.',note:'Tôn trọng công lao dạy dỗ của thầy cô.'},
+  {a:'Thương người như thể',b:'thương thân.',note:'Yêu thương người khác như yêu chính bản thân.'},
+  {a:'Chim có tổ,',b:'người có tông.',note:'Con người ai cũng có gốc rễ, nguồn cội.'},
+  {a:'Một con ngựa đau,',b:'cả tàu bỏ cỏ.',note:'Cộng đồng chia sẻ nỗi đau với nhau.'},
+  {a:'Cần cù bù',b:'thông minh.',note:'Siêng năng có thể bù đắp cho sự thiếu tài năng.'},
+  {a:'Đoàn kết là sống,',b:'chia rẽ là chết.',note:'Tinh thần đoàn kết giúp tập thể phát triển.'},
+  {a:'Tiên học lễ,',b:'hậu học văn.',note:'Lễ phép, đạo đức phải được dạy trước kiến thức.'},
+  {a:'Gần mực thì đen,',b:'gần đèn thì rạng.',note:'Môi trường sống ảnh hưởng đến tính cách con người.'},
+  {a:'Bầu ơi thương lấy bí cùng,',b:'tuy rằng khác giống nhưng chung một giàn.',note:'Tinh thần đoàn kết dù khác nhau.'},
+  {a:'Chớ thấy sóng cả',b:'mà ngã tay chèo.',note:'Không nản lòng trước khó khăn.'},
+  {a:'Học đi đôi',b:'với hành.',note:'Lý thuyết phải gắn với thực hành.'},
+  {a:'Miệng nam mô,',b:'lòng dao kiếm.',note:'Cảnh báo người nói ngọt nhưng tâm địa xấu.'},
+  {a:'Đói cho sạch,',b:'rách cho thơm.',note:'Dù nghèo khó vẫn phải giữ phẩm giá.'},
+];
+
+const TOTAL=10;
+let mode=0, queue=[], qIdx=0, correctCount=0;
+// Mode A state
+let selectedLeft=null, matchedPairs=new Set(), roundData=[];
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+
+function setMode(m,btn){
+  mode=m;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  restart();
+}
+
+function restart(){
+  const pool=[...DATA];shuffle(pool);
+  queue=pool.slice(0,TOTAL);
+  qIdx=0;correctCount=0;
+  document.getElementById('overlay').style.display='none';
+  document.getElementById('correct').textContent=0;
+  document.getElementById('total').textContent=TOTAL;
+  if(mode===0){document.getElementById('modeA').style.display='';document.getElementById('modeB').style.display='none';startModeA();}
+  else{document.getElementById('modeA').style.display='none';document.getElementById('modeB').style.display='';nextQ();}
+}
+
+// ── MODE A: Nối vế ──
+const ROUND_SIZE=4; // 4 pairs per round
+let mARounds=[], mARoundIdx=0, mACorrect=0;
+
+function startModeA(){
+  // split queue into rounds of ROUND_SIZE
+  mARounds=[];
+  for(let i=0;i<queue.length;i+=ROUND_SIZE)mARounds.push(queue.slice(i,i+ROUND_SIZE));
+  mARoundIdx=0;mACorrect=0;mAcorrectCount=0;
+  loadModeARound();
+}
+
+let mAcorrectCount=0;
+
+function loadModeARound(){
+  if(mARoundIdx>=mARounds.length){showFinal();return;}
+  roundData=mARounds[mARoundIdx];
+  selectedLeft=null;matchedPairs=new Set();
+  const lefts=[...roundData];
+  const rights=[...roundData];shuffle(rights);
+  const cl=document.getElementById('colLeft');
+  const cr=document.getElementById('colRight');
+  cl.innerHTML='';cr.innerHTML='';
+  const qDone=mARoundIdx*ROUND_SIZE;
+  document.getElementById('qNum').textContent=qDone+1;
+  document.getElementById('progFill').style.width=(qDone/TOTAL*100)+'%';
+  lefts.forEach((item,i)=>{
+    const d=document.createElement('div');d.className='ve';d.textContent=item.a;
+    d.dataset.idx=i;d.onclick=()=>tapLeft(i,d);
+    cl.appendChild(d);
+  });
+  rights.forEach((item,i)=>{
+    const d=document.createElement('div');d.className='ve';d.textContent=item.b;
+    d.dataset.pair=roundData.indexOf(item);
+    d.onclick=()=>tapRight(item,d);
+    cr.appendChild(d);
+  });
+}
+
+function tapLeft(idx,el){
+  if(matchedPairs.has(idx))return;
+  document.querySelectorAll('#colLeft .ve').forEach(v=>v.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedLeft={idx,el};
+}
+
+function tapRight(item,el){
+  if(!selectedLeft)return;
+  if(el.classList.contains('matched'))return;
+  const correctIdx=roundData.indexOf(item);
+  if(correctIdx===selectedLeft.idx){
+    // match!
+    el.classList.add('matched');
+    selectedLeft.el.classList.remove('selected');
+    selectedLeft.el.classList.add('matched');
+    matchedPairs.add(selectedLeft.idx);
+    selectedLeft=null;
+    mAcorrectCount++;
+    correctCount++;
+    document.getElementById('correct').textContent=correctCount;
+    playSound(true);
+    if(matchedPairs.size===roundData.length){
+      setTimeout(()=>{mARoundIdx++;loadModeARound();},600);
+    }
+  } else {
+    el.classList.add('wrong-flash');
+    selectedLeft.el.classList.add('wrong-flash');
+    setTimeout(()=>{el.classList.remove('wrong-flash');selectedLeft&&selectedLeft.el.classList.remove('wrong-flash','selected');selectedLeft=null;},400);
+    playSound(false);
+  }
+}
+
+// ── MODE B: Fill-in ──
+let answered=false;
+
+function nextQ(){
+  if(qIdx>=queue.length){showFinal();return;}
+  answered=false;
+  document.getElementById('explain').style.display='none';
+  document.getElementById('btnNext').style.display='none';
+  const q=queue[qIdx];qIdx++;
+  document.getElementById('qNum').textContent=qIdx;
+  document.getElementById('progFill').style.width=((qIdx-1)/TOTAL*100)+'%';
+  // show either vế a or b
+  const showA=Math.random()<.5;
+  document.getElementById('vePart').textContent=showA?q.a:q.b;
+  const answer=showA?q.b:q.a;
+  // distractors
+  const pool=DATA.filter(d=>d!==q);shuffle(pool);
+  const opts=[answer,...pool.slice(0,3).map(d=>showA?d.b:d.a)];shuffle(opts);
+  const div=document.getElementById('opts');div.innerHTML='';
+  opts.forEach(o=>{
+    const b=document.createElement('button');b.className='opt';b.textContent=o;
+    b.onclick=()=>pick(o,answer,q,b);div.appendChild(b);
+  });
+}
+
+function pick(choice,answer,q,btn){
+  if(answered)return;answered=true;
+  document.querySelectorAll('.opt').forEach(b=>{b.disabled=true;if(b.textContent===answer)b.classList.add('correct');});
+  if(choice===answer){btn.classList.add('correct');correctCount++;document.getElementById('correct').textContent=correctCount;playSound(true);}
+  else{btn.classList.add('wrong');playSound(false);}
+  const ex=document.getElementById('explain');
+  ex.style.display='block';ex.innerHTML='<strong>💡 Ý nghĩa:</strong> '+q.note+'<em>📜 Đầy đủ: '+q.a+' '+q.b+'</em>';
+  document.getElementById('btnNext').style.display='block';
+}
+
+function showFinal(){
+  const pct=Math.round(correctCount/(mode===0?TOTAL:TOTAL)*100);
+  let e='😊',t='Hoàn thành!';
+  if(pct>=90){e='🏆';t='Xuất sắc!';}else if(pct>=70){e='🎉';t='Tốt lắm!';}else if(pct<50){e='📚';t='Cần ôn thêm!';}
+  document.getElementById('re').textContent=e;document.getElementById('rt').textContent=t;
+  document.getElementById('rs').textContent=`${correctCount}/${TOTAL} câu đúng (${pct}%)`;
+  document.getElementById('overlay').style.display='flex';
+}
+
+const AC=new (window.AudioContext||window.webkitAudioContext)();
+function playSound(win){
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.connect(g);g.connect(AC.destination);
+  if(win){o.frequency.setValueAtTime(523,AC.currentTime);o.frequency.setValueAtTime(659,AC.currentTime+.1);o.frequency.setValueAtTime(784,AC.currentTime+.2);}
+  else{o.frequency.setValueAtTime(300,AC.currentTime);o.frequency.setValueAtTime(200,AC.currentTime+.15);}
+  g.gain.setValueAtTime(.2,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.5);
+  o.start();o.stop(AC.currentTime+.5);
+}
+
+restart();
+</script>
+</body>
+</html>

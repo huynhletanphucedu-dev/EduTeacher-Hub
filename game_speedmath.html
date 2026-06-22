@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Speed Math — Toán</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:#0f172a;color:#f1f5f9;font-family:'Segoe UI',system-ui,sans-serif;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;}
+#app{width:100%;max-width:420px;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:16px;position:relative;}
+.screen{width:100%;display:none;flex-direction:column;align-items:center;gap:16px;}
+.screen.active{display:flex;}
+
+/* Flash overlay */
+#flash{position:fixed;inset:0;pointer-events:none;opacity:0;z-index:999;border:6px solid transparent;transition:opacity 0.15s;}
+#flash.green{border-color:#22c55e;opacity:1;}
+#flash.red{border-color:#ef4444;opacity:1;}
+
+/* START SCREEN */
+#screen-start{padding-top:32px;}
+.game-title{font-size:28px;font-weight:700;color:#f59e0b;text-align:center;letter-spacing:1px;}
+.game-sub{font-size:14px;color:#94a3b8;margin-top:4px;}
+.highscore-box{background:#1e293b;border-radius:12px;padding:16px;width:100%;}
+.highscore-box h3{font-size:13px;color:#94a3b8;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;}
+.hs-row{display:flex;justify-content:space-between;font-size:14px;padding:4px 0;border-bottom:1px solid #0f172a;}
+.hs-row:last-child{border-bottom:none;}
+.hs-rank{color:#f59e0b;font-weight:600;width:24px;}
+.hs-grade{color:#94a3b8;font-size:12px;}
+.hs-score{font-weight:600;color:#f1f5f9;}
+.section-label{font-size:13px;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;align-self:flex-start;}
+.grade-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;}
+.grade-btn{background:#1e293b;border:2px solid #334155;border-radius:12px;color:#f1f5f9;font-size:18px;font-weight:600;padding:0;height:72px;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;}
+.grade-btn:active{transform:scale(0.96);}
+.grade-btn.mixed{grid-column:1/-1;background:#1e293b;border-color:#f59e0b;color:#f59e0b;}
+.grade-btn:hover{border-color:#f59e0b;color:#f59e0b;}
+
+/* GAME SCREEN */
+#screen-game{padding-top:8px;gap:12px;}
+.top-bar{display:flex;justify-content:space-between;align-items:center;width:100%;}
+.score-display{font-size:14px;color:#94a3b8;}
+.score-value{font-size:26px;font-weight:700;color:#f59e0b;transition:transform 0.15s;}
+.score-value.bump{transform:scale(1.3);}
+.grade-label{font-size:13px;color:#64748b;background:#1e293b;padding:4px 10px;border-radius:20px;}
+.timer-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.timer-ring{transform:rotate(-90deg);}
+.timer-text{font-size:22px;font-weight:700;color:#f1f5f9;font-variant-numeric:tabular-nums;}
+.timer-text.urgent{color:#ef4444;}
+.question-box{background:#1e293b;border-radius:16px;padding:20px 16px;width:100%;text-align:center;min-height:90px;display:flex;align-items:center;justify-content:center;}
+.question-text{font-size:32px;font-weight:700;color:#f1f5f9;line-height:1.2;}
+.answers-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;}
+.ans-btn{background:#1e293b;border:2px solid #334155;border-radius:12px;color:#f1f5f9;font-size:22px;font-weight:600;height:70px;cursor:pointer;transition:border-color 0.15s,background 0.15s;display:flex;align-items:center;justify-content:center;}
+.ans-btn:active{transform:scale(0.97);}
+.ans-btn.correct-flash{background:#166534;border-color:#22c55e;animation:correctPop 0.4s ease;}
+.ans-btn.wrong-flash{border-color:#ef4444;background:#450a0a;animation:wrongShake 0.4s ease;}
+.ans-btn.reveal{background:#166534;border-color:#22c55e;}
+.stats-row{display:flex;gap:16px;font-size:13px;color:#64748b;}
+.stats-row span b{color:#94a3b8;}
+
+@keyframes correctPop{0%{transform:scale(1);}40%{transform:scale(1.08);}100%{transform:scale(1);}}
+@keyframes wrongShake{0%{transform:translateX(0);}20%{transform:translateX(-8px);}40%{transform:translateX(8px);}60%{transform:translateX(-5px);}80%{transform:translateX(5px);}100%{transform:translateX(0);}}
+
+/* END SCREEN */
+#screen-end{padding-top:48px;text-align:center;gap:20px;}
+.end-title{font-size:24px;font-weight:700;color:#f59e0b;}
+.end-score{font-size:64px;font-weight:700;color:#f1f5f9;}
+.end-label{font-size:14px;color:#94a3b8;margin-top:-12px;}
+.end-stats{background:#1e293b;border-radius:12px;padding:16px;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.end-stat{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.end-stat-val{font-size:24px;font-weight:700;color:#f1f5f9;}
+.end-stat-lbl{font-size:12px;color:#64748b;}
+.replay-btn{background:#f59e0b;border:none;border-radius:12px;color:#0f172a;font-size:20px;font-weight:700;height:64px;width:100%;cursor:pointer;transition:opacity 0.15s;}
+.replay-btn:active{opacity:0.8;}
+.new-record{font-size:13px;color:#f59e0b;font-weight:600;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="flash"></div>
+
+  <!-- START SCREEN -->
+  <div id="screen-start" class="screen active">
+    <div class="game-title">⚡ Speed Math</div>
+    <div class="game-sub">Trả lời đúng càng nhiều càng tốt trong 60 giây!</div>
+
+    <div class="highscore-box">
+      <h3>🏆 Điểm cao nhất</h3>
+      <div id="hs-list"></div>
+    </div>
+
+    <div class="section-label">Chọn lớp</div>
+    <div class="grade-grid">
+      <button class="grade-btn" onclick="startGame('6')">Lớp 6</button>
+      <button class="grade-btn" onclick="startGame('7')">Lớp 7</button>
+      <button class="grade-btn" onclick="startGame('8')">Lớp 8</button>
+      <button class="grade-btn" onclick="startGame('9')">Lớp 9</button>
+      <button class="grade-btn mixed" onclick="startGame('mix')">🎲 Hỗn hợp</button>
+    </div>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="screen-game" class="screen">
+    <div class="top-bar">
+      <div>
+        <div class="score-display">Điểm</div>
+        <div class="score-value" id="score-val">0</div>
+      </div>
+      <div class="timer-wrap">
+        <svg width="70" height="70" class="timer-ring">
+          <circle cx="35" cy="35" r="28" fill="none" stroke="#1e293b" stroke-width="5"/>
+          <circle id="timer-circle" cx="35" cy="35" r="28" fill="none" stroke="#f59e0b" stroke-width="5"
+            stroke-dasharray="175.93" stroke-dashoffset="0" stroke-linecap="round"/>
+        </svg>
+        <div class="timer-text" id="timer-text">60</div>
+      </div>
+      <div>
+        <div class="score-display">Câu</div>
+        <div class="score-value" id="q-count">0</div>
+      </div>
+    </div>
+    <div class="grade-label" id="grade-label">Lớp 6</div>
+    <div class="question-box">
+      <div class="question-text" id="question-text">Đang tải...</div>
+    </div>
+    <div class="answers-grid" id="answers-grid"></div>
+    <div class="stats-row">
+      <span>✅ <b id="correct-count">0</b> đúng</span>
+      <span>❌ <b id="wrong-count">0</b> sai</span>
+    </div>
+  </div>
+
+  <!-- END SCREEN -->
+  <div id="screen-end" class="screen">
+    <div class="end-title">Kết thúc!</div>
+    <div class="end-score" id="end-score">0</div>
+    <div class="end-label">điểm</div>
+    <div class="new-record" id="new-record" style="display:none">🎉 Kỷ lục mới!</div>
+    <div class="end-stats">
+      <div class="end-stat"><div class="end-stat-val" id="es-questions">0</div><div class="end-stat-lbl">Câu hỏi</div></div>
+      <div class="end-stat"><div class="end-stat-val" id="es-accuracy">0%</div><div class="end-stat-lbl">Độ chính xác</div></div>
+      <div class="end-stat"><div class="end-stat-val" id="es-correct">0</div><div class="end-stat-lbl">Đúng</div></div>
+      <div class="end-stat"><div class="end-stat-val" id="es-wrong">0</div><div class="end-stat-lbl">Sai</div></div>
+    </div>
+    <button class="replay-btn" onclick="showStart()">Chơi lại</button>
+  </div>
+</div>
+
+<script>
+const CIRCUMFERENCE = 2 * Math.PI * 28;
+let highScores = [];
+let gameState = {};
+
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){let t=b;b=a%b;a=t;}return a;}
+function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){let j=rand(0,i);[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+
+function gcd2(a,b){return b===0?a:gcd2(b,a%b);}
+function fracStr(n,d){let g=gcd2(Math.abs(n),Math.abs(d));n/=g;d/=g;if(d<0){n=-n;d=-d;}return d===1?`${n}`:`${n}/${d}`;}
+function fracHTML(num,den){return `<span style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.2;margin:0 3px;font-size:0.88em"><span style="border-bottom:2px solid currentColor;padding:0 2px">${num}</span><span style="padding:0 2px">${den}</span></span>`;}
+function numStr(v){return v<0?`(${v})`:String(v);}
+
+// Question generators
+const generators = {
+  '6': [genCongTruNguyen, genNhanChia, genPhanSoCungMau, genTimX6],
+  '7': [genPhanSoKhacMau, genTiSo, genThapPhan, genLuyThua],
+  '8': [genNhanDaThuc, genPhanTram, genGiaTriTuyetDoi],
+  '9': [genCanBacHai, genPTBac1, genHamSo],
+};
+
+function genCongTruNguyen(){
+  let a=rand(-50,50),b=rand(-50,50);
+  let op=Math.random()<0.5?'+':'−';
+  let ans=op==='+'?a+b:a-b;
+  let bDisp=b<0?`(${b})`:String(b);
+  let q=`${a} ${op} ${bDisp} = ?`;
+  return {q,ans,fmt:v=>String(v)};
+}
+function genNhanChia(){
+  let a=rand(2,12),b=rand(2,12);
+  if(Math.random()<0.5){
+    return {q:`${a} × ${b} = ?`,ans:a*b,fmt:v=>String(v)};
+  } else {
+    let prod=a*b;
+    return {q:`${prod} ÷ ${a} = ?`,ans:b,fmt:v=>String(v)};
+  }
+}
+function genPhanSoCungMau(){
+  let d=rand(2,12),n1=rand(1,d-1),n2=rand(1,d-1);
+  let op=Math.random()<0.5?'+':'−';
+  let ansN=op==='+'?n1+n2:n1-n2;
+  let g=gcd(Math.abs(ansN),d);
+  let rn=ansN/g,rd=d/g;
+  let ansKey=rd===1?`${rn}`:`${rn}/${rd}`;
+  return {q:fracHTML(n1,d)+` ${op} `+fracHTML(n2,d)+` = ?`,ans:ansKey,fmt:v=>String(v),distractors:()=>fracDistractors(rn,rd)};
+}
+function fracDistractors(n,d){
+  let res=[];
+  let offsets=shuffle([-2,-1,1,2,3,-3]);
+  for(let o of offsets){
+    if(res.length>=3){break;}
+    let nn=n+o;
+    let g=gcd(Math.abs(nn),d);
+    let rnn=nn/g,rdd=d/g;
+    res.push(rdd===1?`${rnn}`:`${rnn}/${rdd}`);
+  }
+  return res;
+}
+function genTimX6(){
+  let a=rand(-20,20),b=rand(-30,30);
+  let x=b-a;
+  let aDisp=a<0?`(${a})`:String(a);
+  return {q:`x + ${aDisp} = ${b}`,ans:x,fmt:v=>String(v)};
+}
+function genPhanSoKhacMau(){
+  let d1=rand(2,8),d2=rand(2,8);
+  while(d2===d1)d2=rand(2,8);
+  let n1=rand(1,d1-1)||1,n2=rand(1,d2-1)||1;
+  let op=Math.random()<0.5?'+':'−';
+  let lcd=d1*d2/gcd(d1,d2);
+  let rn1=n1*(lcd/d1),rn2=n2*(lcd/d2);
+  let ansN=op==='+'?rn1+rn2:rn1-rn2;
+  let g=gcd(Math.abs(ansN),lcd);
+  let rn=ansN/g,rd=lcd/g;
+  let ansKey=rd===1?`${rn}`:`${rn}/${rd}`;
+  return {q:fracHTML(n1,d1)+` ${op} `+fracHTML(n2,d2)+` = ?`,ans:ansKey,fmt:v=>String(v),distractors:()=>fracDistractors(rn,rd)};
+}
+function genTiSo(){
+  let a=rand(1,10),b=rand(1,10),c=rand(1,10);
+  let x=a*c/b;
+  if(!Number.isInteger(x)){
+    b=rand(1,5);a=b*rand(1,4);c=rand(1,10);x=a*c/b;
+  }
+  return {q:fracHTML(a,b)+` = `+fracHTML('?',c),ans:x,fmt:v=>String(v)};
+}
+function genThapPhan(){
+  let a=(rand(1,99)/10).toFixed(1),b=(rand(1,99)/10).toFixed(1);
+  let ops=['+','−','×'];
+  let op=ops[rand(0,2)];
+  let fa=parseFloat(a),fb=parseFloat(b);
+  let ans;
+  if(op==='+')ans=Math.round((fa+fb)*10)/10;
+  else if(op==='−')ans=Math.round((fa-fb)*10)/10;
+  else{ans=Math.round(fa*fb*10)/10;}
+  return {q:`${a} ${op} ${b} = ?`,ans,fmt:v=>v.toFixed(1)};
+}
+function genLuyThua(){
+  let bases=[2,3,5];
+  let base=bases[rand(0,2)];
+  let exp=rand(1,5);
+  let ans=Math.pow(base,exp);
+  return {q:`${base}^${exp} = ?`,ans,fmt:v=>String(v)};
+}
+function genNhanDaThuc(){
+  let a=rand(1,9),b=rand(1,9);
+  let types=rand(0,1);
+  if(types===0){
+    // (a+b)^2
+    let ans=a*a+2*a*b+b*b;
+    return {q:`(${a}+${b})² = ?`,ans,fmt:v=>String(v)};
+  } else {
+    // (a-b)^2
+    let ans=a*a-2*a*b+b*b;
+    return {q:`(${a}−${b})² = ?`,ans,fmt:v=>String(v)};
+  }
+}
+function genPhanTram(){
+  let pcts=[10,20,25,50,75,5,15,30,40,60,80];
+  let p=pcts[rand(0,pcts.length-1)];
+  let vals=[20,40,50,60,80,100,120,200,150,250];
+  let y=vals[rand(0,vals.length-1)];
+  let ans=p*y/100;
+  return {q:`${p}% của ${y} = ?`,ans,fmt:v=>String(v)};
+}
+function genGiaTriTuyetDoi(){
+  let a=rand(-20,20),b=rand(-20,20);
+  let ans=Math.abs(a-b);
+  return {q:`|${a} − ${b}| = ?`,ans,fmt:v=>String(v)};
+}
+
+const perfectSquares=[1,4,9,16,25,36,49,64,81,100,121,144,169,196,225,256,289,324,361,400];
+function genCanBacHai(){
+  let sq=perfectSquares[rand(0,perfectSquares.length-1)];
+  let ans=Math.sqrt(sq);
+  return {q:`√${sq} = ?`,ans,fmt:v=>String(v)};
+}
+function genPTBac1(){
+  let a=rand(1,10),b=rand(-20,20),c=rand(-30,30);
+  // ax + b = c => x = (c-b)/a
+  let x=(c-b)/a;
+  if(!Number.isInteger(x)){a=1;b=rand(-10,10);c=rand(-20,20);x=c-b;}
+  let bPart=b<0?` − ${Math.abs(b)}`:(b===0?'':` + ${b}`);
+  return {q:`${a===1?'':a}x${bPart} = ${c}\nx = ?`,ans:x,fmt:v=>String(v)};
+}
+function genHamSo(){
+  let a=rand(1,5),b=rand(-10,10),val=rand(-5,5);
+  let ans=a*val+b;
+  let bPart=b<0?` − ${Math.abs(b)}`:(b===0?'':` + ${b}`);
+  let valDisp=val<0?`(${val})`:String(val);
+  return {q:`f(x) = ${a}x${bPart}\nf(${valDisp}) = ?`,ans,fmt:v=>String(v)};
+}
+
+function numDistractors(ans, fmt){
+  let n=typeof ans==='number'?ans:parseFloat(ans);
+  let offsets=shuffle([1,-1,2,-2,3,-3,5,-5,rand(4,8),-rand(4,8)]);
+  let res=new Set();
+  for(let o of offsets){
+    if(res.size>=3)break;
+    let v=n+o;
+    let s=fmt(v);
+    if(s!==fmt(ans))res.add(s);
+  }
+  return [...res].slice(0,3);
+}
+
+function generateQuestion(grade){
+  let pool;
+  if(grade==='mix'){
+    let allGrades=['6','7','8','9'];
+    let g=allGrades[rand(0,3)];
+    pool=generators[g];
+  } else {
+    pool=generators[grade];
+  }
+  let gen=pool[rand(0,pool.length-1)];
+  let q=gen();
+  let ansStr=q.fmt?q.fmt(q.ans):String(q.ans);
+  let wrongs=q.distractors?q.distractors():numDistractors(q.ans,q.fmt||(v=>String(v)));
+  // ensure 3 unique wrong answers
+  let wrongSet=wrongs.filter(w=>w!==ansStr).slice(0,3);
+  while(wrongSet.length<3){wrongSet.push(String(q.ans+(wrongSet.length+1)*7));}
+  let options=shuffle([ansStr,...wrongSet.slice(0,3)]);
+  return {text:q.q,answer:ansStr,options};
+}
+
+// Game logic
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function renderHighScores(){
+  let el=document.getElementById('hs-list');
+  if(highScores.length===0){el.innerHTML='<div style="color:#475569;font-size:13px;text-align:center;padding:8px">Chưa có điểm nào</div>';return;}
+  el.innerHTML=highScores.map((s,i)=>`
+    <div class="hs-row">
+      <span class="hs-rank">#${i+1}</span>
+      <span class="hs-grade">${s.grade==='mix'?'Hỗn hợp':'Lớp '+s.grade}</span>
+      <span class="hs-score">${s.score} điểm</span>
+    </div>`).join('');
+}
+
+function showStart(){
+  renderHighScores();
+  showScreen('screen-start');
+}
+
+let timerInterval=null;
+
+function startGame(grade){
+  gameState={
+    grade,score:0,timeLeft:60,questionsDone:0,correct:0,wrong:0,locked:false
+  };
+  document.getElementById('score-val').textContent='0';
+  document.getElementById('q-count').textContent='0';
+  document.getElementById('correct-count').textContent='0';
+  document.getElementById('wrong-count').textContent='0';
+  document.getElementById('grade-label').textContent=grade==='mix'?'Hỗn hợp':'Lớp '+grade;
+  let circle=document.getElementById('timer-circle');
+  circle.style.stroke='#f59e0b';
+  circle.setAttribute('stroke-dashoffset','0');
+  showScreen('screen-game');
+  loadQuestion();
+  if(timerInterval)clearInterval(timerInterval);
+  let start=Date.now();
+  let totalTime=60000;
+  timerInterval=setInterval(()=>{
+    let elapsed=Date.now()-start;
+    let remaining=Math.max(0,totalTime-elapsed);
+    let secs=Math.ceil(remaining/1000);
+    gameState.timeLeft=secs;
+    let timerText=document.getElementById('timer-text');
+    timerText.textContent=secs;
+    let frac=remaining/totalTime;
+    let offset=CIRCUMFERENCE*(1-frac);
+    circle.setAttribute('stroke-dashoffset',offset.toFixed(2));
+    if(secs<=10){circle.style.stroke='#ef4444';timerText.classList.add('urgent');}
+    if(remaining<=0){clearInterval(timerInterval);endGame();}
+  },50);
+}
+
+function loadQuestion(){
+  let qdata=generateQuestion(gameState.grade);
+  gameState.currentQuestion=qdata;
+  document.getElementById('question-text').innerHTML=qdata.text.replace(/\n/g,'<br>');
+  let grid=document.getElementById('answers-grid');
+  grid.innerHTML='';
+  qdata.options.forEach((opt,i)=>{
+    let btn=document.createElement('button');
+    btn.className='ans-btn';
+    // render fraction answers as stacked HTML if they match n/d pattern
+    let dispOpt=opt.replace(/^(-?\d+)\/(-?\d+)$/,(_,n,d)=>fracHTML(n,d));
+    btn.innerHTML=dispOpt;
+    btn.setAttribute('data-val',opt);
+    btn.addEventListener('click',()=>handleAnswer(opt,btn,qdata.answer));
+    grid.appendChild(btn);
+  });
+}
+
+function handleAnswer(selected,btnEl,correct){
+  if(gameState.locked)return;
+  gameState.locked=true;
+  gameState.questionsDone++;
+  document.getElementById('q-count').textContent=gameState.questionsDone;
+  let isCorrect=selected===correct;
+  if(isCorrect){
+    gameState.score+=10;
+    gameState.correct++;
+    btnEl.classList.add('correct-flash');
+    flashScreen('green');
+    updateScore();
+    setTimeout(()=>{btnEl.classList.remove('correct-flash');gameState.locked=false;loadQuestion();},500);
+  } else {
+    gameState.score=Math.max(0,gameState.score-5);
+    gameState.wrong++;
+    btnEl.classList.add('wrong-flash');
+    flashScreen('red');
+    updateScore();
+    // reveal correct
+    let allBtns=document.querySelectorAll('.ans-btn');
+    allBtns.forEach(b=>{if(b.getAttribute('data-val')===correct)b.classList.add('reveal');});
+    setTimeout(()=>{
+      btnEl.classList.remove('wrong-flash');
+      allBtns.forEach(b=>b.classList.remove('reveal'));
+      gameState.locked=false;
+      loadQuestion();
+    },800);
+  }
+  document.getElementById('correct-count').textContent=gameState.correct;
+  document.getElementById('wrong-count').textContent=gameState.wrong;
+}
+
+function updateScore(){
+  let el=document.getElementById('score-val');
+  el.textContent=gameState.score;
+  el.classList.add('bump');
+  setTimeout(()=>el.classList.remove('bump'),200);
+}
+
+function flashScreen(color){
+  let f=document.getElementById('flash');
+  f.className=color;
+  setTimeout(()=>{f.className='';},300);
+}
+
+function endGame(){
+  gameState.locked=true;
+  let {score,questionsDone,correct,wrong,grade}=gameState;
+  let accuracy=questionsDone>0?Math.round(correct/questionsDone*100):0;
+  document.getElementById('end-score').textContent=score;
+  document.getElementById('es-questions').textContent=questionsDone;
+  document.getElementById('es-accuracy').textContent=accuracy+'%';
+  document.getElementById('es-correct').textContent=correct;
+  document.getElementById('es-wrong').textContent=wrong;
+  // check high score
+  let entry={score,grade};
+  highScores.push(entry);
+  highScores.sort((a,b)=>b.score-a.score);
+  highScores=highScores.slice(0,5);
+  let isNew=highScores[0]===entry&&highScores.filter(h=>h.score===score).length===1;
+  document.getElementById('new-record').style.display=score>0&&highScores.indexOf(entry)===0?'block':'none';
+  showScreen('screen-end');
+}
+
+// Init
+showStart();
+</script>
+</body>
+</html>

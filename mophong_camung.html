@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dòng Điện Cảm Ứng – Hiện Tượng Cảm Ứng Điện Từ</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #0f172a;
+  color: #f1f5f9;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  min-height: 100vh;
+  padding: 20px;
+}
+.container {
+  max-width: 700px;
+  margin: 0 auto;
+}
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #fbbf24;
+  letter-spacing: 0.5px;
+}
+.header p {
+  font-size: 14px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+.canvas-wrap {
+  background: #1e293b;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  border: 1px solid #334155;
+}
+canvas {
+  display: block;
+  margin: 0 auto;
+  border-radius: 8px;
+  background: #0f172a;
+}
+.status-box {
+  background: #1e293b;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 14px;
+  border: 1px solid #334155;
+  min-height: 52px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.status-main {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+.status-emf {
+  font-size: 13px;
+  color: #94a3b8;
+}
+.controls {
+  background: #1e293b;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  border: 1px solid #334155;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.control-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.control-label {
+  font-size: 13px;
+  color: #94a3b8;
+  min-width: 140px;
+}
+input[type=range] {
+  flex: 1;
+  accent-color: #3b82f6;
+  height: 4px;
+  cursor: pointer;
+}
+.range-val {
+  font-size: 13px;
+  color: #f1f5f9;
+  min-width: 28px;
+  text-align: right;
+}
+.btn-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 2px;
+}
+button {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1px solid #475569;
+  background: #334155;
+  color: #f1f5f9;
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.15s;
+}
+button:hover { background: #475569; }
+button.active { background: #1d4ed8; border-color: #3b82f6; }
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.card-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fbbf24;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.card-body {
+  font-size: 12px;
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+@media (max-width: 600px) {
+  .cards { grid-template-columns: 1fr; }
+  .control-label { min-width: 110px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>⚡ Dòng Điện Cảm Ứng</h1>
+    <p>Kéo nam châm vào/ra cuộn dây để thấy kim điện kế lệch</p>
+  </div>
+
+  <div class="canvas-wrap">
+    <canvas id="sim" width="660" height="320"></canvas>
+  </div>
+
+  <div class="status-box">
+    <div class="status-main" id="statusMain">⚪ Không có dòng điện (từ thông không đổi)</div>
+    <div class="status-emf" id="statusEmf">Suất điện động cảm ứng: ε ≈ 0 (đơn vị tương đối)</div>
+  </div>
+
+  <div class="controls">
+    <div class="control-row">
+      <span class="control-label">Vị trí nam châm</span>
+      <input type="range" id="magSlider" min="0" max="100" value="25" step="1">
+      <span class="range-val" id="magVal">25%</span>
+    </div>
+    <div class="control-row">
+      <span class="control-label">Tốc độ di chuyển</span>
+      <input type="range" id="speedSlider" min="1" max="10" value="5" step="1">
+      <span class="range-val" id="speedVal">5</span>
+    </div>
+    <div class="btn-row">
+      <button id="btnPlay">▶ Tự động</button>
+      <button id="btnStop">⏸ Dừng</button>
+    </div>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-title">Điều kiện</div>
+      <div class="card-body">Từ thông qua cuộn dây <strong style="color:#fbbf24">BIẾN THIÊN</strong> mới tạo ra dòng điện cảm ứng</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Chiều dòng điện</div>
+      <div class="card-body">Theo <strong style="color:#fbbf24">định luật Lenz</strong>: chống lại sự biến thiên từ thông gây ra nó</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Ứng dụng</div>
+      <div class="card-body">Máy phát điện, biến áp, bếp từ, sạc không dây</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById('sim');
+const ctx = canvas.getContext('2d');
+
+const W = canvas.width;
+const H = canvas.height;
+
+const COIL_CX = 470;
+const COIL_CY = 145;
+const COIL_RX = 14;
+const COIL_RY = 50;
+const NUM_LOOPS = 8;
+const COIL_WIDTH = NUM_LOOPS * (COIL_RX * 1.6);
+
+const GALV_CX = 470;
+const GALV_CY = 265;
+const GALV_R = 34;
+
+let magnetPos = 25;
+let prevMagnetPos = 25;
+let velocity = 0;
+let needleAngle = 0;
+let autoAnim = false;
+let animT = 0;
+let fieldOffset = 0;
+
+const magSlider = document.getElementById('magSlider');
+const speedSlider = document.getElementById('speedSlider');
+const magVal = document.getElementById('magVal');
+const speedVal = document.getElementById('speedVal');
+const statusMain = document.getElementById('statusMain');
+const statusEmf = document.getElementById('statusEmf');
+const btnPlay = document.getElementById('btnPlay');
+const btnStop = document.getElementById('btnStop');
+
+magSlider.addEventListener('input', () => {
+  magnetPos = parseFloat(magSlider.value);
+  magVal.textContent = magnetPos + '%';
+});
+
+speedSlider.addEventListener('input', () => {
+  speedVal.textContent = speedSlider.value;
+});
+
+btnPlay.addEventListener('click', () => {
+  autoAnim = true;
+  btnPlay.classList.add('active');
+  btnStop.classList.remove('active');
+});
+
+btnStop.addEventListener('click', () => {
+  autoAnim = false;
+  btnPlay.classList.remove('active');
+  btnStop.classList.add('active');
+});
+
+function getMagnetX() {
+  return 60 + (magnetPos / 100) * 300;
+}
+
+function drawMagnet(x) {
+  const mw = 100, mh = 36;
+  const mx = x - mw / 2;
+  const my = COIL_CY - mh / 2;
+
+  ctx.save();
+  ctx.shadowColor = 'rgba(239,68,68,0.3)';
+  ctx.shadowBlur = 10;
+
+  ctx.fillStyle = '#1d4ed8';
+  ctx.beginPath();
+  ctx.roundRect(mx, my, mw / 2, mh, [6, 0, 0, 6]);
+  ctx.fill();
+
+  ctx.fillStyle = '#dc2626';
+  ctx.beginPath();
+  ctx.roundRect(mx + mw / 2, my, mw / 2, mh, [0, 6, 6, 0]);
+  ctx.fill();
+
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 15px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('S', mx + mw / 4, my + mh / 2);
+  ctx.fillText('N', mx + 3 * mw / 4, my + mh / 2);
+
+  ctx.restore();
+}
+
+function drawCoil() {
+  const startX = COIL_CX - COIL_WIDTH / 2;
+  ctx.save();
+  ctx.lineWidth = 2.5;
+
+  for (let i = 0; i < NUM_LOOPS; i++) {
+    const cx = startX + i * (COIL_RX * 1.6);
+    ctx.beginPath();
+    ctx.ellipse(cx, COIL_CY, COIL_RX, COIL_RY, 0, 0, Math.PI * 2);
+    ctx.strokeStyle = '#94a3b8';
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = '#64748b';
+  ctx.lineWidth = 1.5;
+  ctx.setLineDash([]);
+
+  const topY = COIL_CY - COIL_RY;
+  const botY = COIL_CY + COIL_RY;
+  const leftX = startX - COIL_RX;
+  const rightX = startX + NUM_LOOPS * COIL_RX * 1.6;
+
+  ctx.beginPath();
+  ctx.moveTo(leftX, topY);
+  ctx.lineTo(GALV_CX - GALV_R, GALV_CY - 5);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(rightX, botY);
+  ctx.lineTo(GALV_CX + GALV_R, GALV_CY + 5);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawFieldLines(magX, vel) {
+  const nPoleX = magX + 50;
+  const density = Math.min(1, 0.2 + Math.abs(magnetPos / 100) * 0.8);
+  const alpha = 0.25 + density * 0.5;
+
+  ctx.save();
+  ctx.lineWidth = 1.5;
+
+  const numLines = 5;
+  for (let i = 0; i < numLines; i++) {
+    const t = i / (numLines - 1);
+    const yOff = (t - 0.5) * 90;
+    const startY = COIL_CY + yOff;
+
+    const cp1x = nPoleX + 40;
+    const cp1y = startY - yOff * 0.5;
+    const endX = COIL_CX - COIL_WIDTH / 2 - 10;
+    const endY = COIL_CY + yOff * 0.3;
+
+    if (nPoleX < endX) {
+      ctx.strokeStyle = `rgba(251,191,36,${alpha})`;
+      ctx.setLineDash([6, 6]);
+      ctx.lineDashOffset = -fieldOffset;
+      ctx.beginPath();
+      ctx.moveTo(nPoleX, startY);
+      ctx.bezierCurveTo(cp1x, cp1y, endX - 40, endY, endX, endY);
+      ctx.stroke();
+
+      if (nPoleX > 200) {
+        const arrowX = nPoleX + (endX - nPoleX) * 0.6;
+        const arrowY = startY + (endY - startY) * 0.6;
+        drawArrow(ctx, arrowX, arrowY, vel >= 0 ? 1 : -1, alpha);
+      }
+    }
+  }
+
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+function drawArrow(ctx, x, y, dir, alpha) {
+  ctx.save();
+  ctx.fillStyle = `rgba(251,191,36,${alpha + 0.2})`;
+  ctx.beginPath();
+  if (dir > 0) {
+    ctx.moveTo(x + 7, y);
+    ctx.lineTo(x - 4, y - 5);
+    ctx.lineTo(x - 4, y + 5);
+  } else {
+    ctx.moveTo(x - 7, y);
+    ctx.lineTo(x + 4, y - 5);
+    ctx.lineTo(x + 4, y + 5);
+  }
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawGalvanometer(angle) {
+  ctx.save();
+
+  ctx.beginPath();
+  ctx.arc(GALV_CX, GALV_CY, GALV_R + 4, 0, Math.PI * 2);
+  ctx.fillStyle = '#1e293b';
+  ctx.fill();
+  ctx.strokeStyle = '#475569';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(GALV_CX, GALV_CY, GALV_R, 0, Math.PI * 2);
+  ctx.fillStyle = '#0f172a';
+  ctx.fill();
+  ctx.strokeStyle = '#64748b';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  const ticks = 10;
+  for (let i = -ticks; i <= ticks; i++) {
+    const a = (i / ticks) * (Math.PI * 0.7) - Math.PI / 2;
+    const inner = GALV_R - 8;
+    const outer = GALV_R - 2;
+    ctx.beginPath();
+    ctx.moveTo(GALV_CX + Math.cos(a) * inner, GALV_CY + Math.sin(a) * inner);
+    ctx.lineTo(GALV_CX + Math.cos(a) * outer, GALV_CY + Math.sin(a) * outer);
+    ctx.strokeStyle = i === 0 ? '#94a3b8' : '#475569';
+    ctx.lineWidth = i % 5 === 0 ? 1.5 : 0.8;
+    ctx.stroke();
+  }
+
+  const labels = [[-10, -0.7], [0, 0], [10, 0.7]];
+  ctx.font = '9px Arial';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (const [label, frac] of labels) {
+    const a = (frac) * (Math.PI * 0.7) - Math.PI / 2;
+    const r = GALV_R - 14;
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillText(label, GALV_CX + Math.cos(a) * r, GALV_CY + Math.sin(a) * r);
+  }
+
+  const needleRad = (angle / 60) * (Math.PI * 0.7) - Math.PI / 2;
+  const needleLen = GALV_R - 6;
+  const isDeflected = Math.abs(angle) > 3;
+
+  ctx.beginPath();
+  ctx.moveTo(GALV_CX, GALV_CY);
+  ctx.lineTo(
+    GALV_CX + Math.cos(needleRad) * needleLen,
+    GALV_CY + Math.sin(needleRad) * needleLen
+  );
+  ctx.strokeStyle = isDeflected ? '#ef4444' : '#94a3b8';
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(GALV_CX, GALV_CY, 4, 0, Math.PI * 2);
+  ctx.fillStyle = isDeflected ? '#ef4444' : '#64748b';
+  ctx.fill();
+
+  ctx.font = 'bold 10px Arial';
+  ctx.fillStyle = '#94a3b8';
+  ctx.textAlign = 'center';
+  ctx.fillText('G', GALV_CX, GALV_CY + GALV_R + 14);
+
+  ctx.restore();
+}
+
+function drawScene() {
+  ctx.clearRect(0, 0, W, H);
+
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.fillStyle = '#1e3a5f';
+  ctx.fillRect(COIL_CX - COIL_WIDTH / 2 - 10, COIL_CY - COIL_RY - 5, COIL_WIDTH + 20, COIL_RY * 2 + 10);
+  ctx.strokeStyle = '#2d4a6a';
+  ctx.lineWidth = 1;
+  ctx.strokeRect(COIL_CX - COIL_WIDTH / 2 - 10, COIL_CY - COIL_RY - 5, COIL_WIDTH + 20, COIL_RY * 2 + 10);
+
+  ctx.fillStyle = '#1e293b';
+  ctx.font = '11px Arial';
+  ctx.fillStyle = '#64748b';
+  ctx.textAlign = 'center';
+  ctx.fillText('Cuộn dây dẫn', COIL_CX, COIL_CY - COIL_RY - 12);
+
+  const magX = getMagnetX();
+  drawFieldLines(magX, velocity);
+  drawCoil();
+  drawMagnet(magX);
+  drawGalvanometer(needleAngle);
+
+  const emfStrength = Math.abs(velocity);
+  if (emfStrength > 0.15) {
+    const arcs = Math.min(3, Math.ceil(emfStrength * 2));
+    for (let a = 0; a < arcs; a++) {
+      const r = 28 + a * 8;
+      const phase = (Date.now() / 400 + a * 0.5) % 1;
+      ctx.save();
+      ctx.strokeStyle = `rgba(251,191,36,${0.6 - a * 0.15})`;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(GALV_CX, GALV_CY, r, -Math.PI * 0.9, Math.PI * 0.9 * (velocity > 0 ? phase : -phase + 1));
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+}
+
+function updateStatus() {
+  const speed = parseFloat(speedSlider.value);
+  const scaledVel = velocity * speed;
+  const emfVal = Math.abs(scaledVel * 10).toFixed(1);
+
+  if (Math.abs(scaledVel) < 0.05) {
+    statusMain.textContent = '⚪ Không có dòng điện (từ thông không đổi)';
+    statusMain.style.color = '#94a3b8';
+    statusEmf.textContent = 'Suất điện động cảm ứng: ε ≈ 0 (đơn vị tương đối)';
+  } else if (scaledVel > 0) {
+    statusMain.textContent = '🔴 Xuất hiện dòng điện cảm ứng! Chiều: ngược chiều kim đồng hồ';
+    statusMain.style.color = '#ef4444';
+    statusEmf.textContent = `Suất điện động cảm ứng: ε ≈ ${emfVal} (đơn vị tương đối) | Từ thông tăng`;
+  } else {
+    statusMain.textContent = '🔴 Xuất hiện dòng điện cảm ứng! Chiều: cùng chiều kim đồng hồ';
+    statusMain.style.color = '#f97316';
+    statusEmf.textContent = `Suất điện động cảm ứng: ε ≈ ${emfVal} (đơn vị tương đối) | Từ thông giảm`;
+  }
+}
+
+let lastTime = 0;
+function loop(ts) {
+  const dt = Math.min((ts - lastTime) / 1000, 0.05);
+  lastTime = ts;
+
+  if (autoAnim) {
+    const speed = parseFloat(speedSlider.value);
+    animT += dt * speed * 0.4;
+    const newPos = 50 + 45 * Math.sin(animT);
+    magnetPos = newPos;
+    magSlider.value = newPos;
+    magVal.textContent = newPos.toFixed(0) + '%';
+  }
+
+  velocity = (magnetPos - prevMagnetPos) / (dt || 0.016);
+  prevMagnetPos = magnetPos;
+
+  const speed = parseFloat(speedSlider.value);
+  const targetAngle = Math.max(-60, Math.min(60, velocity * speed * 2));
+  needleAngle += (targetAngle - needleAngle) * Math.min(1, dt * 6);
+
+  fieldOffset = (fieldOffset + Math.abs(velocity) * speed * 0.5 + 0.3) % 12;
+
+  drawScene();
+  updateStatus();
+  requestAnimationFrame(loop);
+}
+
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

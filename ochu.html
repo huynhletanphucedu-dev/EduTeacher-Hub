@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Tạo Ô Chữ – EduTeacher Hub</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#fff;color:#222;min-height:100vh;}
+
+/* ── HEADER ── */
+.page-header{text-align:center;padding:32px 20px 20px;}
+.page-header h1{font-size:2.4rem;font-weight:900;letter-spacing:2px;color:#1e293b;text-transform:uppercase;}
+.title-input{display:block;width:min(700px,90vw);margin:16px auto 8px;border:1.5px solid #dde2e8;border-radius:10px;padding:13px 20px;font-size:1.15rem;font-weight:700;color:#1e293b;text-align:center;outline:none;font-family:inherit;letter-spacing:1px;}
+.title-input::placeholder{color:#cbd5e1;}
+.title-input:focus{border-color:#aaa;}
+
+.kw-hint{font-size:.78rem;color:#94a3b8;text-align:center;margin:10px 0 6px;}
+.kw-row{display:flex;align-items:center;justify-content:center;gap:0;width:min(700px,90vw);margin:0 auto 24px;border:1.5px solid #dde2e8;border-radius:10px;overflow:hidden;}
+.kw-row input{flex:1;border:none;outline:none;font-size:1.1rem;font-weight:900;letter-spacing:3px;text-align:center;padding:13px 16px;font-family:inherit;text-transform:uppercase;color:#1e293b;}
+.kw-row input::placeholder{color:#cbd5e1;letter-spacing:1px;font-size:.95rem;font-weight:600;}
+.kw-apply{padding:13px 20px;background:#e05b4b;color:#fff;font-size:.82rem;font-weight:800;border:none;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;transition:background .15s;}
+.kw-apply:hover{background:#c0392b;}
+
+/* ── GRID SECTION ── */
+.grid-section{overflow-x:auto;padding:0 16px 24px;}
+
+table.cw{border-collapse:collapse;table-layout:fixed;margin:0 auto;border:2px solid #94a3b8;}
+/* col header */
+.ch-label{width:148px;padding:8px 10px;font-size:.85rem;font-weight:800;color:#64748b;border:2px solid #94a3b8;background:#f1f5f9;}
+.ch-num{width:44px;height:36px;text-align:center;font-size:.78rem;font-weight:700;color:#64748b;border:1px solid #94a3b8;cursor:pointer;user-select:none;transition:background .12s;background:#f8fafc;}
+.ch-num:hover{background:#fef3f2;}
+.ch-num.is-key-col{color:#e05b4b;font-weight:900;background:#fff0ee;border-color:#e05b4b;}
+
+/* action cell */
+.ac{width:148px;padding:4px 8px;border:1px solid #94a3b8;vertical-align:middle;background:#f8fafc;}
+.ac-inner{display:flex;align-items:center;gap:4px;}
+.ab{width:28px;height:28px;border-radius:50%;border:none;display:flex;align-items:center;justify-content:center;font-size:.78rem;cursor:pointer;transition:all .15s;flex-shrink:0;font-weight:900;}
+.ab:hover{transform:scale(1.15);}
+.ab.lft{background:#475569;color:#fff;}
+.ab.rgt{background:#475569;color:#fff;}
+.ab.clue{background:#f59e0b;color:#fff;}
+.ab.clue.set{background:#d97706;}
+.ab.del{background:#e05b4b;color:#fff;}
+.rn{font-size:.88rem;font-weight:900;color:#475569;min-width:18px;text-align:center;}
+
+/* grid cells */
+.gc{width:44px;height:44px;text-align:center;vertical-align:middle;border:1px solid #94a3b8;padding:0;background:#fff;}
+.gc.letter{background:#5bc8c4;border-color:#2e9e9a;}
+.gc.key-letter{background:#e05b4b;border-color:#b83b2d;}
+.gc.key-col-empty{background:#fff0ee;border-color:#e8a09a;}
+.gc-txt{font-size:1rem;font-weight:900;color:#fff;text-transform:uppercase;line-height:1;}
+
+/* word input row */
+.word-row td{border:none;padding:2px 0 4px 0;}
+.word-inp{width:100%;border:none;border-bottom:1.5px solid #e2e8f0;padding:5px 8px;font-size:.88rem;font-weight:700;color:#334155;outline:none;background:transparent;font-family:inherit;}
+.word-inp:focus{border-bottom-color:#e05b4b;}
+.word-inp::placeholder{color:#cbd5e1;}
+
+/* ── BOTTOM CONTROLS ── */
+.bottom-section{padding:32px 20px 48px;text-align:center;}
+.bottom-title{font-size:1.7rem;font-weight:800;color:#1e293b;margin-bottom:8px;}
+.bottom-sub{font-size:.82rem;color:#94a3b8;max-width:640px;margin:0 auto 28px;}
+.btn-group{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:14px;}
+.bbtn{padding:12px 26px;border-radius:30px;border:none;font-size:.9rem;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;}
+.bbtn:hover{transform:scale(1.04);opacity:.9;}
+.bbtn.red{background:#e05b4b;color:#fff;}
+.bbtn.yellow{background:#f59e0b;color:#fff;}
+.bbtn.blue{background:#3b82f6;color:#fff;}
+.bbtn.green{background:#10b981;color:#fff;}
+
+/* ── CLUE LIST ── */
+.clue-list{max-width:800px;margin:24px auto 0;display:flex;flex-direction:column;gap:8px;}
+.clue-item{display:flex;align-items:center;gap:10px;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:10px 14px;}
+.ci-num{width:28px;height:28px;border-radius:50%;background:#5bc8c4;color:#fff;font-size:.82rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ci-key{width:28px;height:28px;border-radius:6px;background:#e05b4b;color:#fff;font-size:.9rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;text-transform:uppercase;}
+.ci-inp{flex:1;border:none;outline:none;font-size:.88rem;font-family:inherit;color:#334155;background:transparent;}
+.ci-inp::placeholder{color:#cbd5e1;}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:100;display:none;align-items:center;justify-content:center;}
+.modal-bg.show{display:flex;}
+.modal{background:#fff;border-radius:18px;padding:28px;width:440px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.18);}
+.modal h3{font-size:1rem;font-weight:800;margin-bottom:12px;color:#1e293b;}
+.modal textarea{width:100%;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px;font-size:.9rem;font-family:inherit;resize:vertical;min-height:85px;outline:none;}
+.modal textarea:focus{border-color:#e05b4b;}
+.mfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:12px;}
+.mfoot button{padding:9px 20px;border-radius:9px;border:none;font-size:.85rem;font-weight:800;cursor:pointer;font-family:inherit;}
+.mok{background:#e05b4b;color:#fff;}
+.mcancel{background:#f1f5f9;color:#64748b;}
+
+/* ── PRESENT ── */
+.p-wrap{position:fixed;inset:0;background:#0a0e1a;z-index:200;display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding:28px 16px;overflow-y:auto;}
+.p-wrap.show{display:flex;}
+.p-title{font-size:1.8rem;font-weight:900;color:#fff;text-align:center;margin-bottom:6px;text-transform:uppercase;}
+.p-kw-lbl{font-size:.72rem;color:#475569;text-align:center;margin-bottom:8px;letter-spacing:1px;font-weight:700;}
+.p-kw-row{display:flex;gap:5px;justify-content:center;margin-bottom:20px;}
+.p-kw-ch{width:44px;height:44px;border-radius:8px;border:2px solid #e05b4b;background:rgba(224,91,75,.12);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:900;color:transparent;text-transform:uppercase;transition:color .35s;}
+.p-kw-ch.lit{color:#e05b4b;}
+
+.p-grid-wrap{overflow-x:auto;width:100%;margin-bottom:16px;}
+table.pg{border-collapse:collapse;margin:0 auto;}
+.pg-num{width:44px;height:44px;text-align:center;vertical-align:middle;font-size:.88rem;font-weight:900;color:#475569;cursor:pointer;border-radius:50%;transition:all .2s;user-select:none;}
+.pg-num:hover{background:rgba(255,255,255,.1);}
+.pg-num.done{background:#3b82f6;color:#fff;border-radius:50%;}
+.pg-cell{width:44px;height:44px;text-align:center;vertical-align:middle;}
+.pg-inner{width:40px;height:40px;border-radius:7px;background:#111827;border:2px solid #1e293b;display:flex;align-items:center;justify-content:center;font-size:1rem;font-weight:900;color:transparent;text-transform:uppercase;transition:all .3s;margin:auto;}
+.pg-inner.kc{border-color:#e05b4b;background:rgba(224,91,75,.15);}
+.pg-inner.lit{color:#e2e8f0;}
+.pg-inner.kc.lit{color:#e05b4b;}
+.pg-empty{width:44px;height:44px;}
+
+.p-clue{background:#1e293b;border:1.5px solid #334155;border-radius:14px;padding:13px 24px;max-width:700px;width:100%;text-align:center;font-size:1rem;font-weight:700;color:#94a3b8;min-height:50px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;}
+.p-ctrl{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.pcb{padding:10px 22px;border-radius:12px;border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:#fff;font-size:.85rem;font-weight:800;cursor:pointer;font-family:inherit;transition:all .14s;}
+.pcb:hover{background:rgba(255,255,255,.15);}
+.pcb.acc{background:rgba(59,130,246,.3);border-color:#3b82f6;}
+.pcb.ex{background:rgba(224,91,75,.2);border-color:rgba(224,91,75,.5);color:#fca5a5;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="page-header">
+  <h1>Tạo Ô Chữ</h1>
+  <input class="title-input" id="title-inp" placeholder="NHẬP TIÊU ĐỀ Ô CHỮ" maxlength="60"/>
+  <div class="kw-hint">Nhập TỪ KHÓA CHÍNH vào ô dưới đây, nên nhập từ hoàn chỉnh có dấu, ví dụ "VIỆT NAM"</div>
+  <div class="kw-row">
+    <input id="kw-inp" placeholder="TỪ KHÓA CHÍNH" maxlength="30"/>
+    <button class="kw-apply" id="kw-apply">Áp dụng →</button>
+  </div>
+</div>
+
+<!-- GRID -->
+<div class="grid-section">
+  <table class="cw" id="cw-table"></table>
+</div>
+
+<!-- BOTTOM -->
+<div class="bottom-section">
+  <div class="bottom-title">Danh sách câu hỏi hoặc gợi ý cho từ khóa</div>
+  <div class="bottom-sub">Các câu hỏi/gợi ý này sẽ hiển thị khi trình chiếu. Nếu chỉ cần tải file Word, thầy cô có thể tự thêm vào sau khi tải về mà không cần nhập vào ở đây.</div>
+  <div class="btn-group">
+    <button class="bbtn red" id="ba-addcol-start">Thêm Cột Đầu</button>
+    <button class="bbtn red" id="ba-addcol-end">Thêm Cột Cuối</button>
+    <button class="bbtn red" id="ba-addrow-start">Thêm Hàng Đầu</button>
+    <button class="bbtn red" id="ba-addrow-end">Thêm Hàng Cuối</button>
+  </div>
+  <div class="btn-group">
+    <button class="bbtn yellow" id="ba-delcol-start">Xóa Cột Đầu</button>
+    <button class="bbtn yellow" id="ba-delcol-end">Xóa Cột Cuối</button>
+    <button class="bbtn yellow" id="ba-delrow-start">Xóa Hàng Đầu</button>
+    <button class="bbtn yellow" id="ba-delrow-end">Xóa Hàng Cuối</button>
+  </div>
+  <div class="btn-group">
+    <button class="bbtn yellow" id="ba-word">Tải File Word</button>
+    <button class="bbtn red" id="ba-present">▶ Trình Chiếu</button>
+  </div>
+  <div class="clue-list" id="clue-list"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <h3 id="modal-title">Câu hỏi gợi ý – Hàng 1</h3>
+    <textarea id="modal-ta" placeholder="Nhập câu hỏi hoặc gợi ý..."></textarea>
+    <div class="mfoot">
+      <button class="mcancel" id="m-cancel">Hủy</button>
+      <button class="mok" id="m-ok">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRESENT -->
+<div class="p-wrap" id="p-wrap">
+  <div class="p-title" id="p-title-txt"></div>
+  <div class="p-kw-lbl">🔑 Từ khóa hàng dọc</div>
+  <div class="p-kw-row" id="p-kw-row"></div>
+  <div class="p-grid-wrap"><table class="pg" id="pg"></table></div>
+  <div class="p-clue" id="p-clue">← Nhấn vào số thứ tự hàng để lật đáp án</div>
+  <div class="p-ctrl">
+    <button class="pcb acc" id="pc-prev">◀ Trước</button>
+    <button class="pcb acc" id="pc-next">Tiếp ▶</button>
+    <button class="pcb" id="pc-all">Hiện tất cả</button>
+    <button class="pcb" id="pc-hide">↺ Ẩn lại</button>
+    <button class="pcb ex" id="pc-exit">✕ Thoát</button>
+  </div>
+</div>
+
+<script>
+/* ══════════════ STATE ══════════════ */
+let title = '';
+let keyword = '';
+let numCols = 15;
+let keyCol = 7;  // 0-based; column 8 displayed as "8"
+let rows = [
+  {word:'', startCol:4, clue:'', revealed:false},
+  {word:'', startCol:3, clue:'', revealed:false},
+  {word:'', startCol:4, clue:'', revealed:false},
+  {word:'', startCol:4, clue:'', revealed:false},
+  {word:'', startCol:0, clue:'', revealed:false},
+];
+let modalIdx = -1;
+let pActive = -1;
+
+function clean(s){ return (s||'').toUpperCase().replace(/\s/g,''); }
+
+/* ══════════════ RENDER ══════════════ */
+function render() {
+  renderGrid();
+  renderClueList();
+}
+
+function renderGrid() {
+  const tbl = document.getElementById('cw-table');
+  // Header
+  let head = `<tr><th class="ch-label">Tạo mới</th>`;
+  for (let c=0;c<numCols;c++) {
+    head += `<th class="ch-num${c===keyCol?' is-key-col':''}" data-setkey="${c}">${c+1}</th>`;
+  }
+  head += '</tr>';
+
+  // Rows
+  let body = rows.map((r,i)=>{
+    const letters = clean(r.word);
+    const len = letters.length;
+    // Key letter: the letter in the word that sits on keyCol
+    const keyLetterIdx = keyCol - r.startCol;
+    const hasKeyLetter = len>0 && keyLetterIdx>=0 && keyLetterIdx<len;
+    const keyLetter = hasKeyLetter ? letters[keyLetterIdx] : '';
+    const kw = keyword ? clean(keyword) : '';
+    const expectedKwLetter = kw && i<kw.length ? kw[i] : '';
+    const keyOk = keyLetter && expectedKwLetter && keyLetter===expectedKwLetter;
+
+    // Cells
+    let cells = '';
+    for (let c=0;c<numCols;c++){
+      const li = c - r.startCol;
+      if (len>0 && li>=0 && li<len) {
+        const isKey = c===keyCol;
+        cells += `<td id="td-${i}-${c}" class="gc ${isKey?'key-letter':'letter'}"><span class="gc-txt">${letters[li]}</span></td>`;
+      } else {
+        cells += `<td id="td-${i}-${c}" class="gc${c===keyCol?' key-col-empty':''}"></td>`;
+      }
+    }
+
+    const hasClue = r.clue?'set':'';
+    const kwHint = expectedKwLetter ? ` (chứa: ${expectedKwLetter})` : '';
+    const warnStyle = len>0&&expectedKwLetter&&!keyOk ? 'color:#e05b4b;font-style:italic;' : '';
+
+    return `
+    <tr class="word-row" id="wr-${i}">
+      <td class="ac">
+        <div class="ac-inner">
+          <button class="ab lft" data-left="${i}" title="Dịch từ sang trái">◀</button>
+          <button class="ab rgt" data-right="${i}" title="Dịch từ sang phải">▶</button>
+          <button class="ab clue ${hasClue}" data-clue="${i}" title="Câu hỏi">❓</button>
+          <button class="ab del" data-del="${i}" title="Xóa hàng">➖</button>
+          <span class="rn">${i+1}</span>
+        </div>
+      </td>
+      ${cells}
+    </tr>
+    <tr class="word-row">
+      <td colspan="${numCols+1}" style="padding:0 0 6px 8px;">
+        <input class="word-inp" data-ans="${i}"
+          value="${escH(r.word)}"
+          placeholder="Nhập từ hàng ${i+1}${kwHint}..."
+          style="${warnStyle}"/>
+      </td>
+    </tr>`;
+  }).join('');
+
+  tbl.innerHTML = `<thead>${head}</thead><tbody>${body}</tbody>`;
+}
+
+function renderClueList() {
+  const kw = clean(keyword);
+  document.getElementById('clue-list').innerHTML = rows.map((r,i) => {
+    const ch = kw&&i<kw.length ? kw[i] : '?';
+    return `<div class="clue-item">
+      <div class="ci-num">${i+1}</div>
+      <div class="ci-key" data-ki="${i}">${ch}</div>
+      <input class="ci-inp" data-ci="${i}" value="${escH(r.clue)}" placeholder="Câu hỏi gợi ý hàng ${i+1}..."/>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════ EVENTS ══════════════ */
+// Set key column by clicking header
+document.getElementById('cw-table').addEventListener('click', e => {
+  const setKey = e.target.dataset.setkey;
+  if (setKey !== undefined) { keyCol = parseInt(setKey); render(); return; }
+
+  const left  = e.target.closest('[data-left]');
+  const right = e.target.closest('[data-right]');
+  const clue  = e.target.closest('[data-clue]');
+  const del   = e.target.closest('[data-del]');
+
+  if (left)  { const i=parseInt(left.dataset.left);   rows[i].startCol--; render(); }
+  if (right) { const i=parseInt(right.dataset.right); rows[i].startCol++; render(); }
+  if (clue)  { openModal(parseInt(clue.dataset.clue)); }
+  if (del)   {
+    const i=parseInt(del.dataset.del);
+    if(rows.length<=1){alert('Cần ít nhất 1 hàng.');return;}
+    rows.splice(i,1); render();
+  }
+});
+
+// Word input — chỉ cập nhật ô màu, KHÔNG render lại toàn bộ (tránh mất focus)
+document.getElementById('cw-table').addEventListener('input', e => {
+  const ai = e.target.dataset.ans;
+  if (ai===undefined) return;
+  const i = parseInt(ai);
+  rows[i].word = e.target.value;
+  updateRowCells(i);
+  updateClueKeyLetter(i);
+});
+
+function updateRowCells(i) {
+  const r = rows[i];
+  const letters = clean(r.word);
+  const len = letters.length;
+  for (let c = 0; c < numCols; c++) {
+    const td = document.getElementById(`td-${i}-${c}`);
+    if (!td) continue;
+    const li = c - r.startCol;
+    if (len > 0 && li >= 0 && li < len) {
+      const isKey = c === keyCol;
+      td.className = `gc ${isKey ? 'key-letter' : 'letter'}`;
+      td.innerHTML = `<span class="gc-txt">${letters[li]}</span>`;
+    } else {
+      td.className = `gc${c === keyCol ? ' key-col-empty' : ''}`;
+      td.innerHTML = '';
+    }
+  }
+}
+
+function updateClueKeyLetter(i) {
+  const kw = clean(keyword);
+  const ch = kw && i < kw.length ? kw[i] : '?';
+  const el = document.querySelector(`.ci-key[data-ki="${i}"]`);
+  if (el) el.textContent = ch;
+}
+
+// Clue inline
+document.getElementById('clue-list').addEventListener('input', e => {
+  const ci = e.target.dataset.ci;
+  if (ci!==undefined) { rows[parseInt(ci)].clue = e.target.value; }
+});
+
+// Keyword
+document.getElementById('kw-apply').addEventListener('click', applyKw);
+document.getElementById('kw-inp').addEventListener('keydown', e=>{ if(e.key==='Enter') applyKw(); });
+function applyKw(){
+  keyword = document.getElementById('kw-inp').value.trim();
+  const kw = clean(keyword);
+  if (!kw) return;
+  while(rows.length < kw.length) rows.push({word:'',startCol:Math.max(0,keyCol-2),clue:'',revealed:false});
+  while(rows.length > kw.length) rows.pop();
+  render();
+}
+
+// Title
+document.getElementById('title-inp').addEventListener('input', e=>{ title=e.target.value; });
+
+/* ══ BOTTOM ACTION BUTTONS ══ */
+document.getElementById('ba-addcol-start').addEventListener('click',()=>{
+  numCols++; keyCol++; rows.forEach(r=>r.startCol++); render();
+});
+document.getElementById('ba-addcol-end').addEventListener('click',()=>{
+  numCols++; render();
+});
+document.getElementById('ba-addrow-start').addEventListener('click',()=>{
+  rows.unshift({word:'',startCol:Math.max(0,keyCol-2),clue:'',revealed:false}); render();
+});
+document.getElementById('ba-addrow-end').addEventListener('click',()=>{
+  rows.push({word:'',startCol:Math.max(0,keyCol-2),clue:'',revealed:false}); render();
+});
+document.getElementById('ba-delcol-start').addEventListener('click',()=>{
+  if(numCols<=3) return;
+  numCols--; keyCol=Math.max(0,keyCol-1); rows.forEach(r=>r.startCol--); render();
+});
+document.getElementById('ba-delcol-end').addEventListener('click',()=>{
+  if(numCols<=3) return; numCols--; render();
+});
+document.getElementById('ba-delrow-start').addEventListener('click',()=>{
+  if(rows.length<=1) return; rows.shift(); render();
+});
+document.getElementById('ba-delrow-end').addEventListener('click',()=>{
+  if(rows.length<=1) return; rows.pop(); render();
+});
+
+/* ══ MODAL ══ */
+let modalResolve=null;
+function openModal(i){
+  modalIdx=i;
+  document.getElementById('modal-title').textContent=`Câu hỏi gợi ý – Hàng ${i+1}`;
+  document.getElementById('modal-ta').value=rows[i].clue;
+  document.getElementById('modal-bg').classList.add('show');
+  setTimeout(()=>document.getElementById('modal-ta').focus(),40);
+}
+document.getElementById('m-cancel').addEventListener('click',()=>document.getElementById('modal-bg').classList.remove('show'));
+document.getElementById('m-ok').addEventListener('click',()=>{
+  if(modalIdx>=0){ rows[modalIdx].clue=document.getElementById('modal-ta').value.trim(); render(); }
+  document.getElementById('modal-bg').classList.remove('show');
+});
+document.getElementById('modal-bg').addEventListener('click',e=>{
+  if(e.target===document.getElementById('modal-bg')) document.getElementById('modal-bg').classList.remove('show');
+});
+document.getElementById('modal-ta').addEventListener('keydown',e=>{ if(e.key==='Enter'&&e.ctrlKey) document.getElementById('m-ok').click(); });
+
+/* ══ PRESENT ══ */
+document.getElementById('ba-present').addEventListener('click', startPresent);
+function startPresent(){
+  rows.forEach(r=>r.revealed=false); pActive=-1;
+  document.getElementById('p-title-txt').textContent = title||'Ô CHỮ';
+  // keyword cells
+  const kw = clean(keyword);
+  document.getElementById('p-kw-row').innerHTML = (kw||'?????').split('').slice(0,rows.length).map((ch,i)=>
+    `<div class="p-kw-ch" id="pkw-${i}">${ch}</div>`).join('');
+  // grid
+  buildPGrid();
+  document.getElementById('p-wrap').classList.add('show');
+  document.getElementById('p-wrap').requestFullscreen?.().catch(()=>{});
+}
+
+function buildPGrid(){
+  const pg = document.getElementById('pg');
+  pg.innerHTML = rows.map((r,i)=>{
+    const letters = clean(r.word);
+    const len = letters.length;
+    let cells = `<td class="pg-num" id="pgn-${i}" data-pr="${i}">${i+1}</td>`;
+    for(let c=0;c<numCols;c++){
+      const li = c - r.startCol;
+      if(len>0&&li>=0&&li<len){
+        const isKey=c===keyCol;
+        cells+=`<td class="pg-cell"><div class="pg-inner${isKey?' kc':''}" id="pgc-${i}-${c}">${letters[li]}</div></td>`;
+      } else {
+        cells+=`<td class="pg-empty"></td>`;
+      }
+    }
+    return `<tr>${cells}</tr>`;
+  }).join('');
+}
+
+function revealPRow(i){
+  if(i<0||i>=rows.length) return;
+  rows[i].revealed=true; pActive=i;
+  for(let c=0;c<numCols;c++){
+    const el=document.getElementById(`pgc-${i}-${c}`);
+    if(el) el.classList.add('lit');
+  }
+  document.getElementById(`pgn-${i}`)?.classList.add('done');
+  document.getElementById(`pkw-${i}`)?.classList.add('lit');
+  const cb=document.getElementById('p-clue');
+  cb.textContent = rows[i].clue ? `❓ Câu ${i+1}: ${rows[i].clue}` : `✅ Hàng ${i+1}: ${rows[i].word||'—'}`;
+}
+function hideAll(){
+  rows.forEach(r=>r.revealed=false); pActive=-1;
+  document.querySelectorAll('.pg-inner').forEach(e=>e.classList.remove('lit'));
+  document.querySelectorAll('.pg-num').forEach(e=>e.classList.remove('done'));
+  document.querySelectorAll('.p-kw-ch').forEach(e=>e.classList.remove('lit'));
+  document.getElementById('p-clue').textContent='← Nhấn vào số thứ tự hàng để lật đáp án';
+}
+document.getElementById('pg').addEventListener('click',e=>{
+  const pr=e.target.closest('[data-pr]');
+  if(!pr) return;
+  const i=parseInt(pr.dataset.pr);
+  if(rows[i].revealed){
+    document.getElementById('p-clue').textContent=rows[i].clue?`❓ Câu ${i+1}: ${rows[i].clue}`:`✅ Hàng ${i+1}: ${rows[i].word||'—'}`;
+  } else revealPRow(i);
+});
+document.getElementById('pc-next').addEventListener('click',()=>{
+  let n=pActive+1; while(n<rows.length&&rows[n].revealed) n++;
+  if(n<rows.length) revealPRow(n);
+});
+document.getElementById('pc-prev').addEventListener('click',()=>{
+  let p=(pActive<0?rows.length:pActive)-1; while(p>=0&&rows[p].revealed) p--;
+  if(p>=0) revealPRow(p);
+});
+document.getElementById('pc-all').addEventListener('click',()=>rows.forEach((_,i)=>revealPRow(i)));
+document.getElementById('pc-hide').addEventListener('click',hideAll);
+document.getElementById('pc-exit').addEventListener('click',()=>{
+  document.getElementById('p-wrap').classList.remove('show');
+  if(document.fullscreenElement) document.exitFullscreen();
+});
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('p-wrap').classList.contains('show')) return;
+  if(e.key==='Escape'){document.getElementById('pc-exit').click();return;}
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();document.getElementById('pc-next').click();}
+  if(e.key==='ArrowLeft'){e.preventDefault();document.getElementById('pc-prev').click();}
+});
+
+/* ══ EXPORT WORD ══ */
+document.getElementById('ba-word').addEventListener('click', exportWord);
+function exportWord(){
+  const kw=clean(keyword);
+  let thead=`<tr><th style="width:40px;background:#f0f0f0;border:1px solid #999;padding:6px;text-align:center">#</th>`;
+  for(let c=0;c<numCols;c++) thead+=`<th style="width:38px;height:36px;text-align:center;border:1px solid #ccc;font-size:9pt;${c===keyCol?'color:#e05b4b;font-weight:bold;':''}">${c+1}</th>`;
+  thead+='</tr>';
+
+  const tbody=rows.map((r,i)=>{
+    const letters=clean(r.word);
+    const len=letters.length;
+    let cells=`<td style="width:40px;text-align:center;font-weight:bold;background:#f0f0f0;border:1px solid #999;padding:6px">${i+1}</td>`;
+    for(let c=0;c<numCols;c++){
+      const li=c-r.startCol;
+      if(len>0&&li>=0&&li<len){
+        const isKey=c===keyCol;
+        cells+=`<td style="width:38px;height:38px;text-align:center;font-size:13pt;font-weight:bold;border:1.5px solid #555;${isKey?'background:#e05b4b;color:#fff;':'background:#5bc8c4;color:#fff;'}">${letters[li]}</td>`;
+      } else {
+        cells+=`<td style="width:38px;height:38px;border:1px solid #ddd;background:${c===keyCol?'#fff5f5':'#fafafa'};"></td>`;
+      }
+    }
+    return `<tr>${cells}</tr>`;
+  }).join('');
+
+  const clueRows=rows.map((r,i)=>{
+    const ch=kw&&i<kw.length?kw[i]:'?';
+    return `<tr><td style="width:36px;text-align:center;font-weight:bold;background:#5bc8c4;color:#fff;border:1px solid #ccc;padding:6px">${i+1}</td>
+    <td style="width:36px;text-align:center;font-weight:bold;background:#e05b4b;color:#fff;border:1px solid #ccc;padding:6px">${ch}</td>
+    <td style="border:1px solid #ccc;padding:8px">${escH(r.clue||'')}</td></tr>`;
+  }).join('');
+
+  const html=`<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8"/><style>body,td,th{font-family:Arial,sans-serif;}</style></head>
+<body>
+<h2 style="text-align:center;font-size:20pt;margin-bottom:8pt">${escH(title||'Ô CHỮ')}</h2>
+<p style="text-align:center;margin-bottom:14pt">Từ khóa: <b style="color:#e05b4b;font-size:15pt;letter-spacing:3px">${kw||'—'}</b></p>
+<table style="border-collapse:collapse;margin:0 auto 20pt">${thead}${tbody}</table>
+<h3 style="font-size:13pt;margin:14pt 0 8pt">Câu hỏi gợi ý</h3>
+<table style="border-collapse:collapse;width:100%">
+<tr><th style="border:1px solid #ccc;padding:8px;background:#f0f0f0;width:36px">#</th>
+<th style="border:1px solid #ccc;padding:8px;background:#f0f0f0;width:36px">Key</th>
+<th style="border:1px solid #ccc;padding:8px;background:#f0f0f0;text-align:left">Câu hỏi / Gợi ý</th></tr>
+${clueRows}</table>
+</body></html>`;
+
+  const blob=new Blob([html],{type:'application/msword'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=(title||'Ochu').replace(/\s+/g,'_')+'.doc';
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+
+function escH(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
+
+/* ══ INIT ══ */
+render();
+</script>
+</body>
+</html>

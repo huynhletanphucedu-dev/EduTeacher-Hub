@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Điền Dấu — Toán</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#0f172a;color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:0}
+#app{width:100%;max-width:420px;min-height:100vh;display:flex;flex-direction:column;background:#0f172a;position:relative;overflow:hidden}
+
+/* SCREENS */
+.screen{display:none;flex-direction:column;flex:1;padding:20px 16px}
+.screen.active{display:flex}
+
+/* START SCREEN */
+.logo{text-align:center;padding:32px 0 24px}
+.logo h1{font-size:28px;font-weight:700;color:#10b981;letter-spacing:-0.5px}
+.logo p{font-size:14px;color:#94a3b8;margin-top:6px}
+.section-label{font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;margin-top:20px}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mode-btn{background:#1e293b;border:2px solid #334155;border-radius:14px;padding:18px 12px;text-align:center;cursor:pointer;transition:all 0.15s;color:#cbd5e1;font-size:14px;font-weight:500}
+.mode-btn.selected{border-color:#10b981;background:#0d2818;color:#10b981}
+.mode-btn .mode-icon{font-size:28px;margin-bottom:6px}
+.diff-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.diff-btn{background:#1e293b;border:2px solid #334155;border-radius:12px;padding:14px 8px;text-align:center;cursor:pointer;color:#cbd5e1;font-size:14px;font-weight:500;transition:all 0.15s}
+.diff-btn.selected{border-color:#10b981;background:#0d2818;color:#10b981}
+.start-btn{background:#10b981;color:#fff;border:none;border-radius:16px;padding:18px;font-size:18px;font-weight:700;width:100%;cursor:pointer;margin-top:28px;letter-spacing:0.3px;transition:all 0.1s}
+.start-btn:active{transform:scale(0.97)}
+
+/* GAME SCREEN */
+.game-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px;gap:12px}
+.progress-wrap{flex:1}
+.progress-text{font-size:12px;color:#64748b;margin-bottom:5px;display:flex;justify-content:space-between}
+.progress-bar{height:6px;background:#1e293b;border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;background:#10b981;border-radius:99px;transition:width 0.3s ease}
+.streak-badge{background:#1e293b;border-radius:10px;padding:6px 12px;font-size:14px;font-weight:700;color:#f59e0b;min-width:60px;text-align:center;white-space:nowrap}
+.score-disp{background:#1e293b;border-radius:10px;padding:6px 12px;font-size:14px;font-weight:700;color:#10b981;min-width:60px;text-align:center}
+
+.question-area{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;min-height:220px}
+.question-label{font-size:12px;color:#475569;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.8px}
+.question-expr{font-size:40px;font-weight:800;color:#f1f5f9;text-align:center;line-height:1.3;letter-spacing:1px;word-break:break-all}
+.blank-slot{display:inline-block;min-width:52px;height:52px;border-radius:10px;border:3px dashed #475569;vertical-align:middle;text-align:center;line-height:46px;font-size:36px;color:#10b981;font-weight:800}
+.feedback-msg{font-size:15px;margin-top:16px;height:22px;font-weight:600;transition:opacity 0.3s}
+.feedback-msg.correct{color:#10b981}
+.feedback-msg.wrong{color:#ef4444}
+.timer-bar{height:4px;background:#1e293b;margin:0 16px}
+.timer-fill{height:100%;background:#f59e0b;border-radius:2px;transition:width 0.1s linear}
+
+.buttons-area{padding:12px 16px 24px;display:flex;flex-direction:column;gap:10px}
+.btn-grid-2x2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.op-btn{background:#1e293b;border:2px solid #334155;border-radius:16px;min-height:72px;font-size:32px;font-weight:800;color:#f1f5f9;cursor:pointer;transition:all 0.1s;display:flex;align-items:center;justify-content:center}
+.op-btn:active{transform:scale(0.94)}
+.op-btn.flash-correct{background:#064e3b;border-color:#10b981;color:#10b981}
+.op-btn.flash-wrong{background:#450a0a;border-color:#ef4444;color:#ef4444}
+.hint-btn{background:transparent;border:none;color:#475569;font-size:13px;padding:8px;cursor:pointer;text-align:center}
+
+/* ANIMATIONS */
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.06)}100%{transform:scale(1)}}
+.shake{animation:shake 0.4s ease}
+.pop{animation:pop 0.25s ease}
+
+/* END SCREEN */
+.end-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 20px;text-align:center}
+.end-title{font-size:32px;font-weight:800;color:#10b981;margin-bottom:6px}
+.end-sub{font-size:14px;color:#64748b;margin-bottom:32px}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-bottom:28px}
+.stat-card{background:#1e293b;border-radius:14px;padding:16px 12px}
+.stat-val{font-size:28px;font-weight:800;color:#f1f5f9}
+.stat-lbl{font-size:12px;color:#64748b;margin-top:4px}
+.end-btns{display:flex;flex-direction:column;gap:10px;width:100%}
+.end-btn-primary{background:#10b981;color:#fff;border:none;border-radius:14px;padding:16px;font-size:16px;font-weight:700;cursor:pointer;transition:all 0.1s}
+.end-btn-secondary{background:#1e293b;color:#cbd5e1;border:2px solid #334155;border-radius:14px;padding:15px;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.1s}
+.end-btn-primary:active,.end-btn-secondary:active{transform:scale(0.97)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- START SCREEN -->
+<div id="screen-start" class="screen active">
+  <div class="logo">
+    <h1>Điền Dấu</h1>
+    <p>Toán học thú vị mỗi ngày</p>
+  </div>
+
+  <div class="section-label">Chọn chế độ chơi</div>
+  <div class="mode-grid">
+    <div class="mode-btn selected" data-mode="1" onclick="selectMode(1)">
+      <div class="mode-icon">🔢</div>
+      Điền phép tính
+    </div>
+    <div class="mode-btn" data-mode="2" onclick="selectMode(2)">
+      <div class="mode-icon">⚖️</div>
+      So sánh biểu thức
+    </div>
+  </div>
+
+  <div class="section-label">Độ khó</div>
+  <div class="diff-grid">
+    <div class="diff-btn selected" data-diff="easy" onclick="selectDiff('easy')">Dễ</div>
+    <div class="diff-btn" data-diff="medium" onclick="selectDiff('medium')">Trung bình</div>
+    <div class="diff-btn" data-diff="hard" onclick="selectDiff('hard')">Khó</div>
+  </div>
+
+  <button class="start-btn" onclick="startGame()">Bắt đầu chơi ▶</button>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="screen-game" class="screen">
+  <div class="game-header">
+    <div class="progress-wrap">
+      <div class="progress-text">
+        <span id="q-counter">1 / 20</span>
+        <span id="time-left">⏱ 15s</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:5%"></div></div>
+    </div>
+    <div class="streak-badge" id="streak-disp">🔥 0</div>
+    <div class="score-disp" id="score-disp">0</div>
+  </div>
+
+  <div class="timer-bar"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
+
+  <div class="question-area" id="question-area">
+    <div class="question-label" id="q-label">Điền phép tính đúng</div>
+    <div class="question-expr" id="q-expr"></div>
+    <div class="feedback-msg" id="feedback-msg"></div>
+  </div>
+
+  <div class="buttons-area">
+    <div id="btn-container"></div>
+    <button class="hint-btn" id="hint-btn" onclick="useHint()">💡 Xem đáp án (còn 3 lần)</button>
+  </div>
+</div>
+
+<!-- END SCREEN -->
+<div id="screen-end" class="screen">
+  <div class="end-screen">
+    <div class="end-title" id="end-emoji">🎉 Tuyệt vời!</div>
+    <div class="end-sub" id="end-sub">Bạn đã hoàn thành vòng chơi!</div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-val" id="st-score">0</div><div class="stat-lbl">Điểm số</div></div>
+      <div class="stat-card"><div class="stat-val" id="st-acc">0%</div><div class="stat-lbl">Chính xác</div></div>
+      <div class="stat-card"><div class="stat-val" id="st-streak">0</div><div class="stat-lbl">Chuỗi dài nhất 🔥</div></div>
+      <div class="stat-card"><div class="stat-val" id="st-time">0s</div><div class="stat-lbl">Thời gian TB</div></div>
+    </div>
+    <div class="end-btns">
+      <button class="end-btn-primary" onclick="replayGame()">Chơi lại</button>
+      <button class="end-btn-secondary" onclick="goHome()">Đổi chế độ</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+function fracHTML(num, den) {
+  return `<span style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.2;margin:0 3px;font-size:0.88em"><span style="border-bottom:2px solid currentColor;padding:0 2px">${num}</span><span style="padding:0 2px">${den}</span></span>`;
+}
+
+var gameMode = 1;
+var gameDiff = 'easy';
+var questions = [];
+var qIndex = 0;
+var score = 0;
+var streak = 0;
+var maxStreak = 0;
+var tryCount = 0;
+var correct = 0;
+var timerInterval = null;
+var timeLeft = 15;
+var maxTime = 15;
+var totalTime = 0;
+var hintUsed = 0;
+var MAX_HINTS = 3;
+var TOTAL_Q = 20;
+
+function selectMode(m) {
+  gameMode = m;
+  document.querySelectorAll('.mode-btn').forEach(function(b){ b.classList.remove('selected'); });
+  document.querySelector('[data-mode="'+m+'"]').classList.add('selected');
+}
+function selectDiff(d) {
+  gameDiff = d;
+  document.querySelectorAll('.diff-btn').forEach(function(b){ b.classList.remove('selected'); });
+  document.querySelector('[data-diff="'+d+'"]').classList.add('selected');
+}
+
+function rnd(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+function gcd(a,b){ return b===0?a:gcd(b,a%b); }
+
+function genMode1Questions(diff) {
+  var qs = [];
+  while(qs.length < TOTAL_Q) {
+    var type = rnd(0,3);
+    var q = null;
+    if(diff==='easy') {
+      var a=rnd(1,9), b=rnd(1,9);
+      if(type===0) q={expr:a+' [?] '+b+' = '+(a+b), answer:'+'};
+      else if(type===1){ if(a>=b) q={expr:a+' [?] '+b+' = '+(a-b), answer:'−'}; }
+      else if(type===2) q={expr:a+' [?] '+b+' = '+(a*b), answer:'×'};
+      else { var r=rnd(1,9); q={expr:(r*b)+' [?] '+b+' = '+r, answer:'÷'}; }
+    } else if(diff==='medium') {
+      var a=rnd(10,99), b=rnd(2,20);
+      if(type===0) q={expr:a+' [?] '+b+' = '+(a+b), answer:'+'};
+      else if(type===1){ if(a>=b) q={expr:a+' [?] '+b+' = '+(a-b), answer:'−'}; }
+      else if(type===2){ var a2=rnd(2,12); q={expr:a2+' [?] '+b+' = '+(a2*b), answer:'×'}; }
+      else { var r=rnd(2,12); q={expr:(r*b)+' [?] '+b+' = '+r, answer:'÷'}; }
+    } else {
+      // hard: fractions
+      var numA=rnd(1,5), denA=rnd(2,6), numB=rnd(1,5), denB=rnd(2,6);
+      var vA=numA/denA, vB=numB/denB;
+      if(type===0){
+        var sn=numA*denB+numB*denA, sd=denA*denB, g=gcd(sn,sd);
+        q={expr:fracHTML(numA,denA)+' [?] '+fracHTML(numB,denB)+' = '+fracHTML(sn/g,sd/g), answer:'+', isHTML:true};
+      } else if(type===1){
+        if(vA>=vB){ var sn=numA*denB-numB*denA, sd=denA*denB, g=gcd(Math.abs(sn),sd);
+          if(sn>0) q={expr:fracHTML(numA,denA)+' [?] '+fracHTML(numB,denB)+' = '+fracHTML(sn/g,sd/g), answer:'−', isHTML:true}; }
+      } else if(type===2){
+        var pn=numA*numB, pd=denA*denB, g=gcd(pn,pd);
+        q={expr:fracHTML(numA,denA)+' [?] '+fracHTML(numB,denB)+' = '+fracHTML(pn/g,pd/g), answer:'×', isHTML:true};
+      } else {
+        if(numB!==0 && denA%1===0){
+          var qn=numA*denB, qd=denA*numB, g=gcd(qn,qd);
+          q={expr:fracHTML(numA,denA)+' [?] '+fracHTML(numB,denB)+' = '+fracHTML(qn/g,qd/g), answer:'÷', isHTML:true};
+        }
+      }
+    }
+    if(q) qs.push(q);
+  }
+  return qs;
+}
+
+function genMode2Questions(diff) {
+  var qs = [];
+  while(qs.length < TOTAL_Q) {
+    var type = rnd(0,3);
+    var q = null;
+    if(diff==='easy' || type===0) {
+      var a=rnd(1,50), b=rnd(1,50);
+      var ans = a<b?'<':a>b?'>':'=';
+      q={expr:a+' [?] '+b, answer:ans, left:a, right:b};
+    } else if(type===1) {
+      var n1=rnd(1,5),d1=rnd(2,8),n2=rnd(1,5),d2=rnd(2,8);
+      var v1=n1/d1, v2=n2/d2;
+      var ans=v1<v2?'<':v1>v2?'>':'=';
+      q={expr:fracHTML(n1,d1)+' [?] '+fracHTML(n2,d2), answer:ans, left:v1, right:v2, isHTML:true};
+    } else if(type===2) {
+      var a=rnd(1,20),b=rnd(1,20),c=rnd(1,20),d=rnd(1,20);
+      var v1=a+b, v2=c+d;
+      var ans=v1<v2?'<':v1>v2?'>':'=';
+      var op1=rnd(0,1)?'+':'-'; var op2=rnd(0,1)?'+':'-';
+      var A=a,B=b,C=c,D=d;
+      if(op1==='-'){B=rnd(1,A);v1=A-B;} else{v1=A+B;}
+      if(op2==='-'){D=rnd(1,C);v2=C-D;} else{v2=C+D;}
+      ans=v1<v2?'<':v1>v2?'>':'=';
+      var symOp1=op1==='+'?'+':'−'; var symOp2=op2==='+'?'+':'−';
+      q={expr:A+symOp1+B+' [?] '+C+symOp2+D, answer:ans, left:v1, right:v2};
+    } else {
+      var bases=[2,3,4,5], exps=[2,3];
+      var base1=bases[rnd(0,3)], exp1=exps[rnd(0,1)];
+      var base2=bases[rnd(0,3)], exp2=exps[rnd(0,1)];
+      var v1=Math.pow(base1,exp1), v2=Math.pow(base2,exp2);
+      var ans=v1<v2?'<':v1>v2?'>':'=';
+      q={expr:base1+'<sup>'+exp1+'</sup>'+' [?] '+base2+'<sup>'+exp2+'</sup>', answer:ans, left:v1, right:v2, isHTML:true};
+    }
+    if(q) qs.push(q);
+  }
+  return qs;
+}
+
+function startGame() {
+  questions = gameMode===1 ? genMode1Questions(gameDiff) : genMode2Questions(gameDiff);
+  qIndex=0; score=0; streak=0; maxStreak=0; correct=0; hintUsed=0; totalTime=0; tryCount=0;
+  showScreen('game');
+  renderQuestion();
+}
+
+function replayGame() {
+  startGame();
+}
+function goHome() {
+  clearTimer();
+  showScreen('start');
+}
+
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  document.getElementById('screen-'+name).classList.add('active');
+}
+
+function renderQuestion() {
+  if(qIndex>=TOTAL_Q){ endGame(); return; }
+  tryCount=0;
+  var q=questions[qIndex];
+  document.getElementById('q-counter').textContent=(qIndex+1)+' / '+TOTAL_Q;
+  document.getElementById('prog-fill').style.width=(((qIndex)/TOTAL_Q)*100)+'%';
+  document.getElementById('streak-disp').textContent='🔥 '+streak;
+  document.getElementById('score-disp').textContent=score;
+  document.getElementById('feedback-msg').textContent='';
+  document.getElementById('feedback-msg').className='feedback-msg';
+
+  var label = gameMode===1?'Điền phép tính đúng':'Chọn dấu so sánh';
+  document.getElementById('q-label').textContent=label;
+
+  var exprHtml = q.expr.replace('[?]','<span class="blank-slot" id="blank">?</span>');
+  document.getElementById('q-expr').innerHTML = exprHtml;
+
+  buildButtons();
+  updateHintBtn();
+  startTimer();
+}
+
+function buildButtons() {
+  var c=document.getElementById('btn-container');
+  c.innerHTML='';
+  if(gameMode===1){
+    var grid=document.createElement('div');
+    grid.className='btn-grid-2x2';
+    ['+','−','×','÷'].forEach(function(op){
+      var b=document.createElement('button');
+      b.className='op-btn'; b.textContent=op;
+      b.onclick=function(){ checkAnswer(op,b); };
+      grid.appendChild(b);
+    });
+    c.appendChild(grid);
+  } else {
+    var grid=document.createElement('div');
+    grid.className='btn-grid-3';
+    ['<','=','>'].forEach(function(op){
+      var b=document.createElement('button');
+      b.className='op-btn'; b.textContent=op;
+      b.onclick=function(){ checkAnswer(op,b); };
+      grid.appendChild(b);
+    });
+    c.appendChild(grid);
+  }
+}
+
+function checkAnswer(chosen, btnEl) {
+  var q=questions[qIndex];
+  var timeTaken=maxTime-timeLeft;
+  if(chosen===q.answer){
+    clearTimer();
+    var bonus=Math.max(0,Math.round((timeLeft/maxTime)*5));
+    score+=10+bonus;
+    streak++;
+    if(streak>maxStreak) maxStreak=streak;
+    correct++;
+    totalTime+=timeTaken;
+    flashBtn(btnEl,'correct');
+    setFeedback('✓ Đúng rồi! +'+(10+bonus), 'correct');
+    document.getElementById('blank').textContent=chosen;
+    document.getElementById('blank').style.borderColor='#10b981';
+    document.getElementById('blank').style.color='#10b981';
+    setTimeout(nextQuestion, 800);
+  } else {
+    tryCount++;
+    flashBtn(btnEl,'wrong');
+    shakeExpr();
+    if(tryCount>=3){
+      clearTimer();
+      setFeedback('Đáp án: '+q.answer, 'wrong');
+      document.getElementById('blank').textContent=q.answer;
+      document.getElementById('blank').style.borderColor='#f59e0b';
+      document.getElementById('blank').style.color='#f59e0b';
+      streak=0;
+      totalTime+=timeTaken;
+      setTimeout(nextQuestion, 1400);
+    } else {
+      setFeedback('Sai rồi! Thử lại ('+(3-tryCount)+' lần còn lại)', 'wrong');
+    }
+  }
+}
+
+function flashBtn(btn, type) {
+  btn.classList.add('flash-'+type);
+  setTimeout(function(){ btn.classList.remove('flash-'+type); }, 500);
+}
+function shakeExpr() {
+  var el=document.getElementById('question-area');
+  el.classList.remove('shake');
+  void el.offsetWidth;
+  el.classList.add('shake');
+  setTimeout(function(){ el.classList.remove('shake'); },400);
+}
+function setFeedback(msg, type) {
+  var el=document.getElementById('feedback-msg');
+  el.textContent=msg;
+  el.className='feedback-msg '+type;
+}
+
+function nextQuestion() {
+  qIndex++;
+  renderQuestion();
+}
+
+function startTimer() {
+  clearTimer();
+  maxTime = gameDiff==='easy'?20:gameDiff==='medium'?15:12;
+  timeLeft=maxTime;
+  updateTimerUI();
+  timerInterval=setInterval(function(){
+    timeLeft-=0.1;
+    if(timeLeft<=0){
+      timeLeft=0;
+      clearTimer();
+      updateTimerUI();
+      setFeedback('Hết giờ! Đáp án: '+questions[qIndex].answer, 'wrong');
+      var blank=document.getElementById('blank');
+      if(blank){ blank.textContent=questions[qIndex].answer; blank.style.borderColor='#f59e0b'; blank.style.color='#f59e0b'; }
+      streak=0;
+      totalTime+=maxTime;
+      setTimeout(nextQuestion, 1200);
+    } else {
+      updateTimerUI();
+    }
+  },100);
+}
+function clearTimer(){ if(timerInterval){ clearInterval(timerInterval); timerInterval=null; } }
+function updateTimerUI(){
+  document.getElementById('time-left').textContent='⏱ '+Math.ceil(timeLeft)+'s';
+  document.getElementById('timer-fill').style.width=((timeLeft/maxTime)*100)+'%';
+}
+
+function useHint() {
+  if(hintUsed>=MAX_HINTS) return;
+  hintUsed++;
+  var q=questions[qIndex];
+  setFeedback('Gợi ý: đáp án là "'+q.answer+'"', 'correct');
+  updateHintBtn();
+}
+function updateHintBtn() {
+  var rem=MAX_HINTS-hintUsed;
+  var btn=document.getElementById('hint-btn');
+  btn.textContent='💡 Xem đáp án (còn '+rem+' lần)';
+  btn.style.opacity=rem>0?'1':'0.35';
+  btn.disabled=rem<=0;
+}
+
+function endGame() {
+  clearTimer();
+  var acc=Math.round((correct/TOTAL_Q)*100);
+  var avgTime=correct>0?Math.round(totalTime/TOTAL_Q):0;
+  var emoji = acc>=90?'🏆 Xuất sắc!':acc>=70?'🎉 Tuyệt vời!':acc>=50?'👍 Khá tốt!':'💪 Cố lên!';
+  document.getElementById('end-emoji').textContent=emoji;
+  document.getElementById('end-sub').textContent='Hoàn thành '+TOTAL_Q+' câu hỏi';
+  document.getElementById('st-score').textContent=score;
+  document.getElementById('st-acc').textContent=acc+'%';
+  document.getElementById('st-streak').textContent=maxStreak;
+  document.getElementById('st-time').textContent=avgTime+'s';
+  showScreen('end');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Xếp Lịch Dạy – EduTeacher Hub</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root{--primary:#0284c7;--bg:#f8fafc;--border:#cbd5e1;--yellow:#fff128;--white:#fff;}
+*{box-sizing:border-box;}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:var(--bg);margin:0;padding:16px;display:flex;flex-direction:column;align-items:center;}
+.container{background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08);max-width:1300px;width:100%;}
+h2{color:#1e293b;text-align:center;margin-top:0;font-size:1.2rem;}
+
+/* Step tabs */
+.step-bar{display:flex;gap:0;margin-bottom:20px;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0;}
+.step-btn{flex:1;padding:10px 6px;background:#f1f5f9;border:none;font-size:.82rem;font-weight:700;color:#64748b;cursor:pointer;border-right:1px solid #e2e8f0;transition:.15s;}
+.step-btn:last-child{border-right:none;}
+.step-btn.active{background:var(--primary);color:#fff;}
+.step-section{display:none;}
+.step-section.active{display:block;}
+
+/* Setup */
+.setup-row{display:flex;gap:14px;flex-wrap:wrap;}
+.setup-box{flex:1;min-width:260px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px;}
+.setup-box h3{margin:0 0 10px;font-size:.88rem;color:#1e293b;}
+.tag-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;min-height:28px;}
+.tag{display:flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:.78rem;font-weight:600;color:#fff;}
+.tag .del{cursor:pointer;opacity:.7;font-size:.7rem;}
+.add-row{display:flex;gap:6px;flex-wrap:wrap;}
+.add-row input,.add-row select{padding:6px 8px;border:1px solid #cbd5e1;border-radius:6px;font-size:.82rem;background:#fff;}
+.add-row input{flex:1;min-width:80px;}
+.btn-add{background:var(--primary);color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:.82rem;cursor:pointer;font-weight:700;white-space:nowrap;}
+
+/* Teacher list */
+.teacher-setup-grid{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.teacher-setup-item{background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.teacher-color-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;}
+.teacher-setup-info{flex:1;font-size:.82rem;}
+.teacher-setup-info .tname{font-weight:700;color:#1e293b;}
+.teacher-setup-info .tdetail{color:#64748b;font-size:.74rem;margin-top:2px;}
+.btn-del-t{background:#fee2e2;border:none;color:#dc2626;border-radius:6px;padding:4px 10px;font-size:.75rem;cursor:pointer;font-weight:700;}
+
+/* Busy grid */
+.busy-section{margin-bottom:18px;}
+.busy-section h4{font-size:.85rem;font-weight:700;color:#1e293b;margin:0 0 8px;display:flex;align-items:center;gap:8px;}
+.busy-dot{width:12px;height:12px;border-radius:50%;display:inline-block;flex-shrink:0;}
+table.busy-table{border-collapse:collapse;font-size:.77rem;}
+table.busy-table th,table.busy-table td{border:1px solid #e2e8f0;padding:6px 8px;text-align:center;min-width:50px;}
+table.busy-table th{background:#f1f5f9;font-weight:700;}
+.busy-cell{cursor:pointer;background:#fff;color:#94a3b8;}
+.busy-cell.busy{background:#94a3b8;color:#fff;font-weight:700;}
+
+/* Master table */
+.master-wrap{overflow-x:auto;}
+table.master-table{border-collapse:collapse;font-size:.77rem;width:100%;}
+table.master-table th,table.master-table td{border:1px solid #000;padding:5px 3px;text-align:center;}
+table.master-table th{font-weight:700;}
+.bg-yellow{background:var(--yellow);}
+.bg-gray{background:#f1f5f9;}
+.slot{cursor:pointer;user-select:none;height:38px;font-weight:700;transition:.15s;}
+.slot:hover{box-shadow:inset 0 0 0 2px rgba(0,0,0,.25);}
+.slot-free{background:#fff;color:transparent;}
+.slot-filled{color:#fff;}
+
+/* Buttons */
+.btn-group{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin:14px 0;}
+button.btn-main{background:var(--primary);color:#fff;border:none;padding:10px 20px;border-radius:6px;font-size:.88rem;font-weight:700;cursor:pointer;transition:.15s;}
+button.btn-main:hover{opacity:.88;}
+button.btn-reset{background:#64748b;}
+button.btn-danger{background:#b91c1c;}
+button.btn-export{background:#f59e0b;}
+button.btn-next{background:#059669;}
+#log{font-weight:700;text-align:center;min-height:22px;margin-bottom:8px;font-size:.88rem;}
+
+/* Modals */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;justify-content:center;align-items:center;z-index:1000;}
+.modal-box{background:#fff;padding:22px;border-radius:12px;width:320px;max-width:95vw;text-align:center;max-height:85vh;overflow-y:auto;}
+.modal-box h4{margin-top:0;color:#1e293b;font-size:1rem;}
+.modal-btns{display:flex;flex-direction:column;gap:8px;}
+.modal-btns button{padding:9px;font-size:.85rem;border-radius:6px;border:none;cursor:pointer;font-weight:700;color:#fff;}
+.btn-cancel-m{background:#e2e8f0!important;color:#475569!important;padding:8px;border-radius:6px;border:none;cursor:pointer;width:100%;font-weight:700;margin-top:4px;}
+
+/* Export hidden */
+#exportArea{position:absolute;top:-9999px;left:-9999px;background:#fff;padding:28px;width:860px;}
+.ex-title{text-align:center;font-size:1.2rem;color:#dc2626;margin-bottom:16px;text-transform:uppercase;font-weight:700;}
+table.ex-table{width:100%;border-collapse:collapse;font-size:.92rem;}
+table.ex-table th,table.ex-table td{border:2px solid #000;padding:12px 8px;text-align:center;font-weight:700;}
+table.ex-table th{background:var(--yellow);}
+input[type=color]{width:38px;height:30px;padding:1px;border:1px solid #cbd5e1;border-radius:4px;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>🗓️ Phần Mềm Xếp Lịch Dạy</h2>
+
+  <div class="step-bar">
+    <button class="step-btn active" onclick="goStep(0)">① Khai Báo</button>
+    <button class="step-btn" onclick="goStep(1)">② Lịch Bận GV</button>
+    <button class="step-btn" onclick="goStep(2)">③ Thời Khóa Biểu</button>
+  </div>
+
+  <!-- ═══ BƯỚC 1: KHAI BÁO ═══ -->
+  <div class="step-section active" id="step0">
+    <div class="setup-row">
+      <!-- Lớp -->
+      <div class="setup-box">
+        <h3>📚 Danh Sách Lớp</h3>
+        <div class="tag-list" id="classTagList"></div>
+        <div class="add-row">
+          <input id="newClass" placeholder="VD: 6/1" maxlength="8" onkeydown="if(event.key==='Enter')addClass()">
+          <button class="btn-add" onclick="addClass()">+ Thêm Lớp</button>
+        </div>
+      </div>
+      <!-- Ca học -->
+      <div class="setup-box">
+        <h3>⏰ Các Ca Học</h3>
+        <div class="tag-list" id="shiftTagList"></div>
+        <div class="add-row">
+          <input id="newShiftName" placeholder="Tên ca VD: Ca 3" style="max-width:100px;">
+          <input id="newShiftTime" placeholder="Giờ VD: 13g-14g30" style="max-width:130px;">
+          <button class="btn-add" onclick="addShift()">+ Thêm</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Giáo viên -->
+    <div class="setup-box" style="margin-top:14px;">
+      <h3>👨‍🏫 Khai Báo Giáo Viên</h3>
+      <div class="teacher-setup-grid" id="teacherList"></div>
+      <hr style="border:0;border-top:1px dashed #e2e8f0;margin:8px 0 12px;">
+      <div class="add-row" style="flex-wrap:wrap;gap:8px;">
+        <input id="newTName" placeholder="Họ tên giáo viên" style="min-width:140px;">
+        <input id="newTSubject" placeholder="Môn dạy VD: Toán" style="min-width:100px;">
+        <select id="newTSessions">
+          <option value="1">1 tiết/lớp</option>
+          <option value="2" selected>2 tiết/lớp</option>
+          <option value="3">3 tiết/lớp</option>
+          <option value="4">4 tiết/lớp</option>
+        </select>
+        <input type="color" id="newTColor" value="#22c55e" title="Chọn màu">
+        <button class="btn-add" onclick="addTeacher()">+ Thêm GV</button>
+      </div>
+      <p style="font-size:.74rem;color:#64748b;margin:8px 0 0;">💡 Sau khi thêm GV, nhấn <b>Chọn lớp</b> để gán lớp GV đó phụ trách.</p>
+    </div>
+
+    <div style="text-align:center;margin-top:16px;">
+      <button class="btn-main btn-next" onclick="goStep(1)">Tiếp theo: Khai báo lịch bận GV ▶</button>
+    </div>
+  </div>
+
+  <!-- ═══ BƯỚC 2: LỊCH BẬN ═══ -->
+  <div class="step-section" id="step1">
+    <p style="text-align:center;font-size:.82rem;color:#64748b;margin-top:0;">Đánh dấu những ô GV <b>không thể dạy</b> (bận việc khác, dạy trường khác...)</p>
+    <div id="busyGrids"></div>
+    <div style="text-align:center;margin-top:14px;">
+      <button class="btn-main btn-next" onclick="goStep(2)">Tiếp theo: Xếp lịch ▶</button>
+    </div>
+  </div>
+
+  <!-- ═══ BƯỚC 3: THỜI KHÓA BIỂU ═══ -->
+  <div class="step-section" id="step2">
+    <div class="btn-group">
+      <button class="btn-main" onclick="scheduleAll()">🚀 Tự Động Xếp Lịch</button>
+      <button class="btn-main btn-reset" onclick="resetSchedule()">🔄 Xóa Lịch Tự Động</button>
+      <button class="btn-main btn-danger" onclick="resetAll()">🗑️ Xóa Toàn Bộ</button>
+      <button class="btn-main btn-export" onclick="openExportModal()">📸 Xuất Ảnh</button>
+    </div>
+    <div id="log"></div>
+    <div class="master-wrap">
+      <table class="master-table" id="masterTable"></table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal chọn môn -->
+<div id="subjectModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <h4>Chọn môn học / giáo viên</h4>
+    <div class="modal-btns" id="subjectBtns"></div>
+    <button class="btn-cancel-m" onclick="closeModal('subjectModal')">Đóng / Hủy</button>
+  </div>
+</div>
+
+<!-- Modal xuất -->
+<div id="exportModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <h4>📸 Chọn lịch muốn xuất ảnh</h4>
+    <div class="modal-btns" id="exportBtns"></div>
+    <button class="btn-cancel-m" onclick="closeModal('exportModal')">Đóng</button>
+  </div>
+</div>
+
+<!-- Modal chọn lớp GV -->
+<div id="classPickModal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <h4 id="classPickTitle">Lớp GV này dạy</h4>
+    <p style="font-size:.78rem;color:#64748b;margin:0 0 12px;">Nhấn để chọn/bỏ chọn</p>
+    <div id="classPickList" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:16px;"></div>
+    <button class="btn-cancel-m" onclick="closeModal('classPickModal')">Xong ✓</button>
+  </div>
+</div>
+
+<!-- Vùng xuất ảnh ẩn -->
+<div id="exportArea">
+  <div class="ex-title" id="exTitle">THỜI KHÓA BIỂU</div>
+  <table class="ex-table"><thead id="exHead"></thead><tbody id="exBody"></tbody></table>
+</div>
+
+<script>
+// ── CẤU TRÚC DỮ LIỆU ─────────────────────────────────────────────────────────
+const DAYS=[
+  {id:'T2',name:'Thứ Hai'},{id:'T3',name:'Thứ Ba'},{id:'T4',name:'Thứ Tư'},
+  {id:'T5',name:'Thứ Năm'},{id:'T6',name:'Thứ Sáu'},{id:'CN',name:'Chủ Nhật'}
+];
+
+let classes=[];
+let shifts=[];
+let teachers=[];
+let teacherBusy={};
+let studentSchedule=new Map();
+let currentClickSlot=null;
+let currentPickTid=null;
+let tidCounter=0;
+
+// ── ĐIỀU HƯỚNG BƯỚC ──────────────────────────────────────────────────────────
+function goStep(n){
+  document.querySelectorAll('.step-btn').forEach((b,i)=>b.classList.toggle('active',i===n));
+  document.querySelectorAll('.step-section').forEach((s,i)=>s.classList.toggle('active',i===n));
+  if(n===1) renderBusyGrids();
+  if(n===2) buildMasterTable();
+}
+
+// ── BƯỚC 1: KHAI BÁO ─────────────────────────────────────────────────────────
+function renderClasses(){
+  document.getElementById('classTagList').innerHTML=
+    classes.map(c=>`<span class="tag" style="background:#0ea5e9;">${c}
+      <span class="del" onclick="removeClass('${c}')">✕</span></span>`).join('');
+}
+function addClass(){
+  const v=document.getElementById('newClass').value.trim();
+  if(!v||classes.includes(v)){document.getElementById('newClass').value='';return;}
+  classes.push(v); document.getElementById('newClass').value=''; renderClasses();
+}
+function removeClass(c){
+  if(!confirm(`Xóa lớp ${c}?`)) return;
+  classes=classes.filter(x=>x!==c);
+  teachers.forEach(t=>t.classes=t.classes.filter(x=>x!==c));
+  renderClasses(); renderTeacherList();
+}
+
+function renderShifts(){
+  document.getElementById('shiftTagList').innerHTML=
+    shifts.map(s=>`<span class="tag" style="background:#475569;">${s.name} (${s.time})
+      <span class="del" onclick="removeShift('${s.id}')">✕</span></span>`).join('');
+}
+function addShift(){
+  const name=document.getElementById('newShiftName').value.trim();
+  const time=document.getElementById('newShiftTime').value.trim();
+  if(!name||!time) return;
+  shifts.push({id:'C'+(Date.now()%10000),name,time});
+  document.getElementById('newShiftName').value='';
+  document.getElementById('newShiftTime').value='';
+  renderShifts();
+}
+function removeShift(id){
+  shifts=shifts.filter(s=>s.id!==id); renderShifts();
+}
+
+function renderTeacherList(){
+  const el=document.getElementById('teacherList');
+  if(!teachers.length){
+    el.innerHTML='<p style="color:#94a3b8;font-size:.8rem;text-align:center;margin:8px 0;">Chưa có giáo viên</p>';return;
+  }
+  el.innerHTML=teachers.map(t=>`
+    <div class="teacher-setup-item">
+      <div class="teacher-color-dot" style="background:${t.color};"></div>
+      <div class="teacher-setup-info">
+        <div class="tname">${t.name}
+          <span style="font-size:.7rem;background:${t.color}22;color:${t.color};padding:1px 8px;border-radius:4px;margin-left:4px;">${t.subject}</span>
+        </div>
+        <div class="tdetail">${t.sessions} tiết/lớp/tuần &nbsp;·&nbsp; Dạy: ${t.classes.length?t.classes.join(', '):'<em style="color:#94a3b8;">chưa chọn lớp</em>'}</div>
+      </div>
+      <button onclick="openClassPick('${t.id}')" style="background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:6px;padding:4px 10px;font-size:.74rem;cursor:pointer;font-weight:700;white-space:nowrap;">📋 Chọn lớp</button>
+      <button class="btn-del-t" onclick="deleteTeacher('${t.id}')">✕</button>
+    </div>`).join('');
+}
+
+function addTeacher(){
+  const name=document.getElementById('newTName').value.trim();
+  const subj=document.getElementById('newTSubject').value.trim();
+  const sessions=+document.getElementById('newTSessions').value;
+  const color=document.getElementById('newTColor').value;
+  if(!name||!subj){alert('Vui lòng nhập tên GV và môn dạy');return;}
+  _addTeacherData(name,subj,sessions,color,[]);
+  document.getElementById('newTName').value='';
+  document.getElementById('newTSubject').value='';
+  renderTeacherList();
+}
+
+function deleteTeacher(id){
+  if(!confirm('Xóa giáo viên này?')) return;
+  teachers=teachers.filter(t=>t.id!==id);
+  delete teacherBusy[id];
+  renderTeacherList();
+}
+
+function openClassPick(tid){
+  currentPickTid=tid;
+  const t=teachers.find(x=>x.id===tid);
+  document.getElementById('classPickTitle').textContent=`Lớp của ${t.name}`;
+  document.getElementById('classPickList').innerHTML=classes.map(c=>{
+    const sel=t.classes.includes(c);
+    return `<button id="cpb_${tid}_${c.replace('/','_')}"
+      onclick="toggleClassPick('${tid}','${c}')"
+      style="padding:8px 18px;border-radius:8px;border:2px solid ${sel?t.color:'#cbd5e1'};
+        background:${sel?t.color:'#fff'};color:${sel?'#fff':'#475569'};font-weight:700;cursor:pointer;font-size:.88rem;">${c}</button>`;
+  }).join('');
+  document.getElementById('classPickModal').style.display='flex';
+}
+
+function toggleClassPick(tid,cls){
+  const t=teachers.find(x=>x.id===tid);
+  const btn=document.getElementById('cpb_'+tid+'_'+cls.replace('/','_'));
+  if(t.classes.includes(cls)){
+    t.classes=t.classes.filter(c=>c!==cls);
+    btn.style.background='#fff'; btn.style.color='#475569'; btn.style.borderColor='#cbd5e1';
+  } else {
+    t.classes.push(cls);
+    btn.style.background=t.color; btn.style.color='#fff'; btn.style.borderColor=t.color;
+  }
+  renderTeacherList();
+}
+
+// ── BƯỚC 2: LỊCH BẬN ─────────────────────────────────────────────────────────
+function renderBusyGrids(){
+  const el=document.getElementById('busyGrids');
+  if(!teachers.length){
+    el.innerHTML='<p style="color:#94a3b8;text-align:center;">Chưa có giáo viên. Quay lại Bước 1 để khai báo.</p>';return;
+  }
+  el.innerHTML=teachers.map(t=>`
+    <div class="busy-section">
+      <h4><span class="busy-dot" style="background:${t.color};"></span>${t.name} — ${t.subject}</h4>
+      <div style="overflow-x:auto;">
+        <table class="busy-table">
+          <thead><tr><th>Ca</th>${DAYS.map(d=>`<th>${d.name}</th>`).join('')}</tr></thead>
+          <tbody>${shifts.map(s=>`
+            <tr>
+              <td><b>${s.name}</b><br><span style="font-size:.67rem;color:#94a3b8;">${s.time}</span></td>
+              ${DAYS.map(d=>{
+                const key=`${d.id}-${s.id}`;
+                const busy=(teacherBusy[t.id]||new Set()).has(key);
+                return `<td class="busy-cell${busy?' busy':''}" onclick="toggleBusy('${t.id}','${key}',this)">${busy?'Bận':'Rảnh'}</td>`;
+              }).join('')}
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`).join('');
+}
+
+function toggleBusy(tid,key,td){
+  if(!teacherBusy[tid]) teacherBusy[tid]=new Set();
+  if(teacherBusy[tid].has(key)){
+    teacherBusy[tid].delete(key); td.classList.remove('busy'); td.textContent='Rảnh';
+  } else {
+    teacherBusy[tid].add(key); td.classList.add('busy'); td.textContent='Bận';
+  }
+}
+
+// ── BƯỚC 3: BẢNG TỔNG HỢP ────────────────────────────────────────────────────
+function buildMasterTable(){
+  const tbl=document.getElementById('masterTable');
+  if(!classes.length||!shifts.length){
+    tbl.innerHTML='<tr><td style="padding:20px;color:#94a3b8;text-align:center;">Chưa khai báo lớp hoặc ca học</td></tr>';return;
+  }
+  let h='<thead>';
+  h+=`<tr><th rowspan="2" class="bg-gray" style="white-space:nowrap;">Ca / Giờ</th>`;
+  DAYS.forEach(d=>{h+=`<th colspan="${classes.length}" class="bg-yellow">${d.name}</th>`;});
+  h+='</tr><tr>';
+  DAYS.forEach(()=>{classes.forEach(c=>{h+=`<th class="bg-gray" style="font-size:.7rem;">${c}</th>`;});});
+  h+='</tr></thead><tbody>';
+  shifts.forEach(s=>{
+    h+=`<tr><td style="white-space:nowrap;"><b>${s.name}</b><br><span style="font-size:.67rem;color:#64748b;">${s.time}</span></td>`;
+    DAYS.forEach(d=>{
+      classes.forEach(c=>{
+        const sid=`${c}-${d.id}-${s.id}`;
+        const data=studentSchedule.get(sid);
+        h+=`<td id="${sid}" class="slot ${data?'slot-filled':'slot-free'}"
+          style="${data?'background:'+data.color+';':''}"
+          onclick="cellClick('${sid}')">${data?data.subj:''}</td>`;
+      });
+    });
+    h+='</tr>';
+  });
+  h+='</tbody>';
+  tbl.innerHTML=h;
+}
+
+function refreshMasterUI(){
+  shifts.forEach(s=>{DAYS.forEach(d=>{classes.forEach(c=>{
+    const sid=`${c}-${d.id}-${s.id}`;
+    const td=document.getElementById(sid); if(!td) return;
+    const data=studentSchedule.get(sid);
+    if(data){td.className='slot slot-filled';td.style.background=data.color;td.textContent=data.subj;}
+    else{td.className='slot slot-free';td.style.background='';td.textContent='';}
+  });});});
+}
+
+function cellClick(sid){
+  if(studentSchedule.has(sid)){
+    studentSchedule.delete(sid); refreshMasterUI();
+  } else {
+    currentClickSlot=sid;
+    buildSubjectModal();
+    document.getElementById('subjectModal').style.display='flex';
+  }
+}
+
+function buildSubjectModal(){
+  const el=document.getElementById('subjectBtns');
+  el.innerHTML=teachers.map(t=>
+    `<button style="background:${t.color};" onclick="applySubject('${t.id}')">${t.subject} — ${t.name}</button>`
+  ).join('');
+}
+
+function applySubject(tid){
+  const t=teachers.find(x=>x.id===tid);
+  studentSchedule.set(currentClickSlot,{subj:t.subject,tid,color:t.color,isAuto:false});
+  closeModal('subjectModal'); refreshMasterUI();
+}
+
+// ── TỰ ĐỘNG XẾP LỊCH (BACKTRACKING) ─────────────────────────────────────────
+function scheduleAll(){
+  // Xóa chỉ những ô đã tự động xếp
+  for(const [k,v] of studentSchedule.entries()){if(v.isAuto) studentSchedule.delete(k);}
+
+  // Tạo danh sách nhiệm vụ: mỗi GV × mỗi lớp phụ trách × số tiết
+  const tasks=[];
+  teachers.forEach(t=>{
+    t.classes.forEach(cls=>{
+      for(let i=0;i<t.sessions;i++) tasks.push({cls,tid:t.id,subj:t.subject,color:t.color});
+    });
+  });
+
+  if(!tasks.length){setLog('⚠️ Chưa có GV hoặc chưa gán lớp cho GV.','#f59e0b');return;}
+
+  const manualBusy=new Set(studentSchedule.keys());
+
+  function getSlots(task,usedT,usedS,usedR){
+    const res=[];
+    DAYS.forEach((d,di)=>{
+      shifts.forEach(s=>{
+        const gt=`${d.id}-${s.id}`;
+        const tk=`${task.tid}-${gt}`;
+        const ss=`${task.cls}-${gt}`;
+        if(!(teacherBusy[task.tid]||new Set()).has(gt)&&!usedT.has(tk)&&!manualBusy.has(ss)&&!usedS.has(ss)&&!usedR.has(gt))
+          res.push({di,gt,tk,ss});
+      });
+    });
+    return res;
+  }
+
+  function bt(idx,uT,uS,uR){
+    if(idx===tasks.length) return [];
+    const task=tasks[idx];
+    const slots=getSlots(task,uT,uS,uR);
+
+    // Ưu tiên 2 tiết trải đều trong tuần (khoảng cách ngày lớn hơn)
+    if(task.sessions>=2){
+      const pairs=[];
+      for(let i=0;i<slots.length;i++) for(let j=i+1;j<slots.length;j++){
+        const dist=Math.abs(slots[j].di-slots[i].di);
+        if(dist>=1) pairs.push({p:[slots[i],slots[j]],dist});
+      }
+      pairs.sort((a,b)=>b.dist-a.dist);
+      for(const {p} of pairs){
+        uT.add(p[0].tk);uT.add(p[1].tk); uS.add(p[0].ss);uS.add(p[1].ss); uR.add(p[0].gt);uR.add(p[1].gt);
+        const r=bt(idx+1,uT,uS,uR);
+        if(r!==null){r.push({task,pair:p});return r;}
+        uT.delete(p[0].tk);uT.delete(p[1].tk); uS.delete(p[0].ss);uS.delete(p[1].ss); uR.delete(p[0].gt);uR.delete(p[1].gt);
+      }
+    }
+    // Fallback: từng slot đơn
+    for(const sl of slots){
+      uT.add(sl.tk); uS.add(sl.ss); uR.add(sl.gt);
+      const r=bt(idx+1,uT,uS,uR);
+      if(r!==null){r.push({task,pair:[sl]});return r;}
+      uT.delete(sl.tk); uS.delete(sl.ss); uR.delete(sl.gt);
+    }
+    return null;
+  }
+
+  try{
+    const result=bt(0,new Set(),new Set(),new Set());
+    if(!result){
+      setLog('⚠️ Không tìm được lịch hợp lệ! Kiểm tra lịch bận GV hoặc giảm số tiết.','#dc2626');return;
+    }
+    result.forEach(({task,pair})=>{
+      pair.forEach(sl=>studentSchedule.set(sl.ss,{subj:task.subj,tid:task.tid,color:task.color,isAuto:true}));
+    });
+    setLog('✅ Xếp lịch thành công! Click vào ô để xóa hoặc chỉnh sửa.','#16a34a');
+    refreshMasterUI();
+  }catch(e){setLog('⚠️ Lỗi: '+e.message,'#dc2626');}
+}
+
+function resetSchedule(){
+  for(const [k,v] of studentSchedule.entries()){if(v.isAuto) studentSchedule.delete(k);}
+  refreshMasterUI(); setLog('','');
+}
+function resetAll(){
+  if(!confirm('Xóa toàn bộ lịch và lịch bận?')) return;
+  studentSchedule.clear();
+  teachers.forEach(t=>teacherBusy[t.id]=new Set());
+  refreshMasterUI(); setLog('','');
+}
+function setLog(msg,color){const el=document.getElementById('log');el.textContent=msg;el.style.color=color;}
+
+// ── XUẤT ẢNH ─────────────────────────────────────────────────────────────────
+function openExportModal(){
+  let h=classes.map(c=>`<button style="background:#0284c7;" onclick="exportImg('class','${c}')">📋 Lịch lớp ${c}</button>`).join('');
+  h+='<hr style="border:0;border-top:1px solid #e2e8f0;margin:4px 0;">';
+  h+=teachers.map(t=>`<button style="background:${t.color};" onclick="exportImg('teacher','${t.id}')">👨‍🏫 Lịch dạy – ${t.name}</button>`).join('');
+  document.getElementById('exportBtns').innerHTML=h;
+  document.getElementById('exportModal').style.display='flex';
+}
+
+function exportImg(type,target){
+  closeModal('exportModal');
+  const titleEl=document.getElementById('exTitle');
+  const headEl=document.getElementById('exHead');
+  const bodyEl=document.getElementById('exBody');
+  bodyEl.innerHTML='';
+  headEl.innerHTML=`<tr><th style="background:#f1f5f9;">Ca / Giờ</th>${DAYS.map(d=>`<th>${d.name}</th>`).join('')}</tr>`;
+
+  if(type==='class'){
+    titleEl.textContent=`THỜI KHÓA BIỂU – LỚP ${target}`;
+    shifts.forEach(s=>{
+      let row=`<tr><td style="background:#f1f5f9;"><b>${s.name}</b><br>${s.time}</td>`;
+      DAYS.forEach(d=>{
+        const data=studentSchedule.get(`${target}-${d.id}-${s.id}`);
+        row+=data?`<td style="background:${data.color};color:#fff;">${data.subj}</td>`:'<td></td>';
+      });
+      bodyEl.innerHTML+=row+'</tr>';
+    });
+  } else {
+    const t=teachers.find(x=>x.id===target);
+    titleEl.textContent=`LỊCH DẠY – ${t.name.toUpperCase()}`;
+    shifts.forEach(s=>{
+      let row=`<tr><td style="background:#f1f5f9;"><b>${s.name}</b><br>${s.time}</td>`;
+      DAYS.forEach(d=>{
+        const gt=`${d.id}-${s.id}`;
+        if((teacherBusy[t.id]||new Set()).has(gt)){
+          row+=`<td style="background:#94a3b8;color:#fff;">Bận</td>`;
+        } else {
+          let found='';
+          classes.forEach(c=>{const data=studentSchedule.get(`${c}-${gt}`);if(data&&data.tid===t.id) found=`Lớp ${c}`;});
+          row+=found?`<td style="background:${t.color};color:#fff;">${found}</td>`:'<td></td>';
+        }
+      });
+      bodyEl.innerHTML+=row+'</tr>';
+    });
+  }
+
+  html2canvas(document.getElementById('exportArea'),{backgroundColor:'#fff',scale:2}).then(canvas=>{
+    const a=document.createElement('a');
+    a.download=`Lich_${type}_${target.replace('/','_')}.png`;
+    a.href=canvas.toDataURL('image/png'); a.click();
+  });
+}
+
+function closeModal(id){document.getElementById(id).style.display='none';currentClickSlot=null;}
+
+// ── KHỞI CHẠY ────────────────────────────────────────────────────────────────
+renderClasses();
+renderShifts();
+renderTeacherList();
+</script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Sudoku Mini – Toán</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+body{background:#0f172a;color:#e2e8f0;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden}
+header{width:100%;background:#1e293b;padding:.75rem 1rem;text-align:center;border-bottom:1px solid #334155}
+header h1{font-size:1.1rem;font-weight:700;color:#22d3ee;letter-spacing:.05em}
+header h2{font-size:.75rem;color:#94a3b8;margin-top:2px}
+/* Diff + controls */
+.top-bar{display:flex;gap:8px;padding:.6rem 1rem;width:100%;max-width:440px;align-items:center}
+.diff-wrap{display:flex;gap:5px;flex:1}
+.diff-btn{flex:1;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:.35rem;font-size:.72rem;color:#94a3b8;cursor:pointer}
+.diff-btn.active{background:#164e63;border-color:#22d3ee;color:#a5f3fc}
+.icon-btn{background:#1e293b;border:1px solid #334155;border-radius:8px;padding:.35rem .65rem;font-size:.85rem;color:#94a3b8;cursor:pointer}
+/* Stats */
+.stats{display:flex;gap:1rem;justify-content:center;padding:0 1rem .4rem;width:100%;max-width:440px}
+.stat{background:#1e293b;border-radius:10px;padding:.3rem .8rem;font-size:.78rem;color:#94a3b8;text-align:center}
+.stat span{display:block;font-size:1rem;font-weight:700;color:#f8fafc}
+/* Grid */
+.grid-wrap{padding:.3rem;display:flex;justify-content:center;width:100%;max-width:440px}
+table{border-collapse:collapse;border:2.5px solid #22d3ee}
+td{width:44px;height:44px;text-align:center;vertical-align:middle;font-size:1.1rem;font-weight:700;cursor:pointer;border:1px solid #334155;color:#f8fafc;background:#1e293b;transition:background .1s;position:relative}
+td.given{color:#22d3ee;cursor:default}
+td.selected{background:#164e63}
+td.error{background:#450a0a;color:#f87171}
+td.hint-cell{background:#1c1917;color:#fbbf24}
+/* Box borders for 6x6 (2x3 boxes) */
+td:nth-child(3n){border-right:2.5px solid #22d3ee}
+tr:nth-child(2n) td{border-bottom:2.5px solid #22d3ee}
+/* Number pad */
+.numpad{display:flex;gap:8px;justify-content:center;padding:.5rem 1rem;flex-wrap:wrap;width:100%;max-width:440px}
+.np-btn{width:52px;height:52px;background:#1e293b;border:1.5px solid #334155;border-radius:12px;font-size:1.2rem;font-weight:700;color:#e2e8f0;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center}
+.np-btn:active{transform:scale(.9)}
+.np-btn.erase{background:#450a0a;border-color:#dc2626;color:#f87171;font-size:.75rem}
+/* Errors counter */
+.err-wrap{display:flex;gap:8px;padding:0 1rem .3rem;width:100%;max-width:440px;justify-content:center;font-size:.82rem;color:#94a3b8}
+/* Win overlay */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:50}
+.result-card{background:#1e293b;border-radius:18px;padding:2rem;text-align:center;max-width:300px;width:90%}
+.re{font-size:3rem;margin-bottom:.5rem}.rt{font-size:1.3rem;font-weight:700;margin-bottom:.3rem}.rs{font-size:.9rem;color:#94a3b8;margin-bottom:1rem}
+.btn-re{background:#22d3ee;color:#0f172a;border:none;border-radius:10px;padding:.75rem 2rem;font-size:1rem;font-weight:700;cursor:pointer;width:100%}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔢 SUDOKU MINI</h1>
+  <h2>LƯỚI 6×6 — SỐ 1 ĐẾN 6</h2>
+</header>
+<div class="top-bar">
+  <div class="diff-wrap">
+    <button class="diff-btn active" onclick="setDiff(0,this)">Dễ</button>
+    <button class="diff-btn" onclick="setDiff(1,this)">TB</button>
+    <button class="diff-btn" onclick="setDiff(2,this)">Khó</button>
+  </div>
+  <button class="icon-btn" onclick="giveHint()" title="Gợi ý">💡</button>
+  <button class="icon-btn" onclick="newGame()" title="Ván mới">🔄</button>
+</div>
+<div class="stats">
+  <div class="stat"><span id="errCount">0</span>Lỗi</div>
+  <div class="stat"><span id="hintCount">3</span>Gợi ý</div>
+  <div class="stat"><span id="timer">00:00</span>Thời gian</div>
+</div>
+<div class="grid-wrap"><table id="sudokuGrid"></table></div>
+<div class="numpad" id="numpad"></div>
+
+<div class="overlay" id="overlay">
+  <div class="result-card">
+    <div class="re" id="re">🏆</div>
+    <div class="rt" id="rt">Hoàn thành!</div>
+    <div class="rs" id="rs"></div>
+    <button class="btn-re" onclick="newGame()">Ván mới</button>
+  </div>
+</div>
+
+<script>
+// 6x6 sudoku: rows 0-5, cols 0-5, boxes 2x3
+const SIZE=6, BOX_ROWS=2, BOX_COLS=3;
+let difficulty=0; // 0=easy(26 given), 1=med(22), 2=hard(18)
+const GIVEN_COUNT=[26,22,18];
+let solution=[], puzzle=[], board=[], given=[];
+let selected=null, errors=0, hints=3, timerInt=null, elapsed=0;
+
+function setDiff(d,btn){
+  difficulty=d;
+  document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');newGame();
+}
+
+function newGame(){
+  clearInterval(timerInt);elapsed=0;errors=0;hints=3;selected=null;
+  updateStats();document.getElementById('overlay').style.display='none';
+  solution=generateSolution();
+  puzzle=removeCells([...solution.map(r=>[...r])],36-GIVEN_COUNT[difficulty]);
+  board=puzzle.map(r=>[...r]);
+  given=puzzle.map(r=>r.map(v=>v!==0));
+  renderGrid();buildNumpad();
+  timerInt=setInterval(()=>{elapsed++;updateTimer();},1000);
+}
+
+function updateStats(){
+  document.getElementById('errCount').textContent=errors;
+  document.getElementById('hintCount').textContent=hints;
+}
+function updateTimer(){
+  const m=String(Math.floor(elapsed/60)).padStart(2,'0');
+  const s=String(elapsed%60).padStart(2,'0');
+  document.getElementById('timer').textContent=m+':'+s;
+}
+
+// --- Sudoku generator ---
+function generateSolution(){
+  const grid=Array.from({length:SIZE},()=>Array(SIZE).fill(0));
+  solveSudoku(grid);
+  return grid;
+}
+
+function isValid(grid,r,c,num){
+  // row
+  if(grid[r].includes(num))return false;
+  // col
+  for(let i=0;i<SIZE;i++)if(grid[i][c]===num)return false;
+  // box
+  const br=Math.floor(r/BOX_ROWS)*BOX_ROWS;
+  const bc=Math.floor(c/BOX_COLS)*BOX_COLS;
+  for(let i=br;i<br+BOX_ROWS;i++)for(let j=bc;j<bc+BOX_COLS;j++)if(grid[i][j]===num)return false;
+  return true;
+}
+
+function solveSudoku(grid){
+  for(let r=0;r<SIZE;r++){
+    for(let c=0;c<SIZE;c++){
+      if(grid[r][c]===0){
+        const nums=[1,2,3,4,5,6];
+        shuffle(nums);
+        for(const n of nums){
+          if(isValid(grid,r,c,n)){
+            grid[r][c]=n;
+            if(solveSudoku(grid))return true;
+            grid[r][c]=0;
+          }
+        }
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+
+function removeCells(grid,count){
+  const cells=[];
+  for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++)cells.push([r,c]);
+  shuffle(cells);
+  let removed=0;
+  for(const [r,c] of cells){
+    if(removed>=count)break;
+    grid[r][c]=0;removed++;
+  }
+  return grid;
+}
+
+// --- Render ---
+function renderGrid(){
+  const tbl=document.getElementById('sudokuGrid');tbl.innerHTML='';
+  for(let r=0;r<SIZE;r++){
+    const tr=document.createElement('tr');
+    for(let c=0;c<SIZE;c++){
+      const td=document.createElement('td');
+      if(given[r][c])td.classList.add('given');
+      if(board[r][c])td.textContent=board[r][c];
+      if(selected&&selected[0]===r&&selected[1]===c)td.classList.add('selected');
+      if(!given[r][c]&&board[r][c]&&board[r][c]!==solution[r][c])td.classList.add('error');
+      td.onclick=()=>selectCell(r,c);
+      tr.appendChild(td);
+    }
+    tbl.appendChild(tr);
+  }
+}
+
+function selectCell(r,c){
+  if(given[r][c])return;
+  selected=[r,c];renderGrid();
+}
+
+function buildNumpad(){
+  const div=document.getElementById('numpad');div.innerHTML='';
+  for(let n=1;n<=SIZE;n++){
+    const b=document.createElement('button');b.className='np-btn';b.textContent=n;
+    b.onclick=()=>inputNum(n);div.appendChild(b);
+  }
+  const e=document.createElement('button');e.className='np-btn erase';e.textContent='✕ Xóa';
+  e.onclick=()=>inputNum(0);div.appendChild(e);
+}
+
+function inputNum(n){
+  if(!selected)return;
+  const [r,c]=selected;
+  if(given[r][c])return;
+  board[r][c]=n;
+  if(n!==0&&n!==solution[r][c]){errors++;updateStats();}
+  renderGrid();
+  if(isBoardComplete()){setTimeout(()=>winGame(),200);}
+}
+
+function giveHint(){
+  if(hints<=0){alert('Hết gợi ý!');return;}
+  // find first empty or error cell
+  let target=null;
+  for(let r=0;r<SIZE&&!target;r++)
+    for(let c=0;c<SIZE&&!target;c++)
+      if(!given[r][c]&&board[r][c]!==solution[r][c])target=[r,c];
+  if(!target)return;
+  hints--;updateStats();
+  board[target[0]][target[1]]=solution[target[0]][target[1]];
+  given[target[0]][target[1]]=true; // treat as given after hint
+  selected=null;renderGrid();
+  if(isBoardComplete())setTimeout(()=>winGame(),200);
+}
+
+function isBoardComplete(){
+  for(let r=0;r<SIZE;r++)for(let c=0;c<SIZE;c++)if(board[r][c]!==solution[r][c])return false;
+  return true;
+}
+
+function winGame(){
+  clearInterval(timerInt);
+  const m=String(Math.floor(elapsed/60)).padStart(2,'0');
+  const s=String(elapsed%60).padStart(2,'0');
+  document.getElementById('rs').textContent=`⏱ ${m}:${s} — ${errors} lỗi — còn ${hints} gợi ý`;
+  document.getElementById('overlay').style.display='flex';
+}
+
+newGame();
+</script>
+</body>
+</html>

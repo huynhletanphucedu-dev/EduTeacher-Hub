@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Số Nguyên – Trục Số</title>
+<style>
+:root{
+  --bg:#0f172a;--card:#1e293b;--border:#334155;
+  --teal:#06b6d4;--purple:#8b5cf6;--orange:#f59e0b;
+  --green:#10b981;--red:#ef4444;--blue:#3b82f6;--text:#e2e8f0;--sub:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);
+     height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.header{background:var(--card);border-bottom:1px solid var(--border);
+        padding:13px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.header h1{font-size:1.2rem;font-weight:800;}
+.back-link{color:var(--sub);text-decoration:none;font-size:.88rem;font-weight:600;
+           padding:6px 13px;border-radius:8px;border:1px solid var(--border);}
+.tab-bar{display:flex;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;}
+.mbar-tab{flex:1;padding:14px 8px;border:none;font-size:1.05rem;font-weight:800;cursor:pointer;
+          background:transparent;color:var(--sub);border-bottom:3px solid transparent;
+          transition:all .15s;font-family:inherit;}
+.mbar-tab.active{color:var(--teal);border-bottom-color:var(--teal);background:rgba(6,182,212,.05);}
+.instr-bar{background:rgba(6,182,212,.1);border-bottom:1px solid rgba(6,182,212,.2);
+           padding:9px 24px;font-size:.92rem;color:#a5f3fc;text-align:center;flex-shrink:0;font-weight:600;}
+/* ── LAYOUT ── */
+.body-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.stage-area{flex:1;display:flex;align-items:center;justify-content:center;
+            background:var(--bg);padding:16px 20px;}
+#svg-line{display:block;width:100%;max-width:900px;}
+.bottom-panel{flex-shrink:0;background:var(--card);border-top:1px solid var(--border);
+              padding:18px 28px;display:flex;align-items:center;gap:28px;flex-wrap:wrap;justify-content:center;}
+/* ── KP PANEL ── */
+.val-box{text-align:center;min-width:120px;}
+.val-num{font-size:4.8rem;font-weight:900;line-height:1;transition:color .2s;}
+.val-label{font-size:.88rem;color:var(--sub);font-weight:600;margin-top:4px;}
+.sign-badge{display:inline-block;padding:6px 20px;border-radius:20px;
+            font-size:1rem;font-weight:800;margin-top:8px;transition:all .2s;}
+.compare-box{font-size:1rem;font-weight:700;color:var(--sub);line-height:2;min-width:220px;}
+.compare-box b{color:var(--text);}
+.kp-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:520px;}
+.kp-btn{padding:8px 14px;background:rgba(255,255,255,.06);border:1.5px solid var(--border);
+        border-radius:9px;color:var(--text);font-size:.9rem;font-weight:700;cursor:pointer;
+        font-family:inherit;transition:all .12s;min-width:48px;text-align:center;}
+.kp-btn:hover{border-color:var(--teal);color:var(--teal);}
+/* ── CALC PANEL ── */
+.calc-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.calc-stage{flex:1;display:flex;align-items:center;justify-content:center;
+            background:var(--bg);padding:14px 20px;}
+#svg-calc{display:block;width:100%;max-width:900px;}
+.calc-bottom{flex-shrink:0;background:var(--card);border-top:1px solid var(--border);
+             padding:18px 28px;display:flex;align-items:center;gap:18px;justify-content:center;flex-wrap:wrap;}
+.num-input{width:80px;padding:12px 10px;background:rgba(255,255,255,.07);border:2px solid var(--border);
+           border-radius:12px;color:var(--text);font-size:1.5rem;font-weight:800;text-align:center;
+           font-family:inherit;outline:none;}
+.num-input:focus{border-color:var(--teal);}
+.op-btn{width:56px;height:56px;border:2px solid var(--border);border-radius:12px;
+        background:rgba(255,255,255,.07);color:var(--text);font-size:1.6rem;font-weight:800;
+        cursor:pointer;font-family:inherit;transition:all .12s;}
+.op-btn.active{border-color:var(--orange);background:rgba(245,158,11,.15);color:var(--orange);}
+.calc-btn{padding:14px 32px;border:none;border-radius:13px;font-size:1.05rem;font-weight:800;
+          cursor:pointer;font-family:inherit;transition:all .15s;
+          background:linear-gradient(135deg,#06b6d4,#3b82f6);color:#fff;
+          box-shadow:0 4px 16px rgba(6,182,212,.3);}
+.calc-btn:hover{transform:translateY(-1px);}
+.result-box{font-size:1.4rem;font-weight:900;min-width:200px;text-align:center;
+            padding:12px 20px;border-radius:13px;border:2px solid var(--border);
+            background:rgba(255,255,255,.04);transition:all .3s;}
+.reset-btn{width:46px;height:46px;border:1.5px solid var(--border);border-radius:11px;
+           background:rgba(255,255,255,.05);color:var(--sub);font-size:1.2rem;
+           cursor:pointer;transition:all .12s;flex-shrink:0;}
+.reset-btn:hover{border-color:#ef4444;color:#ef4444;background:rgba(239,68,68,.1);}
+.hist-chip{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:10px;
+           border:1.5px solid var(--border);background:rgba(255,255,255,.05);
+           font-size:.95rem;font-weight:800;cursor:pointer;transition:all .15s;font-family:inherit;color:var(--text);}
+.hist-chip:hover{border-color:var(--teal);background:rgba(6,182,212,.08);}
+.hist-chip .eq{color:var(--sub);font-weight:600;}
+.hist-chip .res{font-size:1.05rem;}
+</style>
+</head>
+<body>
+<div class="header">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a href="dashboard.html" class="back-link">← Dashboard</a>
+    <h1>🔢 Số Nguyên – Trục Số</h1>
+  </div>
+  <button style="background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:9px;
+    padding:8px 16px;color:var(--text);cursor:pointer;font-size:.88rem;font-weight:700;font-family:inherit;"
+    onclick="toggleFS()">⛶ Toàn màn hình</button>
+</div>
+<div class="tab-bar">
+  <button class="mbar-tab active" id="tab-kp" onclick="switchTab('kp')">📍 Khám Phá Trục Số</button>
+  <button class="mbar-tab" id="tab-calc" onclick="switchTab('calc')">➕ Phép Tính</button>
+</div>
+
+<!-- ══════════ TAB KHÁM PHÁ ══════════ -->
+<div class="body-wrap" id="wrap-kp">
+  <div class="instr-bar">✋ Kéo điểm đỏ hoặc nhấn vào số bất kỳ trên trục để khám phá</div>
+  <div class="stage-area">
+    <svg id="svg-line" viewBox="-320 -90 640 175" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <marker id="arr-r" markerWidth="12" markerHeight="12" refX="10" refY="5" orient="auto">
+          <path d="M0,1 L0,9 L11,5 z" fill="#64748b"/>
+        </marker>
+      </defs>
+      <!-- Axis line: flat left end, arrow right -->
+      <line x1="-285" y1="0" x2="306" y2="0" stroke="#475569" stroke-width="3"
+            marker-end="url(#arr-r)"/>
+      <!-- Tick marks & labels -->
+      <g id="g-ticks"></g>
+      <!-- Negative region highlight -->
+      <rect id="neg-region" x="-280" y="-4" width="280" height="8"
+            fill="rgba(239,68,68,0.07)" rx="4"/>
+      <!-- Positive region highlight -->
+      <rect id="pos-region" x="0" y="-4" width="280" height="8"
+            fill="rgba(16,185,129,0.07)" rx="4"/>
+      <!-- Zero marker -->
+      <circle cx="0" cy="0" r="5" fill="#f59e0b" stroke="#1e293b" stroke-width="2"/>
+      <!-- Region labels -->
+      <text x="-140" y="-52" text-anchor="middle" font-size="13" font-weight="700"
+            fill="rgba(239,68,68,0.6)" font-family="Segoe UI,sans-serif">Số nguyên âm</text>
+      <text x="140" y="-52" text-anchor="middle" font-size="13" font-weight="700"
+            fill="rgba(16,185,129,0.6)" font-family="Segoe UI,sans-serif">Số nguyên dương</text>
+      <!-- Draggable point -->
+      <circle id="kp-pt" cx="0" cy="0" r="16" fill="#ef4444" stroke="#fff" stroke-width="3"
+              style="cursor:grab" filter="drop-shadow(0 2px 6px rgba(239,68,68,0.6))"/>
+      <text id="kp-pt-label" x="0" y="5" text-anchor="middle" dominant-baseline="central"
+            font-size="13" font-weight="900" fill="#fff" font-family="Segoe UI,sans-serif"
+            pointer-events="none">0</text>
+      <!-- Hit area full axis for clicking -->
+      <rect id="axis-hit" x="-280" y="-28" width="560" height="56"
+            fill="transparent" style="cursor:crosshair"/>
+    </svg>
+  </div>
+  <div class="bottom-panel">
+    <div class="val-box">
+      <div class="val-num" id="kp-val">0</div>
+      <div class="val-label">Giá trị hiện tại</div>
+      <div><span class="sign-badge" id="kp-sign">Số 0</span></div>
+    </div>
+    <div class="compare-box" id="kp-compare"></div>
+    <div>
+      <div style="font-size:.78rem;font-weight:700;color:var(--sub);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Nhảy đến số</div>
+      <div class="kp-btns" id="kp-btns"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TAB PHÉP TÍNH ══════════ -->
+<div class="body-wrap" id="wrap-calc" style="display:none">
+  <div class="instr-bar" id="instr-calc">Nhập hai số nguyên, chọn phép tính rồi nhấn <b>Tính</b> để xem mũi tên trên trục số</div>
+  <div class="calc-panel">
+    <div class="calc-stage">
+      <svg id="svg-calc" viewBox="-320 -110 640 200" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <marker id="c-arr-r" markerWidth="12" markerHeight="12" refX="10" refY="5" orient="auto">
+            <path d="M0,1 L0,9 L11,5 z" fill="#64748b"/>
+          </marker>
+          <marker id="m-arr" markerWidth="10" markerHeight="10" refX="9" refY="4" orient="auto">
+            <path id="m-arr-path" d="M0,0 L0,8 L10,4 z" fill="#06b6d4"/>
+          </marker>
+        </defs>
+        <line x1="-285" y1="0" x2="306" y2="0" stroke="#475569" stroke-width="3"
+              marker-end="url(#c-arr-r)"/>
+        <g id="c-ticks"></g>
+        <!-- B dot (num-b, orange, on axis) -->
+        <circle id="c-b-dot" cx="112" cy="0" r="13" fill="#f59e0b" stroke="#fff" stroke-width="3"
+                opacity="0" style="cursor:grab" filter="drop-shadow(0 2px 6px rgba(245,158,11,0.6))"/>
+        <text id="c-b-lbl" x="112" y="5" text-anchor="middle" dominant-baseline="central"
+              font-size="12" font-weight="900" fill="#fff" font-family="Segoe UI,sans-serif"
+              opacity="0" pointer-events="none">4</text>
+        <!-- B label tag below -->
+        <text id="c-b-tag" x="112" y="35" text-anchor="middle" font-size="12" font-weight="700"
+              fill="#f59e0b" font-family="Segoe UI,sans-serif" opacity="0">b</text>
+        <!-- Start dot (num-a, purple, on axis) -->
+        <circle id="c-start" cx="84" cy="0" r="13" fill="#8b5cf6" stroke="#fff" stroke-width="3"
+                opacity="1" style="cursor:grab" filter="drop-shadow(0 2px 6px rgba(139,92,246,0.6))"/>
+        <text id="c-start-lbl" x="84" y="5" text-anchor="middle" dominant-baseline="central"
+              font-size="12" font-weight="900" fill="#fff" font-family="Segoe UI,sans-serif"
+              opacity="1" pointer-events="none">3</text>
+        <!-- A label tag above -->
+        <text id="c-a-tag" x="84" y="-28" text-anchor="middle" font-size="12" font-weight="700"
+              fill="#8b5cf6" font-family="Segoe UI,sans-serif" opacity="1">a</text>
+        <!-- Move arrow -->
+        <line id="c-arrow" x1="0" y1="-55" x2="0" y2="-55"
+              stroke="#06b6d4" stroke-width="5" stroke-linecap="round"
+              marker-end="url(#m-arr)" opacity="0"/>
+        <!-- Result dot -->
+        <circle id="c-end" cx="0" cy="0" r="15" fill="#10b981" stroke="#fff" stroke-width="3"
+                opacity="0" filter="drop-shadow(0 2px 8px rgba(16,185,129,0.7))"/>
+        <text id="c-end-lbl" x="0" y="5" text-anchor="middle" dominant-baseline="central"
+              font-size="13" font-weight="900" fill="#fff" font-family="Segoe UI,sans-serif"
+              opacity="0" pointer-events="none"></text>
+        <!-- Step label above arrow -->
+        <text id="c-step-lbl" x="0" y="-85" text-anchor="middle" font-size="15" font-weight="800"
+              fill="#06b6d4" font-family="Segoe UI,sans-serif" opacity="0"></text>
+      </svg>
+    </div>
+    <div class="calc-bottom">
+      <input class="num-input" id="num-a" type="number" value="3" min="-10" max="10" oninput="resetCalcResult()"/>
+      <div style="display:flex;gap:8px;">
+        <button class="op-btn active" id="op-plus"  onclick="setOp('+')">+</button>
+        <button class="op-btn"        id="op-minus" onclick="setOp('-')">−</button>
+      </div>
+      <input class="num-input" id="num-b" type="number" value="4" min="-10" max="10" oninput="resetCalcResult()"/>
+      <button class="calc-btn" onclick="doCalc()">=&nbsp; Tính</button>
+      <div class="result-box" id="result-box" style="color:var(--sub)">—</div>
+      <button class="reset-btn" onclick="clearHistory()" title="Xoá lịch sử">🗑</button>
+    </div>
+    <!-- History list -->
+    <div id="history-wrap" style="display:none;flex-shrink:0;background:rgba(255,255,255,.03);
+         border-top:1px solid var(--border);padding:12px 24px 14px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:.78rem;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;">
+          📋 Các phép tính đã thực hiện
+        </span>
+      </div>
+      <div id="history-list" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══ CONFIG ══ */
+const STEP=28, MIN=-10, MAX=10, N=MAX-MIN; // 28px per unit
+function px(n){ return n*STEP; }
+
+/* ══ DRAW TICKS (shared) ══ */
+function buildTicks(gId){
+  let h='';
+  for(let i=MIN;i<=MAX;i++){
+    const x=px(i);
+    const big=(i%5===0), isZ=(i===0);
+    const len=big?20:12;
+    h+=`<line x1="${x}" y1="${-len}" x2="${x}" y2="${len}"
+             stroke="${isZ?'#f59e0b':'#64748b'}" stroke-width="${isZ?3:big?2:1.2}"/>`;
+    const y=big?42:32;
+    const col=i<0?'#f87171':i>0?'#34d399':'#f59e0b';
+    h+=`<text x="${x}" y="${y}" text-anchor="middle" font-size="${big?17:13}"
+             font-weight="${big?800:600}" fill="${col}"
+             font-family="Segoe UI,sans-serif">${i}</text>`;
+  }
+  document.getElementById(gId).innerHTML=h;
+}
+buildTicks('g-ticks');
+buildTicks('c-ticks');
+
+/* ══ TAB KP ══ */
+let kpVal=3, draggingKP=false;
+function svgPtKP(e){
+  const svg=document.getElementById('svg-line');
+  const pt=svg.createSVGPoint();
+  const src=e.touches?e.touches[0]:e;
+  pt.x=src.clientX; pt.y=src.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function clampInt(v){ return Math.max(MIN,Math.min(MAX,Math.round(v))); }
+function renderKP(){
+  const v=kpVal, x=px(v);
+  document.getElementById('kp-pt').setAttribute('cx',x);
+  document.getElementById('kp-pt-label').setAttribute('x',x);
+  document.getElementById('kp-pt-label').textContent=v;
+  const numEl=document.getElementById('kp-val');
+  numEl.textContent=v;
+  const col=v<0?'#f87171':v>0?'#34d399':'#f59e0b';
+  numEl.style.color=col;
+  const sign=v<0?{t:'Số nguyên âm',bg:'rgba(239,68,68,.12)',c:'#f87171',border:'#ef4444'}
+               :v>0?{t:'Số nguyên dương',bg:'rgba(16,185,129,.12)',c:'#34d399',border:'#10b981'}
+               :{t:'Số không (0)',bg:'rgba(245,158,11,.12)',c:'#f59e0b',border:'#f59e0b'};
+  const badge=document.getElementById('kp-sign');
+  badge.textContent=sign.t; badge.style.background=sign.bg;
+  badge.style.color=sign.c; badge.style.border='1.5px solid '+sign.border;
+  document.getElementById('kp-pt').setAttribute('fill',sign.c);
+
+  // Compare text
+  let cmp='';
+  if(v!==0){
+    const opp=-v;
+    cmp=`<b>${v}</b> ${v>0?'>':'<'} 0 &nbsp;·&nbsp; Đối của <b>${v}</b> là <b>${opp}</b><br>`;
+    if(Math.abs(v)<MAX) cmp+=`<b>${v}</b> ${v>0?'>':'<'} <b>${v>0?v-1:v+1}</b>`;
+  } else {
+    cmp=`<b>0</b> không dương, không âm<br>Đối của <b>0</b> là <b>0</b>`;
+  }
+  document.getElementById('kp-compare').innerHTML=cmp;
+
+  // Active btn
+  document.querySelectorAll('.kp-btn').forEach(b=>{
+    b.style.borderColor=parseInt(b.dataset.n)===v?col:null;
+    b.style.color=parseInt(b.dataset.n)===v?col:null;
+    b.style.background=parseInt(b.dataset.n)===v?sign.bg:null;
+  });
+}
+
+// Build quick-jump buttons -10..10
+(function(){
+  const wrap=document.getElementById('kp-btns');
+  for(let i=MIN;i<=MAX;i++){
+    const b=document.createElement('button');
+    b.className='kp-btn'; b.textContent=i; b.dataset.n=i;
+    b.onclick=()=>{kpVal=i;renderKP();};
+    wrap.appendChild(b);
+  }
+})();
+
+(function setupKPDrag(){
+  const svg=document.getElementById('svg-line');
+  const pt=document.getElementById('kp-pt');
+  const hit=document.getElementById('axis-hit');
+  function update(e){
+    const p=svgPtKP(e);
+    kpVal=clampInt(p.x/STEP); renderKP();
+  }
+  function start(e){ draggingKP=true; update(e); e.preventDefault(); }
+  function move(e){ if(!draggingKP) return; update(e); e.preventDefault(); }
+  function end(){ draggingKP=false; }
+  [pt,hit].forEach(el=>{
+    el.addEventListener('mousedown',start);
+    el.addEventListener('touchstart',start,{passive:false});
+  });
+  svg.addEventListener('mousemove',move);
+  svg.addEventListener('mouseup',end);
+  svg.addEventListener('touchmove',move,{passive:false});
+  svg.addEventListener('touchend',end);
+})();
+kpVal=3; renderKP();
+
+/* ══ TAB CALC ══ */
+let curOp='+', calcAF=null, draggingA=false, draggingB=false;
+const calcHistory=[];
+
+function pushHistory(a,op,b,result){
+  calcHistory.push({a,op,b,result});
+  renderHistory();
+}
+
+function renderHistory(){
+  const wrap=document.getElementById('history-wrap');
+  const list=document.getElementById('history-list');
+  if(!calcHistory.length){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  list.innerHTML='';
+  calcHistory.forEach((h,i)=>{
+    const col=h.result<0?'#f87171':h.result>0?'#34d399':'#f59e0b';
+    const opSym=h.op==='+'?'+':'−';
+    const chip=document.createElement('button');
+    chip.className='hist-chip';
+    chip.innerHTML=`<span>${h.a} <span class="eq">${opSym}</span> ${Math.abs(h.b)}</span>
+      <span class="eq">=</span>
+      <span class="res" style="color:${col}">${h.result}</span>`;
+    chip.title='Xem lại phép tính này';
+    chip.onclick=()=>replayHistory(h);
+    list.appendChild(chip);
+  });
+}
+
+function replayHistory(h){
+  document.getElementById('num-a').value=h.a;
+  document.getElementById('num-b').value=Math.abs(h.b);
+  setOp(h.op);
+  // set b correctly (could be negative if subtraction makes it so)
+  document.getElementById('num-b').value=h.b;
+  resetCalcResult();
+  setTimeout(()=>doCalc(),100);
+}
+
+function clearHistory(){
+  calcHistory.length=0;
+  renderHistory();
+}
+function setOp(op){
+  curOp=op;
+  document.getElementById('op-plus').classList.toggle('active',op==='+');
+  document.getElementById('op-minus').classList.toggle('active',op==='-');
+  resetCalcResult();
+}
+
+function svgPtFromEvent(svg,e){
+  const pt=svg.createSVGPoint();
+  const src=e.touches?e.touches[0]:e;
+  pt.x=src.clientX; pt.y=src.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+
+/* live preview: move dots to current a,b values */
+function previewCalcDots(){
+  const a=Math.max(MIN,Math.min(MAX,parseInt(document.getElementById('num-a').value)||0));
+  const b=Math.max(MIN,Math.min(MAX,parseInt(document.getElementById('num-b').value)||0));
+  const ax=px(a), bx=px(b);
+  // a dot (purple, sits above axis at y=-16 visually, but we keep cy=0)
+  ['c-start','c-start-lbl','c-a-tag'].forEach(id=>document.getElementById(id).setAttribute('opacity','1'));
+  document.getElementById('c-start').setAttribute('cx',ax);
+  document.getElementById('c-start-lbl').setAttribute('x',ax);
+  document.getElementById('c-start-lbl').textContent=a;
+  document.getElementById('c-a-tag').setAttribute('x',ax);
+  // b dot (orange)
+  ['c-b-dot','c-b-lbl','c-b-tag'].forEach(id=>document.getElementById(id).setAttribute('opacity','1'));
+  document.getElementById('c-b-dot').setAttribute('cx',bx);
+  document.getElementById('c-b-lbl').setAttribute('x',bx);
+  document.getElementById('c-b-lbl').textContent=b;
+  document.getElementById('c-b-tag').setAttribute('x',bx);
+}
+
+function resetCalcResult(){
+  cancelAnimationFrame(calcAF);
+  ['c-arrow','c-step-lbl'].forEach(id=>document.getElementById(id).setAttribute('opacity','0'));
+  document.getElementById('c-end').setAttribute('opacity','0');
+  document.getElementById('c-end-lbl').setAttribute('opacity','0');
+  document.getElementById('result-box').textContent='—';
+  document.getElementById('result-box').style.color='var(--sub)';
+  document.getElementById('result-box').style.borderColor='var(--border)';
+  previewCalcDots();
+}
+
+/* drag support for a/b dots */
+(function setupCalcDrag(){
+  const svg=document.getElementById('svg-calc');
+  const dotA=document.getElementById('c-start');
+  const dotB=document.getElementById('c-b-dot');
+  const hitRect=document.createElement('rect'); // invisible full-axis hit
+
+  function startA(e){ draggingA=true; e.preventDefault(); }
+  function startB(e){ draggingB=true; e.preventDefault(); }
+
+  function onMove(e){
+    if(!draggingA && !draggingB) return;
+    e.preventDefault();
+    const p=svgPtFromEvent(svg,e);
+    const v=Math.max(MIN,Math.min(MAX,Math.round(p.x/STEP)));
+    if(draggingA){
+      document.getElementById('num-a').value=v;
+    } else {
+      document.getElementById('num-b').value=v;
+    }
+    resetCalcResult();
+  }
+  function onEnd(){ draggingA=false; draggingB=false; }
+
+  dotA.addEventListener('mousedown',startA);
+  dotA.addEventListener('touchstart',startA,{passive:false});
+  dotB.addEventListener('mousedown',startB);
+  dotB.addEventListener('touchstart',startB,{passive:false});
+  svg.addEventListener('mousemove',onMove);
+  svg.addEventListener('touchmove',onMove,{passive:false});
+  svg.addEventListener('mouseup',onEnd);
+  svg.addEventListener('touchend',onEnd);
+})();
+
+function doCalc(){
+  cancelAnimationFrame(calcAF);
+  let a=parseInt(document.getElementById('num-a').value)||0;
+  let b=parseInt(document.getElementById('num-b').value)||0;
+  a=Math.max(MIN,Math.min(MAX,a));
+  b=Math.max(MIN,Math.min(MAX,b));
+  const result=curOp==='+'?a+b:a-b;
+  const delta=curOp==='+'?b:-b; // net movement on number line
+
+  // Clamp display
+  const ax=px(a), rx=px(Math.max(MIN,Math.min(MAX,result)));
+
+  // Start dot
+  const sd=document.getElementById('c-start');
+  sd.setAttribute('cx',ax); sd.setAttribute('opacity','1');
+  document.getElementById('c-start-lbl').setAttribute('x',ax);
+  document.getElementById('c-start-lbl').textContent=a;
+  document.getElementById('c-start-lbl').setAttribute('opacity','1');
+  document.getElementById('c-a-tag').setAttribute('x',ax);
+  document.getElementById('c-a-tag').setAttribute('opacity','1');
+
+  // Hide B dot during animation
+  ['c-b-dot','c-b-lbl','c-b-tag'].forEach(id=>document.getElementById(id).setAttribute('opacity','0'));
+
+  // Reset end & arrow
+  const ed=document.getElementById('c-end');
+  ed.setAttribute('opacity','0');
+  document.getElementById('c-end-lbl').setAttribute('opacity','0');
+  document.getElementById('c-arrow').setAttribute('opacity','0');
+  document.getElementById('c-step-lbl').setAttribute('opacity','0');
+  document.getElementById('result-box').textContent='—';
+  document.getElementById('result-box').style.color='var(--sub)';
+  document.getElementById('result-box').style.borderColor='var(--border)';
+
+  const arrow=document.getElementById('c-arrow');
+  const stepLbl=document.getElementById('c-step-lbl');
+  const mArrPath=document.getElementById('m-arr-path');
+
+  // Direction color
+  const goRight=delta>0;
+  const arrowColor=goRight?'#10b981':'#ef4444';
+  arrow.setAttribute('stroke',arrowColor);
+  mArrPath.setAttribute('fill',arrowColor);
+  stepLbl.setAttribute('fill',arrowColor);
+
+  const label=`${curOp==='+'?'Cộng':'Trừ'} ${Math.abs(b)} → đi ${goRight?'phải':'trái'} ${Math.abs(delta)} bước`;
+  stepLbl.textContent=label;
+
+  // Animate arrow from ax to rx
+  let frame=0;
+  const TOTAL=Math.max(40, Math.abs(delta)*8);
+  const dirMul=goRight?1:-1;
+
+  // Show start of animation
+  arrow.setAttribute('x1',ax); arrow.setAttribute('x2',ax);
+  arrow.setAttribute('y1',-55); arrow.setAttribute('y2',-55);
+  arrow.setAttribute('opacity',delta===0?'0':'1');
+  stepLbl.setAttribute('x',ax); stepLbl.setAttribute('opacity',delta===0?'0':'1');
+
+  function step(){
+    frame++;
+    const t=frame/TOTAL;
+    const ease=t<0.5?2*t*t:(-1+(4-2*t)*t);
+    const curX=ax+px(delta)*ease;
+
+    // Arrow: from ax to curX, drawn above the axis
+    const mid=(ax+curX)/2;
+    arrow.setAttribute('x1',ax);
+    arrow.setAttribute('x2',curX);
+    arrow.setAttribute('y1',-55); arrow.setAttribute('y2',-55);
+    stepLbl.setAttribute('x',mid);
+
+    if(frame<TOTAL){ calcAF=requestAnimationFrame(step); }
+    else {
+      // Show result dot
+      ed.setAttribute('cx',rx); ed.setAttribute('opacity','1');
+      document.getElementById('c-end-lbl').setAttribute('x',rx);
+      document.getElementById('c-end-lbl').textContent=result;
+      document.getElementById('c-end-lbl').setAttribute('opacity','1');
+      const resultColor=result<0?'#f87171':result>0?'#34d399':'#f59e0b';
+      ed.setAttribute('fill',resultColor);
+      const resBox=document.getElementById('result-box');
+      resBox.textContent=`${a} ${curOp==='+'?'+':'−'} ${Math.abs(b)} = ${result}`;
+      resBox.style.color=resultColor;
+      resBox.style.borderColor=resultColor;
+      pushHistory(a,curOp,b,result);
+    }
+  }
+  if(delta===0){
+    // No movement
+    ed.setAttribute('cx',rx); ed.setAttribute('opacity','1');
+    document.getElementById('c-end-lbl').setAttribute('x',rx);
+    document.getElementById('c-end-lbl').textContent=result;
+    document.getElementById('c-end-lbl').setAttribute('opacity','1');
+    const rc=result<0?'#f87171':result>0?'#34d399':'#f59e0b';
+    ed.setAttribute('fill',rc);
+    const rb=document.getElementById('result-box');
+    rb.textContent=`${a} ${curOp==='+'?'+':'−'} ${Math.abs(b)} = ${result}`;
+    rb.style.color=rc; rb.style.borderColor=rc;
+    pushHistory(a,curOp,b,result);
+  } else {
+    requestAnimationFrame(step);
+  }
+}
+
+/* ══ TAB SWITCH ══ */
+function switchTab(t){
+  ['kp','calc'].forEach(x=>{
+    document.getElementById('tab-'+x).classList.toggle('active',x===t);
+    document.getElementById('wrap-'+x).style.display=x===t?'flex':'none';
+  });
+  if(t==='calc'){
+    resetCalcResult();
+  }
+}
+/* init calc dots */
+previewCalcDots();
+
+function toggleFS(){
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thang pH – Acid, Base, Trung Tính</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0f172a;
+    color: #f1f5f9;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .header p {
+    color: #94a3b8;
+    font-size: 0.9rem;
+  }
+  .panel {
+    background: #1e293b;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 18px;
+    border: 1px solid #334155;
+  }
+  .panel-title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #64748b;
+    margin-bottom: 14px;
+  }
+
+  /* pH Scale */
+  .scale-zones {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    padding: 0 4px;
+  }
+  .zone-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .zone-acid { color: #f87171; }
+  .zone-neutral { color: #4ade80; }
+  .zone-base { color: #60a5fa; }
+
+  .scale-wrapper {
+    position: relative;
+    margin-bottom: 6px;
+  }
+  .scale-bar {
+    height: 28px;
+    border-radius: 14px;
+    background: linear-gradient(to right,
+      #ff0000 0%,
+      #ff3300 7.14%,
+      #ff6600 14.28%,
+      #ff9900 21.42%,
+      #ffcc00 28.56%,
+      #ccff00 35.7%,
+      #66ff00 42.84%,
+      #00ff88 50%,
+      #00ffcc 57.14%,
+      #00ccff 64.28%,
+      #0099ff 71.42%,
+      #0066ff 78.56%,
+      #3300ff 85.7%,
+      #6600cc 92.84%,
+      #990099 100%
+    );
+    position: relative;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  }
+  .scale-pointer {
+    position: absolute;
+    top: -8px;
+    width: 4px;
+    height: 44px;
+    background: white;
+    border-radius: 2px;
+    transform: translateX(-50%);
+    box-shadow: 0 0 8px rgba(255,255,255,0.8);
+    transition: left 0.15s ease;
+    pointer-events: none;
+  }
+  .scale-pointer::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid white;
+  }
+
+  .scale-numbers {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 2px;
+    margin-top: 6px;
+  }
+  .scale-numbers span {
+    font-size: 0.65rem;
+    color: #94a3b8;
+    width: 20px;
+    text-align: center;
+  }
+
+  /* Slider */
+  .slider-area {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 10px;
+  }
+  .ph-display {
+    font-size: 1.6rem;
+    font-weight: 700;
+    min-width: 90px;
+    text-align: center;
+    padding: 6px 12px;
+    border-radius: 10px;
+    background: #0f172a;
+    border: 2px solid #334155;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  input[type=range] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: #334155;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    cursor: pointer;
+    border: 3px solid #64748b;
+    transition: border-color 0.2s;
+  }
+
+  /* Litmus Papers */
+  .litmus-row {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+  }
+  .litmus-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .litmus-label {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    text-align: center;
+    font-weight: 600;
+  }
+  .litmus-strip {
+    width: 100%;
+    height: 90px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+    border: 2px solid #334155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .litmus-strip::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 40%;
+    background: rgba(255,255,255,0.06);
+    border-radius: 8px 8px 0 0;
+  }
+  .litmus-result {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    text-align: center;
+  }
+
+  /* Solutions */
+  .solutions-group {
+    margin-bottom: 12px;
+  }
+  .solutions-group-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    padding-left: 4px;
+  }
+  .solutions-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .solution-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #0f172a;
+    border-radius: 10px;
+    border: 1px solid #334155;
+    cursor: pointer;
+    transition: border-color 0.2s, transform 0.1s, background 0.2s;
+    user-select: none;
+  }
+  .solution-card:hover {
+    border-color: #64748b;
+    background: #1a2540;
+    transform: translateY(-1px);
+  }
+  .solution-card.active {
+    border-color: #60a5fa;
+    background: #1e3050;
+  }
+  .solution-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .solution-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #e2e8f0;
+  }
+  .solution-ph {
+    font-size: 0.7rem;
+    color: #64748b;
+  }
+
+  /* Info panel */
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .info-item {
+    background: #0f172a;
+    border-radius: 10px;
+    padding: 12px;
+    border: 1px solid #334155;
+  }
+  .info-item-label {
+    font-size: 0.68rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .info-item-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #f1f5f9;
+  }
+  .info-item-value.classify {
+    font-size: 1.1rem;
+    letter-spacing: 1px;
+  }
+  .info-full {
+    grid-column: 1 / -1;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .badge-acid { background: rgba(248,113,113,0.2); color: #f87171; border: 1px solid #f87171; }
+  .badge-neutral { background: rgba(74,222,128,0.2); color: #4ade80; border: 1px solid #4ade80; }
+  .badge-base { background: rgba(96,165,250,0.2); color: #60a5fa; border: 1px solid #60a5fa; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>🧪 Thang pH</h1>
+    <p>Chọn dung dịch hoặc kéo slider để xem tính chất acid–base</p>
+  </div>
+
+  <!-- pH Scale Panel -->
+  <div class="panel">
+    <div class="panel-title">Thang pH (0 – 14)</div>
+    <div class="scale-zones">
+      <span class="zone-label zone-acid">◀ ACID (0–6)</span>
+      <span class="zone-label zone-neutral">TRUNG TÍNH (7)</span>
+      <span class="zone-label zone-base">BASE / KIỀM (8–14) ▶</span>
+    </div>
+    <div class="scale-wrapper">
+      <div class="scale-bar" id="scaleBar">
+        <div class="scale-pointer" id="scalePointer"></div>
+      </div>
+    </div>
+    <div class="scale-numbers" id="scaleNumbers"></div>
+
+    <div class="slider-area" style="margin-top:16px;">
+      <div class="ph-display" id="phDisplay">pH = 7.0</div>
+      <input type="range" id="phSlider" min="0" max="14" step="0.1" value="7">
+    </div>
+  </div>
+
+  <!-- Litmus Paper Panel -->
+  <div class="panel">
+    <div class="panel-title">Chỉ thị màu (Litmus / Indicator)</div>
+    <div class="litmus-row">
+      <div class="litmus-item">
+        <div class="litmus-label">Quỳ tím</div>
+        <div class="litmus-strip" id="litmus1"></div>
+        <div class="litmus-result" id="litmus1Result">Tím (trung tính)</div>
+      </div>
+      <div class="litmus-item">
+        <div class="litmus-label">Phenolphthalein</div>
+        <div class="litmus-strip" id="litmus2"></div>
+        <div class="litmus-result" id="litmus2Result">Không màu</div>
+      </div>
+      <div class="litmus-item">
+        <div class="litmus-label">Giấy pH vạn năng</div>
+        <div class="litmus-strip" id="litmus3"></div>
+        <div class="litmus-result" id="litmus3Result">pH ≈ 7 (xanh lá)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Real-world Solutions -->
+  <div class="panel">
+    <div class="panel-title">Dung dịch thực tế – Nhấn để chọn</div>
+    <div class="solutions-group">
+      <div class="solutions-group-label" style="color:#f87171;">Dung dịch Acid</div>
+      <div class="solutions-row" id="rowAcid"></div>
+    </div>
+    <div class="solutions-group">
+      <div class="solutions-group-label" style="color:#4ade80;">Trung tính / Gần trung tính</div>
+      <div class="solutions-row" id="rowNeutral"></div>
+    </div>
+    <div class="solutions-group">
+      <div class="solutions-group-label" style="color:#60a5fa;">Dung dịch Base (Kiềm)</div>
+      <div class="solutions-row" id="rowBase"></div>
+    </div>
+  </div>
+
+  <!-- Info Panel -->
+  <div class="panel">
+    <div class="panel-title">Thông tin chi tiết</div>
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-item-label">Phân loại</div>
+        <div class="info-item-value classify" id="infoClassify"></div>
+      </div>
+      <div class="info-item">
+        <div class="info-item-label">Nồng độ H⁺</div>
+        <div class="info-item-value" id="infoConcentration"></div>
+      </div>
+      <div class="info-item">
+        <div class="info-item-label">Màu sắc đặc trưng</div>
+        <div class="info-item-value" id="infoColor"></div>
+      </div>
+      <div class="info-item">
+        <div class="info-item-label">Ví dụ ứng dụng</div>
+        <div class="info-item-value" id="infoApp"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // pH color stops
+  const phColors = [
+    '#ff0000','#ff3300','#ff6600','#ff9900','#ffcc00',
+    '#ccff00','#66ff00','#00ff88','#00ffcc','#00ccff',
+    '#0099ff','#0066ff','#3300ff','#6600cc','#990099'
+  ];
+
+  function interpolateColor(ph) {
+    const idx = Math.floor(ph);
+    const frac = ph - idx;
+    if (idx >= 14) return phColors[14];
+    if (idx < 0) return phColors[0];
+    const c1 = hexToRgb(phColors[idx]);
+    const c2 = hexToRgb(phColors[idx + 1]);
+    const r = Math.round(c1.r + (c2.r - c1.r) * frac);
+    const g = Math.round(c1.g + (c2.g - c1.g) * frac);
+    const b = Math.round(c1.b + (c2.b - c1.b) * frac);
+    return `rgb(${r},${g},${b})`;
+  }
+
+  function hexToRgb(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : {r:0,g:0,b:0};
+  }
+
+  // Build scale numbers
+  const scaleNumbers = document.getElementById('scaleNumbers');
+  for (let i = 0; i <= 14; i++) {
+    const span = document.createElement('span');
+    span.textContent = i;
+    scaleNumbers.appendChild(span);
+  }
+
+  // Solutions data
+  const solutions = {
+    acid: [
+      { name: 'Nước chanh', ph: 2.0, emoji: '🍋' },
+      { name: 'Giấm', ph: 3.0, emoji: '🍶' },
+      { name: 'Nước cam', ph: 4.0, emoji: '🍊' },
+      { name: 'Cà phê', ph: 5.0, emoji: '☕' },
+      { name: 'Nước mưa', ph: 5.6, emoji: '🌧️' },
+    ],
+    neutral: [
+      { name: 'Nước tinh khiết', ph: 7.0, emoji: '💧' },
+      { name: 'Máu người', ph: 7.4, emoji: '🩸' },
+      { name: 'Nước biển', ph: 8.1, emoji: '🌊' },
+    ],
+    base: [
+      { name: 'Baking soda', ph: 8.5, emoji: '🧂' },
+      { name: 'Xà phòng', ph: 9.5, emoji: '🧼' },
+      { name: 'Nước vôi', ph: 12.0, emoji: '🪣' },
+      { name: 'NaOH', ph: 14.0, emoji: '⚗️' },
+    ]
+  };
+
+  let activeCard = null;
+
+  function buildCards(group, containerId) {
+    const container = document.getElementById(containerId);
+    group.forEach(sol => {
+      const card = document.createElement('div');
+      card.className = 'solution-card';
+      card.dataset.ph = sol.ph;
+
+      const dot = document.createElement('div');
+      dot.className = 'solution-dot';
+      dot.style.background = interpolateColor(sol.ph);
+
+      const nameEl = document.createElement('div');
+      nameEl.className = 'solution-name';
+      nameEl.textContent = sol.emoji + ' ' + sol.name;
+
+      const phEl = document.createElement('div');
+      phEl.className = 'solution-ph';
+      phEl.textContent = 'pH ' + sol.ph.toFixed(1);
+
+      card.appendChild(dot);
+      card.appendChild(nameEl);
+      card.appendChild(phEl);
+
+      card.addEventListener('click', () => {
+        if (activeCard) activeCard.classList.remove('active');
+        card.classList.add('active');
+        activeCard = card;
+        document.getElementById('phSlider').value = sol.ph;
+        updateAll(sol.ph);
+      });
+
+      container.appendChild(card);
+    });
+  }
+
+  buildCards(solutions.acid, 'rowAcid');
+  buildCards(solutions.neutral, 'rowNeutral');
+  buildCards(solutions.base, 'rowBase');
+
+  // Info data per pH range
+  function getInfo(ph) {
+    const phR = Math.round(ph * 10) / 10;
+    let classify, colorDesc, appDesc;
+
+    if (ph < 7) {
+      classify = '<span class="badge badge-acid">ACID</span>';
+      colorDesc = ph < 3 ? 'Đỏ đậm' : ph < 5 ? 'Đỏ–cam' : 'Vàng–cam';
+      appDesc = ph < 3 ? 'Acid mạnh, ăn mòn kim loại' : ph < 5 ? 'Thực phẩm chua, giấm' : 'Nước mưa, cà phê';
+    } else if (ph === 7) {
+      classify = '<span class="badge badge-neutral">TRUNG TÍNH</span>';
+      colorDesc = 'Xanh lá nhạt';
+      appDesc = 'Nước tinh khiết, trung hòa';
+    } else {
+      classify = '<span class="badge badge-base">BASE / KIỀM</span>';
+      colorDesc = ph < 10 ? 'Xanh lam' : ph < 12 ? 'Xanh đậm' : 'Tím đậm';
+      appDesc = ph < 10 ? 'Xà phòng, chất tẩy rửa nhẹ' : ph < 13 ? 'Nước vôi, xi măng' : 'Kiềm mạnh NaOH, xút';
+    }
+
+    // Concentration
+    const exp = -phR;
+    const expInt = Math.floor(exp);
+    const expFrac = exp - expInt;
+    let concStr;
+    if (Math.abs(expFrac) < 0.01) {
+      concStr = `10<sup>${expInt}</sup> mol/L`;
+    } else {
+      const coeff = Math.pow(10, expFrac).toFixed(2);
+      concStr = `${coeff} × 10<sup>${expInt}</sup> mol/L`;
+    }
+
+    return { classify, colorDesc, appDesc, concStr };
+  }
+
+  function updateAll(ph) {
+    // Update display
+    document.getElementById('phDisplay').textContent = 'pH = ' + ph.toFixed(1);
+
+    // Color for display
+    const col = interpolateColor(ph);
+    document.getElementById('phDisplay').style.color = col;
+    document.getElementById('phDisplay').style.borderColor = col;
+
+    // Pointer position
+    const pct = (ph / 14) * 100;
+    document.getElementById('scalePointer').style.left = pct + '%';
+
+    // Litmus 1: Quỳ tím
+    const l1 = document.getElementById('litmus1');
+    const l1r = document.getElementById('litmus1Result');
+    if (ph < 7) {
+      l1.style.background = '#e53e3e';
+      l1r.textContent = 'Đỏ → Dung dịch acid';
+    } else if (ph > 7) {
+      l1.style.background = '#3182ce';
+      l1r.textContent = 'Xanh → Dung dịch base';
+    } else {
+      l1.style.background = '#805ad5';
+      l1r.textContent = 'Tím → Trung tính';
+    }
+
+    // Litmus 2: Phenolphthalein
+    const l2 = document.getElementById('litmus2');
+    const l2r = document.getElementById('litmus2Result');
+    if (ph >= 8.2) {
+      const intensity = Math.min(1, (ph - 8.2) / 3);
+      const r = Math.round(200 + 55 * intensity);
+      const g = Math.round(20 - 20 * intensity);
+      const b = Math.round(160 + 40 * intensity);
+      l2.style.background = `rgb(${r},${g},${b})`;
+      l2r.textContent = 'Hồng/Đỏ tím → Base';
+    } else {
+      l2.style.background = '#e8e8e0';
+      l2r.textContent = 'Không màu → pH < 8.2';
+    }
+
+    // Litmus 3: Universal pH paper
+    document.getElementById('litmus3').style.background = col;
+    document.getElementById('litmus3Result').textContent = 'pH ≈ ' + ph.toFixed(1);
+
+    // Info panel
+    const info = getInfo(ph);
+    document.getElementById('infoClassify').innerHTML = info.classify;
+    document.getElementById('infoConcentration').innerHTML = '[H⁺] = ' + info.concStr;
+    document.getElementById('infoColor').textContent = info.colorDesc;
+    document.getElementById('infoApp').textContent = info.appDesc;
+  }
+
+  // Slider event
+  document.getElementById('phSlider').addEventListener('input', function() {
+    const ph = parseFloat(this.value);
+    // Deactivate solution cards when manually sliding
+    if (activeCard) {
+      const activePh = parseFloat(activeCard.dataset.ph);
+      if (Math.abs(activePh - ph) > 0.05) {
+        activeCard.classList.remove('active');
+        activeCard = null;
+      }
+    }
+    updateAll(ph);
+  });
+
+  // Init
+  updateAll(7.0);
+</script>
+</body>
+</html>

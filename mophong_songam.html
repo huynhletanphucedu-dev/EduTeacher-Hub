@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sóng Âm Thanh - KHTN Lớp 7</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0f172a;
+    color: #f1f5f9;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px;
+  }
+  .container { width: 100%; max-width: 680px; display: flex; flex-direction: column; gap: 16px; }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 20px;
+    background: #1e293b;
+    border-radius: 14px;
+    border: 1px solid #334155;
+  }
+  .header h1 { font-size: 1.8rem; color: #38bdf8; margin-bottom: 6px; }
+  .header p { color: #94a3b8; font-size: 0.9rem; }
+
+  /* Canvas panel */
+  .canvas-panel {
+    background: #1e293b;
+    border-radius: 14px;
+    border: 1px solid #334155;
+    padding: 16px;
+  }
+  .canvas-panel canvas {
+    display: block;
+    width: 100%;
+    height: 180px;
+    border-radius: 8px;
+    background: #0f172a;
+  }
+
+  /* Controls panel */
+  .controls-panel {
+    background: #1e293b;
+    border-radius: 14px;
+    border: 1px solid #334155;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .slider-group { display: flex; flex-direction: column; gap: 8px; }
+  .slider-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .slider-label .name { font-weight: 600; font-size: 1rem; color: #e2e8f0; }
+  .slider-label .value { font-size: 1.1rem; color: #38bdf8; font-weight: 700; }
+  .slider-hint { font-size: 0.78rem; color: #64748b; margin-top: -4px; }
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    background: #334155;
+    border-radius: 3px;
+    outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #38bdf8;
+    cursor: pointer;
+    box-shadow: 0 0 6px #38bdf880;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #38bdf8;
+    cursor: pointer;
+    border: none;
+  }
+
+  /* Visual indicators row */
+  .indicators {
+    display: flex;
+    gap: 12px;
+  }
+  .indicator-box {
+    flex: 1;
+    background: #0f172a;
+    border-radius: 10px;
+    border: 1px solid #334155;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .indicator-box .ind-title { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* Pitch indicator */
+  .pitch-track {
+    width: 24px; height: 80px;
+    background: #1e293b;
+    border-radius: 12px;
+    border: 1px solid #334155;
+    position: relative;
+    overflow: hidden;
+  }
+  .pitch-arrow {
+    position: absolute;
+    left: 50%; transform: translateX(-50%);
+    width: 16px; height: 16px;
+    background: #f59e0b;
+    border-radius: 50%;
+    transition: bottom 0.1s ease;
+  }
+  .pitch-labels { display: flex; flex-direction: column; justify-content: space-between; height: 80px; font-size: 0.65rem; color: #64748b; }
+
+  .pitch-row { display: flex; align-items: center; gap: 6px; }
+
+  /* Volume bar */
+  .vol-track {
+    width: 100%; height: 80px;
+    background: #1e293b;
+    border-radius: 8px;
+    border: 1px solid #334155;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+  }
+  .vol-fill {
+    width: 100%;
+    background: linear-gradient(to top, #10b981, #34d399);
+    border-radius: 6px;
+    transition: height 0.1s ease;
+  }
+
+  /* Play button */
+  .play-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background: #0369a1;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+    letter-spacing: 0.03em;
+  }
+  .play-btn:hover { background: #0284c7; }
+  .play-btn.playing { background: #b91c1c; }
+  .play-btn.playing:hover { background: #dc2626; }
+
+  /* Presets */
+  .presets-panel {
+    background: #1e293b;
+    border-radius: 14px;
+    border: 1px solid #334155;
+    padding: 16px;
+  }
+  .presets-panel h3 { font-size: 0.85rem; color: #94a3b8; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; }
+  .preset-btn {
+    padding: 8px 14px;
+    background: #0f172a;
+    color: #38bdf8;
+    border: 1px solid #38bdf8;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    font-weight: 600;
+  }
+  .preset-btn:hover { background: #38bdf8; color: #0f172a; }
+
+  /* Info cards */
+  .info-cards {
+    display: flex;
+    gap: 10px;
+  }
+  .info-card {
+    flex: 1;
+    background: #1e293b;
+    border-radius: 12px;
+    border: 1px solid #334155;
+    padding: 14px;
+  }
+  .info-card h4 { color: #38bdf8; font-size: 0.9rem; margin-bottom: 6px; }
+  .info-card p { color: #94a3b8; font-size: 0.77rem; line-height: 1.5; }
+
+  @media (max-width: 500px) {
+    .info-cards { flex-direction: column; }
+    .indicators { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>🎵 Sóng Âm Thanh</h1>
+    <p>Kéo slider để thay đổi âm thanh và xem sóng thay đổi</p>
+    <p style="font-size:0.75rem;color:#475569;margin-top:4px;">KHTN Lớp 7 · Kết nối tri thức với cuộc sống</p>
+  </div>
+
+  <!-- Wave Canvas -->
+  <div class="canvas-panel">
+    <canvas id="waveCanvas" width="640" height="180"></canvas>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls-panel">
+    <!-- Frequency slider -->
+    <div class="slider-group">
+      <div class="slider-label">
+        <span class="name">🎵 Tần số</span>
+        <span class="value" id="freqLabel">440 Hz</span>
+      </div>
+      <input type="range" id="freqSlider" min="100" max="2000" value="440" step="1">
+      <div class="slider-hint">→ Âm cao / thấp &nbsp;|&nbsp; Tần số càng cao → sóng dày hơn</div>
+    </div>
+
+    <!-- Amplitude slider -->
+    <div class="slider-group">
+      <div class="slider-label">
+        <span class="name">🔊 Biên độ</span>
+        <span class="value" id="ampLabel">50</span>
+      </div>
+      <input type="range" id="ampSlider" min="1" max="100" value="50" step="1">
+      <div class="slider-hint">→ Âm to / nhỏ &nbsp;|&nbsp; Biên độ càng lớn → sóng cao hơn</div>
+    </div>
+
+    <!-- Visual indicators -->
+    <div class="indicators">
+      <div class="indicator-box">
+        <div class="ind-title">Độ cao âm (Pitch)</div>
+        <div class="pitch-row">
+          <div class="pitch-labels">
+            <span>Cao</span>
+            <span></span>
+            <span>Thấp</span>
+          </div>
+          <div class="pitch-track">
+            <div class="pitch-arrow" id="pitchArrow" style="bottom:30%;"></div>
+          </div>
+        </div>
+        <div id="pitchText" style="font-size:0.75rem;color:#f59e0b;font-weight:600;">Trung bình</div>
+      </div>
+      <div class="indicator-box">
+        <div class="ind-title">Âm lượng (Volume)</div>
+        <div class="vol-track">
+          <div class="vol-fill" id="volFill" style="height:50%;"></div>
+        </div>
+        <div id="volText" style="font-size:0.75rem;color:#10b981;font-weight:600;">50%</div>
+      </div>
+    </div>
+
+    <!-- Play button -->
+    <button class="play-btn" id="playBtn" onclick="toggleAudio()">▶ Phát âm</button>
+  </div>
+
+  <!-- Presets -->
+  <div class="presets-panel">
+    <h3>🎹 Thử nhanh</h3>
+    <div class="presets">
+      <button class="preset-btn" onclick="setPreset(100)">🔉 Trầm 100Hz</button>
+      <button class="preset-btn" onclick="setPreset(440)">🎤 Giọng người 440Hz</button>
+      <button class="preset-btn" onclick="setPreset(1000)">🔔 Cao 1000Hz</button>
+      <button class="preset-btn" onclick="setPreset(2000)">📡 Siêu âm 2000Hz</button>
+    </div>
+  </div>
+
+  <!-- Info cards -->
+  <div class="info-cards">
+    <div class="info-card">
+      <h4>📐 Tần số</h4>
+      <p>Số dao động trong 1 giây. Đơn vị: <strong>Hz</strong>. Tần số càng cao → âm càng cao (bổng). Tai người nghe được 20Hz – 20.000Hz.</p>
+    </div>
+    <div class="info-card">
+      <h4>📏 Biên độ</h4>
+      <p>Độ lệch cực đại khỏi vị trí cân bằng. Biên độ càng lớn → âm càng to (cường độ lớn hơn).</p>
+    </div>
+    <div class="info-card">
+      <h4>💨 Vận tốc</h4>
+      <p>Trong không khí: <strong>~340 m/s</strong>. Trong nước: ~1500 m/s. Vận tốc <em>không phụ thuộc</em> tần số.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Canvas wave animation ──────────────────────────────────────────
+const canvas = document.getElementById('waveCanvas');
+const ctx = canvas.getContext('2d');
+let phase = 0;
+let animFreq = 440;   // visual cycles — mapped from Hz
+let animAmp = 50;     // 1–100
+let running = true;
+
+function drawWave() {
+  const W = canvas.width;
+  const H = canvas.height;
+  ctx.clearRect(0, 0, W, H);
+
+  // Background
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, W, H);
+
+  // Grid lines
+  ctx.strokeStyle = '#1e293b';
+  ctx.lineWidth = 1;
+  // Horizontal
+  for (let y = 0; y <= H; y += 30) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+  // Vertical
+  for (let x = 0; x <= W; x += 40) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+
+  // Centre line
+  ctx.strokeStyle = '#334155';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(0, H/2); ctx.lineTo(W, H/2); ctx.stroke();
+
+  // Map amplitude 1-100 → 0–70 px
+  const maxAmpPx = (H / 2) * 0.82;
+  const ampPx = (animAmp / 100) * maxAmpPx;
+
+  // Map frequency: show 1–10 visual cycles
+  const minHz = 100, maxHz = 2000;
+  const minCycles = 1, maxCycles = 10;
+  const t = (animFreq - minHz) / (maxHz - minHz);
+  const cycles = minCycles + t * (maxCycles - minCycles);
+
+  // Draw sine wave
+  ctx.beginPath();
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = 2.5;
+  ctx.shadowColor = '#38bdf880';
+  ctx.shadowBlur = 8;
+
+  for (let px = 0; px <= W; px++) {
+    const angle = (2 * Math.PI * cycles * px / W) + phase;
+    const y = H / 2 + ampPx * Math.sin(angle);
+    if (px === 0) ctx.moveTo(px, y);
+    else ctx.lineTo(px, y);
+  }
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Amplitude annotation
+  if (ampPx > 5) {
+    const cx = 20;
+    ctx.strokeStyle = '#f59e0b44';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(cx, H/2 - ampPx); ctx.lineTo(cx, H/2 + ampPx); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = '10px Arial';
+    ctx.fillText('A', cx + 3, H/2 - ampPx - 2);
+  }
+
+  // Advance phase
+  phase += 0.04;
+  requestAnimationFrame(drawWave);
+}
+drawWave();
+
+// ── Web Audio API ──────────────────────────────────────────────────
+let audioCtx = null;
+let oscillator = null;
+let gainNode = null;
+let isPlaying = false;
+
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  gainNode = audioCtx.createGain();
+  gainNode.gain.value = 0;
+  gainNode.connect(audioCtx.destination);
+}
+
+function startOscillator() {
+  initAudio();
+  if (oscillator) { oscillator.disconnect(); oscillator = null; }
+  oscillator = audioCtx.createOscillator();
+  oscillator.type = 'sine';
+  oscillator.frequency.value = parseInt(document.getElementById('freqSlider').value);
+  oscillator.connect(gainNode);
+  oscillator.start();
+  const amp = parseInt(document.getElementById('ampSlider').value);
+  gainNode.gain.setTargetAtTime(ampToGain(amp), audioCtx.currentTime, 0.05);
+}
+
+function stopOscillator() {
+  if (gainNode && audioCtx) {
+    gainNode.gain.setTargetAtTime(0, audioCtx.currentTime, 0.05);
+  }
+  setTimeout(() => {
+    if (oscillator) { try { oscillator.stop(); } catch(e){} oscillator = null; }
+  }, 100);
+}
+
+function ampToGain(amp) { return (amp / 100) * 0.5; }
+
+function toggleAudio() {
+  if (isPlaying) {
+    stopOscillator();
+    isPlaying = false;
+    const btn = document.getElementById('playBtn');
+    btn.textContent = '▶ Phát âm';
+    btn.classList.remove('playing');
+  } else {
+    startOscillator();
+    isPlaying = true;
+    const btn = document.getElementById('playBtn');
+    btn.textContent = '⏸ Dừng';
+    btn.classList.add('playing');
+  }
+}
+
+// ── Sliders ────────────────────────────────────────────────────────
+const freqSlider = document.getElementById('freqSlider');
+const ampSlider  = document.getElementById('ampSlider');
+
+freqSlider.addEventListener('input', function() {
+  const hz = parseInt(this.value);
+  document.getElementById('freqLabel').textContent = hz + ' Hz';
+  animFreq = hz;
+  if (oscillator && isPlaying) {
+    oscillator.frequency.setTargetAtTime(hz, audioCtx.currentTime, 0.01);
+  }
+  updatePitch(hz);
+});
+
+ampSlider.addEventListener('input', function() {
+  const amp = parseInt(this.value);
+  document.getElementById('ampLabel').textContent = amp;
+  animAmp = amp;
+  if (gainNode && isPlaying) {
+    gainNode.gain.setTargetAtTime(ampToGain(amp), audioCtx.currentTime, 0.01);
+  }
+  updateVolume(amp);
+});
+
+function updatePitch(hz) {
+  const minHz = 100, maxHz = 2000;
+  const t = (hz - minHz) / (maxHz - minHz); // 0=low, 1=high
+  // bottom of track = low, top = high
+  // track height = 80px, arrow dia = 16px
+  const trackH = 80;
+  const pct = t * (trackH - 16); // px from bottom
+  document.getElementById('pitchArrow').style.bottom = pct + 'px';
+
+  let label;
+  if (hz < 300) label = '🔉 Âm trầm';
+  else if (hz < 800) label = '🎵 Trung bình';
+  else if (hz < 1500) label = '🔔 Âm cao';
+  else label = '📡 Rất cao';
+  document.getElementById('pitchText').textContent = label;
+}
+
+function updateVolume(amp) {
+  const pct = amp; // 1-100
+  document.getElementById('volFill').style.height = pct + '%';
+  let label;
+  if (amp < 25) label = '🔇 Nhỏ';
+  else if (amp < 55) label = '🔉 Vừa';
+  else if (amp < 80) label = '🔊 To';
+  else label = '📢 Rất to';
+  document.getElementById('volText').textContent = label + ' (' + amp + '%)';
+}
+
+// ── Presets ────────────────────────────────────────────────────────
+function setPreset(hz) {
+  freqSlider.value = hz;
+  freqSlider.dispatchEvent(new Event('input'));
+  // If not playing, start
+  if (!isPlaying) toggleAudio();
+}
+
+// Initial indicator state
+updatePitch(440);
+updateVolume(50);
+</script>
+</body>
+</html>

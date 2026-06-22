@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Ngẫu Nhiên – EduTeacher Hub</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{--text:#1e293b;--text2:#334155;--muted:#64748b;--border:#e2e8f0;--bg:#f8fafc;--white:#fff;--purple:#8b5cf6;--red:#ef4444;}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;}
+.app-header{background:linear-gradient(135deg,#8b5cf6,#06b6d4);padding:14px 20px;display:flex;align-items:center;box-shadow:0 4px 20px rgba(139,92,246,.3);}
+.app-logo{color:#fff;font-size:1.1rem;font-weight:900;}
+.app-logo span{opacity:.7;font-weight:400;font-size:.85rem;margin-left:8px;}
+.mode-bar{display:flex;justify-content:center;padding:20px 20px 0;max-width:800px;margin:0 auto;width:100%;}
+.mbar-tab{flex:1;padding:12px 8px;border:none;font-size:.85rem;font-weight:800;cursor:pointer;background:#fff;color:var(--muted);border-bottom:3px solid var(--border);transition:all .15s;font-family:inherit;}
+.mbar-tab:first-child{border-radius:12px 0 0 0;}
+.mbar-tab:last-child{border-radius:0 12px 0 0;}
+.mbar-tab.active{color:var(--purple);border-bottom-color:var(--purple);background:#faf5ff;}
+.content{flex:1;display:flex;flex-direction:column;align-items:center;padding:24px 20px 40px;max-width:800px;margin:0 auto;width:100%;}
+.ctrl-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:center;}
+.ctrl-label{font-size:.82rem;font-weight:700;color:var(--text2);}
+.num-inp{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:10px;overflow:hidden;background:#fff;}
+.num-inp button{width:34px;height:34px;border:none;background:transparent;font-size:1rem;font-weight:900;cursor:pointer;color:var(--text2);}
+.num-inp button:hover{background:var(--bg);}
+.num-inp span{min-width:30px;text-align:center;font-size:.95rem;font-weight:900;color:var(--purple);}
+.rsel{padding:7px 11px;border-radius:10px;border:1.5px solid var(--border);font-size:.85rem;font-weight:700;color:var(--text);background:#fff;outline:none;font-family:inherit;cursor:pointer;}
+.big-btn{padding:14px 48px;border-radius:14px;border:none;font-size:1.05rem;font-weight:900;cursor:pointer;color:#fff;transition:all .18s;font-family:inherit;}
+.big-btn:hover:not(:disabled){transform:translateY(-2px);}
+.big-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn-coin{background:linear-gradient(135deg,#f59e0b,#f97316);box-shadow:0 5px 18px rgba(245,158,11,.35);}
+.btn-dice{background:linear-gradient(135deg,#334155,#1e293b);box-shadow:0 5px 18px rgba(30,41,59,.4);}
+.btn-card{background:linear-gradient(135deg,#10b981,#3b7de9);box-shadow:0 5px 18px rgba(16,185,129,.35);}
+.rl{font-size:.73rem;color:var(--muted);cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+.rl:hover{color:var(--red);}
+.rtable{width:100%;background:#fff;border-radius:12px;border:1.5px solid var(--border);overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+.rth{display:grid;padding:7px 13px;background:var(--bg);font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+.rtb{max-height:170px;overflow-y:auto;}
+.rtr{display:grid;padding:6px 13px;font-size:.78rem;font-weight:600;color:var(--text2);border-top:1px solid var(--bg);}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(18px);background:#1e293b;color:#fff;padding:9px 18px;border-radius:9px;font-size:.8rem;font-weight:600;opacity:0;transition:all .28s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── COIN ── */
+.coin-wrap{display:flex;flex-direction:column;align-items:center;gap:22px;width:100%;}
+.coin-stage{display:flex;flex-wrap:wrap;gap:18px;justify-content:center;min-height:175px;align-items:flex-end;}
+.coin-slot{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.coin-scene{width:110px;height:110px;perspective:650px;}
+.coin-elev{width:110px;height:110px;position:relative;}
+.coin-inner{width:110px;height:110px;position:relative;transform-style:preserve-3d;}
+.coin-face,.coin-back{position:absolute;inset:0;border-radius:50%;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;font-size:2.8rem;}
+.coin-face{background:radial-gradient(circle at 32% 28%,#fef9c3,#fbbf24 38%,#d97706 72%,#92400e);box-shadow:inset 0 -5px 10px rgba(0,0,0,.25),inset 0 4px 10px rgba(255,255,255,.4),0 8px 22px rgba(245,158,11,.45);border:4px solid #e07b08;}
+.coin-face::before{content:'';position:absolute;width:82px;height:82px;border-radius:50%;border:2px solid rgba(255,255,255,.28);}
+.coin-back{background:radial-gradient(circle at 32% 28%,#f8fafc,#cbd5e1 42%,#94a3b8 76%,#475569);box-shadow:inset 0 -5px 10px rgba(0,0,0,.2),inset 0 4px 10px rgba(255,255,255,.5),0 8px 22px rgba(148,163,184,.38);border:4px solid #94a3b8;transform:rotateY(180deg);}
+.coin-back::before{content:'';position:absolute;width:82px;height:82px;border-radius:50%;border:2px solid rgba(255,255,255,.32);}
+.coin-tag{font-size:.72rem;font-weight:800;height:17px;}
+.coin-tag.heads{color:#b45309;}.coin-tag.tails{color:#475569;}
+.coin-shadow{width:82px;height:11px;background:radial-gradient(ellipse,rgba(0,0,0,.2) 0%,transparent 70%);border-radius:50%;margin:-1px auto 0;}
+.cs-wrap{display:flex;background:#fff;border-radius:13px;border:1.5px solid var(--border);overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.05);width:100%;}
+.cs-blk{flex:1;padding:13px 14px;text-align:center;}
+.cs-blk+.cs-blk{border-left:1px solid var(--border);}
+.cs-num{font-size:1.5rem;font-weight:900;color:var(--text);}
+.cs-lbl{font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+
+/* ── DICE ── */
+.dice-wrap{display:flex;flex-direction:column;align-items:center;gap:22px;width:100%;}
+.dice-stage{display:flex;flex-wrap:wrap;gap:22px;justify-content:center;min-height:155px;align-items:flex-end;padding-bottom:8px;}
+.die-scene{width:96px;height:96px;perspective:480px;flex-shrink:0;}
+.die-elev{width:96px;height:96px;position:relative;}
+.die-cube{width:96px;height:96px;position:relative;transform-style:preserve-3d;}
+.die-face{position:absolute;width:96px;height:96px;border-radius:15px;display:grid;place-items:center;backface-visibility:hidden;}
+.die-face.f1,.die-face.f6{background:linear-gradient(145deg,#fff,#f0f3f6);}
+.die-face.f2,.die-face.f5{background:linear-gradient(145deg,#f3f6f9,#e4eaef);}
+.die-face.f3,.die-face.f4{background:linear-gradient(145deg,#ecf0f4,#dce3ea);}
+.die-face.f1{transform:translateZ(48px);box-shadow:inset 0 2px 4px rgba(255,255,255,.9),inset 0 -3px 5px rgba(0,0,0,.1),0 0 0 1.5px rgba(0,0,0,.07);}
+.die-face.f6{transform:rotateY(180deg) translateZ(48px);box-shadow:inset 0 2px 4px rgba(255,255,255,.8),0 0 0 1.5px rgba(0,0,0,.06);}
+.die-face.f2{transform:rotateY(90deg) translateZ(48px);box-shadow:inset 0 2px 4px rgba(255,255,255,.7),0 0 0 1.5px rgba(0,0,0,.06);}
+.die-face.f5{transform:rotateY(-90deg) translateZ(48px);box-shadow:inset 0 2px 4px rgba(255,255,255,.7),0 0 0 1.5px rgba(0,0,0,.06);}
+.die-face.f3{transform:rotateX(-90deg) translateZ(48px);box-shadow:inset 0 2px 4px rgba(255,255,255,.8),0 0 0 1.5px rgba(0,0,0,.06);}
+.die-face.f4{transform:rotateX(90deg) translateZ(48px);box-shadow:inset 0 2px 4px rgba(255,255,255,.6),0 0 0 1.5px rgba(0,0,0,.07);}
+.pip-grid{display:grid;grid-template-columns:repeat(3,20px);grid-template-rows:repeat(3,20px);gap:4px;padding:5px;}
+.pip{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#4b5563,#111827);box-shadow:inset 0 2px 3px rgba(0,0,0,.5),0 1px 2px rgba(0,0,0,.25);}
+.pip.x{background:transparent;box-shadow:none;}
+.die-shadow{width:74px;height:12px;background:radial-gradient(ellipse,rgba(0,0,0,.22) 0%,transparent 70%);border-radius:50%;margin:-3px auto 0;}
+.dtotal-big{font-size:2.8rem;font-weight:900;color:var(--text);text-align:center;min-height:52px;}
+.dtotal-sub{font-size:.8rem;color:var(--muted);font-weight:600;text-align:center;min-height:18px;}
+.ds-wrap{width:100%;background:#fff;border-radius:13px;border:1.5px solid var(--border);padding:14px 16px;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+.ds-hdr{display:flex;justify-content:space-between;align-items:center;font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
+.ds-row{display:grid;grid-template-columns:26px 1fr 44px 40px;align-items:center;gap:7px;margin-bottom:6px;}
+.ds-face{width:26px;height:26px;border-radius:6px;background:linear-gradient(145deg,#fff,#f0f3f6);border:1px solid #e2e8f0;box-shadow:0 2px 0 #cbd5e1,0 3px 5px rgba(0,0,0,.1);display:grid;place-items:center;}
+.ds-mg{display:grid;grid-template-columns:repeat(3,5px);grid-template-rows:repeat(3,5px);gap:1.5px;}
+.ds-mp{width:5px;height:5px;border-radius:50%;background:#1e293b;}
+.ds-mp.x{background:transparent;}
+.ds-bw{height:7px;background:var(--border);border-radius:4px;overflow:hidden;}
+.ds-bf{height:100%;border-radius:4px;background:linear-gradient(90deg,#334155,#64748b);transition:width .5s;}
+.ds-cnt{font-size:.8rem;font-weight:900;color:var(--text);text-align:right;}
+.ds-pct{font-size:.7rem;font-weight:700;color:var(--muted);text-align:right;}
+
+/* ── CARD ── */
+.card-wrap{display:flex;flex-direction:column;align-items:center;gap:20px;width:100%;}
+.ctype-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+.ctype-btn{padding:8px 15px;border-radius:10px;border:1.5px solid var(--border);background:#fff;font-size:.8rem;font-weight:800;color:var(--muted);cursor:pointer;transition:all .13s;font-family:inherit;}
+.ctype-btn.active{border-color:#10b981;color:#10b981;background:#f0fdf4;}
+.card-arena{display:flex;gap:24px;align-items:flex-start;justify-content:center;width:100%;flex-wrap:wrap;}
+.deck-zone{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.deck-stack{position:relative;width:120px;height:170px;cursor:pointer;transition:transform .18s;}
+.deck-stack:hover{transform:translateY(-5px);}
+.dk{position:absolute;inset:0;border-radius:14px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border:2px solid rgba(255,255,255,.2);box-shadow:0 4px 14px rgba(79,70,229,.3);}
+.dk::after{content:'🎴';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:2.4rem;}
+.dk:nth-child(1){transform:translate(4px,4px);}
+.dk:nth-child(2){transform:translate(2px,2px);}
+.dk:nth-child(3){transform:translate(0,0);}
+.deck-empty-box{width:120px;height:170px;border-radius:14px;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.78rem;font-weight:700;text-align:center;padding:8px;}
+.deck-badge{background:#4f46e5;color:#fff;border-radius:20px;padding:4px 12px;font-size:.75rem;font-weight:900;}
+.fly-scene{width:120px;height:170px;perspective:700px;position:relative;}
+.fly-wrap{position:absolute;inset:0;transform-style:preserve-3d;}
+.fly-face,.fly-back{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(0,0,0,.18);}
+.fly-back{background:linear-gradient(135deg,#4f46e5,#7c3aed);border:2px solid rgba(255,255,255,.2);}
+.fly-back::after{content:'🎴';font-size:2.4rem;}
+.fly-face{background:#fff;border:2px solid var(--border);transform:rotateY(180deg);}
+.fly-face .fval{font-size:2.8rem;font-weight:900;line-height:1;}
+.fly-face .fcorn{position:absolute;font-size:.9rem;font-weight:900;line-height:1;}
+.fly-face .fcorn.tl{top:9px;left:10px;}
+.fly-face .fcorn.br{bottom:9px;right:10px;transform:rotate(180deg);}
+.fly-label{font-size:.85rem;font-weight:800;color:var(--muted);min-height:22px;text-align:center;}
+.color-legend{width:100%;background:#fff;border-radius:13px;border:1.5px solid var(--border);padding:13px 16px;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+.color-legend-hdr{font-size:.7rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
+.color-legend-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.clg-item{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:8px;border:1.5px solid;font-size:.78rem;font-weight:800;}
+.drawn-zone{flex:1;min-width:200px;}
+.drawn-title{font-size:.73rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px;}
+.drawn-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.drawn-card{width:64px;height:90px;border-radius:11px;border:2.5px solid;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.5rem;font-weight:900;box-shadow:0 3px 10px rgba(0,0,0,.1);animation:capp .3s cubic-bezier(.34,1.56,.64,1);gap:2px;}
+.drawn-card-lbl{font-size:.6rem;font-weight:800;line-height:1;}
+@keyframes capp{from{transform:scale(.5) translateY(-15px);opacity:0}to{transform:none;opacity:1}}
+.drawn-empty{font-size:.78rem;color:var(--muted);font-style:italic;}
+</style>
+</head>
+<body>
+<div class="app-header">
+  <div class="app-logo">🎲 Ngẫu Nhiên <span>EduTeacher Hub</span></div>
+</div>
+<div class="mode-bar">
+  <button class="mbar-tab active" id="tab-coin" onclick="switchTab('coin')">🪙 Đồng Xu</button>
+  <button class="mbar-tab" id="tab-dice" onclick="switchTab('dice')">🎲 Xúc Xắc</button>
+  <button class="mbar-tab" id="tab-card" onclick="switchTab('card')">🃏 Bốc Thẻ Bài</button>
+</div>
+<div class="content">
+
+<!-- ══ COIN ══ -->
+<div id="view-coin" class="coin-wrap">
+  <div class="ctrl-row">
+    <span class="ctrl-label">Số đồng xu:</span>
+    <div class="num-inp">
+      <button onclick="changeCoinCount(-1)">−</button>
+      <span id="coin-cnt">1</span>
+      <button onclick="changeCoinCount(1)">+</button>
+    </div>
+    <span class="ctrl-label">Số lần tung:</span>
+    <select class="rsel" id="coin-rnd">
+      <option value="1">1 lần</option><option value="5">5 lần</option>
+      <option value="10">10 lần</option><option value="20">20 lần</option><option value="50">50 lần</option>
+    </select>
+  </div>
+  <div class="coin-stage" id="coin-stage"></div>
+  <button class="big-btn btn-coin" id="toss-btn" onclick="toss()">🪙 Tung đồng xu!</button>
+  <div id="coin-tbl" style="width:100%;display:none;">
+    <div class="rtable">
+      <div class="rth" style="grid-template-columns:50px 1fr 65px 65px;"><span>Lần</span><span>Kết quả</span><span style="text-align:center">⭐ Ngửa</span><span style="text-align:center">🌙 Sấp</span></div>
+      <div class="rtb" id="coin-rtb"></div>
+    </div>
+  </div>
+  <div class="cs-wrap">
+    <div class="cs-blk"><div class="cs-num" id="cs-h">0</div><div class="cs-lbl">⭐ Ngửa</div></div>
+    <div class="cs-blk" style="flex:2;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;">
+      <div style="font-size:.68rem;font-weight:700;color:var(--muted);">TỔNG <span id="cs-tot" style="color:var(--text);font-size:.9rem;font-weight:900;">0</span> lần</div>
+      <div style="width:100%;height:9px;border-radius:5px;overflow:hidden;display:flex;">
+        <div id="csbar" style="background:linear-gradient(90deg,#f59e0b,#fde68a);height:100%;width:50%;transition:width .4s;"></div>
+        <div style="background:linear-gradient(90deg,#8b5cf6,#06b6d4);height:100%;flex:1;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;width:100%;font-size:.68rem;font-weight:800;">
+        <span style="color:#b45309;"><span id="cs-ph">50</span>%</span>
+        <span class="rl" onclick="resetCoin()">Đặt lại</span>
+        <span style="color:#6d28d9;"><span id="cs-pt">50</span>%</span>
+      </div>
+    </div>
+    <div class="cs-blk"><div class="cs-num" id="cs-t">0</div><div class="cs-lbl">🌙 Sấp</div></div>
+  </div>
+</div>
+
+<!-- ══ DICE ══ -->
+<div id="view-dice" class="dice-wrap" style="display:none;">
+  <div class="ctrl-row">
+    <span class="ctrl-label">Số xúc xắc:</span>
+    <div class="num-inp">
+      <button onclick="changeDiceCount(-1)">−</button>
+      <span id="dice-cnt">1</span>
+      <button onclick="changeDiceCount(1)">+</button>
+    </div>
+    <span class="ctrl-label">Số lần tung:</span>
+    <select class="rsel" id="dice-rnd">
+      <option value="1">1 lần</option><option value="5">5 lần</option>
+      <option value="10">10 lần</option><option value="20">20 lần</option>
+    </select>
+  </div>
+  <div class="dice-stage" id="dice-stage"></div>
+  <div><div class="dtotal-big" id="dice-tot">—</div><div class="dtotal-sub" id="dice-sub"></div></div>
+  <button class="big-btn btn-dice" id="roll-btn" onclick="rollDice()">🎲 Tung xúc xắc!</button>
+  <div id="dice-tbl" style="width:100%;display:none;">
+    <div class="rtable">
+      <div class="rth" style="grid-template-columns:50px 1fr 65px;"><span>Lần</span><span>Các mặt</span><span style="text-align:center">Tổng</span></div>
+      <div class="rtb" id="dice-rtb"></div>
+    </div>
+  </div>
+  <div class="ds-wrap">
+    <div class="ds-hdr">
+      <span>📊 Thống kê <span id="ds-tot" style="color:var(--text);font-weight:900;">0</span> lần tung</span>
+      <span class="rl" onclick="resetDice()">Đặt lại</span>
+    </div>
+    <div id="ds-rows"></div>
+  </div>
+</div>
+
+<!-- ══ CARD ══ -->
+<div id="view-card" class="card-wrap" style="display:none;">
+  <div class="ctype-row">
+    <span class="ctrl-label">Loại thẻ:</span>
+    <button class="ctype-btn active" id="ct-num" onclick="setCardType('num')">🔢 Số 1–10</button>
+    <button class="ctype-btn" id="ct-color" onclick="setCardType('color')">🎨 Màu sắc</button>
+    <button class="ctype-btn" id="ct-both" onclick="setCardType('both')">✨ Số + Màu</button>
+  </div>
+  <div class="ctrl-row" id="num-range-row">
+    <span class="ctrl-label">Từ:</span>
+    <div class="num-inp">
+      <button onclick="chgRange('min',-1)">−</button><span id="cmin">1</span><button onclick="chgRange('min',1)">+</button>
+    </div>
+    <span class="ctrl-label">đến:</span>
+    <div class="num-inp">
+      <button onclick="chgRange('max',-1)">−</button><span id="cmax">10</span><button onclick="chgRange('max',1)">+</button>
+    </div>
+    <button class="ctype-btn" onclick="initDeck()" style="border-color:var(--purple);color:var(--purple);">✔ Áp dụng</button>
+  </div>
+  <div class="color-legend" id="color-legend">
+    <div class="color-legend-hdr">🎨 Các màu trong bộ thẻ</div>
+    <div class="color-legend-grid" id="color-legend-grid"></div>
+  </div>
+  <div class="card-arena">
+    <div class="deck-zone">
+      <div id="deck-vis" onclick="drawCard()" title="Nhấn để bốc"></div>
+      <div class="deck-badge" id="deck-badge">10 thẻ</div>
+      <button class="big-btn btn-card" id="draw-btn" onclick="drawCard()" style="padding:12px 28px;font-size:.9rem;">🃏 Bốc thẻ!</button>
+      <span class="rl" onclick="initDeck()">🔀 Xáo bộ lại</span>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:9px;">
+      <div style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;">Thẻ vừa bốc</div>
+      <div class="fly-scene" id="fly-scene">
+        <div class="fly-wrap" id="fly-wrap">
+          <div class="fly-back"></div>
+          <div class="fly-face" id="fly-face">
+            <span class="fval" id="fly-val">?</span>
+            <span class="fcorn tl" id="fly-tl"></span>
+            <span class="fcorn br" id="fly-br"></span>
+          </div>
+        </div>
+      </div>
+      <div class="fly-label" id="fly-lbl"></div>
+    </div>
+    <div class="drawn-zone">
+      <div class="drawn-title">Đã bốc (<span id="drawn-cnt">0</span>)</div>
+      <div class="drawn-grid" id="drawn-grid"><div class="drawn-empty">Chưa bốc thẻ nào</div></div>
+    </div>
+  </div>
+</div>
+
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/* TAB */
+function switchTab(t){
+  ['coin','dice','card'].forEach(x=>{
+    document.getElementById('tab-'+x).classList.toggle('active',x===t);
+    document.getElementById('view-'+x).style.display=x===t?'flex':'none';
+  });
+}
+
+/* ══════ COIN ══════════════════════════ */
+const DOT_MAP={1:[[1,1]],2:[[0,0],[2,2]],3:[[0,0],[1,1],[2,2]],4:[[0,0],[0,2],[2,0],[2,2]],5:[[0,0],[0,2],[1,1],[2,0],[2,2]],6:[[0,0],[0,2],[1,0],[1,2],[2,0],[2,2]]};
+let coinCount=1,coinRunning=false,totalH=0,totalT=0;
+
+function changeCoinCount(d){
+  coinCount=Math.max(1,Math.min(8,coinCount+d));
+  document.getElementById('coin-cnt').textContent=coinCount;
+  buildCoinStage(null); clearCoinTbl();
+}
+
+function buildCoinStage(results){
+  const stage=document.getElementById('coin-stage');
+  stage.innerHTML='';
+  for(let i=0;i<coinCount;i++){
+    const r=results?results[i]:null;
+    const rot=r?(r==='heads'?0:180):0;
+    const slot=document.createElement('div'); slot.className='coin-slot';
+    slot.innerHTML=`<div class="coin-scene"><div class="coin-elev" id="ce-${i}"><div class="coin-inner" id="ci-${i}" style="transform:rotateY(${rot}deg)"><div class="coin-face">⭐</div><div class="coin-back">🌙</div></div></div></div><div class="coin-shadow" id="csh-${i}"></div><div class="coin-tag ${r||''}" id="ctag-${i}">${r?(r==='heads'?'NGỬA':'SẤP'):''}</div>`;
+    stage.appendChild(slot);
+  }
+}
+
+function clearCoinTbl(){
+  document.getElementById('coin-tbl').style.display='none';
+  document.getElementById('coin-rtb').innerHTML='';
+}
+
+function animateCoin(idx,result,duration){
+  return new Promise(resolve=>{
+    const elevEl=document.getElementById('ce-'+idx);
+    const innerEl=document.getElementById('ci-'+idx);
+    const shadowEl=document.getElementById('csh-'+idx);
+    if(!elevEl||!innerEl) return resolve();
+    const finalRY=result==='heads'?0:180;
+    const ySpins=(7+Math.floor(Math.random()*4))*360+finalRY;
+    const xSpins=(3+Math.floor(Math.random()*3))*360;
+    const zWobble=(Math.random()-.5)*180;
+    const maxH=110+Math.random()*50;
+    const start=performance.now();
+    function eoc(t){return 1-Math.pow(1-t,3);}
+    function hAt(t){
+      if(t<.5) return -Math.sin(t/.5*Math.PI/2)*maxH;
+      return -Math.cos((t-.5)/.5*Math.PI/2)*maxH*.14;
+    }
+    function frame(now){
+      const t=Math.min((now-start)/duration,1);
+      const e=eoc(t); const h=hAt(t);
+      elevEl.style.transform=`translateY(${h}px)`;
+      innerEl.style.transform=`rotateX(${xSpins*e}deg) rotateY(${ySpins*e}deg) rotateZ(${zWobble*Math.sin(t*Math.PI)}deg)`;
+      const sc=1-(Math.abs(h)/maxH)*.72;
+      const op=.05+sc*.17;
+      shadowEl.style.cssText=`width:82px;height:11px;background:radial-gradient(ellipse,rgba(0,0,0,${op.toFixed(2)}) 0%,transparent 70%);border-radius:50%;margin:-1px auto 0;transform:scaleX(${(.3+sc*.7).toFixed(2)});`;
+      if(t<1) requestAnimationFrame(frame);
+      else{
+        elevEl.style.transform='translateY(0)';
+        innerEl.style.transform=`rotateY(${finalRY}deg)`;
+        shadowEl.style.transform='scaleX(1)';
+        resolve();
+      }
+    }
+    requestAnimationFrame(frame);
+  });
+}
+
+async function toss(){
+  if(coinRunning) return;
+  const rounds=parseInt(document.getElementById('coin-rnd').value);
+  coinRunning=true; document.getElementById('toss-btn').disabled=true;
+  const results=[];
+  for(let i=0;i<coinCount;i++) results.push(Math.random()<.5?'heads':'tails');
+  if(rounds===1){
+    buildCoinStage(null); await sleep(20);
+    const ps=results.map((res,i)=>animateCoin(i,res,1400+Math.random()*500+i*100));
+    await Promise.all(ps);
+    results.forEach((res,i)=>{
+      const tag=document.getElementById('ctag-'+i);
+      if(tag){tag.textContent=res==='heads'?'NGỬA':'SẤP';tag.className='coin-tag '+(res==='heads'?'heads':'tails');}
+    });
+    const h=results.filter(x=>x==='heads').length;
+    totalH+=h; totalT+=results.length-h;
+    updateCoinStats(); clearCoinTbl(); playClink();
+  } else {
+    clearCoinTbl();
+    const all=[];
+    for(let r=0;r<rounds;r++){
+      const res=[]; let h=0,t=0;
+      for(let i=0;i<coinCount;i++){const v=Math.random()<.5?'heads':'tails';res.push(v);if(v==='heads')h++;else t++;}
+      all.push({res,h,t}); totalH+=h; totalT+=t;
+    }
+    buildCoinStage(all[all.length-1].res);
+    document.getElementById('coin-rtb').innerHTML=all.map((rd,i)=>`<div class="rtr" style="grid-template-columns:50px 1fr 65px 65px;"><span style="color:var(--muted);font-weight:700;">#${i+1}</span><span>${rd.res.map(r=>r==='heads'?'⭐':'🌙').join(' ')}</span><span style="text-align:center;color:#b45309;font-weight:800;">${rd.h}</span><span style="text-align:center;color:#6d28d9;font-weight:800;">${rd.t}</span></div>`).join('');
+    document.getElementById('coin-tbl').style.display='';
+    updateCoinStats(); playClink();
+  }
+  coinRunning=false; document.getElementById('toss-btn').disabled=false;
+}
+
+function updateCoinStats(){
+  const tot=totalH+totalT;
+  document.getElementById('cs-h').textContent=totalH;
+  document.getElementById('cs-t').textContent=totalT;
+  document.getElementById('cs-tot').textContent=tot;
+  const ph=tot?Math.round(totalH/tot*100):50;
+  document.getElementById('csbar').style.width=ph+'%';
+  document.getElementById('cs-ph').textContent=ph;
+  document.getElementById('cs-pt').textContent=100-ph;
+}
+
+function resetCoin(){totalH=0;totalT=0;updateCoinStats();clearCoinTbl();buildCoinStage(null);}
+function playClink(){
+  try{const ac=new(window.AudioContext||window.webkitAudioContext)();[880,1100,1320].forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=f;o.type='sine';const t=ac.currentTime+i*.06;g.gain.setValueAtTime(.15,t);g.gain.exponentialRampToValueAtTime(.001,t+.2);o.start(t);o.stop(t+.22);});}catch(e){}
+}
+
+/* ══════ DICE ══════════════════════════ */
+const FACE_FINAL={1:{rx:0,ry:0},2:{rx:0,ry:-90},3:{rx:90,ry:0},4:{rx:-90,ry:0},5:{rx:0,ry:90},6:{rx:0,ry:180}};
+let diceCount=1,diceRolling=false,diceStats={1:0,2:0,3:0,4:0,5:0,6:0},diceTot=0;
+
+function buildPips(val){
+  const cells=Array(9).fill(false);
+  (DOT_MAP[val]||[]).forEach(([r,c])=>cells[r*3+c]=true);
+  return `<div class="pip-grid">${cells.map(on=>`<div class="pip${on?'':' x'}"></div>`).join('')}</div>`;
+}
+
+function buildCubeHTML(){
+  const fs=[1,6,2,5,3,4],cl=['f1','f6','f2','f5','f3','f4'];
+  return fs.map((f,i)=>`<div class="die-face ${cl[i]}">${buildPips(f)}</div>`).join('');
+}
+
+function buildDiceStage(values){
+  const stage=document.getElementById('dice-stage');
+  stage.innerHTML='';
+  for(let i=0;i<diceCount;i++){
+    const val=values[i]??null;
+    const wrap=document.createElement('div');
+    wrap.style.cssText='display:flex;flex-direction:column;align-items:center;';
+    const scene=document.createElement('div'); scene.className='die-scene';
+    const elev=document.createElement('div'); elev.className='die-elev'; elev.id='de-'+i;
+    const cube=document.createElement('div'); cube.className='die-cube'; cube.id='dc-'+i;
+    cube.innerHTML=buildCubeHTML();
+    if(val!==null){const f=FACE_FINAL[val];cube.style.transform=`rotateX(${f.rx}deg) rotateY(${f.ry}deg)`;}
+    elev.appendChild(cube); scene.appendChild(elev);
+    const sh=document.createElement('div'); sh.className='die-shadow'; sh.id='ds-'+i;
+    wrap.appendChild(scene); wrap.appendChild(sh); stage.appendChild(wrap);
+  }
+}
+
+function throwDie(idx,value,duration,delay){
+  return new Promise(resolve=>{
+    setTimeout(()=>{
+      const elevEl=document.getElementById('de-'+idx);
+      const cubeEl=document.getElementById('dc-'+idx);
+      const shadowEl=document.getElementById('ds-'+idx);
+      if(!elevEl||!cubeEl) return resolve();
+      const f=FACE_FINAL[value];
+      const rxS=(3+Math.floor(Math.random()*3))*360+f.rx;
+      const ryS=(4+Math.floor(Math.random()*3))*360+f.ry;
+      const rz=(Math.random()-.5)*720;
+      const maxH=95+Math.random()*55;
+      const start=performance.now();
+      function eoc(t){return 1-Math.pow(1-t,3);}
+      function hAt(t){if(t<.45) return -Math.sin(t/.45*Math.PI/2)*maxH;return -Math.cos((t-.45)/.55*Math.PI/2)*maxH*.16;}
+      function frame(now){
+        const t=Math.min((now-start)/duration,1);
+        const e=eoc(t); const h=hAt(t);
+        elevEl.style.transform=`translateY(${h}px)`;
+        cubeEl.style.transform=`rotateX(${rxS*e}deg) rotateY(${ryS*e}deg) rotateZ(${rz*e}deg)`;
+        const sc=1-(Math.abs(h)/maxH)*.68;
+        const op=.07+sc*.18;
+        shadowEl.style.cssText=`width:74px;height:12px;background:radial-gradient(ellipse,rgba(0,0,0,${op.toFixed(2)}) 0%,transparent 70%);border-radius:50%;margin:-3px auto 0;transform:scaleX(${(.35+sc*.65).toFixed(2)});`;
+        if(t<1) requestAnimationFrame(frame);
+        else{elevEl.style.transform='translateY(0)';cubeEl.style.transform=`rotateX(${f.rx}deg) rotateY(${f.ry}deg)`;shadowEl.style.transform='scaleX(1)';resolve();}
+      }
+      requestAnimationFrame(frame);
+    },delay);
+  });
+}
+
+function changeDiceCount(d){
+  diceCount=Math.max(1,Math.min(6,diceCount+d));
+  document.getElementById('dice-cnt').textContent=diceCount;
+  buildDiceStage([]); resetDiceDisp();
+}
+
+function resetDiceDisp(){
+  document.getElementById('dice-tot').textContent='—';
+  document.getElementById('dice-sub').textContent='';
+  document.getElementById('dice-tbl').style.display='none';
+  document.getElementById('dice-rtb').innerHTML='';
+}
+
+function updateDiceStats(vals){
+  vals.forEach(v=>{if(diceStats[v]!==undefined)diceStats[v]++;});
+  diceTot+=vals.length; renderDiceStats();
+}
+
+function renderDiceStats(){
+  document.getElementById('ds-tot').textContent=diceTot;
+  const max=Math.max(...Object.values(diceStats),1);
+  document.getElementById('ds-rows').innerHTML=[1,2,3,4,5,6].map(v=>{
+    const cnt=diceStats[v];
+    const pct=diceTot?Math.round(cnt/diceTot*100):0;
+    const cells=Array(9).fill(false);
+    (DOT_MAP[v]||[]).forEach(([r,c])=>cells[r*3+c]=true);
+    return `<div class="ds-row"><div class="ds-face"><div class="ds-mg">${cells.map(on=>`<div class="ds-mp${on?'':' x'}"></div>`).join('')}</div></div><div class="ds-bw"><div class="ds-bf" style="width:${Math.round(cnt/max*100)}%"></div></div><div class="ds-cnt">${cnt}</div><div class="ds-pct">${pct}%</div></div>`;
+  }).join('');
+}
+
+async function rollDice(){
+  if(diceRolling) return;
+  const rounds=parseInt(document.getElementById('dice-rnd').value);
+  diceRolling=true; document.getElementById('roll-btn').disabled=true;
+  if(rounds===1){
+    const vals=[]; for(let i=0;i<diceCount;i++) vals.push(Math.floor(Math.random()*6)+1);
+    buildDiceStage([]); await sleep(20);
+    await Promise.all(vals.map((v,i)=>throwDie(i,v,1300+Math.random()*280,i*110)));
+    const sum=vals.reduce((a,b)=>a+b,0);
+    document.getElementById('dice-tot').textContent=sum;
+    document.getElementById('dice-sub').textContent=diceCount>1?`${vals.join(' + ')} = ${sum}`:'';
+    document.getElementById('dice-tbl').style.display='none';
+    updateDiceStats(vals); playRoll();
+  } else {
+    const all=[];
+    for(let r=0;r<rounds;r++){
+      const vals=[]; for(let i=0;i<diceCount;i++) vals.push(Math.floor(Math.random()*6)+1);
+      all.push({vals,sum:vals.reduce((a,b)=>a+b,0)});
+    }
+    buildDiceStage([]); await sleep(20);
+    const last=all[all.length-1];
+    await Promise.all(last.vals.map((v,i)=>throwDie(i,v,1200+Math.random()*200,i*90)));
+    document.getElementById('dice-tot').textContent=last.sum;
+    document.getElementById('dice-sub').textContent=`Lần ${rounds}: ${last.vals.join(' + ')} = ${last.sum}`;
+    document.getElementById('dice-rtb').innerHTML=all.map((rd,i)=>`<div class="rtr" style="grid-template-columns:50px 1fr 65px;"><span style="color:var(--muted);font-weight:700;">#${i+1}</span><span>${rd.vals.map(v=>`<span style="display:inline-block;background:#f1f5f9;border-radius:5px;padding:1px 6px;font-size:.75rem;font-weight:800;color:#334155;margin:1px;">${v}</span>`).join('')}</span><span style="text-align:center;font-weight:900;">${rd.sum}</span></div>`).join('');
+    document.getElementById('dice-tbl').style.display='';
+    all.forEach(rd=>updateDiceStats(rd.vals)); playRoll();
+  }
+  diceRolling=false; document.getElementById('roll-btn').disabled=false;
+}
+
+function resetDice(){diceStats={1:0,2:0,3:0,4:0,5:0,6:0};diceTot=0;resetDiceDisp();buildDiceStage([]);renderDiceStats();}
+function playRoll(){
+  try{const ac=new(window.AudioContext||window.webkitAudioContext)();[200,260,180,220].forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=f;o.type='square';const t=ac.currentTime+i*.08;g.gain.setValueAtTime(.09,t);g.gain.exponentialRampToValueAtTime(.001,t+.1);o.start(t);o.stop(t+.12);});}catch(e){}
+}
+
+/* ══════ CARD ══════════════════════════ */
+const COLORS=[
+  {name:'Đỏ',      bg:'#fef2f2',border:'#ef4444',text:'#b91c1c',dot:'🔴'},
+  {name:'Xanh dương',bg:'#eff6ff',border:'#3b82f6',text:'#1d4ed8',dot:'🔵'},
+  {name:'Xanh lá', bg:'#f0fdf4',border:'#22c55e',text:'#15803d',dot:'🟢'},
+  {name:'Vàng',    bg:'#fefce8',border:'#eab308',text:'#a16207',dot:'🟡'},
+  {name:'Tím',     bg:'#faf5ff',border:'#a855f7',text:'#7e22ce',dot:'🟣'},
+  {name:'Cam',     bg:'#fff7ed',border:'#f97316',text:'#c2410c',dot:'🟠'},
+  {name:'Hồng',    bg:'#fdf2f8',border:'#ec4899',text:'#9d174d',dot:'🩷'},
+  {name:'Ngọc',    bg:'#f0fdfa',border:'#14b8a6',text:'#0f766e',dot:'🩵'},
+];
+
+let cardDeck=[],cardDrawn=[],cardType='num',cardMin=1,cardMax=10,cardAnim=false;
+
+function renderColorLegend(){
+  const leg=document.getElementById('color-legend');
+  const grid=document.getElementById('color-legend-grid');
+  if(cardType==='num'){leg.style.display='none';return;}
+  leg.style.display='';
+  grid.innerHTML=COLORS.map(c=>`<div class="clg-item" style="background:${c.bg};border-color:${c.border};color:${c.text};">${c.dot} ${c.name}</div>`).join('');
+}
+
+function setCardType(t){
+  cardType=t;
+  ['num','color','both'].forEach(x=>document.getElementById('ct-'+x).classList.toggle('active',x===t));
+  document.getElementById('num-range-row').style.display=t==='color'?'none':'flex';
+  renderColorLegend();
+  initDeck();
+}
+
+function chgRange(side,d){
+  if(side==='min'){cardMin=Math.max(1,Math.min(cardMax-1,cardMin+d));document.getElementById('cmin').textContent=cardMin;}
+  else{cardMax=Math.max(cardMin+1,Math.min(52,cardMax+d));document.getElementById('cmax').textContent=cardMax;}
+}
+
+function buildCards(){
+  if(cardType==='color') return COLORS.map(c=>({label:c.name,val:c.dot,display:c.dot,color:c}));
+  if(cardType==='num') return Array.from({length:cardMax-cardMin+1},(_,i)=>{const n=cardMin+i;return{label:String(n),val:String(n),display:String(n),color:COLORS[(n-1)%COLORS.length]};});
+  const cards=[];
+  for(let n=cardMin;n<=cardMax;n++) COLORS.forEach(c=>cards.push({label:`${c.dot} ${n}`,val:String(n),display:String(n),prefix:c.dot,color:c}));
+  return cards;
+}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function initDeck(){
+  cardDeck=shuffle(buildCards()); cardDrawn=[];
+  renderDeckVis(); renderDrawn(); resetFlyCard();
+  document.getElementById('draw-btn').disabled=false;
+  document.getElementById('fly-lbl').textContent='';
+}
+
+function renderDeckVis(){
+  const el=document.getElementById('deck-vis');
+  const badge=document.getElementById('deck-badge');
+  badge.textContent=cardDeck.length+' thẻ';
+  if(!cardDeck.length){
+    el.className='deck-empty-box'; el.innerHTML='Hết thẻ!<br/>Nhấn xáo lại';
+    el.onclick=null;
+  } else {
+    el.className='deck-stack'; el.onclick=drawCard;
+    const n=Math.min(3,cardDeck.length);
+    el.innerHTML=Array.from({length:n},(_,i)=>`<div class="dk" style="z-index:${i}"></div>`).join('');
+  }
+}
+
+function resetFlyCard(){
+  const wrap=document.getElementById('fly-wrap');
+  wrap.style.transition='none';
+  wrap.style.transform='rotateY(0deg) translateY(0)';
+  document.getElementById('fly-val').textContent='?';
+  document.getElementById('fly-tl').textContent='';
+  document.getElementById('fly-br').textContent='';
+  const face=document.getElementById('fly-face');
+  face.style.background='#fff';
+  face.style.color='var(--text)';
+  face.style.borderColor='var(--border)';
+}
+
+function renderDrawn(){
+  const grid=document.getElementById('drawn-grid');
+  document.getElementById('drawn-cnt').textContent=cardDrawn.length;
+  if(!cardDrawn.length){grid.innerHTML='<div class="drawn-empty">Chưa bốc thẻ nào</div>';return;}
+  grid.innerHTML=cardDrawn.map(c=>{
+    const lbl=cardType==='color'?c.color.name:(cardType==='both'?c.color.dot:'');
+    return `<div class="drawn-card" style="background:${c.color.bg};border-color:${c.color.border};color:${c.color.text};">${c.prefix?c.prefix+'<br>':''}${c.display}${lbl?`<div class="drawn-card-lbl">${lbl}</div>`:''}</div>`;
+  }).join('');
+}
+
+async function drawCard(){
+  if(cardAnim||!cardDeck.length) return;
+  cardAnim=true; document.getElementById('draw-btn').disabled=true;
+
+  const card=cardDeck.pop();
+  cardDrawn.push(card);
+  renderDeckVis();
+
+  // Set face content
+  document.getElementById('fly-val').textContent=card.display;
+  document.getElementById('fly-tl').textContent=(card.prefix||'')+card.display;
+  document.getElementById('fly-br').textContent=(card.prefix||'')+card.display;
+  const face=document.getElementById('fly-face');
+  face.style.background=card.color.bg;
+  face.style.color=card.color.text;
+  face.style.borderColor=card.color.border;
+  document.getElementById('fly-lbl').textContent='';
+
+  const wrap=document.getElementById('fly-wrap');
+  // Reset to back-facing
+  wrap.style.transition='none';
+  wrap.style.transform='rotateY(0deg) translateY(0)';
+  await sleep(30);
+
+  // Fly up
+  wrap.style.transition='transform 0.32s cubic-bezier(.4,0,.2,1)';
+  wrap.style.transform='rotateY(0deg) translateY(-55px)';
+  await sleep(340);
+
+  // Flip to reveal
+  wrap.style.transition='transform 0.46s cubic-bezier(.4,0,.2,1)';
+  wrap.style.transform='rotateY(180deg) translateY(-55px)';
+  await sleep(480);
+
+  // Settle down with bounce
+  wrap.style.transition='transform 0.28s cubic-bezier(.34,1.56,.64,1)';
+  wrap.style.transform='rotateY(180deg) translateY(0)';
+  await sleep(300);
+
+  document.getElementById('fly-lbl').textContent=card.label+(cardType==='color'?' – '+card.color.name:'');
+  renderDrawn();
+  playCard();
+
+  if(!cardDeck.length){
+    document.getElementById('draw-btn').disabled=true;
+    document.getElementById('fly-lbl').textContent='🎉 Hết bài! Nhấn xáo bộ lại.';
+  } else {
+    document.getElementById('draw-btn').disabled=false;
+  }
+  cardAnim=false;
+}
+
+function playCard(){
+  try{const ac=new(window.AudioContext||window.webkitAudioContext)();[660,880].forEach((f,i)=>{const o=ac.createOscillator(),g=ac.createGain();o.connect(g);g.connect(ac.destination);o.frequency.value=f;o.type='sine';const t=ac.currentTime+i*.07;g.gain.setValueAtTime(.11,t);g.gain.exponentialRampToValueAtTime(.001,t+.17);o.start(t);o.stop(t+.19);});}catch(e){}
+}
+
+// Init
+buildCoinStage(null);
+buildDiceStage([]);
+renderDiceStats();
+renderColorLegend();
+initDeck();
+</script>
+</body>
+</html>

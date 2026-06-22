@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Phép Tính Phân Số</title>
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--border:#334155;--teal:#06b6d4;--purple:#8b5cf6;--orange:#f59e0b;--green:#10b981;--red:#ef4444;--blue:#3b82f6;--text:#e2e8f0;--sub:#94a3b8;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.header{background:var(--card);border-bottom:1px solid var(--border);padding:11px 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.header h1{font-size:1.15rem;font-weight:800;}
+.back-link{color:var(--sub);text-decoration:none;font-size:.88rem;font-weight:600;padding:5px 12px;border-radius:8px;border:1px solid var(--border);}
+.tab-bar{display:flex;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;}
+.mbar-tab{flex:1;padding:12px 6px;border:none;font-size:.95rem;font-weight:800;cursor:pointer;background:transparent;color:var(--sub);border-bottom:3px solid transparent;transition:all .15s;font-family:inherit;}
+.mbar-tab.active{color:var(--teal);border-bottom-color:var(--teal);background:rgba(6,182,212,.05);}
+.instr-bar{background:rgba(6,182,212,.1);border-bottom:1px solid rgba(6,182,212,.2);padding:8px 22px;font-size:.9rem;color:#a5f3fc;text-align:center;flex-shrink:0;font-weight:600;}
+.body-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.stage{flex:1;overflow:auto;padding:16px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;}
+.ctrl-bar{flex-shrink:0;background:var(--card);border-top:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;}
+.big-btn{padding:10px 22px;border:none;border-radius:12px;font-size:.95rem;font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;background:linear-gradient(135deg,#06b6d4,#3b82f6);color:#fff;box-shadow:0 3px 12px rgba(6,182,212,.3);}
+.big-btn:hover{transform:translateY(-1px);}
+.big-btn.sec{background:rgba(255,255,255,.08);box-shadow:none;color:var(--text);border:1.5px solid var(--border);}
+.big-btn.grn{background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 3px 12px rgba(16,185,129,.3);}
+.big-btn.active-op{border:2.5px solid var(--teal);color:var(--teal);}
+.num-input{width:68px;padding:8px;background:rgba(255,255,255,.07);border:2px solid var(--border);border-radius:11px;color:var(--text);font-size:1.4rem;font-weight:800;text-align:center;font-family:inherit;outline:none;}
+.num-input:focus{border-color:var(--teal);}
+.label-sm{font-size:.78rem;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.4px;}
+.frac{display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:2px;vertical-align:middle;margin:0 3px;}
+.frac .fn{font-weight:900;}
+.frac .fl{width:100%;height:3px;background:currentColor;border-radius:2px;display:block;}
+.frac .fd{font-weight:900;}
+.card{background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:14px 20px;width:100%;max-width:720px;}
+.step-card{background:var(--card);border:1.5px solid var(--border);border-radius:13px;padding:14px 18px;width:100%;max-width:720px;display:flex;flex-direction:column;gap:10px;}
+.step-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.step-num{width:26px;height:26px;border-radius:50%;background:var(--teal);color:#fff;font-size:.78rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-text{font-size:.95rem;font-weight:600;color:var(--text);line-height:1.7;}
+.result-box{background:rgba(6,182,212,.1);border:2px solid var(--teal);border-radius:14px;padding:16px 24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center;width:100%;max-width:720px;}
+.op-btn{padding:10px 20px;border:2px solid var(--border);border-radius:12px;font-size:1.3rem;font-weight:900;cursor:pointer;background:rgba(255,255,255,.06);color:var(--text);font-family:inherit;transition:all .15s;min-width:52px;}
+.op-btn.sel{border-color:var(--teal);color:var(--teal);background:rgba(6,182,212,.12);}
+.vis-wrap{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;}
+.vis-label{font-size:.75rem;font-weight:700;color:var(--sub);text-align:center;margin-top:4px;}
+</style>
+</head>
+<body>
+<div class="header">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a href="dashboard.html" class="back-link">← Dashboard</a>
+    <h1>➕ Phép Tính Phân Số</h1>
+  </div>
+  <button style="background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:9px;padding:7px 14px;color:var(--text);cursor:pointer;font-size:.88rem;font-weight:700;font-family:inherit;"
+    onclick="if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen()">⛶ Toàn màn hình</button>
+</div>
+<div class="tab-bar">
+  <button class="mbar-tab active" id="tab-cs" onclick="switchTab('cs')">➕➖ Cộng & Trừ</button>
+  <button class="mbar-tab"        id="tab-nt" onclick="switchTab('nt')">✖️➗ Nhân & Chia</button>
+</div>
+
+<!-- ══ TAB 1: CỘNG & TRỪ ══ -->
+<div class="body-wrap" id="wrap-cs">
+  <div class="instr-bar">Nhập 2 phân số và chọn phép tính — xem từng bước quy đồng mẫu số</div>
+  <div class="stage">
+    <div class="result-box" id="cs-result-box" style="display:none;"></div>
+    <div class="step-card" id="cs-steps" style="display:none;"></div>
+    <div id="cs-vis" class="card" style="display:none;"></div>
+  </div>
+  <div class="ctrl-bar">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="label-sm">Phân số 1</div>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <input class="num-input" id="cs-p1" type="number" value="1" oninput="resetCS()"/>
+          <span style="display:flex;flex-direction:column;align-items:center;gap:1px;padding:0 2px;">
+            <span style="width:36px;height:3px;background:var(--sub);border-radius:2px;display:block;"></span>
+          </span>
+          <input class="num-input" id="cs-q1" type="number" min="1" value="2" oninput="resetCS()"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="op-btn sel" id="op-add" onclick="setOp('+')">+</button>
+        <button class="op-btn"     id="op-sub" onclick="setOp('−')">−</button>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="label-sm">Phân số 2</div>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <input class="num-input" id="cs-p2" type="number" value="1" oninput="resetCS()"/>
+          <span style="display:flex;flex-direction:column;align-items:center;gap:1px;padding:0 2px;">
+            <span style="width:36px;height:3px;background:var(--sub);border-radius:2px;display:block;"></span>
+          </span>
+          <input class="num-input" id="cs-q2" type="number" min="1" value="3" oninput="resetCS()"/>
+        </div>
+      </div>
+    </div>
+    <button class="big-btn" onclick="calcCS()">=&nbsp; Tính kết quả</button>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button class="big-btn sec" onclick="setCS(1,2,1,3)"><span class="frac" style="color:currentColor;"><span class="fn">1</span><span class="fl"></span><span class="fd">2</span></span>+<span class="frac" style="color:currentColor;"><span class="fn">1</span><span class="fl"></span><span class="fd">3</span></span></button>
+      <button class="big-btn sec" onclick="setCS(3,4,1,2)"><span class="frac" style="color:currentColor;"><span class="fn">3</span><span class="fl"></span><span class="fd">4</span></span>+<span class="frac" style="color:currentColor;"><span class="fn">1</span><span class="fl"></span><span class="fd">2</span></span></button>
+      <button class="big-btn sec" onclick="setCS(5,6,1,4,'−')"><span class="frac" style="color:currentColor;"><span class="fn">5</span><span class="fl"></span><span class="fd">6</span></span>−<span class="frac" style="color:currentColor;"><span class="fn">1</span><span class="fl"></span><span class="fd">4</span></span></button>
+      <button class="big-btn sec" onclick="setCS(2,3,1,3,'−')"><span class="frac" style="color:currentColor;"><span class="fn">2</span><span class="fl"></span><span class="fd">3</span></span>−<span class="frac" style="color:currentColor;"><span class="fn">1</span><span class="fl"></span><span class="fd">3</span></span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB 2: NHÂN & CHIA ══ -->
+<div class="body-wrap" id="wrap-nt" style="display:none">
+  <div class="instr-bar">Nhân: tử nhân tử, mẫu nhân mẫu &nbsp;|&nbsp; Chia: nhân với phân số đảo ngược</div>
+  <div class="stage">
+    <div class="result-box" id="nt-result-box" style="display:none;"></div>
+    <div class="step-card" id="nt-steps" style="display:none;"></div>
+  </div>
+  <div class="ctrl-bar">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="label-sm">Phân số 1</div>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <input class="num-input" id="nt-p1" type="number" value="2" oninput="resetNT()"/>
+          <span style="width:36px;height:3px;background:var(--sub);border-radius:2px;display:block;"></span>
+          <input class="num-input" id="nt-q1" type="number" min="1" value="3" oninput="resetNT()"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;">
+        <button class="op-btn sel" id="op-mul" onclick="setNTOp('×')">×</button>
+        <button class="op-btn"     id="op-div" onclick="setNTOp('÷')">÷</button>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div class="label-sm">Phân số 2</div>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <input class="num-input" id="nt-p2" type="number" value="3" oninput="resetNT()"/>
+          <span style="width:36px;height:3px;background:var(--sub);border-radius:2px;display:block;"></span>
+          <input class="num-input" id="nt-q2" type="number" min="1" value="4" oninput="resetNT()"/>
+        </div>
+      </div>
+    </div>
+    <button class="big-btn" onclick="calcNT()">=&nbsp; Tính kết quả</button>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button class="big-btn sec" onclick="setNT(2,3,3,4)"><span class="frac" style="color:currentColor;"><span class="fn">2</span><span class="fl"></span><span class="fd">3</span></span>×<span class="frac" style="color:currentColor;"><span class="fn">3</span><span class="fl"></span><span class="fd">4</span></span></button>
+      <button class="big-btn sec" onclick="setNT(1,2,2,5)"><span class="frac" style="color:currentColor;"><span class="fn">1</span><span class="fl"></span><span class="fd">2</span></span>×<span class="frac" style="color:currentColor;"><span class="fn">2</span><span class="fl"></span><span class="fd">5</span></span></button>
+      <button class="big-btn sec" onclick="setNT(3,4,3,8,'÷')"><span class="frac" style="color:currentColor;"><span class="fn">3</span><span class="fl"></span><span class="fd">4</span></span>÷<span class="frac" style="color:currentColor;"><span class="fn">3</span><span class="fl"></span><span class="fd">8</span></span></button>
+      <button class="big-btn sec" onclick="setNT(5,6,5,3,'÷')"><span class="frac" style="color:currentColor;"><span class="fn">5</span><span class="fl"></span><span class="fd">6</span></span>÷<span class="frac" style="color:currentColor;"><span class="fn">5</span><span class="fl"></span><span class="fd">3</span></span></button>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(t){
+  ['cs','nt'].forEach(x=>{
+    document.getElementById('tab-'+x).classList.toggle('active',x===t);
+    document.getElementById('wrap-'+x).style.display=x===t?'flex':'none';
+  });
+}
+function gcd(a,b){return b===0?Math.abs(a):gcd(b,a%b);}
+function lcm(a,b){return Math.abs(a*b)/gcd(a,b);}
+
+function F(p,q,col='currentColor',sz='1.4rem'){
+  return `<span class="frac" style="color:${col};"><span class="fn" style="font-size:${sz}">${p}</span><span class="fl"></span><span class="fd" style="font-size:${sz}">${q}</span></span>`;
+}
+
+/* ══ TAB 1 ══ */
+let csOp='+';
+function setOp(op){
+  csOp=op;
+  document.getElementById('op-add').classList.toggle('sel',op==='+');
+  document.getElementById('op-sub').classList.toggle('sel',op==='−');
+  resetCS();
+}
+function resetCS(){
+  document.getElementById('cs-result-box').style.display='none';
+  document.getElementById('cs-steps').style.display='none';
+  document.getElementById('cs-vis').style.display='none';
+}
+function setCS(p1,q1,p2,q2,op='+'){
+  document.getElementById('cs-p1').value=p1; document.getElementById('cs-q1').value=q1;
+  document.getElementById('cs-p2').value=p2; document.getElementById('cs-q2').value=q2;
+  setOp(op); calcCS();
+}
+
+function makeBar(filled,total,col,W=340,H=52){
+  const ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('width',W); svg.setAttribute('height',H);
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  const cw=(W-4)/total, rh=H-4;
+  for(let i=0;i<total;i++){
+    const r=document.createElementNS(ns,'rect');
+    r.setAttribute('x',2+i*cw); r.setAttribute('y',2);
+    r.setAttribute('width',cw-2); r.setAttribute('height',rh); r.setAttribute('rx','5');
+    r.setAttribute('fill', i<filled?col+'bb':'rgba(255,255,255,.06)');
+    r.setAttribute('stroke','#334155'); r.setAttribute('stroke-width','1.5');
+    svg.appendChild(r);
+    if(total<=24){
+      const t=document.createElementNS(ns,'text');
+      t.setAttribute('x',2+i*cw+cw/2); t.setAttribute('y',H/2+5);
+      t.setAttribute('text-anchor','middle'); t.setAttribute('font-size',Math.min(13,cw*.5));
+      t.setAttribute('font-weight','700'); t.setAttribute('font-family','Segoe UI,sans-serif');
+      t.setAttribute('fill',i<filled?'#fff':'rgba(255,255,255,.2)');
+      t.textContent=i+1; svg.appendChild(t);
+    }
+  }
+  return svg;
+}
+
+function calcCS(){
+  const p1=+document.getElementById('cs-p1').value||0;
+  const q1=Math.max(1,+document.getElementById('cs-q1').value||1);
+  const p2=+document.getElementById('cs-p2').value||0;
+  const q2=Math.max(1,+document.getElementById('cs-q2').value||1);
+  const op=csOp;
+
+  const L=lcm(q1,q2);
+  const np1=p1*(L/q1), np2=p2*(L/q2);
+  const resP=op==='+'?np1+np2:np1-np2;
+  const resQ=L;
+  const g=gcd(Math.abs(resP),resQ);
+  const rp=resP/g, rq=resQ/g;
+  const sameQ=q1===q2;
+
+  /* Steps */
+  const steps=document.getElementById('cs-steps');
+  steps.style.display='flex';
+  let html='';
+
+  if(sameQ){
+    html+=`<div class="step-row"><div class="step-num">1</div><div class="step-text">Hai phân số <b>cùng mẫu số</b> (${q1}) → ${op==='+'?'cộng':'trừ'} thẳng tử số</div></div>`;
+    html+=`<div class="step-row"><div class="step-num">2</div><div class="step-text">
+      ${F(p1,q1,'#8b5cf6')} ${op} ${F(p2,q2,'#06b6d4')} = ${F(`${p1}${op==='+'?'+':'−'}${p2}`,q1,'#f59e0b')} = ${F(resP,resQ,'#f59e0b')}
+    </div></div>`;
+  } else {
+    html+=`<div class="step-row"><div class="step-num">1</div><div class="step-text">Tìm <b>BCNN(${q1}, ${q2}) = ${L}</b> → quy đồng mẫu số</div></div>`;
+    html+=`<div class="step-row"><div class="step-num">2</div><div class="step-text">
+      ${F(p1,q1,'#8b5cf6')} = ${F(`${p1}×${L/q1}`,`${q1}×${L/q1}`,'#8b5cf6','1.1rem')} = ${F(np1,L,'#8b5cf6')}
+      &nbsp;&nbsp;|&nbsp;&nbsp;
+      ${F(p2,q2,'#06b6d4')} = ${F(`${p2}×${L/q2}`,`${q2}×${L/q2}`,'#06b6d4','1.1rem')} = ${F(np2,L,'#06b6d4')}
+    </div></div>`;
+    html+=`<div class="step-row"><div class="step-num">3</div><div class="step-text">
+      ${F(np1,L,'#8b5cf6')} ${op} ${F(np2,L,'#06b6d4')} = ${F(`${np1}${op==='+'?'+':'−'}${np2}`,L,'#f59e0b')} = ${F(resP,resQ,'#f59e0b')}
+    </div></div>`;
+  }
+  if(g>1){
+    html+=`<div class="step-row"><div class="step-num">${sameQ?3:4}</div><div class="step-text">Rút gọn: ƯCLN(${Math.abs(resP)},${resQ}) = ${g} → ${F(resP,resQ,'#f59e0b')} = ${F(rp,rq,'#10b981')}</div></div>`;
+  }
+  steps.innerHTML=html;
+
+  /* Result */
+  const rb=document.getElementById('cs-result-box'); rb.style.display='flex';
+  rb.innerHTML=`<span style="font-size:1.1rem;font-weight:800;color:var(--sub);">${F(p1,q1,'#8b5cf6','1.6rem')} ${op} ${F(p2,q2,'#06b6d4','1.6rem')} =</span>
+    <span style="font-size:2rem;font-weight:900;color:var(--teal);">${F(rp,rq,'#06b6d4','2rem')}${g===1&&resP===resQ?' = 1':''}</span>`;
+
+  /* Visual */
+  const vis=document.getElementById('cs-vis'); vis.style.display='block'; vis.innerHTML='';
+  const row=document.createElement('div'); row.style.cssText='display:flex;flex-direction:column;gap:12px;';
+
+  function addBar(label,p,q,col){
+    const d=document.createElement('div'); d.style.cssText='display:flex;align-items:center;gap:12px;';
+    const lbl=document.createElement('div'); lbl.style.cssText=`min-width:80px;font-size:.9rem;font-weight:800;color:${col};`;
+    lbl.innerHTML=F(p,q,col,'1rem'); d.appendChild(lbl);
+    const bwrap=document.createElement('div'); bwrap.style.cssText='flex:1;';
+    // scale bar width to same total = L
+    bwrap.appendChild(makeBar(p*(L/q),L,col,Math.min(500,L*24),46));
+    d.appendChild(bwrap); row.appendChild(d);
+  }
+  addBar('',p1,q1,'#8b5cf6');
+  if(op==='+'){addBar('',p2,q2,'#06b6d4');}
+  else{
+    const dm=document.createElement('div'); dm.style.cssText='display:flex;align-items:center;gap:12px;';
+    const lbl2=document.createElement('div'); lbl2.style.cssText='min-width:80px;font-size:.9rem;font-weight:800;color:#06b6d4;';
+    lbl2.textContent='Trừ đi:'; dm.appendChild(lbl2);
+    const bw2=document.createElement('div'); bw2.style.cssText='flex:1;'; bw2.appendChild(makeBar(p2*(L/q2),L,'#06b6d4',Math.min(500,L*24),46));
+    dm.appendChild(bw2); row.appendChild(dm);
+  }
+  const sep=document.createElement('div'); sep.style.cssText='height:2px;background:var(--border);border-radius:2px;'; row.appendChild(sep);
+  addBar('Kết quả:',Math.max(0,resP),resQ,'#f59e0b');
+  vis.appendChild(row);
+}
+
+/* ══ TAB 2 ══ */
+let ntOp='×';
+function setNTOp(op){
+  ntOp=op;
+  document.getElementById('op-mul').classList.toggle('sel',op==='×');
+  document.getElementById('op-div').classList.toggle('sel',op==='÷');
+  resetNT();
+}
+function resetNT(){
+  document.getElementById('nt-result-box').style.display='none';
+  document.getElementById('nt-steps').style.display='none';
+}
+function setNT(p1,q1,p2,q2,op='×'){
+  document.getElementById('nt-p1').value=p1; document.getElementById('nt-q1').value=q1;
+  document.getElementById('nt-p2').value=p2; document.getElementById('nt-q2').value=q2;
+  setNTOp(op); calcNT();
+}
+
+function calcNT(){
+  const p1=+document.getElementById('nt-p1').value||0;
+  const q1=Math.max(1,+document.getElementById('nt-q1').value||1);
+  const p2=+document.getElementById('nt-p2').value||0;
+  const q2=Math.max(1,+document.getElementById('nt-q2').value||1);
+  const op=ntOp;
+
+  let resP,resQ;
+  if(op==='×'){resP=p1*p2; resQ=q1*q2;}
+  else{if(p2===0){alert('Không chia được cho 0!');return;} resP=p1*q2; resQ=q1*p2;}
+  const g=gcd(Math.abs(resP),Math.abs(resQ));
+  const rp=resP/g, rq=resQ/g;
+
+  const steps=document.getElementById('nt-steps'); steps.style.display='flex';
+  let html='';
+  if(op==='×'){
+    html+=`<div class="step-row"><div class="step-num">1</div><div class="step-text"><b>Nhân tử với tử, mẫu với mẫu:</b></div></div>`;
+    html+=`<div class="step-row"><div class="step-num">2</div><div class="step-text">
+      ${F(p1,q1,'#8b5cf6')} × ${F(p2,q2,'#06b6d4')} = ${F(`${p1}×${p2}`,`${q1}×${q2}`,'#f59e0b','1.1rem')} = ${F(resP,resQ,'#f59e0b')}
+    </div></div>`;
+  } else {
+    html+=`<div class="step-row"><div class="step-num">1</div><div class="step-text"><b>Lấy phân số đảo ngược</b> của số chia: ${F(p2,q2,'#06b6d4')} → ${F(q2,p2,'#06b6d4')}</div></div>`;
+    html+=`<div class="step-row"><div class="step-num">2</div><div class="step-text"><b>Nhân</b> với phân số đảo ngược:</div></div>`;
+    html+=`<div class="step-row"><div class="step-num">3</div><div class="step-text">
+      ${F(p1,q1,'#8b5cf6')} × ${F(q2,p2,'#06b6d4')} = ${F(`${p1}×${q2}`,`${q1}×${p2}`,'#f59e0b','1.1rem')} = ${F(resP,resQ,'#f59e0b')}
+    </div></div>`;
+  }
+  if(g>1){
+    const step=op==='×'?3:4;
+    html+=`<div class="step-row"><div class="step-num">${step}</div><div class="step-text">Rút gọn: ƯCLN(${Math.abs(resP)},${Math.abs(resQ)}) = ${g} → ${F(resP,resQ,'#f59e0b')} = ${F(rp,rq,'#10b981')}</div></div>`;
+  }
+  steps.innerHTML=html;
+
+  const rb=document.getElementById('nt-result-box'); rb.style.display='flex';
+  rb.innerHTML=`<span style="font-size:1.1rem;font-weight:800;color:var(--sub);">${F(p1,q1,'#8b5cf6','1.6rem')} ${op} ${F(p2,q2,'#06b6d4','1.6rem')} =</span>
+    <span style="font-size:2rem;font-weight:900;color:var(--teal);">${F(rp,rq,'#06b6d4','2rem')}</span>`;
+}
+</script>
+</body>
+</html>

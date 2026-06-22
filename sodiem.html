@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Sổ Điểm – EduTeacher Hub</title>
+<style>
+
+:root{
+  --sb-w:252px;
+  --top-h:60px;
+  --blue:#3b7de9;--blue-dk:#2563c7;--blue-lt:#eef3fd;
+  --green:#10b981;--green-lt:#ecfdf5;
+  --orange:#f59e0b;--orange-lt:#fffbeb;
+  --purple:#8b5cf6;--purple-lt:#f5f3ff;
+  --red:#ef4444;--red-lt:#fef2f2;
+  --text:#0f172a;--text2:#334155;--muted:#64748b;
+  --border:#e2e8f0;--bg:#f1f5f9;--white:#fff;
+  --radius:13px;
+  --shadow:0 4px 20px rgba(15,23,42,.08);
+  --shadow-lg:0 16px 60px rgba(15,23,42,.18);
+}
+/* ── DARK MODE ── */
+body.dark{
+  --text:#e2e8f0;--text2:#cbd5e1;--muted:#94a3b8;
+  --border:#334155;--bg:#0f172a;--white:#1e293b;
+  --blue-lt:rgba(59,125,233,.15);
+  --green-lt:rgba(16,185,129,.12);
+  --orange-lt:rgba(245,158,11,.12);
+  --purple-lt:rgba(139,92,246,.12);
+  --red-lt:rgba(239,68,68,.12);
+  --shadow:0 4px 20px rgba(0,0,0,.3);
+  --shadow-lg:0 16px 60px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:14px;}
+
+/* ══ SIDEBAR ══ */
+.sidebar{
+  width:var(--sb-w);min-width:var(--sb-w);
+  background:#0f172a;
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;bottom:0;z-index:20;
+  overflow-y:auto;overflow-x:hidden;
+  transition:width .22s ease, min-width .22s ease;
+}
+.sidebar::-webkit-scrollbar{width:4px;}
+.sidebar::-webkit-scrollbar-track{background:transparent;}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:4px;}
+
+/* Brand */
+.sb-brand{
+  padding:18px 16px 14px;
+  display:flex;align-items:center;gap:11px;
+  border-bottom:1px solid rgba(255,255,255,.07);
+  flex-shrink:0;
+}
+.sb-logo{
+  width:38px;height:38px;border-radius:9px;flex-shrink:0;
+  background:linear-gradient(135deg,#3b7de9,#10b981);
+  display:flex;align-items:center;justify-content:center;font-size:19px;
+  box-shadow:0 3px 12px rgba(59,125,233,.4);
+}
+.sb-appname{font-size:.88rem;font-weight:800;color:#fff;line-height:1.25;}
+.sb-appname em{font-style:normal;color:#60a5fa;}
+.sb-appname strong{font-style:normal;color:#34d399;}
+.sb-appsub{font-size:.64rem;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.8px;margin-top:1px;}
+
+/* Nav groups */
+.nav-group{margin-top:6px;}
+.nav-group-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px 8px;cursor:pointer;user-select:none;
+  transition:background .15s;border-radius:0;
+}
+.nav-group-header:hover{background:rgba(255,255,255,.04);}
+.nav-group-header .gh-left{display:flex;align-items:center;gap:9px;}
+.nav-group-header .gh-icon{font-size:1rem;width:22px;text-align:center;}
+.nav-group-header .gh-label{font-size:.82rem;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:.2px;}
+.nav-group-header .gh-arrow{
+  font-size:.65rem;color:rgba(255,255,255,.3);
+  transition:transform .2s;
+}
+.nav-group.open .gh-arrow{transform:rotate(90deg);}
+.nav-group-header .gh-badge{
+  font-size:.6rem;font-weight:700;
+  background:rgba(59,125,233,.3);color:#93c5fd;
+  padding:1px 6px;border-radius:10px;
+}
+
+/* Sub-items */
+.nav-sub{
+  display:none;
+  padding-bottom:4px;
+}
+.nav-group.open .nav-sub{display:block;}
+.nav-sub-item{
+  display:flex;align-items:center;gap:9px;
+  padding:8px 16px 8px 38px;
+  cursor:pointer;
+  font-size:.8rem;font-weight:500;
+  color:rgba(255,255,255,.5);
+  transition:all .14s;
+  border-radius:0;
+  position:relative;
+}
+.nav-sub-item:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.05);}
+.nav-sub-item.active{
+  color:#fff;
+  background:rgba(59,125,233,.18);
+  font-weight:700;
+}
+.nav-sub-item.active::before{
+  content:'';position:absolute;left:0;top:20%;bottom:20%;
+  width:3px;border-radius:0 3px 3px 0;
+  background:linear-gradient(180deg,#60a5fa,#34d399);
+}
+.nav-sub-item .si-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:rgba(255,255,255,.2);flex-shrink:0;
+  transition:background .14s;
+}
+.nav-sub-item.active .si-dot{background:#60a5fa;}
+.nav-sub-item:hover .si-dot{background:rgba(255,255,255,.5);}
+
+/* Sidebar divider */
+.sb-divider{height:1px;background:rgba(255,255,255,.06);margin:4px 0;}
+
+/* Sidebar footer */
+.sb-footer{
+  margin-top:auto;flex-shrink:0;
+  padding:14px 16px;
+  border-top:1px solid rgba(255,255,255,.07);
+}
+.sb-author{display:flex;align-items:center;gap:9px;}
+.sb-ava{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#3b7de9,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;font-weight:800;color:#fff;
+}
+.sb-ainfo .aname{font-size:.75rem;font-weight:700;color:rgba(255,255,255,.8);}
+.sb-ainfo .arole{font-size:.65rem;color:rgba(255,255,255,.35);margin-top:1px;}
+.sb-ver{margin-top:10px;font-size:.62rem;color:rgba(255,255,255,.2);text-align:center;}
+
+/* ══ MAIN ══ */
+.main{margin-left:var(--sb-w);flex:1;display:flex;flex-direction:column;min-height:100vh;transition:margin-left .22s ease;}
+
+/* Topbar */
+.topbar{
+  height:var(--top-h);background:var(--white);
+  border-bottom:1px solid var(--border);
+  padding:0 28px 0 56px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:10;
+  box-shadow:0 1px 0 var(--border);
+}
+.tb-breadcrumb{display:flex;align-items:center;gap:8px;font-size:1rem;}
+.tb-breadcrumb .tb-section{color:var(--muted);font-size:.9rem;}
+.tb-breadcrumb .tb-sep{color:var(--border);font-size:.9rem;}
+.tb-breadcrumb .tb-page{font-weight:800;color:var(--text);font-size:1.05rem;}
+.tb-right{display:flex;align-items:center;gap:12px;}
+.tb-date{
+  background:var(--blue-lt);color:var(--blue);
+  padding:5px 13px;border-radius:20px;
+  font-size:.75rem;font-weight:600;
+}
+.tb-greeting{
+  font-size:.82rem;color:var(--muted);
+  white-space:nowrap;
+}
+.tb-greeting strong{color:var(--text);font-weight:700;}
+.tb-setting-btn{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--blue),var(--purple));
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:1rem;
+  cursor:pointer;border:none;
+  box-shadow:0 2px 8px rgba(59,125,233,.3);
+  transition:transform .15s,box-shadow .15s;
+  flex-shrink:0;
+}
+.tb-setting-btn:hover{transform:scale(1.08);box-shadow:0 4px 14px rgba(59,125,233,.4);}
+
+/* ══ SETTINGS DRAWER ══ */
+.drawer-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(15,23,42,.35);backdrop-filter:blur(4px);
+  z-index:200;
+}
+.drawer-overlay.open{display:block;}
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;
+  width:min(420px,95vw);
+  background:var(--white);
+  box-shadow:-8px 0 40px rgba(15,23,42,.15);
+  display:flex;flex-direction:column;
+  transform:translateX(100%);
+  transition:transform .25s cubic-bezier(.4,0,.2,1);
+  z-index:201;
+}
+body.dark .form-field input,
+body.dark .form-field select,
+body.dark .form-field textarea{background:#0f172a;color:var(--text);border-color:var(--border);}
+body.dark .score-table th,body.dark .group-card{filter:brightness(.85);}
+body.dark .feat-card{background:var(--white);}
+body.dark .placeholder{background:var(--white);border-color:var(--border);}
+body.dark .modal{background:var(--white);}
+body.dark .modal-head,body.dark .timer-presets,body.dark .score-tabs{background:var(--white);}
+body.dark .score-table th{background:#162032;}
+body.dark .timer-preset,body.dark .score-tab{background:var(--white);color:var(--text);border-color:var(--border);}
+body.dark .custom-time input{background:#0f172a;color:var(--text);border-color:var(--border);}
+body.dark .input-score{background:#0f172a;color:var(--text);}
+body.dark .topbar{background:var(--white);}
+.drawer-overlay.open .drawer{transform:none;}
+.drawer-head{
+  padding:18px 22px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  color:#fff;
+}
+.drawer-head h2{font-size:.95rem;font-weight:800;display:flex;align-items:center;gap:8px;}
+.drawer-close{
+  width:30px;height:30px;border-radius:7px;border:none;
+  background:rgba(255,255,255,.1);cursor:pointer;font-size:.95rem;
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  transition:background .14s;
+}
+.drawer-close:hover{background:rgba(239,68,68,.5);}
+.drawer-body{padding:22px;overflow-y:auto;flex:1;}
+.drawer-section{margin-bottom:24px;}
+.drawer-section-title{
+  font-size:.7rem;font-weight:800;text-transform:uppercase;
+  letter-spacing:.8px;color:var(--muted);
+  margin-bottom:12px;display:flex;align-items:center;gap:7px;
+}
+.drawer-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.form-field{margin-bottom:12px;}
+.form-field label{display:block;font-size:.76rem;font-weight:700;color:var(--text2);margin-bottom:4px;}
+.form-field input,.form-field select,.form-field textarea{
+  width:100%;padding:8px 11px;
+  border:1.5px solid var(--border);border-radius:8px;
+  font-size:.85rem;font-family:inherit;outline:none;
+  transition:border-color .14s;background:var(--bg);
+}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{
+  border-color:var(--blue);background:#fff;
+}
+.form-field textarea{resize:vertical;min-height:60px;}
+.drawer-save-btn{
+  width:100%;padding:11px;border:none;border-radius:9px;
+  background:linear-gradient(135deg,var(--blue),var(--purple));
+  color:#fff;font-size:.9rem;font-weight:800;cursor:pointer;
+  box-shadow:0 3px 12px rgba(59,125,233,.3);
+  transition:opacity .15s,transform .15s;
+}
+.drawer-save-btn:hover{opacity:.92;transform:translateY(-1px);}
+.drawer-saved-toast{
+  text-align:center;font-size:.78rem;color:var(--green);
+  font-weight:700;margin-top:8px;height:18px;
+  transition:opacity .3s;
+}
+/* Theme toggle buttons */
+.theme-toggle-wrap{display:flex;gap:8px;}
+.theme-opt{
+  flex:1;padding:9px;border-radius:8px;border:2px solid var(--border);
+  background:var(--bg);color:var(--text2);font-size:.85rem;font-weight:700;
+  cursor:pointer;transition:all .15s;
+}
+.theme-opt.active{border-color:var(--blue);background:var(--blue-lt);color:var(--blue);}
+.theme-opt:hover:not(.active){border-color:var(--muted);}
+
+/* Profile card in drawer */
+.prof-card{
+  background:linear-gradient(135deg,#0f172a,#1e3a5f);
+  border-radius:var(--radius);padding:18px;
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:20px;color:#fff;
+}
+.prof-ava-lg{
+  width:54px;height:54px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--blue),var(--purple));
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;font-weight:900;color:#fff;
+  border:3px solid rgba(255,255,255,.2);
+}
+.prof-card .pname{font-size:.95rem;font-weight:800;line-height:1.3;}
+.prof-card .prole{font-size:.75rem;opacity:.6;margin-top:3px;}
+.prof-card .pschool{font-size:.75rem;opacity:.5;}
+
+/* Content */
+.content{padding:28px 28px 52px;flex:1;}
+.page{display:none;}
+.page.active{display:block;animation:fadeUp .18s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:none;}}
+
+/* Hero banner */
+.hero{
+  border-radius:var(--radius);padding:26px 28px;
+  margin-bottom:24px;color:#fff;
+  position:relative;overflow:hidden;
+}
+.hero::after{content:'';position:absolute;right:-30px;top:-30px;
+  width:180px;height:180px;background:rgba(255,255,255,.06);border-radius:50%;}
+.hero::before{content:'';position:absolute;right:80px;bottom:-50px;
+  width:120px;height:120px;background:rgba(255,255,255,.04);border-radius:50%;}
+.hero h2{font-size:1.2rem;font-weight:800;position:relative;}
+.hero p{font-size:.82rem;opacity:.8;margin-top:3px;position:relative;}
+.hero-tag{
+  display:inline-block;margin-top:10px;
+  background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);
+  padding:3px 12px;border-radius:20px;font-size:.72rem;font-weight:700;
+  position:relative;
+}
+.h-blue  {background:linear-gradient(135deg,#2563eb,#4f46e5);}
+.h-green {background:linear-gradient(135deg,#059669,#0d9488);}
+.h-orange{background:linear-gradient(135deg,#d97706,#dc2626);}
+.h-purple{background:linear-gradient(135deg,#7c3aed,#2563eb);}
+.h-teal  {background:linear-gradient(135deg,#0891b2,#059669);}
+.h-rose  {background:linear-gradient(135deg,#e11d48,#7c3aed);}
+
+/* Coming-soon placeholder */
+.placeholder{
+  background:var(--white);border-radius:var(--radius);
+  border:2px dashed var(--border);
+  padding:56px 32px;text-align:center;
+  color:var(--muted);
+}
+.placeholder .ph-icon{font-size:3rem;margin-bottom:14px;}
+.placeholder h3{font-size:1rem;font-weight:700;color:var(--text2);margin-bottom:6px;}
+.placeholder p{font-size:.82rem;line-height:1.6;}
+
+/* Feature grid (overview cards) */
+.feat-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:14px;
+}
+.feat-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:var(--radius);padding:18px 16px;
+  display:flex;flex-direction:column;gap:8px;
+  transition:box-shadow .18s,transform .18s;
+  position:relative;overflow:hidden;
+}
+.feat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--bar,linear-gradient(90deg,var(--blue),var(--purple)));
+}
+.feat-card:hover{box-shadow:0 8px 28px rgba(15,23,42,.09);transform:translateY(-2px);}
+.feat-card .fc-icon{font-size:1.6rem;line-height:1;}
+.feat-card .fc-name{font-size:.88rem;font-weight:800;color:var(--text);}
+.feat-card .fc-desc{font-size:.75rem;color:var(--muted);line-height:1.5;flex:1;}
+.fc-badge{
+  display:inline-block;padding:2px 9px;border-radius:20px;
+  font-size:.67rem;font-weight:700;align-self:flex-start;
+}
+.fc-badge.ready{background:var(--green-lt);color:#059669;}
+.fc-badge.soon {background:var(--blue-lt);color:var(--blue);}
+.fc-badge.plan {background:#f8fafc;color:var(--muted);border:1px solid var(--border);}
+
+/* Section title */
+.sec-title{
+  display:flex;align-items:center;gap:9px;
+  font-size:.95rem;font-weight:800;margin-bottom:16px;color:var(--text);
+}
+.sec-title .st-bar{width:4px;height:16px;border-radius:2px;
+  background:linear-gradient(180deg,var(--blue),var(--purple));}
+
+/* Footer credit */
+.page-foot{
+  margin-top:48px;padding:18px 0 0;
+  border-top:1px solid var(--border);text-align:center;
+}
+.page-foot .pf-inner{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--white);border:1px solid var(--border);
+  border-radius:20px;padding:7px 18px;
+  font-size:.75rem;color:var(--muted);
+  box-shadow:var(--shadow);
+}
+.page-foot strong{color:var(--text);font-weight:800;}
+
+/* ══ MODALS ══ */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(15,23,42,.5);backdrop-filter:blur(6px);
+  z-index:100;align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex;animation:fadeUp .16s ease;}
+.modal{
+  background:var(--white);border-radius:18px;
+  box-shadow:var(--shadow-lg);
+  width:min(720px,96vw);max-height:93vh;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.modal-head{
+  padding:16px 22px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.modal-head h2{font-size:.95rem;font-weight:800;display:flex;align-items:center;gap:8px;}
+.modal-close{
+  width:30px;height:30px;border-radius:7px;border:none;
+  background:var(--bg);cursor:pointer;font-size:.95rem;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .14s;color:var(--muted);
+}
+.modal-close:hover{background:var(--red-lt);color:var(--red);}
+.modal-body{padding:22px;overflow-y:auto;flex:1;}
+
+/* Score table */
+.score-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+.score-tab{padding:6px 16px;border-radius:20px;border:1.5px solid var(--border);
+  font-size:.78rem;font-weight:700;cursor:pointer;background:var(--white);transition:all .14s;}
+.score-tab.active{background:var(--blue);border-color:var(--blue);color:#fff;}
+.score-table{width:100%;border-collapse:collapse;font-size:.82rem;}
+.score-table th{background:var(--bg);padding:8px 10px;text-align:left;
+  font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+.score-table td{padding:8px 10px;border-bottom:1px solid var(--border);}
+.score-table tr:last-child td{border-bottom:none;}
+.score-table tr:hover td{background:#fafbfd;}
+.star-badge{display:inline-flex;align-items:center;gap:3px;
+  background:var(--orange-lt);color:#d97706;padding:2px 7px;border-radius:20px;font-weight:700;font-size:.76rem;}
+.input-score{width:50px;padding:3px 6px;border:1.5px solid var(--border);border-radius:5px;
+  font-size:.82rem;text-align:center;outline:none;}
+.input-score:focus{border-color:var(--blue);}
+
+/* Timer */
+.timer-presets{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:14px;}
+.timer-preset{padding:6px 16px;border-radius:20px;border:1.5px solid var(--border);
+  font-size:.8rem;font-weight:700;cursor:pointer;background:var(--white);transition:all .14s;}
+.timer-preset:hover{background:var(--blue-lt);border-color:var(--blue);color:var(--blue);}
+.custom-time{display:flex;gap:7px;align-items:center;justify-content:center;margin-bottom:16px;}
+.custom-time input{width:66px;padding:7px;border:1.5px solid var(--border);border-radius:7px;
+  font-size:.95rem;text-align:center;font-weight:700;outline:none;}
+.custom-time input:focus{border-color:var(--blue);}
+.custom-time span{color:var(--muted);font-weight:600;}
+.timer-display{text-align:center;padding:24px 0;}
+.timer-time{font-size:4.5rem;font-weight:900;letter-spacing:4px;
+  font-variant-numeric:tabular-nums;color:var(--text);line-height:1;}
+.timer-time.warning{color:var(--orange);}
+.timer-time.danger{color:var(--red);}
+.timer-label{font-size:.82rem;color:var(--muted);margin-top:6px;}
+.timer-controls{display:flex;gap:9px;justify-content:center;}
+.timer-btn{padding:11px 26px;border-radius:9px;border:none;font-size:.88rem;font-weight:700;cursor:pointer;transition:all .14s;}
+.timer-btn.start{background:var(--blue);color:#fff;}
+.timer-btn.start:hover{background:var(--blue-dk);}
+.timer-btn.reset{background:var(--bg);color:var(--text);}
+.timer-btn.reset:hover{background:var(--border);}
+
+/* Group */
+.group-config{display:flex;gap:10px;align-items:flex-end;margin-bottom:16px;flex-wrap:wrap;}
+.group-config label{font-size:.76rem;font-weight:600;color:var(--muted);display:block;margin-bottom:3px;}
+.group-config input,.group-config select{padding:8px 10px;border:1.5px solid var(--border);border-radius:7px;font-size:.86rem;outline:none;}
+.group-config input:focus,.group-config select:focus{border-color:var(--blue);}
+.group-result{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+.group-card{border-radius:9px;padding:12px;border-left:4px solid;}
+.group-card.g1{border-color:#3b7de9;background:#eef3fd;}
+.group-card.g2{border-color:#10b981;background:#ecfdf5;}
+.group-card.g3{border-color:#f59e0b;background:#fffbeb;}
+.group-card.g4{border-color:#8b5cf6;background:#f5f3ff;}
+.group-card.g5{border-color:#ef4444;background:#fef2f2;}
+.group-card .gname{font-size:.78rem;font-weight:800;margin-bottom:6px;}
+.group-card .gmember{font-size:.74rem;color:var(--muted);padding:2px 0;border-bottom:1px dashed var(--border);}
+.group-card .gmember:last-child{border-bottom:none;}
+
+/* Attend */
+.badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:700;}
+.badge.present{background:#dcfce7;color:#16a34a;}
+.badge.absent{background:var(--red-lt);color:var(--red);}
+.badge.violate{background:var(--orange-lt);color:#d97706;}
+
+/* Search */
+.search-row{display:flex;gap:9px;margin-bottom:16px;}
+.search-row input{flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.86rem;outline:none;}
+.search-row input:focus{border-color:var(--green);}
+.search-row button{padding:9px 16px;border-radius:8px;border:none;background:var(--green);color:#fff;font-weight:700;font-size:.82rem;cursor:pointer;}
+.student-table{width:100%;border-collapse:collapse;font-size:.82rem;}
+.student-table th{background:var(--bg);padding:8px 10px;text-align:left;font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+.student-table td{padding:8px 10px;border-bottom:1px solid var(--border);}
+
+/* Sim */
+#sim-canvas{display:block;margin:0 auto;max-width:100%;border-radius:9px;}
+.sim-slider-wrap{display:flex;align-items:center;gap:9px;margin-top:12px;justify-content:center;}
+.sim-slider-wrap label{font-size:.78rem;color:var(--muted);font-weight:600;}
+input[type=range]{accent-color:var(--orange);cursor:pointer;}
+.sim-controls{display:flex;gap:9px;justify-content:center;margin-top:12px;flex-wrap:wrap;}
+.sim-btn{padding:8px 20px;border-radius:7px;border:none;font-size:.83rem;font-weight:700;cursor:pointer;transition:all .14s;}
+.sim-btn.play{background:var(--orange);color:#fff;}
+.sim-btn.stop{background:var(--bg);color:var(--text);}
+
+/* QR */
+#qr-input{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:.88rem;outline:none;margin-bottom:12px;}
+#qr-input:focus{border-color:var(--blue);}
+
+/* Btn */
+.btn{padding:9px 20px;border:none;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .14s;}
+.btn-blue{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(59,125,233,.28);}
+.btn-blue:hover{background:var(--blue-dk);}
+.btn-ghost{background:var(--bg);color:var(--text);}
+.btn-ghost:hover{background:var(--border);}
+
+/* ══ SIDEBAR COLLAPSED ══ */
+body.sb-collapsed .sidebar{width:0;min-width:0;overflow:hidden;}
+body.sb-collapsed .main{margin-left:0;}
+body.sb-collapsed .sb-toggle-btn{left:12px;}
+
+.sb-toggle-btn{
+  position:fixed;top:13px;left:calc(var(--sb-w) + 10px);z-index:30;
+  width:34px;height:34px;border-radius:8px;border:none;cursor:pointer;
+  background:var(--white);box-shadow:0 2px 10px rgba(15,23,42,.12);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;color:var(--text2);
+  transition:left .22s ease, background .15s;
+}
+.sb-toggle-btn:hover{background:var(--blue-lt);color:var(--blue);}
+
+@media(max-width:700px){
+  .sidebar{display:none;}.main{margin-left:0;}
+  .topbar{padding:0 14px;}.content{padding:14px;}
+  .sb-toggle-btn{display:none;}
+}
+
+/* ══ SỔ ĐIỂM CSS ══ */
+.sd-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
+.sd-toolbar-right{display:flex;gap:8px;flex-wrap:wrap;}
+.sd-btn{font-size:.82rem;padding:7px 14px;}
+
+.sd-book-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.sd-book-tab.drag-over{border-color:var(--blue)!important;background:var(--blue-lt)!important;transform:scale(1.04);}
+.sd-book-tab.dragging{opacity:.4;cursor:grabbing!important;}
+.sd-book-tab{cursor:grab;
+  display:flex;align-items:center;gap:8px;
+  padding:8px 14px;border-radius:9px;cursor:pointer;
+  border:2px solid var(--border);background:var(--white);
+  font-size:.82rem;font-weight:700;color:var(--text2);
+  transition:all .14s;
+}
+.sd-book-tab:hover{border-color:var(--blue);color:var(--blue);}
+.sd-book-tab.active{border-color:var(--blue);background:var(--blue-lt);color:var(--blue);}
+.sd-book-tab .sbt-mon{font-weight:800;}
+.sd-book-tab .sbt-lop{font-size:.8rem;opacity:.85;font-weight:600;}
+
+.sd-book-header{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 18px;margin-bottom:12px;
+}
+.sd-book-meta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.sd-meta-item{display:flex;flex-direction:column;}
+.sd-meta-item .mi-label{font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.sd-meta-item .mi-val{font-size:.9rem;font-weight:800;color:var(--text);}
+.sd-meta-item .mi-val.blue{color:var(--blue);}
+.sd-meta-sep{width:1px;height:32px;background:var(--border);}
+.sd-book-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.sd-hk-toggle{display:flex;border:2px solid var(--border);border-radius:8px;overflow:hidden;}
+.sd-hk-btn{padding:6px 16px;border:none;background:transparent;font-size:.8rem;font-weight:700;cursor:pointer;color:var(--muted);transition:all .14s;}
+.sd-hk-btn.active{background:var(--blue);color:#fff;}
+
+.sd-stats{
+  display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;
+}
+.sd-stat{
+  flex:1;min-width:100px;
+  background:var(--white);border:1px solid var(--border);border-radius:10px;
+  padding:10px 14px;text-align:center;
+}
+.sd-stat .sv{font-size:1.3rem;font-weight:900;line-height:1;}
+.sd-stat .sl{font-size:.7rem;color:var(--muted);font-weight:600;margin-top:3px;}
+.sd-stat.sv-green .sv{color:var(--green);}
+.sd-stat.sv-blue .sv{color:var(--blue);}
+.sd-stat.sv-orange .sv{color:var(--orange);}
+.sd-stat.sv-red .sv{color:var(--red);}
+.sd-stat.sv-purple .sv{color:var(--purple);}
+
+.sd-table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);background:var(--white);margin-bottom:12px;}
+.sd-table{width:100%;border-collapse:collapse;font-size:.82rem;}
+.sd-table thead{position:sticky;top:0;z-index:2;}
+.sd-table th{
+  background:#0f172a;color:rgba(255,255,255,.8);
+  padding:9px 8px;text-align:center;font-size:.72rem;font-weight:700;
+  white-space:nowrap;border-right:1px solid rgba(255,255,255,.08);
+}
+.sd-table th:first-child{border-radius:var(--radius) 0 0 0;}
+.sd-table th:last-child{border-radius:0 var(--radius) 0 0;border-right:none;}
+.sd-table th.th-ten{text-align:left;padding-left:14px;min-width:180px;}
+.sd-table th.th-tbm{background:linear-gradient(135deg,#1e3a5f,#0f172a);color:#fff;}
+.sd-table td{
+  padding:7px 6px;text-align:center;
+  border-bottom:1px solid var(--border);border-right:1px solid var(--border);
+  vertical-align:middle;
+}
+.sd-table td:last-child{border-right:none;}
+.sd-table tr:last-child td{border-bottom:none;}
+.sd-table tr:hover td{background:#f8fafd;}
+body.dark .sd-table tr:hover td{background:#162032;}
+.sd-table td.td-stt{color:var(--muted);font-size:.75rem;width:32px;}
+.sd-table td.td-ten{text-align:left;padding-left:14px;font-weight:600;}
+.sd-score-input{
+  width:46px;padding:4px 2px;text-align:center;
+  border:1.5px solid transparent;border-radius:5px;
+  font-size:.82rem;font-weight:700;background:transparent;
+  outline:none;color:var(--text);font-family:inherit;
+  transition:border-color .12s,background .12s;
+}
+.sd-score-input:focus{border-color:var(--blue);background:var(--blue-lt);}
+.sd-score-input:hover:not(:focus){border-color:var(--border);}
+.tbm-cell{
+  font-weight:900;font-size:.88rem;padding:4px 10px;
+  border-radius:20px;display:inline-block;min-width:42px;
+}
+.tbm-tot{background:#dcfce7;color:#15803d;}
+.tbm-kha{background:#dbeafe;color:#1d4ed8;}
+.tbm-dat{background:#fef9c3;color:#a16207;}
+.tbm-cd{background:#fee2e2;color:#b91c1c;}
+.tbm-na{color:var(--muted);font-size:.75rem;font-weight:600;}
+.td-del button{
+  width:24px;height:24px;border-radius:5px;border:none;
+  background:transparent;color:var(--muted);cursor:pointer;font-size:.85rem;
+  transition:all .14s;
+}
+.td-del button:hover{background:var(--red-lt);color:var(--red);}
+
+.sd-add-row{display:flex;gap:8px;align-items:center;padding:10px 0;}
+.sd-new-name-input{
+  flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;
+  font-size:.86rem;outline:none;font-family:inherit;background:var(--white);color:var(--text);
+}
+.sd-new-name-input:focus{border-color:var(--blue);}
+
+
+/* Điểm thưởng column */
+.thuong-cell{display:flex;align-items:center;justify-content:center;gap:3px;}
+.thuong-val{
+  font-weight:900;font-size:.88rem;color:var(--orange);
+  min-width:28px;text-align:center;
+}
+.thuong-add{
+  width:20px;height:20px;border-radius:4px;border:none;
+  background:var(--orange-lt);color:var(--orange);
+  font-size:.9rem;cursor:pointer;line-height:1;
+  transition:background .12s;
+}
+.thuong-add:hover{background:var(--orange);color:#fff;}
+.th-thuong{background:linear-gradient(135deg,#92400e,#d97706)!important;}
+
+/* History panel */
+.sd-history-panel{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+  margin-top:14px;overflow:hidden;
+}
+.sd-history-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 16px;cursor:pointer;background:var(--bg);
+  border-bottom:1px solid var(--border);
+  font-size:.82rem;font-weight:700;
+}
+.sd-history-body{max-height:220px;overflow-y:auto;display:none;}
+.sd-history-body.open{display:block;}
+.sd-hist-row{
+  display:grid;grid-template-columns:140px 1fr 80px 80px 80px;
+  gap:8px;align-items:center;
+  padding:7px 16px;border-bottom:1px solid var(--border);
+  font-size:.78rem;
+}
+.sd-hist-row:last-child{border-bottom:none;}
+.sd-hist-row .hr-time{color:var(--muted);font-size:.72rem;}
+.sd-hist-row .hr-name{font-weight:700;}
+.sd-hist-row .hr-field{color:var(--muted);}
+.sd-hist-row .hr-old{color:var(--red);text-decoration:line-through;}
+.sd-hist-row .hr-new{color:var(--green);font-weight:700;}
+
+/* Undo button */
+.sd-undo-btn{
+  padding:7px 12px;border-radius:7px;border:1.5px solid var(--border);
+  background:var(--white);color:var(--text2);font-size:.8rem;font-weight:700;
+  cursor:pointer;transition:all .14s;display:flex;align-items:center;gap:5px;
+}
+.sd-undo-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt);}
+.sd-undo-btn:disabled{opacity:.35;cursor:not-allowed;}
+
+/* Create book modal fields */
+.cb-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* ── Nút Đ / CĐ trong bảng định tính ── */
+.dc-toggle{
+  border:none;background:transparent;
+  font-size:.9rem;font-weight:900;cursor:pointer;
+  color:var(--muted);padding:4px 8px;border-radius:5px;
+  transition:color .12s;letter-spacing:.3px;
+}
+.dc-toggle.dc-dat{color:#15803d;}
+.dc-toggle.dc-cd{color:#b91c1c;}
+.dc-toggle:hover{opacity:.7;}
+
+/* ── STANDALONE TOP BAR ── */
+.st-topbar{
+  position:fixed;top:0;left:0;right:0;z-index:30;
+  height:52px;background:#0f172a;
+  display:flex;align-items:center;gap:14px;
+  padding:0 20px;border-bottom:1px solid rgba(255,255,255,.07);
+}
+.st-back{
+  display:flex;align-items:center;gap:6px;
+  color:rgba(255,255,255,.7);font-size:.82rem;font-weight:700;
+  text-decoration:none;padding:6px 12px;border-radius:8px;
+  background:rgba(255,255,255,.06);transition:background .14s;
+}
+.st-back:hover{background:rgba(255,255,255,.12);color:#fff;}
+.st-title{color:#fff;font-size:.92rem;font-weight:800;flex:1;}
+.st-title em{color:#60a5fa;font-style:normal;}
+.st-title strong{color:#34d399;font-style:normal;}
+.st-page-wrap{margin-top:52px;padding:20px;max-width:1400px;margin-left:auto;margin-right:auto;}
+body{display:block;}
+</style>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js">
+/* ── EXCEL IMPORT ── */
+function sdImportExcel(input){
+  const file = input.files[0];
+  if(!file) return;
+  const data = sdLoad();
+  const bookSel = document.getElementById('sd-import-book');
+  let bookId = bookSel ? bookSel.value : null;
+  if(!bookId && data.books.length) bookId = data.books[0].id;
+  if(!bookId){ alert('Chưa có sổ điểm. Hãy tạo sổ trước.'); input.value=''; return; }
+  const book = data.books.find(b=>b.id===bookId);
+  if(!book){ input.value=''; return; }
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try{
+      const wb = XLSX.read(evt.target.result, {type:'array'});
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, {header:1, defval:''});
+      let names=[], stt=1;
+      rows.forEach(row=>{
+        let n = row[1] || row[0];
+        if(!n) return;
+        n = String(n).trim();
+        if(!n || n.toLowerCase().includes('họ') || n.toLowerCase().includes('stt') || !isNaN(n)) return;
+        names.push(n);
+      });
+      if(!names.length){ alert('Không tìm thấy tên học sinh trong file Excel.'); input.value=''; return; }
+      // Merge into both HK
+      const hkKey = document.querySelector('[onclick*="switchHK(1)"]')?.classList.contains('active') ? 'hk1' : 
+                    (document.querySelector('[onclick*="switchHK(2)"]')?.classList.contains('active') ? 'hk2' : 'hk1');
+      const existingNames = new Set((book[hkKey]||[]).map(s=>s.name.trim().toLowerCase()));
+      let added=0;
+      names.forEach(name=>{
+        if(!existingNames.has(name.toLowerCase())){
+          if(!book.hk1) book.hk1=[];
+          if(!book.hk2) book.hk2=[];
+          const s={id:uid(),stt:book.hk1.length+1,name,thuong:0};
+          book.hk1.push({...s});
+          book.hk2.push({...s,id:uid(),stt:book.hk2.length+1});
+          existingNames.add(name.toLowerCase());
+          added++;
+        }
+      });
+      sdSave(data);
+      renderTable();
+      alert('Đã import ' + added + ' học sinh từ Excel!');
+    } catch(e){ alert('Lỗi đọc file: '+e.message); }
+    input.value='';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+</script>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="st-topbar">
+  <a class="st-back" href="dashboard.html">← Dashboard</a>
+  <div class="st-title"><em>Edu</em><strong>Teacher</strong> Hub &nbsp;·&nbsp; 📒 Sổ Điểm Cá Nhân</div>
+</div>
+
+<div class="st-page-wrap">
+<div class="page active" id="gd-sodiem">
+      <!-- Toolbar -->
+      <div class="sd-toolbar">
+        <div class="sd-toolbar-left">
+          <div class="sec-title" style="margin:0"><div class="st-bar"></div>📒 Sổ Điểm Cá Nhân</div>
+        </div>
+        <div class="sd-toolbar-right">
+          <button class="btn btn-ghost sd-btn" onclick="openImportModal()">📥 Import danh sách</button>
+          <label class="btn btn-ghost sd-btn" style="cursor:pointer;" title="Import từ file Excel">📂 Excel<input type="file" id="sd-excel-upload" accept=".xlsx,.xls" style="display:none;" onchange="sdImportExcel(this)"/></label>
+          <button class="btn btn-blue sd-btn" onclick="openCreateBook()">＋ Tạo Sổ Mới</button>
+        </div>
+      </div>
+
+      <!-- Sổ tabs -->
+      <div class="sd-book-tabs" id="sd-book-tabs"></div>
+
+      <!-- Empty state -->
+      <div class="placeholder" id="sd-empty">
+        <div class="ph-icon">📒</div>
+        <h3>Chưa có sổ điểm nào</h3>
+        <p>Nhấn <strong>＋ Tạo Sổ Mới</strong> để thêm sổ điểm đầu tiên.</p>
+      </div>
+
+      <!-- Grade book view -->
+      <div id="sd-book-view" style="display:none">
+        <!-- Book header -->
+        <div class="sd-book-header">
+          <div class="sd-book-meta" id="sd-book-meta"></div>
+          <div class="sd-book-actions">
+            <div class="sd-hk-toggle">
+              <button class="sd-hk-btn active" id="hk1-btn" onclick="switchHK(1)">Học Kỳ 1</button>
+              <button class="sd-hk-btn" id="hk2-btn" onclick="switchHK(2)">Học Kỳ 2</button>
+            </div>
+            <button class="sd-undo-btn" id="sd-undo-btn" onclick="undoScore()" title="Hoàn tác (Ctrl+Z)" disabled>↩ Hoàn tác</button>
+            <button class="btn btn-ghost sd-btn" onclick="showHistory()">📋 Lịch sử</button>
+            <button class="btn btn-ghost sd-btn" onclick="exportExcel()">📤 Xuất Excel</button>
+            <button class="btn btn-ghost sd-btn" style="color:var(--red)" onclick="openDeleteStudents()">👤 Xóa học sinh</button>
+          </div>
+        </div>
+
+        <!-- Stats bar -->
+        <div class="sd-stats" id="sd-stats"></div>
+
+        <!-- Table wrap -->
+        <div class="sd-table-wrap">
+          <table class="sd-table" id="sd-table">
+            <thead id="sd-thead"></thead>
+            <tbody id="sd-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- Add student row -->
+        <div class="sd-add-row">
+          <input type="text" id="sd-new-name" class="sd-new-name-input" placeholder="Họ và tên học sinh..." onkeydown="if(event.key==='Enter')addStudent()"/>
+          <button class="btn btn-blue sd-btn" onclick="addStudent()">＋ Thêm học sinh</button>
+        </div>
+
+        <!-- History panel -->
+        <div class="sd-history-panel" id="sd-history-panel" style="display:none">
+          <div class="sd-history-head" onclick="toggleHistory()">
+            <span>📋 Lịch sử chỉnh sửa điểm</span>
+            <span id="sd-hist-toggle">▼</span>
+          </div>
+          <div class="sd-history-body" id="sd-history-body"></div>
+        </div>
+      </div>
+
+      <div class="page-foot"><div class="pf-inner">📚 EduTeacher Hub được phát triển bởi <strong>ThS. Huỳnh Lê Tấn Phúc</strong> · Trường THCS Long Thọ</div></div>
+    </div>
+</div>
+
+<!-- ══ MODAL: Tạo Sổ Mới ══ -->
+<div class="modal-overlay" id="modal-create-book">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head">
+      <h2>📒 Tạo Sổ Điểm Mới</h2>
+      <button class="modal-close" onclick="closeModal('modal-create-book')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-field">
+        <label>Môn học</label>
+        <select id="cb-mon" onchange="updateTXPreview()">
+          <option>Toán</option>
+          <option>Ngữ văn</option>
+          <option>Tiếng Anh</option>
+          <option>KHTN</option>
+          <option>Lịch sử &amp; Địa lý</option>
+          <option>Công nghệ</option>
+          <option>Tin</option>
+          <option>GDCD</option>
+          <option>Nghệ thuật</option>
+          <option>GDTC</option>
+          <option>GDĐP</option>
+          <option>HĐTN-HN</option>
+        </select>
+      </div>
+      <div class="cb-row">
+        <div class="form-field">
+          <label>Lớp</label>
+          <input type="text" id="cb-lop" placeholder="VD: 6/3" oninput="updateTXPreview()"/>
+        </div>
+        <div class="form-field">
+          <label>Khối</label>
+          <select id="cb-khoi" onchange="updateTXPreview()">
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Năm học</label>
+        <input type="text" id="cb-namhoc" placeholder="VD: 2025-2026"/>
+      </div>
+      <div id="tx-preview" style="background:var(--blue-lt);border:1px solid var(--blue);border-radius:8px;padding:10px 14px;font-size:.82rem;color:var(--blue);margin-bottom:12px;"></div>
+      <button class="drawer-save-btn" onclick="createBook()">📒 Tạo Sổ Điểm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL: Import danh sách ══ -->
+<div class="modal-overlay" id="modal-import">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-head">
+      <h2>📥 Import Danh Sách Học Sinh</h2>
+      <button class="modal-close" onclick="closeModal('modal-import')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:.82rem;color:var(--muted);margin-bottom:12px;">
+        Copy cột <strong>Họ và Tên</strong> từ Excel, mỗi tên một dòng, rồi dán vào đây. Hệ thống sẽ tự đánh STT.
+      </p>
+      <div class="form-field">
+        <label>Chọn sổ điểm để import vào</label>
+        <select id="import-book-sel"></select>
+      </div>
+      <div class="form-field">
+        <label>Danh sách học sinh (dán từ Excel)</label>
+        <textarea id="import-names" style="min-height:180px;font-size:.85rem;" placeholder="Nguyễn Văn An&#10;Trần Thị Bình&#10;Lê Minh Chi&#10;..."></textarea>
+      </div>
+      <p style="font-size:.76rem;color:var(--muted);margin-bottom:12px;">⚠️ Import sẽ <strong>thêm vào</strong> danh sách hiện tại, không xóa dữ liệu cũ.</p>
+      <button class="drawer-save-btn" onclick="doImport()">📥 Import</button>
+      <div class="drawer-saved-toast" id="import-toast"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══ MODAL: Xóa học sinh ══ -->
+<div class="modal-overlay" id="modal-del-students">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-head">
+      <h2>👤 Xóa Học Sinh</h2>
+      <button class="modal-close" onclick="closeModal('modal-del-students')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <span style="font-size:.8rem;color:var(--muted)" id="del-sel-count">Chọn học sinh cần xóa</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-ghost" style="font-size:.76rem;padding:5px 10px" onclick="delSelectAll(true)">Chọn tất cả</button>
+          <button class="btn btn-ghost" style="font-size:.76rem;padding:5px 10px" onclick="delSelectAll(false)">Bỏ chọn</button>
+        </div>
+      </div>
+      <div id="del-student-list" style="max-height:320px;overflow-y:auto;border:1px solid var(--border);border-radius:9px;"></div>
+      <div style="margin-top:14px;display:flex;gap:8px;">
+        <button class="btn btn-ghost" style="flex:1" onclick="closeModal('modal-del-students')">Hủy</button>
+        <button class="btn" style="flex:1;background:var(--red);color:#fff;font-weight:700" onclick="confirmDeleteStudents()">🗑 Xóa đã chọn</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
+
+<script>
+
+const SKEY='etv1_settings';
+const DEF={name:'ThS. Huỳnh Lê Tấn Phúc',school:'Trường THCS Long Thọ'};
+function loadSettings(){try{return JSON.parse(localStorage.getItem(SKEY))||DEF;}catch(e){return DEF;}}
+function applyTheme(mode,save=true){
+  document.body.classList.toggle('dark', mode==='dark');
+  if(save) localStorage.setItem('etv1_theme', mode);
+}
+(function(){
+  const t = localStorage.getItem('etv1_theme')||'light';
+  applyTheme(t, false);
+})();
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
+  if((e.ctrlKey||e.metaKey)&&e.key==='z') undoScore && undoScore();
+});
+
+/* ══════════════════════════════════
+   SỔ ĐIỂM – GRADE BOOK ENGINE
+══════════════════════════════════ */
+
+const SD_KEY = 'etv1_sodiem_v2';
+const TX_RULE = {
+  'Toán':              k => 4,
+  'Ngữ văn':           k => 4,
+  'Tiếng Anh':         k => 4,
+  'KHTN':              k => 4,
+  'Lịch sử & Địa lý':  k => 4,
+  'Công nghệ':         k => ([8,9].includes(+k) ? 3 : 2),
+  'Tin':               k => 2,
+  'GDCD':              k => 2,
+  'Nghệ thuật':        k => 2,
+  'GDTC':              k => 2,
+  'GDĐP':              k => 2,
+  'HĐTN-HN':           k => 2,
+};
+
+function getTX(mon, khoi){ return (TX_RULE[mon] || (()=>2))(+khoi); }
+
+function sdLoad(){ 
+  try{ return JSON.parse(localStorage.getItem(SD_KEY))||{books:[]}; }
+  catch(e){ return {books:[]}; }
+}
+function sdSave(data){ localStorage.setItem(SD_KEY, JSON.stringify(data)); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+// Undo stack: array of snapshots {bookId, hk, snapshot, desc}
+let SD_UNDO = [];
+const SD_UNDO_MAX = 30;
+
+// Current state
+let SD = { bookId: null, hk: 1 };
+
+function sdInit(){
+  const data = sdLoad();
+  renderBookTabs(data);
+  if(data.books.length > 0){
+    selectBook(data.books[0].id);
+  } else {
+    document.getElementById('sd-empty').style.display='';
+    document.getElementById('sd-book-view').style.display='none';
+  }
+  // Ctrl+Z listener
+  document.addEventListener('keydown', e=>{
+    if((e.ctrlKey||e.metaKey) && e.key==='z' && document.getElementById('gd-sodiem').classList.contains('active')){
+      e.preventDefault(); undoScore();
+    }
+  });
+}
+
+/* ── TABS ── */
+function renderBookTabs(data){
+  const el = document.getElementById('sd-book-tabs');
+  if(!data) data = sdLoad();
+  el.innerHTML = data.books.map(b => `
+    <div class="sd-book-tab ${SD.bookId===b.id?'active':''}"
+         draggable="true"
+         data-id="${b.id}"
+         onclick="selectBook('${b.id}')">
+      <div>
+        <div class="sbt-mon">${b.mon}</div>
+        <div class="sbt-lop">Lớp ${b.lop}</div>
+      </div>
+    </div>`).join('');
+  // Drag-and-drop reorder
+  let dragSrc = null;
+  el.querySelectorAll('.sd-book-tab').forEach(tab => {
+    tab.addEventListener('dragstart', e => {
+      dragSrc = tab;
+      tab.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    tab.addEventListener('dragend', () => {
+      tab.classList.remove('dragging');
+      el.querySelectorAll('.sd-book-tab').forEach(t => t.classList.remove('drag-over'));
+    });
+    tab.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      el.querySelectorAll('.sd-book-tab').forEach(t => t.classList.remove('drag-over'));
+      if(tab !== dragSrc) tab.classList.add('drag-over');
+    });
+    tab.addEventListener('drop', e => {
+      e.preventDefault();
+      if(!dragSrc || dragSrc === tab) return;
+      const srcId = dragSrc.dataset.id;
+      const tgtId = tab.dataset.id;
+      const d = sdLoad();
+      const si = d.books.findIndex(b=>b.id===srcId);
+      const ti = d.books.findIndex(b=>b.id===tgtId);
+      if(si<0||ti<0) return;
+      const [moved] = d.books.splice(si,1);
+      d.books.splice(ti,0,moved);
+      sdSave(d);
+      renderBookTabs(d);
+    });
+  });
+}
+
+/* ── SELECT BOOK ── */
+function selectBook(id){
+  SD.bookId = id;
+  SD.hk = 1;
+  SD_UNDO = [];
+  SD.batchState = {};
+  refreshUndoBtn();
+  const data = sdLoad();
+  renderBookTabs(data);
+  const book = data.books.find(b=>b.id===id);
+  if(!book) return;
+  document.getElementById('sd-empty').style.display='none';
+  document.getElementById('sd-book-view').style.display='';
+  document.getElementById('sd-history-panel').style.display='none';
+  const nTX = getTX(book.mon, book.khoi);
+  document.getElementById('sd-book-meta').innerHTML = `
+    <div class="sd-meta-item"><div class="mi-label">Môn</div><div class="mi-val blue">${book.mon}</div></div>
+    <div class="sd-meta-sep"></div>
+    <div class="sd-meta-item"><div class="mi-label">Lớp</div><div class="mi-val">${book.lop}</div></div>
+    <div class="sd-meta-sep"></div>
+    <div class="sd-meta-item"><div class="mi-label">Khối</div><div class="mi-val">${book.khoi}</div></div>
+    <div class="sd-meta-sep"></div>
+    <div class="sd-meta-item"><div class="mi-label">Năm học</div><div class="mi-val">${book.namhoc||''}</div></div>
+    <div class="sd-meta-sep"></div>
+    <div class="sd-meta-item"><div class="mi-label">Số cột TX</div><div class="mi-val">${nTX} cột</div></div>
+  `;
+  switchHK(1, true);
+}
+
+/* ── SWITCH HK ── */
+function switchHK(hk, silent){
+  SD.hk = hk;
+  SD.batchState = {};
+  document.getElementById('hk1-btn').classList.toggle('active', hk===1);
+  document.getElementById('hk2-btn').classList.toggle('active', hk===2);
+  renderTable();
+}
+
+/* ── RENDER TABLE ── */
+const QUAL_SUBJECTS = new Set(['HĐTN-HN','Nghệ thuật','GDTC','GDĐP']);
+
+function isQual(mon){ return QUAL_SUBJECTS.has(mon); }
+
+function renderTable(){
+  const data = sdLoad();
+  const book = data.books.find(b=>b.id===SD.bookId);
+  if(!book) return;
+  const nTX = getTX(book.mon, book.khoi);
+  const hkKey = SD.hk===1 ? 'hk1' : 'hk2';
+  const qual = isQual(book.mon);
+
+  if(!book.hk1) book.hk1={students:[]};
+  if(!book.hk2) book.hk2={students:[]};
+  syncStudents(book, nTX);
+
+  const students = book[hkKey].students;
+
+  // THEAD
+  const tbmHeader = qual ? 'Kết quả' : 'TBM';
+  if(qual){
+    // Row 1: merged group headers
+    let txCols1 = `<th colspan="${nTX}" class="th-group-label">ĐÁNH GIÁ TX</th>`;
+    let txCols2 = '';
+    for(let i=1;i<=nTX;i++){
+      const st = SD.batchState && SD.batchState['tx'+(i-1)];
+      const stCls = st==='Đ'?'state-dat': st==='CĐ'?'state-cd':'';
+      const stLabel = st==='Đ'?'▼ Đ': st==='CĐ'?'▼ CĐ':'▼';
+      txCols2 += `<th><div class="th-col-num">${i}</div>
+        <button class="th-batch-cycle ${stCls}" onclick="cycleBatch('tx',${i-1})">${stLabel}</button></th>`;
+    }
+    const stGK = SD.batchState && SD.batchState['gk'];
+    const stCK = SD.batchState && SD.batchState['ck'];
+    const gkCls = stGK==='Đ'?'state-dat':stGK==='CĐ'?'state-cd':'';
+    const ckCls = stCK==='Đ'?'state-dat':stCK==='CĐ'?'state-cd':'';
+    document.getElementById('sd-thead').innerHTML = `
+      <tr>
+        <th rowspan="2" style="width:32px">#</th>
+        <th rowspan="2" class="th-ten">Họ và Tên</th>
+        <th rowspan="2" class="th-thuong">🏆<br><small style="font-weight:400;opacity:.8;font-size:.65rem">Thưởng</small></th>
+        ${txCols1}
+        <th rowspan="2" class="th-group-label" style="min-width:52px">GK<br>
+          <button class="th-batch-cycle ${gkCls}" onclick="cycleBatch('gk',null)" style="margin-top:3px">${stGK==='Đ'?'▼ Đ':stGK==='CĐ'?'▼ CĐ':'▼'}</button></th>
+        <th rowspan="2" class="th-group-label" style="min-width:52px">CK<br>
+          <button class="th-batch-cycle ${ckCls}" onclick="cycleBatch('ck',null)" style="margin-top:3px">${stCK==='Đ'?'▼ Đ':stCK==='CĐ'?'▼ CĐ':'▼'}</button></th>
+        <th rowspan="2" class="th-tbm">${tbmHeader}</th>
+        
+      </tr>
+      <tr>${txCols2}</tr>`;
+  } else {
+    let txCols = '';
+    for(let i=1;i<=nTX;i++) txCols += `<th>TX${i}</th>`;
+    document.getElementById('sd-thead').innerHTML = `<tr>
+      <th style="width:32px">#</th>
+      <th class="th-ten">Họ và Tên</th>
+      <th class="th-thuong" title="Điểm thưởng tích lũy từ trò chơi">🏆<br><small style="font-weight:400;opacity:.8;font-size:.65rem">Thưởng</small></th>
+      ${txCols}
+      <th>GK<br><small style="font-weight:400;opacity:.7">×2</small></th>
+      <th>CK<br><small style="font-weight:400;opacity:.7">×3</small></th>
+      <th class="th-tbm">${tbmHeader}</th>
+      </tr>`;
+  }
+
+  // TBODY
+  document.getElementById('sd-tbody').innerHTML = students.map((s,i)=>{
+    const hkData = s[hkKey];
+    const thuong = s.thuong || 0;
+    let txInputs = '';
+    for(let j=0;j<nTX;j++){
+      if(qual){
+        const v = hkData.tx[j];
+        txInputs += `<td>${dcToggleBtn(s.id,'tx',j,v)}</td>`;
+      } else {
+        const v = hkData.tx[j]!==null ? hkData.tx[j] : '';
+        txInputs += `<td><input class="sd-score-input" type="number" min="0" max="10" step="0.1" value="${v}" 
+          onchange="updateScore('${s.id}','tx',${j},this.value)"
+          onfocus="this.select()" /></td>`;
+      }
+    }
+    let gkTd, ckTd;
+    if(qual){
+      gkTd = `<td>${dcToggleBtn(s.id,'gk',null,hkData.gk)}</td>`;
+      ckTd = `<td>${dcToggleBtn(s.id,'ck',null,hkData.ck)}</td>`;
+    } else {
+      const gkV = hkData.gk!==null?hkData.gk:'';
+      const ckV = hkData.ck!==null?hkData.ck:'';
+      gkTd = `<td><input class="sd-score-input" type="number" min="0" max="10" step="0.1" value="${gkV}"
+        onchange="updateScore('${s.id}','gk',null,this.value)" onfocus="this.select()" /></td>`;
+      ckTd = `<td><input class="sd-score-input" type="number" min="0" max="10" step="0.1" value="${ckV}"
+        onchange="updateScore('${s.id}','ck',null,this.value)" onfocus="this.select()" /></td>`;
+    }
+    const tbmHtml = qual ? qualBadge(hkData, nTX) : tbmBadge(calcTBM(hkData, nTX));
+    const thuongColor = thuong>0?'var(--orange)':'var(--muted)';
+    return `<tr>
+      <td class="td-stt">${i+1}</td>
+      <td class="td-ten">${escHtml(s.ten)}</td>
+      <td>
+        <div class="thuong-cell">
+          <span class="thuong-val" style="color:${thuongColor}">${thuong}</span>
+          <button class="thuong-add" onclick="addThuong('${s.id}',1)" title="＋1 điểm thưởng">＋</button>
+          <button class="thuong-add" onclick="addThuong('${s.id}',-1)" title="−1 điểm thưởng" style="font-size:.75rem">−</button>
+        </div>
+      </td>
+      ${txInputs}${gkTd}${ckTd}
+      <td style="text-align:center">${tbmHtml}</td>
+    </tr>`;
+  }).join('');
+
+  renderStats(students, nTX, hkKey, qual);
+}
+
+/* Toggle button Đ / CĐ */
+function dcToggleBtn(sid, type, idx, val){
+  const cls = val==='Đ'?'dc-dat': val==='CĐ'?'dc-cd':'';
+  const label = val||'—';
+  const idxPart = idx!==null ? idx : 'null';
+  return `<button class="dc-toggle ${cls}" onclick="cycleQual('${sid}','${type}',${idxPart})">${label}</button>`;
+}
+
+/* Cycle null → Đ → CĐ → null */
+function cycleQual(sid, type, idx){
+  const data = sdLoad();
+  const book = data.books.find(b=>b.id===SD.bookId);
+  if(!book) return;
+  const hkKey = SD.hk===1?'hk1':'hk2';
+  const stu = book[hkKey].students.find(s=>s.id===sid);
+  if(!stu) return;
+  const cur = type==='tx' ? stu[hkKey].tx[idx]
+              : type==='gk' ? stu[hkKey].gk : stu[hkKey].ck;
+  const next = cur===null?'Đ': cur==='Đ'?'CĐ': null;
+  const fieldName = type==='tx'?`TX${idx+1}`: type.toUpperCase();
+  pushUndo(`${stu.ten} · ${fieldName}: ${cur??'—'} → ${next??'—'}`);
+  logHistory(book, stu.ten, fieldName, cur, next);
+  if(type==='tx') stu[hkKey].tx[idx]=next;
+  else if(type==='gk') stu[hkKey].gk=next;
+  else stu[hkKey].ck=next;
+  sdSave(data);
+  renderTable();
+}
+
+/* Cycle batch fill: null→Đ→CĐ→null */
+function cycleBatch(type, idx){
+  if(!SD.batchState) SD.batchState={};
+  const key = type==='tx'?'tx'+idx:type;
+  const cur = SD.batchState[key]||null;
+  const next = cur===null?'Đ': cur==='Đ'?'CĐ': null;
+  SD.batchState[key] = next;
+  const data = sdLoad();
+  const book = data.books.find(b=>b.id===SD.bookId);
+  if(!book) return;
+  const hkKey = SD.hk===1?'hk1':'hk2';
+  pushUndo(`Điền hàng loạt ${type==='tx'?'TX'+(+idx+1):type.toUpperCase()} = ${next??'xóa'}`);
+  book[hkKey].students.forEach(s=>{
+    if(type==='tx') s[hkKey].tx[idx]=next;
+    else if(type==='gk') s[hkKey].gk=next;
+    else s[hkKey].ck=next;
+  });
+  sdSave(data);
+  renderTable();
+}
+
+/* Qualitative result badge */
+function qualBadge(hkData, nTX){
+  const all = [...hkData.tx.slice(0,nTX), hkData.gk, hkData.ck];
+  if(all.some(v=>v===null||v===undefined)) return `<span class="tbm-qual-na">—</span>`;
+  if(all.some(v=>v==='CĐ')) return `<span class="tbm-qual-cd">Chưa đạt</span>`;
+  return `<span class="tbm-qual-dat">Đạt</span>`;
+}
+
+function syncStudents(book, nTX){
+  const hk2Map = new Map(book.hk2.students.map(s=>[s.id,s]));
+  book.hk1.students.forEach(s=>{
+    if(!hk2Map.has(s.id)){
+      book.hk2.students.push({ id:s.id, ten:s.ten, thuong:s.thuong||0,
+        hk1:{tx:Array(nTX).fill(null),gk:null,ck:null},
+        hk2:{tx:Array(nTX).fill(null),gk:null,ck:null}
+      });
+    } else {
+      hk2Map.get(s.id).ten = s.ten;
+      hk2Map.get(s.id).thuong = s.thuong||0;
+    }
+  });
+}
+
+/* ── CALC TBM ── */
+function calcTBM(hkData, nTX){
+  const txArr = hkData.tx.slice(0, nTX);
+  if(txArr.some(v=>v===null||v===''||v===undefined)) return null;
+  if(hkData.gk===null||hkData.gk===''||hkData.gk===undefined) return null;
+  if(hkData.ck===null||hkData.ck===''||hkData.ck===undefined) return null;
+  const sumTX = txArr.reduce((a,b)=>a+(+b),0);
+  const tbm = (sumTX + (+hkData.gk)*2 + (+hkData.ck)*3) / (nTX + 5);
+  return Math.round(tbm*10)/10;
+}
+
+function tbmBadge(tbm){
+  if(tbm===null) return `<span class="tbm-cell tbm-na">—</span>`;
+  const cls = tbm>=8?'tbm-tot': tbm>=6.5?'tbm-kha': tbm>=5?'tbm-dat':'tbm-cd';
+  const label = tbm>=8?'Tốt': tbm>=6.5?'Khá': tbm>=5?'Đạt':'CĐ';
+  return `<span class="tbm-cell ${cls}">${tbm.toFixed(1)} <small style="font-size:.65rem;opacity:.8">${label}</small></span>`;
+}
+
+function escHtml(t){ return (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ── STATS ── */
+function renderStats(students, nTX, hkKey, qual){
+  const total = students.length;
+  if(qual){
+    let dat=0, cd=0, chua=0;
+    students.forEach(s=>{
+      const all=[...s[hkKey].tx.slice(0,nTX),s[hkKey].gk,s[hkKey].ck];
+      if(all.some(v=>v===null||v===undefined)) chua++;
+      else if(all.some(v=>v==='CĐ')) cd++;
+      else dat++;
+    });
+    document.getElementById('sd-stats').innerHTML = `
+      <div class="sd-stat sv-blue"><div class="sv">${total}</div><div class="sl">Học sinh</div></div>
+      <div class="sd-stat sv-green"><div class="sv">${dat}</div><div class="sl">Đạt</div></div>
+      <div class="sd-stat sv-red"><div class="sv">${cd}</div><div class="sl">Chưa đạt</div></div>
+      <div class="sd-stat sv-purple"><div class="sv">${chua}</div><div class="sl">Chưa đủ cột</div></div>
+    `;
+    return;
+  }
+  const tbms = students.map(s => calcTBM(s[hkKey], nTX)).filter(v=>v!==null);
+  const gioi  = tbms.filter(v=>v>=8).length;
+  const kha   = tbms.filter(v=>v>=6.5&&v<8).length;
+  const tb    = tbms.filter(v=>v>=5&&v<6.5).length;
+  const yeu   = tbms.filter(v=>v<5).length;
+  const avg   = tbms.length>0?(tbms.reduce((a,b)=>a+b,0)/tbms.length).toFixed(1):'—';
+  document.getElementById('sd-stats').innerHTML = `
+    <div class="sd-stat sv-blue"><div class="sv">${total}</div><div class="sl">Học sinh</div></div>
+    <div class="sd-stat sv-purple"><div class="sv">${avg}</div><div class="sl">TBM lớp</div></div>
+    <div class="sd-stat sv-green"><div class="sv">${gioi}</div><div class="sl">Tốt ≥8.0</div></div>
+    <div class="sd-stat sv-blue"><div class="sv">${kha}</div><div class="sl">Khá 6.5–7.9</div></div>
+    <div class="sd-stat sv-orange"><div class="sv">${tb}</div><div class="sl">Đạt 5.0–6.4</div></div>
+    <div class="sd-stat sv-red"><div class="sv">${yeu}</div><div class="sl">CĐ &lt;5.0</div></div>
+  `;
+}
+
+/* ── UNDO ── */
+function pushUndo(desc){
+  const data = sdLoad();
+  const book = data.books.find(b=>b.id===SD.bookId);
+  if(!book) return;
+  SD_UNDO.push({ bookId:SD.bookId, hk:SD.hk, desc,
+    snapshot: JSON.stringify({hk1:book.hk1, hk2:book.hk2}) });
+  if(SD_UNDO.length > SD_UNDO_MAX) SD_UNDO.shift();
+  refreshUndoBtn();
+}
+function undoScore(){
+  if(SD_UNDO.length===0) return;
+  const frame = SD_UNDO.pop();
+  refreshUndoBtn();
+  if(frame.bookId !== SD.bookId) return;
+  const data = sdLoad();
+  const book = data.books.find(b=>b.id===SD.bookId);
+  if(!book) return;
+  const snap = JSON.parse(frame.snapshot);
+  book.hk1 = snap.hk1; book.hk2 = snap.hk2;
+  sdSave(data);
+  renderTable();
+}
+function refreshUndoBtn(){
+  const btn = document.getElementById('sd-undo-btn');
+  if(!btn) return;
+  btn.disabled = SD_UNDO.length===0;
+  btn.title = SD_UNDO.length>0 ? `Hoàn tác: ${SD_UNDO[SD_UNDO.length-1].desc} (Ctrl+Z)` : 'Không có gì để hoàn tác';
+}
+
+/* ── HISTORY ── */
+function logHistory(book, studentName, field, oldVal, newVal){
+  if(!book.history) book.history=[];
+  const now = new Date();
+  const t = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} ${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}`;
+  book.history.unshift({ t, name:studentName, field, old:oldVal, nw:newVal, hk:SD.hk });
+  if(book.history.length>100) book.history.length=100;
+}
+function showHistory(){
+  const panel = document.getElementById('sd-history-panel');
+  panel.style.display='';
+  renderHistoryBody();
+  const body = document.getElementById('sd-history-body');
+  body.classList.add('open');
+  document.getElementById('sd-hist-toggle').textContent='▲';
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function toggleHistory(){
+  const body = document.getElementById('sd-history-body');
+  const open = body.classList.toggle('open');
+  document.getElementById('sd-hist-toggle').textContent = open?'▲':'▼';
+  if(open) renderHistoryBody();
+}
+function renderHistoryBody(){
+  const data = sdLoad();
+  const book = data.books.find(b=>b.id===SD.bookId);
+  const hist = book?.history||[];
+  const el = document.getElementById('sd-history-body');
+  if(hist.length===0){
+    el.innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:.82rem">Chưa có lịch sử chỉnh sửa</div>';
+    return;
+  }
+  el.innerHTML = `
+    <div class="sd-hist-row" style="background:var(--bg);font-size:.7rem;font-weight:700;color:var(--muted)">
+      <span>Thời gian</span><span>Học sinh</span><span>Cột</span><span>Cũ</span><span>Mới</span>
+    </div>`+
+    hist.map(h=>`<div class="sd-hist-row">
+      <span class="hr-time">HK${h.hk} · ${h.t}</span>
+      <span class="hr-name">${escHtml(h.name)}</span>
+      <span class="hr-field">${h.field}</span>
+      <span class="hr-old">${h.old!==null?h.old:'—'}</span>
+      <span class="hr-new">${h.nw!==null?h.nw:'—'}</span>
+    </div>`).join('');
+}
+
+/* ── UPDATE SCORE ── */
+function updateScore(sid, type, idx, val){
+  const data = sdLoad();
+  const book = data.books.find(b=>b.id===SD.bookId);
+  if(!book) return;
+  const hkKey = SD.hk===1?'hk1':'hk2';
+  const stu = book[hkKey].students.find(s=>s.id===sid);
+  if(!stu) return;
+  const v = val===''?null:Math.min(10,Math.max(0,+val));
+  const fieldName = type==='tx'?`TX${idx+1}`: type==='gk'?'GK':'CK';
+  const oldVal = type==='tx'?stu[hkKey].tx[idx]: type==='gk'?stu[hkKey].gk:stu[hkKey].ck;
+  // Push undo before change
+  pushUndo(`${stu.ten} · ${fieldName}: ${oldVal??'—'} → ${v??'—'}`);
+  // Log history
+  logHistory(book, stu.ten, fieldName, oldVal, v);
+  // Apply
+  if(type==='tx') stu[hkKey].tx[idx]=v;
+  else if(type==='gk') stu[hkKey].gk=v;
+  else if(type==='ck') stu[hkKey].ck=v;
+  sdSave(data);
+  // Refresh TBM cell only
+  const nTX = getTX(book.mon, book.khoi);
+  const tbm = calcTBM(stu[hkKey], nTX);
+  const rows = document.getElementById('sd-tbody').querySelectorAll('tr');
+  const stus = book[hkKey].students;
+  const rowIdx = stus.findIndex(s=>s.id===sid);
+  if(rowIdx>=0 && rows[rowIdx]){
+    const cells = rows[rowIdx].querySelectorAll('td');
+    cells[cells.length-2].innerHTML = tbmBadge(tbm);
+  }
+  renderStats(book[hkKey].students, nTX, hkKey, isQual(book.mon));
+  // Refresh history if open
+  if(document.getElementById('sd-history-body').classList.contains('open')) renderHistoryBody();
+}
+
+/* ── ĐIỂM THƯỞNG ── */
+function addThuong(sid, delta){
+  const data = sdLoad();
+  const book = data.books.find(b=>b.id===SD.bookId);
+  if(!book) return;
+  // Update in hk1 (master)
+  const stu1 = book.hk1.students.find(s=>s.id===sid);
+  if(stu1){ stu1.thuong = Math.max(0,(stu1.thuong||0)+delta); }
+  const stu2 = book.hk2.students.find(s=>s.id===sid);
+  if(stu2){ stu2.thuong = stu1 ? stu1.thuong : Math.max(0,(stu2.thuong||0)+delta); }
+  sdSave(data);
+  // Update cell only
+  const hkKey = SD.hk===1?'hk1':'hk2';
+  const stus = book[hkKey].students;
+  const rowIdx = stus.findIndex(s=>s.id===sid);
+  if(rowIdx>=0){
+    const rows = document.getElementById('sd-tbody').querySelectorAll('tr');
+    if(rows[rowIdx]){
+      const thuong = stu1?.thuong||0;
+      const color = thuong>0?'var(--orange)':'var(--muted)';
+      rows[rowIdx].querySelector('.thuong-val').textContent=thuong;
+      rows[rowIdx].querySelector('.thuong-val').style.color=color;
+    }
+  }
+}
+
+/* ── ADD STUDENT ── */
+function addStudent(){
+  const nameEl = document.getElementById('sd-new-name');
+  const name = nameEl.value.trim();
+  if(!name){ nameEl.focus(); return; }
+  const data = sdLoad();
+  const book = data.books.find(b=>b.id===SD.bookId);
+  if(!book) return;
+  const nTX = getTX(book.mon, book.khoi);
+  const s = { id:uid(), ten:name, thuong:0,
+    hk1:{ tx:Array(nTX).fill(null), gk:null, ck:null },
+    hk2:{ tx:Array(nTX).fill(null), gk:null, ck:null }
+  };
+  book.hk1.students.push(s);
+  book.hk2.students.push(JSON.parse(JSON.stringify(s)));
+  sdSave(data);
+  nameEl.value='';
+  renderTable();
+  nameEl.focus();
+}
+
+/* ── DELETE STUDENTS MODAL ── */
+function openDeleteStudents(){
+  const data = sdLoad();
+  const book = data.books.find(b=>b.id===SD.bookId);
+  if(!book){ alert('Chưa chọn sổ điểm!'); return; }
+  const students = book.hk1.students;
+  if(students.length===0){ alert('Sổ điểm chưa có học sinh nào.'); return; }
+  const list = document.getElementById('del-student-list');
+  list.innerHTML = students.map((s,i)=>`
+    <label class="del-stu-row">
+      <input type="checkbox" class="del-cb" value="${s.id}"/>
+      <span class="ds-stt">${i+1}</span>
+      <span class="ds-name">${escHtml(s.ten)}</span>
+    </label>`).join('');
+  updateDelCount();
+  list.querySelectorAll('.del-cb').forEach(cb=>cb.addEventListener('change', updateDelCount));
+  openModal('modal-del-students');
+}
+function updateDelCount(){
+  const checked = document.querySelectorAll('.del-cb:checked').length;
+  const total   = document.querySelectorAll('.del-cb').length;
+  document.getElementById('del-sel-count').textContent =
+    checked>0 ? `Đã chọn ${checked}/${total} học sinh` : `Chọn học sinh cần xóa`;
+}
+function delSelectAll(val){
+  document.querySelectorAll('.del-cb').forEach(cb=>cb.checked=val);
+  updateDelCount();
+}
+function confirmDeleteStudents(){
+  const ids = new Set([...document.querySelectorAll('.del-cb:checked')].map(cb=>cb.value));
+  if(ids.size===0){ alert('Chưa chọn học sinh nào!'); return; }
+  if(!confirm(`Xóa ${ids.size} học sinh đã chọn? Điểm số sẽ mất vĩnh viễn.`)) return;
+  const data = sdLoad();
+  const book = data.books.find(b=>b.id===SD.bookId);
+  if(!book) return;
+  pushUndo(`Xóa ${ids.size} học sinh`);
+  book.hk1.students = book.hk1.students.filter(s=>!ids.has(s.id));
+  book.hk2.students = book.hk2.students.filter(s=>!ids.has(s.id));
+  sdSave(data);
+  closeModal('modal-del-students');
+  renderTable();
+}
+
+/* ── DELETE BOOK ── */
+function deleteBook(){
+  if(!confirm('Xóa sổ điểm này? Toàn bộ dữ liệu điểm sẽ mất.')) return;
+  const data = sdLoad();
+  data.books = data.books.filter(b=>b.id!==SD.bookId);
+  sdSave(data);
+  SD.bookId = null; SD_UNDO = [];
+  renderBookTabs(data);
+  if(data.books.length>0) selectBook(data.books[0].id);
+  else {
+    document.getElementById('sd-empty').style.display='';
+    document.getElementById('sd-book-view').style.display='none';
+  }
+}
+
+/* ── CREATE BOOK ── */
+function openCreateBook(){
+  document.getElementById('cb-namhoc').value = '2025-2026';
+  updateTXPreview();
+  openModal('modal-create-book');
+}
+function updateTXPreview(){
+  const mon = document.getElementById('cb-mon').value;
+  const khoi = document.getElementById('cb-khoi').value;
+  const lop = document.getElementById('cb-lop').value||'?';
+  const nTX = getTX(mon, khoi);
+  document.getElementById('tx-preview').innerHTML =
+    `📌 <strong>${mon}</strong> · Lớp ${lop} · Khối ${khoi}: <strong>${nTX} cột TX</strong> · GK×2 · CK×3<br>
+     <small>TBM = (TX1+…+TX${nTX} + GK×2 + CK×3) ÷ ${nTX+5}</small>`;
+}
+function createBook(){
+  const mon = document.getElementById('cb-mon').value;
+  const lop = document.getElementById('cb-lop').value.trim();
+  const khoi = +document.getElementById('cb-khoi').value;
+  const namhoc = document.getElementById('cb-namhoc').value.trim();
+  if(!lop){ alert('Vui lòng nhập tên lớp!'); return; }
+  const book = { id:uid(), mon, lop, khoi, namhoc, history:[],
+    hk1:{students:[]}, hk2:{students:[]} };
+  const data = sdLoad();
+  data.books.push(book);
+  sdSave(data);
+  closeModal('modal-create-book');
+  document.getElementById('cb-lop').value='';
+  renderBookTabs(data);
+  selectBook(book.id);
+}
+
+/* ── IMPORT ── */
+function openImportModal(){
+  const data = sdLoad();
+  const sel = document.getElementById('import-book-sel');
+  sel.innerHTML = data.books.length===0
+    ? '<option>— Chưa có sổ nào —</option>'
+    : data.books.map(b=>`<option value="${b.id}">${b.mon} · Lớp ${b.lop}</option>`).join('');
+  openModal('modal-import');
+}
+function doImport(){
+  const data = sdLoad();
+  const bid = document.getElementById('import-book-sel').value;
+  const book = data.books.find(b=>b.id===bid);
+  if(!book){ alert('Vui lòng chọn sổ điểm!'); return; }
+  const raw = document.getElementById('import-names').value;
+  const names = raw.split(/\n/).map(n=>n.trim()).filter(Boolean);
+  if(names.length===0){ alert('Danh sách trống!'); return; }
+  const nTX = getTX(book.mon, book.khoi);
+  let added=0;
+  names.forEach(name=>{
+    const s = { id:uid(), ten:name, thuong:0,
+      hk1:{tx:Array(nTX).fill(null),gk:null,ck:null},
+      hk2:{tx:Array(nTX).fill(null),gk:null,ck:null}
+    };
+    book.hk1.students.push(s);
+    book.hk2.students.push(JSON.parse(JSON.stringify(s)));
+    added++;
+  });
+  if(!book.history) book.history=[];
+  sdSave(data);
+  document.getElementById('import-names').value='';
+  const t=document.getElementById('import-toast');
+  t.textContent=`✅ Đã thêm ${added} học sinh!`;t.style.opacity=1;
+  setTimeout(()=>{t.style.opacity=0;},2200);
+  if(SD.bookId===bid) renderTable();
+  renderBookTabs(data);
+}
+
+/* ── EXPORT EXCEL ── */
+function exportExcel(){
+  const data = sdLoad();
+  const book = data.books.find(b=>b.id===SD.bookId);
+  if(!book) return;
+  const nTX = getTX(book.mon, book.khoi);
+  const hkKey = SD.hk===1?'hk1':'hk2';
+
+  const txHeaders = Array.from({length:nTX},(_,i)=>`TX${i+1}`);
+  const headerRow = ['STT','Họ và Tên','Điểm thưởng',...txHeaders,'GK (×2)','CK (×3)','TBM'];
+
+  const dataRows = book[hkKey].students.map((s,i)=>{
+    const d = s[hkKey];
+    const tbm = calcTBM(d, nTX);
+    return [
+      i+1, s.ten, s.thuong||0,
+      ...Array.from({length:nTX},(_,j)=>d.tx[j]!==null?d.tx[j]:''),
+      d.gk!==null?d.gk:'',
+      d.ck!==null?d.ck:'',
+      tbm!==null?tbm:''
+    ];
+  });
+
+  const allRows = [
+    [`SỔ ĐIỂM – ${book.mon} – LỚP ${book.lop} – HỌC KỲ ${SD.hk}`],
+    ['Trường THCS Long Thọ'],
+    [],
+    headerRow,
+    ...dataRows
+  ];
+
+  const ws = XLSX.utils.aoa_to_sheet(allRows);
+  ws['!cols'] = [
+    {wch:5},{wch:28},{wch:12},
+    ...Array.from({length:nTX},()=>({wch:8})),
+    {wch:10},{wch:10},{wch:8}
+  ];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, `HK${SD.hk}`);
+  XLSX.writeFile(wb, `SoDiem_${book.mon}_Lop${book.lop}_HK${SD.hk}.xlsx`);
+}
+
+/* Init when page is shown */
+const _origShowPage = showPage;
+showPage = function(pageId, el, section, page){
+  _origShowPage(pageId, el, section, page);
+  if(pageId==='gd-sodiem') sdInit();
+};
+
+// Init on load if gd-sodiem is active
+if(document.getElementById('gd-sodiem').classList.contains('active')) sdInit();
+
+
+// Init
+sdInit();
+document.addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key==='z') undoScore();
+});
+</script>
+</body>
+</html>

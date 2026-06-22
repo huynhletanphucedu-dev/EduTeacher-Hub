@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Đồng Hồ Bấm Giờ – EduTeacher Hub</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --text:#1e293b;--text2:#334155;--muted:#64748b;
+  --border:#e2e8f0;--bg:#f8fafc;--white:#fff;
+  --blue:#3b7de9;--green:#10b981;--orange:#f59e0b;--red:#ef4444;--purple:#8b5cf6;
+  --card-bg:#fff;
+}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;}
+body.fullscreen-mode{background:#0f172a;}
+body.fullscreen-mode .app-header{display:none;}
+body.fullscreen-mode .main-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:0;}
+body.fullscreen-mode .side-panel{display:none;}
+body.fullscreen-mode .main-grid{grid-template-columns:1fr;}
+body.fullscreen-mode .clock-card{background:#0f172a;box-shadow:none;border:none;}
+body.fullscreen-mode .flip-digit{background:#1e293b;color:#f1f5f9;}
+body.fullscreen-mode .flip-sep{color:#475569;}
+body.fullscreen-mode .mode-label{color:#94a3b8;}
+body.fullscreen-mode .ctrl-btns button{--btn-bg:#1e293b;--btn-text:#e2e8f0;}
+body.fullscreen-mode .progress-ring-bg{stroke:#1e293b;}
+
+/* HEADER */
+.app-header{background:linear-gradient(135deg,#3b7de9,#8b5cf6);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(59,125,233,.3);}
+.app-logo{color:#fff;font-size:1.1rem;font-weight:900;}
+.app-logo span{opacity:.7;font-weight:400;font-size:.85rem;margin-left:8px;}
+.hbtn{padding:7px 14px;border-radius:8px;border:none;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .15s;}
+.hbtn-outline{background:rgba(255,255,255,.2);color:#fff;border:1.5px solid rgba(255,255,255,.4);}
+.hbtn-outline:hover{background:rgba(255,255,255,.3);}
+.hbtn-white{background:#fff;color:#3b5fba;}
+.hbtn-white:hover{background:#eff6ff;}
+
+/* LAYOUT */
+.main-wrap{padding:28px 20px;flex:1;}
+.main-grid{display:grid;grid-template-columns:1fr 300px;gap:24px;max-width:980px;margin:0 auto;}
+@media(max-width:760px){.main-grid{grid-template-columns:1fr;}}
+
+/* CLOCK CARD */
+.clock-card{background:var(--card-bg);border-radius:24px;padding:36px 28px;box-shadow:0 8px 40px rgba(0,0,0,.08);border:1.5px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:24px;}
+
+/* MODE TABS */
+.mode-tabs{display:flex;background:var(--bg);border-radius:12px;padding:4px;gap:4px;}
+.mtab{padding:8px 20px;border-radius:9px;border:none;font-size:.82rem;font-weight:700;cursor:pointer;color:var(--muted);background:transparent;transition:all .15s;}
+.mtab.active{background:var(--white);color:var(--blue);box-shadow:0 2px 8px rgba(0,0,0,.1);}
+
+/* FLIP CLOCK */
+.flip-clock{display:flex;align-items:center;gap:4px;}
+.flip-digit{background:#1e293b;color:#f8fafc;border-radius:18px;padding:16px 24px;font-size:6rem;font-weight:900;min-width:120px;text-align:center;box-shadow:0 6px 20px rgba(0,0,0,.2);line-height:1;font-variant-numeric:tabular-nums;transition:color .1s;}
+.flip-sep{font-size:5rem;font-weight:900;color:#1e293b;padding:0 4px;line-height:1;animation:blink 1s step-start infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.flip-sep.no-blink{animation:none;opacity:1;}
+.mode-label{font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;}
+
+/* PROGRESS RING */
+.progress-wrap{position:relative;display:flex;align-items:center;justify-content:center;}
+.progress-wrap svg{transform:rotate(-90deg);}
+.progress-ring-bg{fill:none;stroke:#e2e8f0;stroke-width:12;}
+.progress-ring-fg{fill:none;stroke-width:12;stroke-linecap:round;transition:stroke-dashoffset .5s linear,stroke .3s;}
+
+/* CTRL BUTTONS */
+.ctrl-btns{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;}
+.ctrl-btns button{--btn-bg:#f1f5f9;--btn-text:var(--text2);
+  padding:16px 36px;border-radius:14px;border:none;font-size:1.1rem;font-weight:800;cursor:pointer;
+  background:var(--btn-bg);color:var(--btn-text);transition:all .15s;font-family:'Segoe UI',sans-serif;letter-spacing:.2px;}
+.ctrl-btns button:hover{filter:brightness(.94);}
+.btn-primary{--btn-bg:linear-gradient(135deg,#3b7de9,#8b5cf6);--btn-text:#fff!important;
+  background:linear-gradient(135deg,#3b7de9,#8b5cf6)!important;color:#fff!important;
+  box-shadow:0 4px 16px rgba(59,125,233,.3);}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 22px rgba(59,125,233,.4)!important;}
+.btn-red{--btn-bg:#fef2f2;--btn-text:#ef4444!important;background:#fef2f2!important;color:#ef4444!important;border:1.5px solid #fecaca!important;}
+.btn-red:hover{background:#fee2e2!important;}
+.btn-green{background:linear-gradient(135deg,#10b981,#06b6d4)!important;color:#fff!important;box-shadow:0 4px 16px rgba(16,185,129,.3)!important;}
+.btn-green:hover{transform:translateY(-1px);}
+
+/* STOPWATCH lap */
+.lap-list{display:flex;flex-direction:column;gap:4px;max-height:120px;overflow-y:auto;width:100%;}
+.lap-item{display:flex;justify-content:space-between;font-size:.78rem;padding:5px 10px;border-radius:7px;background:var(--bg);color:var(--text2);}
+.lap-item:first-child{color:var(--blue);font-weight:700;}
+.lap-num{color:var(--muted);}
+
+/* SIDE PANEL */
+.side-panel{display:flex;flex-direction:column;gap:16px;}
+.panel{background:var(--white);border-radius:16px;padding:18px;box-shadow:0 4px 20px rgba(0,0,0,.06);border:1.5px solid var(--border);}
+.panel-title{font-size:.78rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;}
+
+/* PRESETS */
+.preset-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.preset-btn{padding:10px 6px;border-radius:10px;border:1.5px solid var(--border);background:#fff;font-size:.78rem;font-weight:700;color:var(--text2);cursor:pointer;text-align:center;transition:all .14s;line-height:1.4;}
+.preset-btn:hover,.preset-btn.active{border-color:var(--blue);color:var(--blue);background:#eff6ff;}
+.preset-time{font-size:1rem;font-weight:900;display:block;color:var(--blue);}
+
+/* CUSTOM INPUT */
+.time-inputs{display:flex;gap:6px;align-items:center;margin-bottom:10px;}
+.time-inputs input{width:54px;padding:8px 6px;border-radius:9px;border:1.5px solid var(--border);font-size:1.1rem;font-weight:800;color:var(--text);text-align:center;outline:none;font-family:inherit;}
+.time-inputs input:focus{border-color:var(--blue);}
+.time-inputs span{font-size:.75rem;color:var(--muted);font-weight:700;}
+.set-btn{width:100%;padding:9px;border-radius:9px;border:none;background:linear-gradient(135deg,#3b7de9,#8b5cf6);color:#fff;font-weight:800;font-size:.82rem;cursor:pointer;}
+.set-btn:hover{opacity:.9;}
+
+/* SOUND / SETTINGS */
+.setting-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--bg);}
+.setting-row:last-child{border-bottom:none;}
+.setting-label{font-size:.8rem;font-weight:600;color:var(--text2);}
+.toggle{position:relative;width:40px;height:22px;cursor:pointer;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:#e2e8f0;border-radius:11px;transition:.2s;}
+.toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s;box-shadow:0 1px 4px rgba(0,0,0,.2);}
+.toggle input:checked+.toggle-slider{background:var(--blue);}
+.toggle input:checked+.toggle-slider:before{transform:translateX(18px);}
+select.mini{padding:4px 8px;border-radius:7px;border:1.5px solid var(--border);font-size:.78rem;color:var(--text);background:#fff;outline:none;font-family:inherit;}
+
+/* ALERT */
+.alert-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+.alert-overlay.show{display:flex;animation:fadeIn .2s;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.alert-card{background:#fff;border-radius:24px;padding:40px 32px;max-width:360px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:popIn .3s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{from{transform:scale(.75);opacity:0}to{transform:scale(1);opacity:1}}
+.alert-emoji{font-size:3.5rem;margin-bottom:10px;}
+.alert-title{font-size:1.4rem;font-weight:900;color:var(--text);margin-bottom:8px;}
+.alert-sub{font-size:.85rem;color:var(--muted);margin-bottom:24px;}
+.alert-btn{padding:12px 36px;border-radius:12px;border:none;background:linear-gradient(135deg,#3b7de9,#8b5cf6);color:#fff;font-weight:800;font-size:.9rem;cursor:pointer;}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e293b;color:#fff;padding:10px 20px;border-radius:10px;font-size:.82rem;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="app-logo">⏱ Đồng Hồ Bấm Giờ <span>EduTeacher Hub</span></div>
+  <div style="display:flex;gap:8px;">
+    <button class="hbtn hbtn-white" onclick="toggleFullscreen()" id="fs-btn">⛶ Toàn màn hình</button>
+  </div>
+</div>
+
+<div class="main-wrap">
+  <div class="main-grid">
+
+    <!-- CLOCK -->
+    <div class="clock-card">
+      <div class="mode-tabs">
+        <button class="mtab active" id="tab-countdown" onclick="switchMode('countdown')">⏳ Đếm Ngược</button>
+        <button class="mtab" id="tab-stopwatch" onclick="switchMode('stopwatch')">⏱ Bấm Giờ</button>
+      </div>
+
+      <!-- Countdown progress ring + digits -->
+      <div id="cd-view" style="display:flex;flex-direction:column;align-items:center;gap:20px;width:100%;">
+        <div class="progress-wrap">
+          <svg width="420" height="420" viewBox="0 0 420 420">
+            <circle class="progress-ring-bg" cx="210" cy="210" r="190"/>
+            <circle class="progress-ring-fg" id="prog-ring" cx="210" cy="210" r="190"
+              stroke="#3b7de9" stroke-dasharray="1194" stroke-dashoffset="0"/>
+          </svg>
+          <div style="position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px;">
+            <div style="display:flex;align-items:center;gap:2px;" id="cd-digits">
+              <span class="flip-digit" id="cd-h">00</span>
+              <span class="flip-sep" id="cd-sep1">:</span>
+              <span class="flip-digit" id="cd-m">05</span>
+              <span class="flip-sep" id="cd-sep2">:</span>
+              <span class="flip-digit" id="cd-s">00</span>
+            </div>
+            <div class="mode-label" id="cd-status">Sẵn sàng</div>
+          </div>
+        </div>
+        <div class="ctrl-btns" id="cd-btns">
+          <button class="btn-primary" id="cd-start-btn" onclick="cdToggle()">▶ Bắt đầu</button>
+          <button onclick="cdReset()" style="padding:12px 18px;">↺ Đặt lại</button>
+        </div>
+      </div>
+
+      <!-- Stopwatch -->
+      <div id="sw-view" style="display:none;flex-direction:column;align-items:center;gap:20px;width:100%;">
+        <div class="flip-clock">
+          <span class="flip-digit" id="sw-h">00</span>
+          <span class="flip-sep no-blink" id="sw-sep1">:</span>
+          <span class="flip-digit" id="sw-m">00</span>
+          <span class="flip-sep no-blink" id="sw-sep2">:</span>
+          <span class="flip-digit" id="sw-s">00</span>
+          <span class="flip-sep no-blink" style="font-size:2rem;">.</span>
+          <span class="flip-digit" style="font-size:3.5rem;min-width:80px;" id="sw-ms">00</span>
+        </div>
+        <div class="mode-label" id="sw-status">Sẵn sàng</div>
+        <div class="ctrl-btns">
+          <button class="btn-primary" id="sw-start-btn" onclick="swToggle()">▶ Bắt đầu</button>
+          <button class="btn-green" onclick="swLap()" id="sw-lap-btn" style="display:none;">⚑ Ghi nhớ</button>
+          <button onclick="swReset()">↺ Đặt lại</button>
+        </div>
+        <div class="lap-list" id="lap-list"></div>
+      </div>
+    </div>
+
+    <!-- SIDE PANEL -->
+    <div class="side-panel" id="side-panel">
+
+      <!-- PRESETS (countdown only) -->
+      <div class="panel" id="presets-panel">
+        <div class="panel-title">⚡ Thời Gian Nhanh</div>
+        <div class="preset-grid">
+          <button class="preset-btn" onclick="setPreset(1*60,'1 phút')"><span class="preset-time">1:00</span>1 phút</button>
+          <button class="preset-btn" onclick="setPreset(2*60,'2 phút')"><span class="preset-time">2:00</span>2 phút</button>
+          <button class="preset-btn" onclick="setPreset(3*60,'3 phút')"><span class="preset-time">3:00</span>3 phút</button>
+          <button class="preset-btn" onclick="setPreset(5*60,'5 phút')"><span class="preset-time">5:00</span>5 phút</button>
+          <button class="preset-btn" onclick="setPreset(10*60,'10 phút')"><span class="preset-time">10:00</span>10 phút</button>
+          <button class="preset-btn" onclick="setPreset(15*60,'15 phút')"><span class="preset-time">15:00</span>15 phút</button>
+          <button class="preset-btn" onclick="setPreset(20*60,'20 phút')"><span class="preset-time">20:00</span>20 phút</button>
+          <button class="preset-btn" onclick="setPreset(30*60,'30 phút')"><span class="preset-time">30:00</span>30 phút</button>
+        </div>
+      </div>
+
+      <!-- CUSTOM TIME -->
+      <div class="panel" id="custom-panel">
+        <div class="panel-title">⏰ Đặt Thời Gian</div>
+        <div class="time-inputs">
+          <input type="number" id="inp-h" min="0" max="23" value="0" placeholder="0"/> <span>giờ</span>
+          <input type="number" id="inp-m" min="0" max="59" value="5" placeholder="5"/> <span>phút</span>
+          <input type="number" id="inp-s" min="0" max="59" value="0" placeholder="0"/> <span>giây</span>
+        </div>
+        <button class="set-btn" onclick="applyCustom()">✔ Áp dụng</button>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="panel">
+        <div class="panel-title">⚙ Cài Đặt</div>
+        <div class="setting-row">
+          <span class="setting-label">🔔 Âm thanh khi hết giờ</span>
+          <label class="toggle"><input type="checkbox" id="opt-sound" checked/><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">🎨 Cảnh báo cuối (giây)</span>
+          <select class="mini" id="opt-warn">
+            <option value="0">Tắt</option>
+            <option value="5">5s</option>
+            <option value="10" selected>10s</option>
+            <option value="30">30s</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">🔴 Nhấp nháy khi hết giờ</span>
+          <label class="toggle"><input type="checkbox" id="opt-flash" checked/><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ALERT -->
+<div class="alert-overlay" id="alert-overlay" onclick="dismissAlert()">
+  <div class="alert-card" onclick="event.stopPropagation()">
+    <div class="alert-emoji">⏰</div>
+    <div class="alert-title">Hết Giờ!</div>
+    <div class="alert-sub" id="alert-sub">Thời gian đã kết thúc.</div>
+    <button class="alert-btn" onclick="dismissAlert()">✓ Đã Biết</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ── AUDIO ───────────────────────────────── */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+function beep(freq=880,dur=0.25,vol=0.5,type='sine'){
+  if(!audioCtx) audioCtx=new AudioCtx();
+  const osc=audioCtx.createOscillator();
+  const gain=audioCtx.createGain();
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.frequency.value=freq; osc.type=type;
+  gain.gain.setValueAtTime(vol,audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
+  osc.start(audioCtx.currentTime); osc.stop(audioCtx.currentTime+dur);
+}
+
+function alarmSound(){
+  [0,0.3,0.6,0.9,1.2].forEach(t=>{
+    setTimeout(()=>{beep(880,.2,.6,'square');},t*1000);
+    setTimeout(()=>{beep(660,.15,.4,'sine');},t*1000+100);
+  });
+}
+
+function warnSound(){
+  beep(660,.12,.3,'sine');
+}
+
+/* ── MODE SWITCH ────────────────────────── */
+let currentMode='countdown';
+
+function switchMode(m){
+  currentMode=m;
+  ['countdown','stopwatch'].forEach(t=>{
+    document.getElementById('tab-'+t).classList.toggle('active',t===m);
+  });
+  document.getElementById('cd-view').style.display = m==='countdown'?'flex':'none';
+  document.getElementById('sw-view').style.display = m==='stopwatch'?'flex':'none';
+  document.getElementById('presets-panel').style.display = m==='countdown'?'':'none';
+  document.getElementById('custom-panel').style.display = m==='countdown'?'':'none';
+  if(m==='stopwatch') swReset();
+}
+
+/* ── COUNTDOWN ──────────────────────────── */
+let cdTotal=5*60, cdRemaining=5*60, cdRunning=false, cdTimer=null, cdInterval=null;
+
+const CIRC = 2*Math.PI*190;
+
+function cdRender(){
+  const h=Math.floor(cdRemaining/3600);
+  const m=Math.floor((cdRemaining%3600)/60);
+  const s=cdRemaining%60;
+  document.getElementById('cd-h').textContent=String(h).padStart(2,'0');
+  document.getElementById('cd-m').textContent=String(m).padStart(2,'0');
+  document.getElementById('cd-s').textContent=String(s).padStart(2,'0');
+
+  const pct = cdTotal>0 ? (cdTotal-cdRemaining)/cdTotal : 0;
+  const offset = CIRC*(1-pct);
+  const ring=document.getElementById('prog-ring');
+  ring.style.strokeDashoffset=offset;
+
+  const warnSecs=parseInt(document.getElementById('opt-warn').value)||0;
+  const isWarning = warnSecs>0 && cdRemaining<=warnSecs && cdRemaining>0;
+  ring.style.stroke = cdRemaining===0?'#ef4444':isWarning?'#f59e0b':'#3b7de9';
+
+  const hEl=document.getElementById('cd-h');
+  [hEl, document.getElementById('cd-m'), document.getElementById('cd-s')].forEach(el=>{
+    el.style.background = cdRemaining===0?'#7f1d1d':isWarning?'#78350f':'#1e293b';
+  });
+}
+
+function cdToggle(){
+  if(!cdRunning){
+    if(cdRemaining===0) cdRemaining=cdTotal;
+    if(cdRemaining===0){showToast('Hãy đặt thời gian!');return;}
+    cdRunning=true;
+    document.getElementById('cd-start-btn').textContent='⏸ Tạm dừng';
+    document.getElementById('cd-status').textContent='Đang chạy...';
+    const sep1=document.getElementById('cd-sep1'),sep2=document.getElementById('cd-sep2');
+    sep1.style.animation='blink 1s step-start infinite';
+    sep2.style.animation='blink 1s step-start infinite';
+    cdTimer=setInterval(cdTick,1000);
+  } else {
+    cdRunning=false;
+    clearInterval(cdTimer);
+    document.getElementById('cd-start-btn').textContent='▶ Tiếp tục';
+    document.getElementById('cd-status').textContent='Đã tạm dừng';
+    document.getElementById('cd-sep1').style.animation='none';
+    document.getElementById('cd-sep2').style.animation='none';
+  }
+}
+
+function cdTick(){
+  const warnSecs=parseInt(document.getElementById('opt-warn').value)||0;
+  if(warnSecs>0 && cdRemaining===warnSecs && document.getElementById('opt-sound').checked) warnSound();
+  cdRemaining--;
+  cdRender();
+  if(cdRemaining<=0){
+    clearInterval(cdTimer); cdRunning=false;
+    document.getElementById('cd-start-btn').textContent='▶ Bắt đầu';
+    document.getElementById('cd-status').textContent='Hết giờ!';
+    document.getElementById('cd-sep1').style.animation='none';
+    document.getElementById('cd-sep2').style.animation='none';
+    if(document.getElementById('opt-sound').checked) alarmSound();
+    if(document.getElementById('opt-flash').checked) startFlash();
+    document.getElementById('alert-overlay').classList.add('show');
+  }
+}
+
+let flashInterval=null;
+function startFlash(){
+  let on=false; let count=0;
+  flashInterval=setInterval(()=>{
+    document.body.style.background=on?'#7f1d1d':'#0f172a';
+    on=!on; count++;
+    if(count>14){clearInterval(flashInterval);document.body.style.background='';}
+  },300);
+}
+
+function cdReset(){
+  clearInterval(cdTimer); cdRunning=false;
+  cdRemaining=cdTotal;
+  document.getElementById('cd-start-btn').textContent='▶ Bắt đầu';
+  document.getElementById('cd-status').textContent='Sẵn sàng';
+  document.getElementById('cd-sep1').style.animation='blink 1s step-start infinite';
+  document.getElementById('cd-sep2').style.animation='blink 1s step-start infinite';
+  cdRender();
+}
+
+function setPreset(secs,label){
+  clearInterval(cdTimer); cdRunning=false;
+  cdTotal=secs; cdRemaining=secs;
+  document.getElementById('cd-start-btn').textContent='▶ Bắt đầu';
+  document.getElementById('cd-status').textContent='Sẵn sàng';
+  document.getElementById('cd-sep1').style.animation='blink 1s step-start infinite';
+  document.getElementById('cd-sep2').style.animation='blink 1s step-start infinite';
+  // Update custom inputs
+  document.getElementById('inp-h').value=Math.floor(secs/3600);
+  document.getElementById('inp-m').value=Math.floor((secs%3600)/60);
+  document.getElementById('inp-s').value=secs%60;
+  cdRender(); showToast('Đặt '+label);
+}
+
+function applyCustom(){
+  const h=parseInt(document.getElementById('inp-h').value)||0;
+  const m=parseInt(document.getElementById('inp-m').value)||0;
+  const s=parseInt(document.getElementById('inp-s').value)||0;
+  const total=h*3600+m*60+s;
+  if(!total){showToast('Hãy nhập thời gian hợp lệ!');return;}
+  clearInterval(cdTimer); cdRunning=false;
+  cdTotal=total; cdRemaining=total;
+  document.getElementById('cd-start-btn').textContent='▶ Bắt đầu';
+  document.getElementById('cd-status').textContent='Sẵn sàng';
+  document.getElementById('cd-sep1').style.animation='blink 1s step-start infinite';
+  document.getElementById('cd-sep2').style.animation='blink 1s step-start infinite';
+  cdRender(); showToast('Đã đặt '+fmtTime(total));
+}
+
+function dismissAlert(){
+  document.getElementById('alert-overlay').classList.remove('show');
+  clearInterval(flashInterval);
+  document.body.style.background='';
+}
+
+/* ── STOPWATCH ──────────────────────────── */
+let swRunning=false, swTimer=null, swStart=0, swElapsed=0, swLaps=[];
+
+function swToggle(){
+  if(!swRunning){
+    swRunning=true;
+    swStart=Date.now()-swElapsed;
+    swTimer=setInterval(swTick,23);
+    document.getElementById('sw-start-btn').textContent='⏸ Dừng';
+    document.getElementById('sw-status').textContent='Đang chạy...';
+    document.getElementById('sw-lap-btn').style.display='';
+    document.getElementById('sw-sep1').style.animation='blink 1s step-start infinite';
+    document.getElementById('sw-sep2').style.animation='blink 1s step-start infinite';
+  } else {
+    swRunning=false;
+    clearInterval(swTimer);
+    swElapsed=Date.now()-swStart;
+    document.getElementById('sw-start-btn').textContent='▶ Tiếp tục';
+    document.getElementById('sw-status').textContent='Đã dừng';
+    document.getElementById('sw-sep1').style.animation='none';
+    document.getElementById('sw-sep2').style.animation='none';
+  }
+}
+
+function swTick(){
+  swElapsed=Date.now()-swStart;
+  const ms=Math.floor(swElapsed/10)%100;
+  const total=Math.floor(swElapsed/1000);
+  const h=Math.floor(total/3600);
+  const m=Math.floor((total%3600)/60);
+  const s=total%60;
+  document.getElementById('sw-h').textContent=String(h).padStart(2,'0');
+  document.getElementById('sw-m').textContent=String(m).padStart(2,'0');
+  document.getElementById('sw-s').textContent=String(s).padStart(2,'0');
+  document.getElementById('sw-ms').textContent=String(ms).padStart(2,'0');
+}
+
+function swLap(){
+  if(!swRunning) return;
+  const t=Date.now()-swStart;
+  swLaps.unshift({t,n:swLaps.length+1});
+  renderLaps();
+  beep(440,.08,.3,'sine');
+}
+
+function renderLaps(){
+  const list=document.getElementById('lap-list');
+  if(!swLaps.length){list.innerHTML='';return;}
+  list.innerHTML=swLaps.map((lap,i)=>`
+    <div class="lap-item">
+      <span class="lap-num">Mốc ${lap.n}</span>
+      <span>${fmtMs(lap.t)}</span>
+      ${i>0?`<span style="color:var(--muted);">+${fmtMs(lap.t-swLaps[i-1].t)}</span>`:'<span style="color:var(--blue);font-weight:800;">MỚI NHẤT</span>'}
+    </div>`).join('');
+}
+
+function swReset(){
+  clearInterval(swTimer); swRunning=false; swElapsed=0; swLaps=[];
+  document.getElementById('sw-h').textContent='00';
+  document.getElementById('sw-m').textContent='00';
+  document.getElementById('sw-s').textContent='00';
+  document.getElementById('sw-ms').textContent='00';
+  document.getElementById('sw-start-btn').textContent='▶ Bắt đầu';
+  document.getElementById('sw-status').textContent='Sẵn sàng';
+  document.getElementById('sw-lap-btn').style.display='none';
+  document.getElementById('sw-sep1').style.animation='none';
+  document.getElementById('sw-sep2').style.animation='none';
+  renderLaps();
+}
+
+/* ── FULLSCREEN ─────────────────────────── */
+function toggleFullscreen(){
+  const fsEl=document.documentElement;
+  const btn=document.getElementById('fs-btn');
+  if(!document.fullscreenElement){
+    fsEl.requestFullscreen && fsEl.requestFullscreen();
+    document.body.classList.add('fullscreen-mode');
+    btn.textContent='✕ Thoát toàn màn hình';
+  } else {
+    document.exitFullscreen && document.exitFullscreen();
+    document.body.classList.remove('fullscreen-mode');
+    btn.textContent='⛶ Toàn màn hình';
+  }
+}
+document.addEventListener('fullscreenchange',()=>{
+  if(!document.fullscreenElement){
+    document.body.classList.remove('fullscreen-mode');
+    document.getElementById('fs-btn').textContent='⛶ Toàn màn hình';
+  }
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&document.body.classList.contains('fullscreen-mode')){
+    document.body.classList.remove('fullscreen-mode');
+  }
+  if(e.key===' '){ e.preventDefault(); currentMode==='countdown'?cdToggle():swToggle(); }
+  if(e.key==='r'||e.key==='R'){ currentMode==='countdown'?cdReset():swReset(); }
+  if(e.key==='l'&&currentMode==='stopwatch') swLap();
+});
+
+/* ── UTILS ──────────────────────────────── */
+function fmtTime(s){
+  const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;
+  return (h?h+'g ':'')+String(m).padStart(2,'0')+'p'+String(sec).padStart(2,'0')+'s';
+}
+function fmtMs(ms){
+  const total=Math.floor(ms/1000);
+  const h=Math.floor(total/3600),m=Math.floor((total%3600)/60),s=total%60;
+  const cs=Math.floor((ms%1000)/10);
+  return (h?String(h).padStart(2,'0')+':':'')+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')+'.'+String(cs).padStart(2,'0');
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
+
+// Init
+cdRender();
+</script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Các Triều Đại Việt Nam</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0f172a;color:#f1f5f9;font-family:'Segoe UI',Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column}
+header{background:#1e293b;border-bottom:1px solid #334155;padding:16px 24px;flex-shrink:0}
+header h1{font-size:22px;font-weight:700;color:#f1f5f9;margin-bottom:4px}
+header p{font-size:13px;color:#94a3b8}
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.left-col{width:38%;min-width:260px;background:#1e293b;border-right:1px solid #334155;display:flex;flex-direction:column;overflow:hidden}
+.filter-bar{padding:12px 16px;border-bottom:1px solid #334155;display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0}
+.filter-btn{padding:5px 12px;border-radius:20px;border:1px solid #475569;background:transparent;color:#94a3b8;font-size:12px;cursor:pointer;transition:all 0.2s}
+.filter-btn.active{background:#3b82f6;border-color:#3b82f6;color:#fff}
+.timeline-scroll{flex:1;overflow-y:auto;padding:16px 16px 16px 0;position:relative}
+.timeline-scroll::-webkit-scrollbar{width:4px}
+.timeline-scroll::-webkit-scrollbar-track{background:#0f172a}
+.timeline-scroll::-webkit-scrollbar-thumb{background:#475569;border-radius:2px}
+.tl-line{position:absolute;left:40px;top:0;bottom:0;width:2px;background:#334155}
+.dynasty-row{display:flex;align-items:center;padding:10px 12px 10px 16px;cursor:pointer;border-radius:8px;margin-bottom:4px;margin-left:4px;position:relative;transition:background 0.15s,opacity 0.2s;border:1px solid transparent}
+.dynasty-row:hover{background:#0f172a55}
+.dynasty-row.selected{background:#1e40af22;border-color:#3b82f650}
+.dynasty-row.dimmed{opacity:0.25}
+.dot-wrap{position:relative;width:38px;flex-shrink:0;display:flex;justify-content:center}
+.dot{width:14px;height:14px;border-radius:50%;border:2px solid #0f172a;flex-shrink:0;z-index:1}
+.row-info{flex:1;min-width:0;margin-left:10px}
+.row-name{font-size:13px;font-weight:600;color:#f1f5f9;line-height:1.3}
+.row-years{font-size:11px;color:#64748b;margin-top:2px}
+.tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;flex-shrink:0;margin-left:8px;white-space:nowrap}
+.tag-dl{background:#064e3b;color:#6ee7b7}
+.tag-bt{background:#450a0a;color:#fca5a5}
+.tag-cn{background:#500724;color:#f9a8d4}
+.right-col{width:62%;background:#0f172a;overflow-y:auto;padding:24px}
+.right-col::-webkit-scrollbar{width:4px}
+.right-col::-webkit-scrollbar-track{background:#0f172a}
+.right-col::-webkit-scrollbar-thumb{background:#475569;border-radius:2px}
+.placeholder{height:100%;min-height:300px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#475569}
+.placeholder .arrow{font-size:32px}
+.placeholder p{font-size:15px}
+.info-card{background:#1e293b;border-radius:12px;padding:24px;border:1px solid #334155}
+.info-header{margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #334155}
+.info-title{font-size:24px;font-weight:700;margin-bottom:8px}
+.year-badge{display:inline-block;background:#0f172a;border:1px solid #475569;color:#94a3b8;font-size:12px;padding:3px 10px;border-radius:6px}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.info-item{background:#0f172a;border-radius:8px;padding:12px}
+.info-label{font-size:11px;color:#64748b;margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.info-value{font-size:13px;color:#e2e8f0;line-height:1.5}
+.kinh-do-badge{display:inline-flex;align-items:center;gap:5px;background:#1e3a5f;color:#93c5fd;padding:5px 10px;border-radius:6px;font-size:13px;font-weight:500}
+.section-title{font-size:13px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px}
+.events-list{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.events-list li{padding:8px 12px;background:#0f172a;border-left:3px solid #475569;border-radius:0 6px 6px 0;font-size:13px;color:#cbd5e1;line-height:1.5}
+.meaning-box{background:#1c130022;border:1px solid #92400e55;border-radius:8px;padding:14px;font-size:13px;color:#fcd34d;line-height:1.6;background-color:#1a0e00}
+.stats-bar{background:#1e293b;border-top:1px solid #334155;padding:14px 24px;display:flex;gap:16px;flex-shrink:0}
+.stat-card{flex:1;background:#0f172a;border-radius:8px;padding:12px 16px;text-align:center;border:1px solid #334155}
+.stat-card .stat-icon{font-size:18px;margin-bottom:4px}
+.stat-card .stat-num{font-size:15px;font-weight:700;color:#f1f5f9;margin-bottom:2px}
+.stat-card .stat-label{font-size:11px;color:#64748b}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏯 Các Triều Đại Việt Nam</h1>
+  <p>Từ Văn Lang đến nhà Nguyễn – hơn 4000 năm lịch sử</p>
+</header>
+
+<div class="main">
+  <div class="left-col">
+    <div class="filter-bar">
+      <button class="filter-btn active" data-filter="all">Tất cả</button>
+      <button class="filter-btn" data-filter="Độc lập">Độc lập</button>
+      <button class="filter-btn" data-filter="Bắc thuộc">Bắc thuộc</button>
+      <button class="filter-btn" data-filter="Chống XN">Chống XN</button>
+    </div>
+    <div class="timeline-scroll" id="timelineScroll">
+      <div class="tl-line"></div>
+      <div id="dynastyList"></div>
+    </div>
+  </div>
+
+  <div class="right-col" id="rightCol">
+    <div class="placeholder" id="placeholder">
+      <div class="arrow">←</div>
+      <p>Chọn một triều đại để xem chi tiết</p>
+    </div>
+    <div id="infoPanel" style="display:none"></div>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-card">
+    <div class="stat-icon">🏛️</div>
+    <div class="stat-num">17 triều đại</div>
+    <div class="stat-label">trong lịch sử Việt Nam</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">📅</div>
+    <div class="stat-num">Hơn 4000 năm</div>
+    <div class="stat-label">lịch sử dân tộc</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">⚔️</div>
+    <div class="stat-num">3 lần thắng Mông Nguyên</div>
+    <div class="stat-label">thế lực hùng mạnh nhất thế giới</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon">🔓</div>
+    <div class="stat-num">Năm 938</div>
+    <div class="stat-label">Chấm dứt 1000 năm Bắc thuộc</div>
+  </div>
+</div>
+
+<script>
+var dynasties = [
+  {
+    id:1, name:"Nhà nước Văn Lang", years:"2879 TCN – 258 TCN", color:"#f59e0b", tag:"Độc lập",
+    founder:"Vua Hùng (18 đời)", capital:"Phong Châu (Phú Thọ)", duration:"~2621 năm", regime:"Nhà nước đầu tiên",
+    events:["Lễ hội Đền Hùng – biểu tượng cội nguồn dân tộc","Trống đồng Đông Sơn – tinh hoa văn minh","Bánh chưng bánh giầy – tết cổ truyền","Nông nghiệp lúa nước phát triển"],
+    meaning:"Nhà nước đầu tiên của người Việt, đặt nền móng cho bản sắc dân tộc."
+  },
+  {
+    id:2, name:"Nhà nước Âu Lạc", years:"257 TCN – 179 TCN", color:"#f59e0b", tag:"Độc lập",
+    founder:"An Dương Vương (Thục Phán)", capital:"Cổ Loa (Hà Nội)", duration:"78 năm", regime:"Quân chủ",
+    events:["Xây thành Cổ Loa – kinh thành xoắn ốc độc đáo","Hợp nhất Lạc Việt và Âu Việt","Nỏ thần Kim Quy (truyền thuyết)","Mất nước về tay Triệu Đà (179 TCN)"],
+    meaning:"Hợp nhất hai tộc người Lạc Việt và Âu Việt, mở rộng lãnh thổ."
+  },
+  {
+    id:3, name:"Bắc thuộc lần 1 (Nhà Hán đô hộ)", years:"179 TCN – 40", color:"#ef4444", tag:"Bắc thuộc",
+    founder:"Nhà Hán (Trung Quốc) đô hộ", capital:"Luy Lâu (Bắc Ninh)", duration:"~219 năm", regime:"Đô hộ",
+    events:["Nhà Triệu → Nhà Hán chiếm đóng","Đồng hóa văn hóa, bóc lột nặng nề","Tô Định làm Thái thú tàn bạo","Mầm mống khởi nghĩa nảy sinh"],
+    meaning:"Bắt đầu thời kỳ Bắc thuộc đau thương, ý chí độc lập ngày càng mạnh."
+  },
+  {
+    id:4, name:"Khởi nghĩa Hai Bà Trưng", years:"40 – 43", color:"#ec4899", tag:"Chống XN",
+    founder:"Trưng Trắc, Trưng Nhị", capital:"Mê Linh (Vĩnh Phúc)", duration:"3 năm", regime:"Độc lập ngắn",
+    events:["Đánh đuổi Thái thú Tô Định năm 40","Khôi phục độc lập, Trưng Trắc xưng vương","65 thành trì được giải phóng","Mã Viện dẹp khởi nghĩa năm 43"],
+    meaning:"Biểu tượng tinh thần bất khuất chống ngoại xâm của phụ nữ Việt Nam."
+  },
+  {
+    id:5, name:"Bắc thuộc lần 2–3 & Khởi nghĩa", years:"43 – 938", color:"#ef4444", tag:"Bắc thuộc",
+    founder:"Nhiều cuộc khởi nghĩa", capital:"(Đô hộ)", duration:"~895 năm", regime:"Đô hộ xen lẫn khởi nghĩa",
+    events:["Bà Triệu khởi nghĩa (248) – \"Tôi muốn cưỡi cơn gió mạnh...\"","Lý Bí lập Nhà Tiền Lý (544)","Mai Thúc Loan – Vua Đen (722)","Phùng Hưng – Bố Cái Đại Vương (791)"],
+    meaning:"Dù bị đô hộ, người Việt không ngừng đấu tranh giành độc lập."
+  },
+  {
+    id:6, name:"Nhà Ngô", years:"939 – 965", color:"#10b981", tag:"Độc lập",
+    founder:"Ngô Quyền", capital:"Cổ Loa (Hà Nội)", duration:"26 năm", regime:"Quân chủ",
+    events:["Chiến thắng Bạch Đằng (938) – cắm cọc nhọn đánh tan quân Nam Hán","Chấm dứt hơn 1000 năm Bắc thuộc","Ngô Quyền xưng vương, lập triều đình","Loạn 12 sứ quân sau khi Ngô Quyền mất"],
+    meaning:"Mốc son chói lọi – chấm dứt 1000 năm Bắc thuộc, mở kỷ nguyên độc lập."
+  },
+  {
+    id:7, name:"Nhà Đinh", years:"968 – 980", color:"#10b981", tag:"Độc lập",
+    founder:"Đinh Bộ Lĩnh (Đinh Tiên Hoàng)", capital:"Hoa Lư (Ninh Bình)", duration:"12 năm", regime:"Quân chủ",
+    events:["Dẹp loạn 12 sứ quân, thống nhất đất nước","Đặt quốc hiệu Đại Cồ Việt","Đặt niên hiệu, đúc tiền riêng","Xây dựng bộ máy nhà nước có tổ chức"],
+    meaning:"Thống nhất đất nước sau loạn cát cứ, xây dựng nhà nước độc lập có chủ quyền."
+  },
+  {
+    id:8, name:"Nhà Tiền Lê", years:"980 – 1009", color:"#10b981", tag:"Độc lập",
+    founder:"Lê Hoàn (Lê Đại Hành)", capital:"Hoa Lư (Ninh Bình)", duration:"29 năm", regime:"Quân chủ",
+    events:["Đánh tan quân Tống xâm lược (981)","Bình định Chiêm Thành phía Nam","Xây dựng đường giao thông","Phát triển nông nghiệp, đào kênh"],
+    meaning:"Bảo vệ vững chắc nền độc lập trước áp lực từ phương Bắc và phương Nam."
+  },
+  {
+    id:9, name:"Nhà Lý", years:"1009 – 1225", color:"#3b82f6", tag:"Độc lập",
+    founder:"Lý Thái Tổ → Lý Huệ Tông (9 đời)", capital:"Thăng Long (Hà Nội)", duration:"216 năm", regime:"Quân chủ phong kiến",
+    events:["Dời đô ra Thăng Long (1010) – \"Chiếu dời đô\"","Lý Thường Kiệt đánh Tống (1075–1077), thơ \"Nam quốc sơn hà\"","Xây Văn Miếu – Quốc Tử Giám (1070)","Tổ chức khoa thi đầu tiên (1075)"],
+    meaning:"Xây dựng nhà nước phong kiến hoàn chỉnh, phát triển văn hóa Đại Việt."
+  },
+  {
+    id:10, name:"Nhà Trần", years:"1225 – 1400", color:"#8b5cf6", tag:"Độc lập",
+    founder:"Trần Thái Tông → Trần Thiếu Đế (13 đời)", capital:"Thăng Long (Hà Nội)", duration:"175 năm", regime:"Quân chủ phong kiến",
+    events:["Ba lần đại thắng quân Mông–Nguyên (1258, 1285, 1288)","Hưng Đạo Vương Trần Quốc Tuấn – \"Hịch tướng sĩ\"","Hội nghị Diên Hồng – \"Đánh!\"","Chiến thắng Bạch Đằng lần 2 (1288)"],
+    meaning:"Kỳ tích ba lần đánh thắng đế quốc Mông Cổ hùng mạnh nhất thế giới."
+  },
+  {
+    id:11, name:"Nhà Hồ", years:"1400 – 1407", color:"#f59e0b", tag:"Độc lập",
+    founder:"Hồ Quý Ly, Hồ Hán Thương", capital:"Tây Đô (Thanh Hóa)", duration:"7 năm", regime:"Quân chủ",
+    events:["Hồ Quý Ly cướp ngôi nhà Trần (1400)","Phát hành tiền giấy đầu tiên","Cải cách hành chính, giáo dục","Thất bại trước quân Minh (1407) – mất nước"],
+    meaning:"Cải cách táo bạo nhưng thất bại, để mất nước vào tay nhà Minh."
+  },
+  {
+    id:12, name:"Minh thuộc & Lam Sơn", years:"1407 – 1427", color:"#ef4444", tag:"Chống XN",
+    founder:"Lê Lợi (khởi nghĩa)", capital:"Lam Sơn (Thanh Hóa)", duration:"20 năm kháng chiến", regime:"Kháng chiến",
+    events:["Khởi nghĩa Lam Sơn (1418) – Lê Lợi, Nguyễn Trãi","10 năm kháng chiến gian khổ","Đại thắng quân Minh (1427)","Bình Ngô Đại Cáo (1428) – Tuyên ngôn độc lập"],
+    meaning:"\"Bình Ngô Đại Cáo\" – Tuyên ngôn độc lập hùng tráng, khẳng định chủ quyền dân tộc."
+  },
+  {
+    id:13, name:"Nhà Lê Sơ", years:"1428 – 1527", color:"#06b6d4", tag:"Độc lập",
+    founder:"Lê Thái Tổ → Lê Cung Hoàng (10 đời tiêu biểu)", capital:"Thăng Long (Hà Nội)", duration:"99 năm", regime:"Quân chủ phong kiến cực thịnh",
+    events:["Lê Thánh Tông – vị vua vĩ đại nhất (1460–1497)","Bộ luật Hồng Đức – bộ luật tiến bộ nhất thời phong kiến","Mở rộng lãnh thổ vào Nam đến Bình Định","Tổ chức 26 kỳ thi Hội"],
+    meaning:"Thời kỳ cực thịnh của chế độ phong kiến Việt Nam về văn hóa, luật pháp, lãnh thổ."
+  },
+  {
+    id:14, name:"Nhà Mạc & Nam Bắc triều", years:"1527 – 1592", color:"#64748b", tag:"Độc lập",
+    founder:"Mạc Đăng Dung / Nhà Lê trung hưng", capital:"Thăng Long / Vạn Lại", duration:"65 năm", regime:"Nội chiến",
+    events:["Mạc Đăng Dung cướp ngôi Lê (1527)","Nhà Lê trung hưng ở phía Nam","Đất nước bị chia cắt","Nhà Lê diệt Mạc, thống nhất lại (1592)"],
+    meaning:"Giai đoạn nội chiến, phân liệt làm suy yếu đất nước."
+  },
+  {
+    id:15, name:"Trịnh – Nguyễn phân tranh", years:"1627 – 1786", color:"#f59e0b", tag:"Độc lập",
+    founder:"Chúa Trịnh (Bắc) / Chúa Nguyễn (Nam)", capital:"Thăng Long (Trịnh) / Phú Xuân – Huế (Nguyễn)", duration:"~160 năm", regime:"Phân liệt",
+    events:["Sông Gianh là ranh giới Bắc–Nam","7 lần giao tranh lớn","Chúa Nguyễn mở cõi về phương Nam đến Nam Bộ","Hội An trở thành thương cảng quốc tế"],
+    meaning:"Mở rộng lãnh thổ về phía Nam nhưng đất nước bị phân chia, dân tình khổ cực."
+  },
+  {
+    id:16, name:"Nhà Tây Sơn", years:"1778 – 1802", color:"#10b981", tag:"Chống XN",
+    founder:"Nguyễn Nhạc, Nguyễn Huệ (Quang Trung), Nguyễn Lữ", capital:"Phú Xuân (Huế)", duration:"24 năm", regime:"Quân chủ",
+    events:["Đại phá quân Thanh – Tết Kỷ Dậu (1789)","Trận Đống Đa – Nguyễn Huệ đại thắng 29 vạn quân","Thống nhất đất nước lần đầu","Chiếu khuyến nông, chữ Nôm là quốc ngữ"],
+    meaning:"Thống nhất đất nước và đại phá quân Thanh – đỉnh cao của phong trào nông dân."
+  },
+  {
+    id:17, name:"Nhà Nguyễn", years:"1802 – 1945", color:"#f59e0b", tag:"Độc lập",
+    founder:"13 đời vua (Gia Long → Bảo Đại)", capital:"Phú Xuân – Huế", duration:"143 năm", regime:"Quân chủ phong kiến cuối cùng",
+    events:["Gia Long thống nhất đất nước (1802), đặt tên Việt Nam","Pháp xâm lược (1858), mất dần Nam Kỳ","Kinh thành Huế – Cố đô Di sản UNESCO","Bảo Đại thoái vị (1945) – kết thúc chế độ phong kiến"],
+    meaning:"Triều đại phong kiến cuối cùng, để lại Cố đô Huế và tên gọi \"Việt Nam\" đến ngày nay."
+  }
+];
+
+var tagClass = {"Độc lập":"tag-dl","Bắc thuộc":"tag-bt","Chống XN":"tag-cn"};
+var selectedId = null;
+var activeFilter = "all";
+
+function renderTimeline() {
+  var list = document.getElementById("dynastyList");
+  list.innerHTML = "";
+  dynasties.forEach(function(d) {
+    var isMatch = activeFilter === "all" || d.tag === activeFilter;
+    var row = document.createElement("div");
+    var cls = "dynasty-row";
+    if (selectedId === d.id) cls += " selected";
+    if (!isMatch) cls += " dimmed";
+    row.className = cls;
+    row.dataset.id = d.id;
+    row.innerHTML =
+      '<div class="dot-wrap"><div class="dot" style="background:' + d.color + '"></div></div>' +
+      '<div class="row-info">' +
+        '<div class="row-name">' + d.name + '</div>' +
+        '<div class="row-years">' + d.years + '</div>' +
+      '</div>' +
+      '<span class="tag ' + tagClass[d.tag] + '">' + d.tag + '</span>';
+    row.addEventListener("click", function() { selectDynasty(d.id); });
+    list.appendChild(row);
+  });
+}
+
+function selectDynasty(id) {
+  selectedId = id;
+  var d = null;
+  for (var i = 0; i < dynasties.length; i++) {
+    if (dynasties[i].id === id) { d = dynasties[i]; break; }
+  }
+  renderTimeline();
+
+  document.getElementById("placeholder").style.display = "none";
+  var panel = document.getElementById("infoPanel");
+  panel.style.display = "block";
+
+  var eventsHtml = d.events.map(function(e) {
+    return "<li>" + e + "</li>";
+  }).join("");
+
+  panel.innerHTML =
+    '<div class="info-card">' +
+      '<div class="info-header">' +
+        '<div class="info-title" style="color:' + d.color + '">' + d.name + '</div>' +
+        '<span class="year-badge">' + d.years + '</span>' +
+      '</div>' +
+      '<div class="info-grid">' +
+        '<div class="info-item">' +
+          '<div class="info-label">👑 Người sáng lập / Vua tiêu biểu</div>' +
+          '<div class="info-value">' + d.founder + '</div>' +
+        '</div>' +
+        '<div class="info-item">' +
+          '<div class="info-label">Kinh đô</div>' +
+          '<div class="info-value"><span class="kinh-do-badge">📍 ' + d.capital + '</span></div>' +
+        '</div>' +
+        '<div class="info-item">' +
+          '<div class="info-label">⏳ Thời gian tồn tại</div>' +
+          '<div class="info-value">' + d.duration + '</div>' +
+        '</div>' +
+        '<div class="info-item">' +
+          '<div class="info-label">🏷️ Thể chế</div>' +
+          '<div class="info-value">' + d.regime + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="section-title">📌 Sự kiện quan trọng</div>' +
+      '<ul class="events-list">' + eventsHtml + '</ul>' +
+      '<div class="section-title">💡 Ý nghĩa lịch sử</div>' +
+      '<div class="meaning-box">' + d.meaning + '</div>' +
+    '</div>';
+}
+
+document.querySelectorAll(".filter-btn").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    document.querySelectorAll(".filter-btn").forEach(function(b) { b.classList.remove("active"); });
+    btn.classList.add("active");
+    activeFilter = btn.dataset.filter;
+    renderTimeline();
+  });
+});
+
+renderTimeline();
+</script>
+</body>
+</html>

@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Meteor Defense — Động Từ Bất Quy Tắc</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Roboto:wght@400;700&display=swap');
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body {
+            margin: 0; padding: 0; overflow: hidden;
+            background-color: #000;
+            font-family: 'Roboto', sans-serif;
+            color: white;
+            display: flex; flex-direction: column; align-items: center;
+            height: 100vh; user-select: none;
+        }
+
+        /* --- BACKGROUND --- */
+        #star-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;
+            background-size: cover; background-position: center; background-repeat: no-repeat;
+            filter: brightness(0.65);
+        }
+        .bg-mercury { background-image: url('https://images.unsplash.com/photo-1614730341194-75c60740a073?q=80&w=2000&auto=format&fit=crop'); }
+        .bg-venus   { background-image: url('https://images.unsplash.com/photo-1614732414444-096e6f582910?q=80&w=2000&auto=format&fit=crop'); }
+        .bg-earth   { background-image: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2000&auto=format&fit=crop'); }
+        .bg-mars    { background-image: url('https://images.unsplash.com/photo-1614728853913-1e221a652481?q=80&w=2000&auto=format&fit=crop'); }
+        .bg-jupiter { background-image: url('https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg'); }
+        .bg-saturn  { background-image: url('https://images.unsplash.com/photo-1614732484003-ef9881555dc3?q=80&w=2000&auto=format&fit=crop'); }
+        .bg-uranus  { background-image: url('https://upload.wikimedia.org/wikipedia/commons/3/3d/Uranus2.jpg'); }
+        .bg-neptune { background-image: url('https://upload.wikimedia.org/wikipedia/commons/5/56/Neptune_Full.jpg'); }
+
+        /* --- GAME LAYOUT --- */
+        #game-wrapper {
+            display: flex; flex-direction: column; align-items: center;
+            width: 100%; height: 100vh;
+        }
+
+        /* STATUS BAR */
+        #status-bar {
+            width: 100%; display: flex; justify-content: space-between; align-items: center;
+            padding: 6px 12px;
+            background: rgba(0,0,0,0.75);
+            border-bottom: 2px solid #3498db;
+            font-weight: bold; font-size: 13px;
+            min-height: 44px;
+        }
+        #status-bar .sound-btns { display: flex; gap: 6px; }
+        .toggle-btn {
+            cursor: pointer; background: #2c3e50;
+            border: 1px solid #3498db; color: #fff;
+            padding: 6px 10px; border-radius: 4px;
+            font-size: 12px; font-weight: bold;
+            min-width: 48px; min-height: 36px;
+        }
+        .toggle-btn.active-btn { background: #27ae60; border-color: #2ecc71; }
+
+        /* CANVAS */
+        #gameCanvas {
+            display: block;
+            width: 100vw;
+            height: 55vh;
+            background: rgba(0,0,0,0.15);
+            border-bottom: 2px solid #3498db;
+        }
+
+        /* ANSWER BUTTONS AREA */
+        #answer-area {
+            width: 100%; flex: 1;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.7);
+            padding: 8px 6px;
+            gap: 6px;
+        }
+
+        .ans-btn {
+            flex: 1;
+            min-height: 60px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            background: #1a2a4a;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            cursor: pointer;
+            padding: 8px 4px;
+            text-align: center;
+            transition: background 0.1s;
+            -webkit-tap-highlight-color: transparent;
+            word-break: break-word;
+        }
+        .ans-btn:active { background: #2980b9; }
+        .ans-btn.flash-correct { background: #27ae60 !important; border-color: #2ecc71; }
+        .ans-btn.flash-wrong   { background: #e74c3c !important; border-color: #c0392b; }
+
+        /* OVERLAYS */
+        #overlay, #game-over-screen {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(13, 17, 23, 0.97);
+            padding: 20px 16px;
+            border: 3px solid #f1c40f;
+            border-radius: 14px;
+            text-align: center;
+            z-index: 20;
+            width: 92vw; max-width: 480px;
+            max-height: 92vh; overflow-y: auto;
+            box-shadow: 0 0 40px rgba(241,196,15,0.4);
+        }
+        .hidden { display: none !important; }
+
+        h1.game-title {
+            font-family: 'Press Start 2P', cursive;
+            color: #f1c40f;
+            text-shadow: 3px 3px #c0392b;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 0 0 4px 0;
+        }
+
+        .overlay-title {
+            font-family: 'Press Start 2P', cursive;
+            color: #f1c40f; font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .btn {
+            background: #e74c3c; color: white;
+            border: none; padding: 14px 24px;
+            font-size: 16px; font-weight: bold;
+            border-radius: 6px; cursor: pointer;
+            font-family: 'Press Start 2P', cursive;
+            margin-top: 16px;
+            box-shadow: 0 4px #c0392b;
+            min-height: 52px; width: 100%;
+        }
+        .btn:active { transform: translateY(2px); box-shadow: 0 2px #c0392b; }
+
+        input.name-input {
+            padding: 10px; font-size: 15px; width: 90%;
+            margin-bottom: 10px; text-align: center;
+            border: 2px solid #f1c40f;
+            background: #fff; color: #000;
+            border-radius: 5px;
+        }
+
+        .settings-group {
+            margin: 12px 0;
+            border-top: 1px dashed #555;
+            border-bottom: 1px dashed #555;
+            padding: 12px 0;
+            text-align: left;
+        }
+        .setting-row {
+            margin-bottom: 12px;
+            display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+        }
+        .setting-label {
+            width: 110px; color: #3498db;
+            font-family: 'Press Start 2P'; font-size: 10px;
+        }
+        #bg-select {
+            padding: 8px; border-radius: 5px;
+            background: #2c3e50; color: white;
+            border: 2px solid #3498db;
+            font-weight: bold; cursor: pointer;
+            flex: 1;
+        }
+        .radio-group { display: flex; gap: 12px; flex-wrap: wrap; }
+        .radio-group label {
+            cursor: pointer; font-size: 14px; font-weight: bold;
+            display: flex; align-items: center; gap: 4px;
+            min-height: 36px;
+        }
+        .diff-easy { color: #2ecc71; }
+        .diff-medium { color: #f39c12; }
+        .diff-hard { color: #e74c3c; }
+
+        .review-table, .leaderboard-table {
+            width: 100%; border-collapse: collapse;
+            margin-top: 8px; font-size: 13px;
+        }
+        th { color: #f1c40f; border-bottom: 2px solid #fff; padding: 5px; }
+        td { padding: 5px; border-bottom: 1px solid #555; }
+        .missed-word { color: #e74c3c; font-weight: bold; }
+        .correct-ans { color: #2ecc71; font-weight: bold; }
+
+        /* shake animation */
+        @keyframes shake {
+            0%,100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-6px); }
+            80% { transform: translateX(6px); }
+        }
+        .shake { animation: shake 0.35s ease; }
+    </style>
+</head>
+<body>
+
+<div id="star-bg" class="bg-earth"></div>
+
+<div id="game-wrapper">
+    <!-- STATUS BAR -->
+    <div id="status-bar">
+        <div style="color:#2ecc71; font-size:12px;">
+            <span id="ui-name">Guest</span> | <span id="score">0</span>pts
+        </div>
+        <div class="sound-btns">
+            <button class="toggle-btn active-btn" id="music-btn" onclick="toggleMusic()">🎵</button>
+            <button class="toggle-btn active-btn" id="sfx-btn" onclick="toggleSFX()">🔊</button>
+        </div>
+        <div style="color:#e74c3c; font-size:12px;">❤️ <span id="lives">5</span></div>
+    </div>
+
+    <!-- CANVAS -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- ANSWER BUTTONS -->
+    <div id="answer-area">
+        <button class="ans-btn" id="btn0" ontouchstart="handleAnswer(0)" onclick="handleAnswer(0)">—</button>
+        <button class="ans-btn" id="btn1" ontouchstart="handleAnswer(1)" onclick="handleAnswer(1)">—</button>
+        <button class="ans-btn" id="btn2" ontouchstart="handleAnswer(2)" onclick="handleAnswer(2)">—</button>
+    </div>
+</div>
+
+<!-- START SCREEN -->
+<div id="overlay">
+    <h2 class="overlay-title">🚀 MISSION START</h2>
+    <h1 class="game-title">METEOR DEFENSE<br>IRREGULAR VERBS</h1>
+
+    <input type="text" id="input-player-name" class="name-input" placeholder="ENTER YOUR NAME" maxlength="15">
+
+    <div class="settings-group">
+        <div class="setting-row">
+            <span class="setting-label">LOCATION:</span>
+            <select id="bg-select" onchange="previewBg()">
+                <option value="bg-mercury">1) Mercury</option>
+                <option value="bg-venus">2) Venus</option>
+                <option value="bg-earth" selected>3) Earth</option>
+                <option value="bg-mars">4) Mars</option>
+                <option value="bg-jupiter">5) Jupiter</option>
+                <option value="bg-saturn">6) Saturn</option>
+                <option value="bg-uranus">7) Uranus</option>
+                <option value="bg-neptune">8) Neptune</option>
+            </select>
+        </div>
+        <div class="setting-row">
+            <span class="setting-label">DIFFICULTY:</span>
+            <div class="radio-group">
+                <label class="diff-easy"><input type="radio" name="difficulty" value="easy"> Easy</label>
+                <label class="diff-medium"><input type="radio" name="difficulty" value="medium" checked> Med</label>
+                <label class="diff-hard"><input type="radio" name="difficulty" value="hard"> Hard</label>
+            </div>
+        </div>
+        <div class="setting-row">
+            <span class="setting-label">TARGET:</span>
+            <div class="radio-group">
+                <label><input type="radio" name="gameMode" value="v2" checked> Past (V2)</label>
+                <label><input type="radio" name="gameMode" value="v3"> P.P (V3)</label>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn" onclick="startGame()">🚀 LAUNCH MISSION</button>
+
+    <h3 style="margin-top:14px; font-size:11px;">🏆 TOP COMMANDERS</h3>
+    <table class="leaderboard-table">
+        <thead><tr><th>Rank</th><th>Name</th><th>Score</th></tr></thead>
+        <tbody id="leaderboard-body"></tbody>
+    </table>
+</div>
+
+<!-- GAME OVER SCREEN -->
+<div id="game-over-screen" class="hidden">
+    <h2 style="color:#e74c3c; font-family:'Press Start 2P'; font-size:14px;">MISSION FAILED</h2>
+    <p style="font-size:16px;">Score: <span id="final-score" style="color:#2ecc71; font-weight:bold;">0</span></p>
+    <h3 style="font-size:12px;">⚠️ MISSED METEORS</h3>
+    <div style="max-height:130px; overflow-y:auto;">
+        <table class="review-table">
+            <thead><tr><th>V1</th><th>Answer</th></tr></thead>
+            <tbody id="review-body"></tbody>
+        </table>
+    </div>
+    <button class="btn" onclick="location.reload()">🔄 RETRY MISSION</button>
+</div>
+
+<script>
+// ==================== AUDIO ====================
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null, isMusicOn = true, isSFXOn = true, bgmOscillators = [];
+
+function initAudio() {
+    if (!audioCtx) audioCtx = new AudioContext();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+function toggleSFX() {
+    isSFXOn = !isSFXOn;
+    document.getElementById('sfx-btn').className = isSFXOn ? 'toggle-btn active-btn' : 'toggle-btn';
+}
+function toggleMusic() {
+    isMusicOn = !isMusicOn;
+    document.getElementById('music-btn').className = isMusicOn ? 'toggle-btn active-btn' : 'toggle-btn';
+    if (isMusicOn && isPlaying) startBGM(); else stopBGM();
+}
+function playSound(type) {
+    if (!isSFXOn || !audioCtx) return;
+    const osc = audioCtx.createOscillator(), gainNode = audioCtx.createGain();
+    osc.connect(gainNode); gainNode.connect(audioCtx.destination);
+    const now = audioCtx.currentTime;
+    if (type === 'shoot') {
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(800, now);
+        osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+        gainNode.gain.setValueAtTime(0.6, now);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+        osc.start(now); osc.stop(now + 0.15);
+    } else if (type === 'error') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, now);
+        gainNode.gain.setValueAtTime(0.5, now);
+        gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+        osc.start(now); osc.stop(now + 0.3);
+    } else if (type === 'gameover') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.linearRampToValueAtTime(50, now + 1.5);
+        gainNode.gain.setValueAtTime(0.6, now);
+        gainNode.gain.linearRampToValueAtTime(0, now + 1.5);
+        osc.start(now); osc.stop(now + 1.5);
+    }
+}
+function startBGM() {
+    stopBGM();
+    if (!isMusicOn || !audioCtx) return;
+    const createDrone = (f, t, v) => {
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+        o.type = t; o.frequency.value = f; g.gain.value = v;
+        o.connect(g); g.connect(audioCtx.destination); o.start();
+        bgmOscillators.push({ osc: o, gain: g });
+    };
+    createDrone(55, 'sine', 0.2); createDrone(110, 'triangle', 0.08);
+}
+function stopBGM() {
+    bgmOscillators.forEach(n => {
+        try { n.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5); n.osc.stop(audioCtx.currentTime + 0.5); } catch(e) {}
+    });
+    bgmOscillators = [];
+}
+
+// ==================== DATA ====================
+const verbPacks = [
+    [
+        { v1: "am/is", v2: "was", v3: "been" },
+        { v1: "are", v2: "were", v3: "been" },
+        { v1: "do/does", v2: "did", v3: "done" },
+        { v1: "have/has", v2: "had", v3: "had" },
+        { v1: "go", v2: "went", v3: "gone" },
+        { v1: "teach", v2: "taught", v3: "taught" },
+        { v1: "become", v2: "became", v3: "become" },
+        { v1: "sing", v2: "sang", v3: "sung" },
+        { v1: "win", v2: "won", v3: "won" },
+        { v1: "meet", v2: "met", v3: "met" }
+    ],
+    [
+        { v1: "sit", v2: "sat", v3: "sat" },
+        { v1: "stand", v2: "stood", v3: "stood" },
+        { v1: "buy", v2: "bought", v3: "bought" },
+        { v1: "think", v2: "thought", v3: "thought" },
+        { v1: "read", v2: "read", v3: "read" },
+        { v1: "write", v2: "wrote", v3: "written" },
+        { v1: "speak", v2: "spoke", v3: "spoken" },
+        { v1: "send", v2: "sent", v3: "sent" },
+        { v1: "get", v2: "got", v3: "got" },
+        { v1: "ride", v2: "rode", v3: "ridden" }
+    ],
+    [
+        { v1: "make", v2: "made", v3: "made" },
+        { v1: "eat", v2: "ate", v3: "eaten" },
+        { v1: "take", v2: "took", v3: "taken" },
+        { v1: "drink", v2: "drank", v3: "drunk" },
+        { v1: "see", v2: "saw", v3: "seen" },
+        { v1: "sell", v2: "sold", v3: "sold" },
+        { v1: "leave", v2: "left", v3: "left" },
+        { v1: "feel", v2: "felt", v3: "felt" },
+        { v1: "lose", v2: "lost", v3: "lost" },
+        { v1: "put", v2: "put", v3: "put" }
+    ]
+];
+// Flat list of all 30 verbs for distractor generation
+const allVerbs = verbPacks.flat();
+
+// ==================== CANVAS SETUP ====================
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+function resizeCanvas() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+
+// ==================== CONFIG ====================
+const difficultySettings = {
+    easy:   { spawn: 8000, speed: 0.45, points: 1 },
+    medium: { spawn: 5500, speed: 0.75, points: 2 },
+    hard:   { spawn: 3500, speed: 1.4,  points: 3 }
+};
+
+let spawnInterval, meteors = [], particles = [], missedWords = [];
+let score = 0, lives = 5, currentPoints = 2, spawnRate = 5500, fallSpeed = 0.75;
+let targetMode = 'v2', playerName = 'Guest', currentDiff = 'medium', isPlaying = false;
+let wordDeck = [], answerOptions = [], correctAnswer = '', answerLocked = false;
+
+// ==================== WORD DECK ====================
+function shuffleArray(a) {
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+}
+function initWordDeck() {
+    const idx = Math.floor(Math.random() * verbPacks.length);
+    wordDeck = [...verbPacks[idx]];
+    shuffleArray(wordDeck);
+}
+function getNextWord() {
+    if (wordDeck.length === 0) initWordDeck();
+    return wordDeck.pop();
+}
+
+// ==================== DISTRACTORS ====================
+function buildOptions(correct, verbData) {
+    // Pick 2 distractors from allVerbs that are different from correct answer
+    const pool = allVerbs
+        .filter(v => v !== verbData)
+        .map(v => targetMode === 'v2' ? v.v2 : v.v3)
+        .filter(v => v !== correct);
+    shuffleArray(pool);
+    const distractors = [...new Set(pool)].slice(0, 2);
+    const opts = [correct, ...distractors];
+    shuffleArray(opts);
+    return opts;
+}
+
+// ==================== ANSWER BUTTONS ====================
+function renderAnswerButtons() {
+    // Find the lowest meteor (closest to ground) that still exists
+    let targetMeteor = null;
+    let lowestY = -Infinity;
+    meteors.forEach(m => {
+        if (m.y > lowestY) { lowestY = m.y; targetMeteor = m; }
+    });
+
+    const btns = [document.getElementById('btn0'), document.getElementById('btn1'), document.getElementById('btn2')];
+
+    if (!targetMeteor || !isPlaying) {
+        btns.forEach(b => { b.textContent = '—'; b.disabled = true; b.className = 'ans-btn'; });
+        return;
+    }
+
+    correctAnswer = targetMeteor.target;
+    answerOptions = buildOptions(correctAnswer, targetMeteor.data);
+    answerLocked = false;
+
+    btns.forEach((b, i) => {
+        b.textContent = answerOptions[i];
+        b.disabled = false;
+        b.className = 'ans-btn';
+    });
+}
+
+function handleAnswer(idx) {
+    if (answerLocked || !isPlaying) return;
+    initAudio();
+    const chosen = answerOptions[idx];
+    const btn = document.getElementById('btn' + idx);
+    answerLocked = true;
+
+    if (chosen === correctAnswer) {
+        // Correct
+        btn.classList.add('flash-correct');
+        playSound('shoot');
+
+        // Find the lowest meteor and explode it
+        let lowestY = -Infinity, hitIdx = -1;
+        meteors.forEach((m, i) => { if (m.y > lowestY) { lowestY = m.y; hitIdx = i; } });
+        if (hitIdx !== -1) {
+            const m = meteors[hitIdx];
+            for (let i = 0; i < 14; i++) particles.push(new Particle(m.x, m.y));
+            meteors.splice(hitIdx, 1);
+            score += currentPoints;
+            document.getElementById('score').innerText = score;
+        }
+        setTimeout(() => {
+            btn.classList.remove('flash-correct');
+            renderAnswerButtons();
+        }, 350);
+    } else {
+        // Wrong
+        btn.classList.add('flash-wrong');
+        playSound('error');
+        // Screen shake
+        canvas.classList.add('shake');
+        setTimeout(() => canvas.classList.remove('shake'), 360);
+        setTimeout(() => {
+            btn.classList.remove('flash-wrong');
+            answerLocked = false;
+        }, 400);
+    }
+}
+
+// ==================== METEOR CLASS ====================
+class Meteor {
+    constructor() {
+        const cw = canvas.width || 360;
+        this.radius = Math.max(28, cw * 0.07);
+        this.x = Math.random() * (cw - this.radius * 2) + this.radius;
+        this.y = -50;
+        this.data = getNextWord();
+        this.v1 = this.data.v1;
+        this.target = targetMode === 'v2' ? this.data.v2 : this.data.v3;
+        this.speed = fallSpeed + Math.random() * 0.1;
+    }
+    draw() {
+        const r = this.radius;
+        // Glow
+        ctx.beginPath(); ctx.arc(this.x, this.y, r + 6, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(231,76,60,0.35)'; ctx.fill();
+        // Body
+        ctx.beginPath(); ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = '#a93226'; ctx.fill();
+        ctx.strokeStyle = '#f1c40f'; ctx.lineWidth = 2; ctx.stroke();
+        // Label
+        ctx.fillStyle = '#fff';
+        const fsize = Math.max(12, Math.min(18, r * 0.55));
+        ctx.font = `bold ${fsize}px Roboto`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        const label = this.v1.toUpperCase();
+        // Wrap if needed
+        if (ctx.measureText(label).width > r * 1.7) {
+            const parts = label.split('/');
+            if (parts.length > 1) {
+                ctx.fillText(parts[0], this.x, this.y - fsize * 0.6);
+                ctx.fillText(parts[1], this.x, this.y + fsize * 0.6);
+            } else {
+                ctx.fillText(label, this.x, this.y);
+            }
+        } else {
+            ctx.fillText(label, this.x, this.y);
+        }
+    }
+    update() { this.y += this.speed; }
+}
+
+// ==================== PARTICLE CLASS ====================
+class Particle {
+    constructor(x, y) {
+        this.x = x; this.y = y;
+        this.size = Math.random() * 5 + 2;
+        this.vx = Math.random() * 8 - 4;
+        this.vy = Math.random() * 8 - 4;
+        this.life = 100;
+        this.color = ['#f1c40f','#e74c3c','#fff','#e67e22'][Math.floor(Math.random()*4)];
+    }
+    update() { this.x += this.vx; this.y += this.vy; this.vy += 0.15; this.life -= 3; this.size *= 0.95; }
+    draw() {
+        ctx.globalAlpha = this.life / 100;
+        ctx.fillStyle = this.color;
+        ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 1;
+    }
+}
+
+// ==================== GAME LOOP ====================
+let prevLowest = null;
+
+function update() {
+    if (!isPlaying) return;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Update & draw meteors
+    let newLowest = null, lowestY = -Infinity;
+    for (let i = meteors.length - 1; i >= 0; i--) {
+        const m = meteors[i];
+        m.update(); m.draw();
+        if (m.y > lowestY) { lowestY = m.y; newLowest = m; }
+        if (m.y - m.radius > canvas.height) {
+            missedWords.push({ v1: m.v1, ans: m.target });
+            meteors.splice(i, 1); lives--;
+            document.getElementById('lives').innerText = lives;
+            playSound('error');
+            // flash screen
+            canvas.style.boxShadow = '0 0 40px red';
+            setTimeout(() => canvas.style.boxShadow = '', 200);
+            if (lives <= 0) { endGame(); return; }
+        }
+    }
+
+    // Update answer buttons when lowest meteor changes
+    if (newLowest !== prevLowest) {
+        prevLowest = newLowest;
+        renderAnswerButtons();
+    }
+
+    // Draw particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+        particles[i].update(); particles[i].draw();
+        if (particles[i].life <= 0) particles.splice(i, 1);
+    }
+
+    requestAnimationFrame(update);
+}
+
+// ==================== GAME CONTROL ====================
+function endGame() {
+    stopBGM(); playSound('gameover');
+    isPlaying = false; clearInterval(spawnInterval);
+    saveHighScore(playerName, score);
+    const tbody = document.getElementById('review-body');
+    tbody.innerHTML = '';
+    missedWords.forEach(w => {
+        tbody.innerHTML += `<tr><td class="missed-word">${w.v1}</td><td class="correct-ans">${w.ans}</td></tr>`;
+    });
+    document.getElementById('final-score').innerText = score;
+    document.getElementById('overlay').classList.add('hidden');
+    document.getElementById('game-over-screen').classList.remove('hidden');
+    // Blank the answer buttons
+    [0,1,2].forEach(i => { const b = document.getElementById('btn'+i); b.textContent = '—'; b.disabled = true; });
+}
+
+function previewBg() {
+    const val = document.getElementById('bg-select').value;
+    document.getElementById('star-bg').className = val;
+}
+
+function startGame() {
+    initAudio();
+    const nameInput = document.getElementById('input-player-name');
+    if (!nameInput.value.trim()) { alert('Please enter your name!'); return; }
+    playerName = nameInput.value.trim();
+    document.getElementById('ui-name').innerText = playerName;
+
+    document.getElementsByName('gameMode').forEach(m => { if (m.checked) targetMode = m.value; });
+    document.getElementsByName('difficulty').forEach(d => { if (d.checked) currentDiff = d.value; });
+    previewBg();
+
+    const setting = difficultySettings[currentDiff];
+    spawnRate = setting.spawn; fallSpeed = setting.speed; currentPoints = setting.points;
+
+    initWordDeck();
+    score = 0; lives = 5; meteors = []; particles = []; missedWords = []; prevLowest = null;
+    document.getElementById('score').innerText = 0;
+    document.getElementById('lives').innerText = 5;
+
+    document.getElementById('overlay').classList.add('hidden');
+    document.getElementById('game-over-screen').classList.add('hidden');
+
+    resizeCanvas();
+    isPlaying = true;
+    startBGM();
+
+    // Blank buttons until first meteor spawns
+    [0,1,2].forEach(i => { const b = document.getElementById('btn'+i); b.textContent = '—'; b.disabled = true; });
+
+    clearInterval(spawnInterval);
+    spawnInterval = setInterval(() => { if (isPlaying) { meteors.push(new Meteor()); } }, spawnRate);
+
+    update();
+}
+
+// ==================== LEADERBOARD ====================
+function loadLeaderboard() {
+    const raw = localStorage.getItem('meteorHighScores_mobile');
+    const scores = raw ? JSON.parse(raw) : [];
+    const tbody = document.getElementById('leaderboard-body');
+    tbody.innerHTML = '';
+    scores.slice(0, 5).forEach((s, i) => {
+        const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+        tbody.innerHTML += `<tr><td>${medal} ${i+1}</td><td>${s.name}</td><td>${s.score}</td></tr>`;
+    });
+}
+function saveHighScore(name, score) {
+    const raw = localStorage.getItem('meteorHighScores_mobile');
+    let scores = raw ? JSON.parse(raw) : [];
+    scores.push({ name, score });
+    scores.sort((a, b) => b.score - a.score);
+    scores = scores.slice(0, 5);
+    localStorage.setItem('meteorHighScores_mobile', JSON.stringify(scores));
+}
+
+// ==================== INIT ====================
+window.onload = () => { previewBg(); loadLeaderboard(); resizeCanvas(); };
+</script>
+</body>
+</html>

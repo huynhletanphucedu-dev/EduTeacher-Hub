@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Di Truyền Mendel – Bảng Punnett</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    min-height: 100vh;
+    padding: 24px 16px 48px;
+  }
+
+  .container {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  /* HEADER */
+  .header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #818cf8, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header p {
+    margin-top: 6px;
+    color: #94a3b8;
+    font-size: 0.95rem;
+  }
+
+  /* PANELS */
+  .panel {
+    background: #1e293b;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 18px;
+    border: 1px solid #334155;
+  }
+  .panel-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: #64748b;
+    margin-bottom: 14px;
+  }
+
+  /* TRAIT SELECTOR */
+  .trait-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .trait-row label { color: #94a3b8; font-size: 0.9rem; white-space: nowrap; }
+  select {
+    background: #0f172a;
+    color: #e2e8f0;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  select:hover, select:focus { border-color: #818cf8; }
+  .trait-badge {
+    font-size: 0.82rem;
+    color: #94a3b8;
+    margin-top: 8px;
+  }
+  .badge-dom { color: #818cf8; font-weight: 600; }
+  .badge-rec { color: #f87171; font-weight: 600; }
+
+  /* GENERATION BUTTONS */
+  .gen-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .gen-btn {
+    flex: 1;
+    min-width: 140px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: 2px solid #334155;
+    background: #0f172a;
+    color: #e2e8f0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .gen-btn:hover { border-color: #818cf8; color: #818cf8; }
+  .gen-btn.active { background: #818cf8; border-color: #818cf8; color: #0f172a; }
+
+  /* PARENTS */
+  .parents-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .parent-box {
+    background: #0f172a;
+    border-radius: 10px;
+    padding: 14px;
+    border: 1px solid #334155;
+  }
+  .parent-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .parent-label.bo { color: #60a5fa; }
+  .parent-label.me { color: #f472b6; }
+  .parent-select-wrap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .parent-phenotype {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-top: 6px;
+  }
+  .parent-gametes {
+    font-size: 0.82rem;
+    margin-top: 4px;
+  }
+  .gamete-tag {
+    display: inline-block;
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 5px;
+    padding: 2px 8px;
+    margin: 2px 2px 0 0;
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+
+  /* PUNNETT SQUARE */
+  .punnett-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .punnett-table {
+    border-collapse: separate;
+    border-spacing: 6px;
+  }
+  .punnett-corner { width: 52px; height: 52px; }
+  .punnett-header-cell {
+    text-align: center;
+    width: 120px;
+    height: 52px;
+    font-size: 1.1rem;
+    font-weight: 800;
+    border-radius: 8px;
+    padding: 8px;
+  }
+  .punnett-header-bo { background: #1e3a5f; color: #60a5fa; }
+  .punnett-header-me { background: #3b1a3a; color: #f472b6; }
+  .punnett-cell {
+    width: 120px;
+    height: 90px;
+    border-radius: 10px;
+    text-align: center;
+    vertical-align: middle;
+    padding: 8px;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    opacity: 0;
+    transform: scale(0.85);
+    cursor: default;
+  }
+  .punnett-cell.visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+  .cell-genotype {
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+  }
+  .cell-phenotype {
+    font-size: 0.72rem;
+    margin-top: 4px;
+    opacity: 0.85;
+    line-height: 1.3;
+  }
+  .cell-aa { background: #1e3a5f; border: 2px solid #3b82f6; }
+  .cell-Aa { background: #134e4a; border: 2px solid #14b8a6; }
+  .cell-aaa { background: #450a0a; border: 2px solid #ef4444; }
+
+  /* RESULTS */
+  .ratio-row {
+    margin-bottom: 16px;
+  }
+  .ratio-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .ratio-text {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #e2e8f0;
+  }
+  .bar-wrap {
+    display: flex;
+    border-radius: 8px;
+    overflow: hidden;
+    height: 20px;
+    gap: 2px;
+  }
+  .bar-seg {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #fff;
+    transition: width 0.5s ease;
+  }
+  .bar-aa { background: #3b82f6; }
+  .bar-Aa { background: #14b8a6; }
+  .bar-aaa { background: #ef4444; }
+
+  /* PHENOTYPE VISUAL */
+  .pheno-boxes {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .pheno-box {
+    flex: 1;
+    min-width: 60px;
+    max-width: 90px;
+    border-radius: 10px;
+    padding: 10px 6px;
+    text-align: center;
+    border: 2px solid #334155;
+    transition: all 0.4s ease;
+  }
+  .pheno-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    margin: 0 auto 6px;
+    transition: background 0.4s;
+  }
+  .pheno-label { font-size: 0.72rem; color: #94a3b8; line-height: 1.3; }
+  .pheno-pct { font-size: 0.8rem; font-weight: 700; margin-top: 3px; }
+
+  /* EXPLANATION */
+  .explanation {
+    background: #172033;
+    border-left: 4px solid #818cf8;
+    border-radius: 0 10px 10px 0;
+    padding: 14px 16px;
+    font-size: 0.9rem;
+    color: #cbd5e1;
+    line-height: 1.6;
+  }
+  .explanation strong { color: #818cf8; }
+
+  /* PERCENTAGE LABELS */
+  .pct-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .pct-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #0f172a;
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    border: 1px solid #334155;
+  }
+  .pct-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+
+  @media (max-width: 500px) {
+    .parents-grid { grid-template-columns: 1fr; }
+    .punnett-header-cell, .punnett-cell { width: 90px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>🧬 Di Truyền Mendel</h1>
+    <p>Chọn kiểu gen bố mẹ để xem kết quả ở đời con – Bảng Punnett</p>
+  </div>
+
+  <!-- TRAIT SELECTOR -->
+  <div class="panel">
+    <div class="panel-title">Chọn tính trạng</div>
+    <div class="trait-row">
+      <label>Tính trạng:</label>
+      <select id="traitSelect">
+        <option value="0">🌸 Màu hoa đậu Hà Lan</option>
+        <option value="1">🫘 Màu hạt đậu</option>
+        <option value="2">🟤 Hình dạng hạt</option>
+        <option value="3">🌱 Chiều cao cây</option>
+      </select>
+    </div>
+    <div class="trait-badge" id="traitBadge"></div>
+  </div>
+
+  <!-- GENERATION BUTTONS -->
+  <div class="panel">
+    <div class="panel-title">Thế hệ lai</div>
+    <div class="gen-buttons">
+      <button class="gen-btn" id="btnP" onclick="setGen('P')">P – Thuần chủng<br><small style="font-weight:400;font-size:0.78rem">AA × aa</small></button>
+      <button class="gen-btn" id="btnF1" onclick="setGen('F1')">F1 – Đời con thứ nhất<br><small style="font-weight:400;font-size:0.78rem">Aa × Aa</small></button>
+      <button class="gen-btn" id="btnF2" onclick="setGen('F2')">F2 – Đời con thứ hai<br><small style="font-weight:400;font-size:0.78rem">Aa × Aa (tiếp)</small></button>
+    </div>
+  </div>
+
+  <!-- PARENTS -->
+  <div class="panel">
+    <div class="panel-title">Kiểu gen bố mẹ</div>
+    <div class="parents-grid">
+      <div class="parent-box">
+        <div class="parent-label bo">👨 Bố (Father)</div>
+        <div class="parent-select-wrap">
+          <select id="fatherSelect" onchange="update()">
+            <option value="AA">AA</option>
+            <option value="Aa">Aa</option>
+            <option value="aa">aa</option>
+          </select>
+        </div>
+        <div class="parent-phenotype" id="fatherPhenotype"></div>
+        <div class="parent-gametes" id="fatherGametes"></div>
+      </div>
+      <div class="parent-box">
+        <div class="parent-label me">👩 Mẹ (Mother)</div>
+        <div class="parent-select-wrap">
+          <select id="motherSelect" onchange="update()">
+            <option value="AA">AA</option>
+            <option value="Aa">Aa</option>
+            <option value="aa">aa</option>
+          </select>
+        </div>
+        <div class="parent-phenotype" id="motherPhenotype"></div>
+        <div class="parent-gametes" id="motherGametes"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PUNNETT SQUARE -->
+  <div class="panel">
+    <div class="panel-title">Bảng Punnett (Ô vuông Punnett)</div>
+    <div class="punnett-wrap">
+      <table class="punnett-table" id="punnettTable">
+        <tr>
+          <td class="punnett-corner"></td>
+          <td class="punnett-header-cell punnett-header-me" id="mh1"></td>
+          <td class="punnett-header-cell punnett-header-me" id="mh2"></td>
+        </tr>
+        <tr>
+          <td class="punnett-header-cell punnett-header-bo" id="fh1"></td>
+          <td class="punnett-cell cell-aa" id="c00"></td>
+          <td class="punnett-cell cell-aa" id="c01"></td>
+        </tr>
+        <tr>
+          <td class="punnett-header-cell punnett-header-bo" id="fh2"></td>
+          <td class="punnett-cell cell-aa" id="c10"></td>
+          <td class="punnett-cell cell-aa" id="c11"></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="panel" id="resultsPanel">
+    <div class="panel-title">Kết quả đời con</div>
+
+    <div class="ratio-row">
+      <div class="ratio-title">Tỉ lệ kiểu gen</div>
+      <div class="ratio-text" id="genoRatioText"></div>
+      <div class="bar-wrap" id="genoBar"></div>
+      <div class="pct-row" id="genoPct"></div>
+    </div>
+
+    <div class="ratio-row" style="margin-top:18px">
+      <div class="ratio-title">Tỉ lệ kiểu hình</div>
+      <div class="ratio-text" id="phenoRatioText"></div>
+      <div class="pheno-boxes" id="phenoBoxes"></div>
+    </div>
+  </div>
+
+  <!-- EXPLANATION -->
+  <div class="panel">
+    <div class="panel-title">Giải thích</div>
+    <div class="explanation" id="explanationText"></div>
+  </div>
+
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const TRAITS = [
+  {
+    name: "Màu hoa đậu Hà Lan",
+    dom: "A", rec: "a",
+    domName: "Hoa tím",
+    recName: "Hoa trắng",
+    domColor: "#7c3aed",
+    recColor: "#e2e8f0",
+    icon: "🌸"
+  },
+  {
+    name: "Màu hạt đậu",
+    dom: "V", rec: "v",
+    domName: "Hạt vàng",
+    recName: "Hạt xanh",
+    domColor: "#ca8a04",
+    recColor: "#16a34a",
+    icon: "🫘"
+  },
+  {
+    name: "Hình dạng hạt",
+    dom: "T", rec: "t",
+    domName: "Hạt trơn",
+    recName: "Hạt nhăn",
+    domColor: "#b45309",
+    recColor: "#78716c",
+    icon: "🟤"
+  },
+  {
+    name: "Chiều cao cây",
+    dom: "C", rec: "c",
+    domName: "Cây cao",
+    recName: "Cây thấp",
+    domColor: "#15803d",
+    recColor: "#a16207",
+    icon: "🌱"
+  }
+];
+
+let currentTrait = TRAITS[0];
+let animTimer = null;
+
+// ─── GAMETES ─────────────────────────────────────────────────────────────────
+function gametes(geno) {
+  const d = currentTrait.dom;
+  const r = currentTrait.rec;
+  if (geno === d+d) return [d, d];
+  if (geno === r+r) return [r, r];
+  return [d, r];
+}
+
+// ─── COMBINE GAMETES ─────────────────────────────────────────────────────────
+function combine(g1, g2) {
+  const d = currentTrait.dom;
+  const r = currentTrait.rec;
+  const arr = [g1, g2].sort((a,b) => (a===d?-1:1));
+  return arr.join('');
+}
+
+// ─── CLASSIFY GENOTYPE ───────────────────────────────────────────────────────
+function classifyGeno(g) {
+  const d = currentTrait.dom;
+  const r = currentTrait.rec;
+  if (g === d+d) return 'homDom';
+  if (g === r+r) return 'homRec';
+  return 'het';
+}
+
+// ─── PHENOTYPE FROM GENOTYPE ─────────────────────────────────────────────────
+function phenotype(g) {
+  return classifyGeno(g) === 'homRec' ? currentTrait.recName : currentTrait.domName;
+}
+
+// ─── CELL CSS CLASS ──────────────────────────────────────────────────────────
+function cellClass(g) {
+  const cls = classifyGeno(g);
+  if (cls === 'homDom') return 'cell-aa';
+  if (cls === 'het')    return 'cell-Aa';
+  return 'cell-aaa';
+}
+
+// ─── PHENOTYPE LABEL (short) ─────────────────────────────────────────────────
+function shortPheno(g) {
+  return classifyGeno(g) === 'homRec' ? currentTrait.recName : currentTrait.domName;
+}
+
+// ─── MAIN UPDATE ─────────────────────────────────────────────────────────────
+function update() {
+  const d = currentTrait.dom;
+  const r = currentTrait.rec;
+
+  const fGeno = document.getElementById('fatherSelect').value
+    .replace(/A/g, d).replace(/a/g, r);
+  const mGeno = document.getElementById('motherSelect').value
+    .replace(/A/g, d).replace(/a/g, r);
+
+  const fGametes = gametes(fGeno);
+  const mGametes = gametes(mGeno);
+
+  // Parent labels
+  document.getElementById('fatherPhenotype').innerHTML =
+    `<span style="color:#94a3b8">${fGeno} → </span><span style="color:${classifyGeno(fGeno)==='homRec'?currentTrait.recColor:currentTrait.domColor};font-weight:600">${phenotype(fGeno)}</span>` +
+    (classifyGeno(fGeno)==='homDom'||classifyGeno(fGeno)==='homRec' ? ' <span style="color:#64748b;font-size:0.75rem">(thuần chủng)</span>' : ' <span style="color:#64748b;font-size:0.75rem">(dị hợp)</span>');
+  document.getElementById('motherPhenotype').innerHTML =
+    `<span style="color:#94a3b8">${mGeno} → </span><span style="color:${classifyGeno(mGeno)==='homRec'?currentTrait.recColor:currentTrait.domColor};font-weight:600">${phenotype(mGeno)}</span>` +
+    (classifyGeno(mGeno)==='homDom'||classifyGeno(mGeno)==='homRec' ? ' <span style="color:#64748b;font-size:0.75rem">(thuần chủng)</span>' : ' <span style="color:#64748b;font-size:0.75rem">(dị hợp)</span>');
+
+  // Gametes
+  document.getElementById('fatherGametes').innerHTML =
+    `<span style="color:#64748b;font-size:0.78rem">Giao tử: </span>` +
+    fGametes.map(g=>`<span class="gamete-tag" style="color:#60a5fa">${g}</span>`).join(' ');
+  document.getElementById('motherGametes').innerHTML =
+    `<span style="color:#64748b;font-size:0.78rem">Giao tử: </span>` +
+    mGametes.map(g=>`<span class="gamete-tag" style="color:#f472b6">${g}</span>`).join(' ');
+
+  // Punnett headers
+  document.getElementById('fh1').textContent = fGametes[0];
+  document.getElementById('fh2').textContent = fGametes[1];
+  document.getElementById('mh1').textContent = mGametes[0];
+  document.getElementById('mh2').textContent = mGametes[1];
+
+  // 4 offspring genotypes
+  const offspring = [
+    combine(fGametes[0], mGametes[0]),
+    combine(fGametes[0], mGametes[1]),
+    combine(fGametes[1], mGametes[0]),
+    combine(fGametes[1], mGametes[1])
+  ];
+
+  const cellIds = ['c00','c01','c10','c11'];
+  cellIds.forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.className = `punnett-cell ${cellClass(offspring[i])}`;
+    el.innerHTML = `<div class="cell-genotype">${offspring[i]}</div><div class="cell-phenotype">${shortPheno(offspring[i])}</div>`;
+    el.classList.remove('visible');
+  });
+
+  // Animate cells
+  if (animTimer) clearTimeout(animTimer);
+  cellIds.forEach((id, i) => {
+    setTimeout(() => {
+      document.getElementById(id).classList.add('visible');
+    }, 120 * (i + 1));
+  });
+
+  // Count genotypes
+  const counts = {};
+  offspring.forEach(g => { counts[g] = (counts[g]||0) + 1; });
+
+  // Genotype ratio text
+  const genoOrder = [d+d, d+r, r+r];
+  const genoLabels = genoOrder.filter(g=>counts[g]).map(g=>`${counts[g]} ${g}`);
+  document.getElementById('genoRatioText').textContent = genoLabels.join(' : ');
+
+  // Genotype bar
+  const barColors = { [d+d]: '#3b82f6', [d+r]: '#14b8a6', [r+r]: '#ef4444' };
+  const barWrap = document.getElementById('genoBar');
+  barWrap.innerHTML = genoOrder.filter(g=>counts[g]).map(g =>
+    `<div class="bar-seg" style="width:${counts[g]/4*100}%;background:${barColors[g]}">${counts[g]}/4</div>`
+  ).join('');
+
+  // Genotype pct chips
+  const genoPctWrap = document.getElementById('genoPct');
+  genoPctWrap.innerHTML = genoOrder.filter(g=>counts[g]).map(g =>
+    `<div class="pct-chip"><div class="pct-dot" style="background:${barColors[g]}"></div>${g}: ${Math.round(counts[g]/4*100)}%</div>`
+  ).join('');
+
+  // Phenotype ratio
+  let domCount = 0, recCount = 0;
+  offspring.forEach(g => {
+    if (classifyGeno(g)==='homRec') recCount++; else domCount++;
+  });
+
+  let phenoText = '';
+  if (domCount && recCount) phenoText = `${domCount} ${currentTrait.domName} : ${recCount} ${currentTrait.recName}`;
+  else if (domCount) phenoText = `${domCount} ${currentTrait.domName} (100%)`;
+  else phenoText = `${recCount} ${currentTrait.recName} (100%)`;
+  document.getElementById('phenoRatioText').textContent = phenoText;
+
+  // Pheno boxes (4 offspring)
+  const phenoBoxes = document.getElementById('phenoBoxes');
+  phenoBoxes.innerHTML = offspring.map((g, i) => {
+    const isRec = classifyGeno(g)==='homRec';
+    const color = isRec ? currentTrait.recColor : currentTrait.domColor;
+    const name = isRec ? currentTrait.recName : currentTrait.domName;
+    return `<div class="pheno-box">
+      <div class="pheno-circle" style="background:${color};border:2px solid #334155"></div>
+      <div class="pheno-label">${g}</div>
+      <div class="pheno-pct" style="color:${color}">${name}</div>
+    </div>`;
+  }).join('');
+
+  // Percentages text below pheno boxes
+  const domPct = Math.round(domCount/4*100);
+  const recPct = 100-domPct;
+  const pctLine = document.createElement('div');
+  pctLine.style.cssText = 'margin-top:10px;font-size:0.85rem;color:#94a3b8';
+  if (domCount && recCount)
+    pctLine.innerHTML = `<span style="color:${currentTrait.domColor};font-weight:600">${domPct}% ${currentTrait.domName}</span> &nbsp;·&nbsp; <span style="color:${currentTrait.recColor};font-weight:600">${recPct}% ${currentTrait.recName}</span>`;
+  else if (domCount)
+    pctLine.innerHTML = `<span style="color:${currentTrait.domColor};font-weight:600">100% ${currentTrait.domName}</span>`;
+  else
+    pctLine.innerHTML = `<span style="color:${currentTrait.recColor};font-weight:600">100% ${currentTrait.recName}</span>`;
+  phenoBoxes.after(pctLine);
+  // remove old pct lines (keep only 1)
+  const old = phenoBoxes.parentElement.querySelectorAll('div[style*="margin-top:10px"]');
+  if (old.length > 1) old[0].remove();
+
+  // Explanation
+  buildExplanation(fGeno, mGeno, offspring, domCount, recCount);
+
+  // Gen button state
+  const fSel = document.getElementById('fatherSelect').value;
+  const mSel = document.getElementById('motherSelect').value;
+  ['btnP','btnF1','btnF2'].forEach(id => document.getElementById(id).classList.remove('active'));
+  if (fSel==='AA' && mSel==='aa') document.getElementById('btnP').classList.add('active');
+  else if (fSel==='Aa' && mSel==='Aa') { document.getElementById('btnF1').classList.add('active'); document.getElementById('btnF2').classList.add('active'); }
+}
+
+function buildExplanation(fGeno, mGeno, offspring, domCount, recCount) {
+  const d = currentTrait.dom;
+  const r = currentTrait.rec;
+  const trait = currentTrait;
+  let html = '';
+
+  if (fGeno===d+d && mGeno===r+r || fGeno===r+r && mGeno===d+d) {
+    html = `<strong>Phép lai P (Thuần chủng):</strong> ${fGeno} × ${mGeno}<br>
+    → Toàn bộ đời F1 có kiểu gen <strong>${d+r}</strong> (dị hợp tử).<br>
+    → Kiểu hình: <strong>100% ${trait.domName}</strong> vì alen <strong>${d}</strong> trội hoàn toàn so với alen <strong>${r}</strong>.<br>
+    <span style="color:#818cf8">✦ Đây là minh chứng cho <strong>Quy luật đồng tính</strong> của Mendel.</span>`;
+  } else if (fGeno===d+r && mGeno===d+r) {
+    html = `<strong>Phép lai F1 × F1:</strong> ${d+r} × ${d+r}<br>
+    → Đời F2 có tỉ lệ kiểu gen: <strong>1 ${d+d} : 2 ${d+r} : 1 ${r+r}</strong><br>
+    → Tỉ lệ kiểu hình: <strong>3 ${trait.domName} : 1 ${trait.recName}</strong><br>
+    <span style="color:#818cf8">✦ Đây là <strong>Quy luật phân li</strong> của Mendel – tỉ lệ 3:1 đặc trưng ở F2.</span><br>
+    <span style="color:#94a3b8">Alen lặn <strong>${r}</strong> không biểu hiện ở F1 nhưng xuất hiện lại ở F2 với tỉ lệ 25%.</span>`;
+  } else if (fGeno===d+d && mGeno===d+d) {
+    html = `<strong>Phép lai thuần chủng trội × trội:</strong> ${d+d} × ${d+d}<br>
+    → Đời con: 100% <strong>${d+d}</strong> – <strong>${trait.domName}</strong> thuần chủng.<br>
+    <span style="color:#94a3b8">Không có biến đổi kiểu gen hay kiểu hình ở đời con.</span>`;
+  } else if (fGeno===r+r && mGeno===r+r) {
+    html = `<strong>Phép lai thuần chủng lặn × lặn:</strong> ${r+r} × ${r+r}<br>
+    → Đời con: 100% <strong>${r+r}</strong> – <strong>${trait.recName}</strong> thuần chủng.<br>
+    <span style="color:#94a3b8">Tính trạng lặn được duy trì nguyên vẹn qua các thế hệ.</span>`;
+  } else if ((fGeno===d+d && mGeno===d+r) || (fGeno===d+r && mGeno===d+d)) {
+    html = `<strong>Phép lai:</strong> ${fGeno} × ${mGeno}<br>
+    → Đời con: <strong>1 ${d+d} : 1 ${d+r}</strong> → <strong>100% ${trait.domName}</strong><br>
+    <span style="color:#94a3b8">Cả hai kiểu gen đều biểu hiện tính trạng trội vì đều có ít nhất một alen <strong>${d}</strong>.</span>`;
+  } else if ((fGeno===d+d && mGeno===r+r) || (fGeno===r+r && mGeno===d+d)) {
+    html = `<strong>Phép lai thuần chủng:</strong> ${fGeno} × ${mGeno}<br>
+    → 100% đời con có kiểu gen <strong>${d+r}</strong>, kiểu hình <strong>${trait.domName}</strong>.`;
+  } else if ((fGeno===d+r && mGeno===r+r) || (fGeno===r+r && mGeno===d+r)) {
+    html = `<strong>Phép lai kiểm nghiệm (Test cross):</strong> ${fGeno} × ${mGeno}<br>
+    → Đời con: <strong>1 ${d+r} : 1 ${r+r}</strong> → <strong>1 ${trait.domName} : 1 ${trait.recName}</strong><br>
+    <span style="color:#818cf8">✦ Đây là <strong>Phép lai phân tích</strong> dùng để xác định kiểu gen của cá thể mang tính trạng trội.</span>`;
+  } else {
+    html = `<strong>Phép lai:</strong> ${fGeno} × ${mGeno}<br>
+    → ${domCount > 0 ? `<strong>${domCount}/4 ${trait.domName}</strong>` : ''} ${domCount && recCount ? ' · ' : ''} ${recCount > 0 ? `<strong>${recCount}/4 ${trait.recName}</strong>` : ''}`;
+  }
+
+  document.getElementById('explanationText').innerHTML = html;
+}
+
+// ─── GENERATION PRESETS ──────────────────────────────────────────────────────
+function setGen(gen) {
+  if (gen==='P') {
+    document.getElementById('fatherSelect').value = 'AA';
+    document.getElementById('motherSelect').value = 'aa';
+  } else {
+    document.getElementById('fatherSelect').value = 'Aa';
+    document.getElementById('motherSelect').value = 'Aa';
+  }
+  update();
+}
+
+// ─── TRAIT CHANGE ────────────────────────────────────────────────────────────
+document.getElementById('traitSelect').addEventListener('change', function() {
+  currentTrait = TRAITS[+this.value];
+  updateTraitBadge();
+  update();
+});
+
+function updateTraitBadge() {
+  const t = currentTrait;
+  document.getElementById('traitBadge').innerHTML =
+    `Alen trội: <span class="badge-dom">${t.dom} (${t.domName})</span> &nbsp;·&nbsp; Alen lặn: <span class="badge-rec">${t.rec} (${t.recName})</span>`;
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+updateTraitBadge();
+setGen('F1');
+</script>
+</body>
+</html>

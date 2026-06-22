@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hệ Mặt Trời – Chuyển Động Của Trái Đất</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f172a;color:#fff;font-family:'Segoe UI',sans-serif;min-height:100vh}
+header{text-align:center;padding:20px 16px 8px;border-bottom:1px solid #1e293b}
+header h1{font-size:26px;font-weight:700;color:#fbbf24;letter-spacing:1px}
+header p{font-size:13px;color:#94a3b8;margin-top:4px}
+.tabs{display:flex;gap:8px;justify-content:center;padding:14px 16px}
+.tab-btn{padding:9px 22px;border-radius:8px;border:1.5px solid #334155;background:transparent;color:#94a3b8;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s}
+.tab-btn.active{background:#1e40af;border-color:#3b82f6;color:#fff}
+.tab-btn:hover:not(.active){background:#1e293b;color:#fff}
+.tab-content{display:none;padding:0 12px 24px}
+.tab-content.active{display:block}
+.canvas-wrap{display:flex;justify-content:center;position:relative}
+canvas{display:block;border-radius:12px;background:#020817}
+.controls{display:flex;align-items:center;gap:16px;justify-content:center;padding:10px 0 4px;flex-wrap:wrap}
+.controls label{font-size:13px;color:#94a3b8}
+.controls input[type=range]{width:140px;accent-color:#3b82f6}
+.speed-val{font-size:13px;color:#fbbf24;min-width:32px}
+.play-btn{padding:7px 18px;border-radius:7px;border:1.5px solid #3b82f6;background:#1e40af;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+.play-btn:hover{background:#2563eb}
+#tooltip{display:none;position:absolute;left:50%;transform:translateX(-50%);bottom:8px;background:#1e293b;border:1.5px solid #334155;border-radius:10px;padding:12px 18px;min-width:280px;max-width:340px;z-index:10;pointer-events:none}
+#tooltip h3{font-size:15px;color:#fbbf24;margin-bottom:6px}
+#tooltip .t-row{font-size:12px;color:#cbd5e1;margin-bottom:3px}
+#tooltip .t-row span{color:#e2e8f0;font-weight:600}
+#tooltip .t-fact{font-size:12px;color:#94a3b8;margin-top:6px;font-style:italic;line-height:1.5}
+.seasons-wrap{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding:14px 8px 0}
+.season-card{background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px 16px;min-width:130px;flex:1;max-width:160px}
+.season-card h4{font-size:14px;font-weight:700;margin-bottom:6px}
+.season-card p{font-size:11px;color:#94a3b8;line-height:1.5}
+.season-spring h4{color:#4ade80}
+.season-summer h4{color:#fbbf24}
+.season-autumn h4{color:#f97316}
+.season-winter h4{color:#93c5fd}
+.tab2-layout{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;align-items:flex-start;padding-top:8px}
+.panel2{background:#0c1526;border-radius:12px;border:1px solid #1e293b;padding:4px}
+.panel2-info{background:#1e293b;border-radius:10px;padding:14px;min-width:220px;max-width:280px}
+.panel2-info h3{font-size:14px;color:#fbbf24;margin-bottom:8px}
+.panel2-info p{font-size:12px;color:#94a3b8;line-height:1.6;margin-bottom:6px}
+</style>
+</head>
+<body>
+<header>
+  <h1>☀️ Hệ Mặt Trời</h1>
+  <p>Khám phá 8 hành tinh và chuyển động của Trái Đất – KHTN Lớp 6</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab(1)">🌌 Hệ Mặt Trời</button>
+  <button class="tab-btn" onclick="switchTab(2)">🌍 Ngày Đêm &amp; Mùa</button>
+</div>
+
+<div id="tab1" class="tab-content active">
+  <div class="controls">
+    <label>Tốc độ:</label>
+    <input type="range" id="speedSlider" min="0.1" max="5" step="0.1" value="1">
+    <span class="speed-val" id="speedVal">1.0×</span>
+    <button class="play-btn" id="playBtn" onclick="togglePlay()">⏸ Dừng</button>
+  </div>
+  <div class="canvas-wrap" style="margin-top:6px">
+    <canvas id="solarCanvas" width="700" height="440"></canvas>
+    <div id="tooltip">
+      <h3 id="tt-name"></h3>
+      <div class="t-row">📏 Khoảng cách từ Mặt Trời: <span id="tt-dist"></span></div>
+      <div class="t-row">🌍 Kích thước so với Trái Đất: <span id="tt-size"></span></div>
+      <div class="t-fact" id="tt-fact"></div>
+    </div>
+  </div>
+</div>
+
+<div id="tab2" class="tab-content">
+  <div class="tab2-layout">
+    <div class="panel2">
+      <canvas id="seasonsCanvas" width="420" height="340"></canvas>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;align-items:center">
+      <div class="panel2">
+        <canvas id="dayNightCanvas" width="240" height="240"></canvas>
+      </div>
+      <div class="panel2-info">
+        <h3>🌐 Trái Đất tự quay</h3>
+        <p>Trái Đất tự quay quanh trục của mình từ <strong style="color:#e2e8f0">Tây sang Đông</strong> với chu kỳ <strong style="color:#fbbf24">24 giờ</strong>.</p>
+        <p>Phần hướng về phía Mặt Trời là <strong style="color:#fbbf24">ban ngày ☀️</strong>, phần quay ra xa là <strong style="color:#93c5fd">ban đêm 🌙</strong>.</p>
+        <p>Trục nghiêng <strong style="color:#4ade80">23,5°</strong> tạo ra bốn mùa trong năm.</p>
+      </div>
+    </div>
+  </div>
+  <div class="seasons-wrap">
+    <div class="season-card season-spring">
+      <h4>🌸 Mùa Xuân</h4>
+      <p>Tháng 3–5<br>Ngày &amp; đêm gần bằng nhau<br>Nhiệt độ tăng dần<br>🌡️ Ấm áp</p>
+    </div>
+    <div class="season-card season-summer">
+      <h4>☀️ Mùa Hạ</h4>
+      <p>Tháng 6–8<br>Ngày dài hơn đêm<br>Bán cầu Bắc nhận nhiều ánh sáng nhất<br>🌡️ Nóng nhất</p>
+    </div>
+    <div class="season-card season-autumn">
+      <h4>🍂 Mùa Thu</h4>
+      <p>Tháng 9–11<br>Ngày &amp; đêm gần bằng nhau<br>Nhiệt độ giảm dần<br>🌡️ Mát mẻ</p>
+    </div>
+    <div class="season-card season-winter">
+      <h4>❄️ Mùa Đông</h4>
+      <p>Tháng 12–2<br>Đêm dài hơn ngày<br>Bán cầu Bắc nhận ít ánh sáng nhất<br>🌡️ Lạnh nhất</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const PLANETS = [
+  {name:'Sao Thủy', r:65,  size:4,  color:'#b0b0b0', period:3,  dist:'57,9 triệu km', relSize:'0,38× Trái Đất', fact:'Hành tinh nhỏ nhất, gần Mặt Trời nhất. Nhiệt độ dao động từ -180°C đến 430°C.', rings:false, moon:false},
+  {name:'Sao Kim',  r:95,  size:7,  color:'#e8c97a', period:7,  dist:'108 triệu km',   relSize:'0,95× Trái Đất', fact:'Hành tinh nóng nhất (462°C). Quay ngược chiều so với các hành tinh khác.', rings:false, moon:false},
+  {name:'Trái Đất', r:130, size:8,  color:'#4a9eff', period:11, dist:'150 triệu km',   relSize:'1× (chuẩn)',     fact:'Hành tinh duy nhất có sự sống. Có 1 vệ tinh tự nhiên là Mặt Trăng.', rings:false, moon:true},
+  {name:'Sao Hỏa',  r:165, size:6,  color:'#c1440e', period:17, dist:'228 triệu km',   relSize:'0,53× Trái Đất', fact:'Hành tinh đỏ. Có núi lửa cao nhất Hệ Mặt Trời: Olympus Mons (21km).', rings:false, moon:false},
+  {name:'Sao Mộc',  r:220, size:18, color:'#c88b3a', period:30, dist:'778 triệu km',   relSize:'11,2× Trái Đất', fact:'Hành tinh lớn nhất. Có ít nhất 95 vệ tinh tự nhiên.', rings:'faint', moon:false},
+  {name:'Sao Thổ',  r:275, size:14, color:'#e4d191', period:45, dist:'1,43 tỉ km',     relSize:'9,45× Trái Đất', fact:'Nổi tiếng với vành đai băng và đá. Nhẹ hơn nước!', rings:'saturn', moon:false},
+  {name:'Sao Thiên Vương', r:320, size:10, color:'#7de8e8', period:60, dist:'2,87 tỉ km', relSize:'4× Trái Đất',   fact:'Quay nghiêng 98° — gần như nằm ngang khi quay quanh Mặt Trời.', rings:false, moon:false},
+  {name:'Sao Hải Vương',   r:365, size:10, color:'#3f54ba', period:80, dist:'4,5 tỉ km',  relSize:'3,9× Trái Đất', fact:'Hành tinh xa nhất. Gió mạnh nhất Hệ Mặt Trời: 2100 km/h.', rings:false, moon:false},
+];
+
+const CX = 350, CY = 220;
+const FLATTEN = 0.42;
+
+let stars = [];
+for(let i=0;i<90;i++){
+  stars.push({x:Math.random()*700, y:Math.random()*440, r:Math.random()*1.2+0.3, a:Math.random()*0.6+0.4});
+}
+
+let angles = PLANETS.map(()=>Math.random()*Math.PI*2);
+let moonAngle = 0;
+let speed = 1;
+let playing = true;
+let lastTime = null;
+let hoveredPlanet = -1;
+
+const canvas1 = document.getElementById('solarCanvas');
+const ctx1 = canvas1.getContext('2d');
+
+function drawSolar(ts){
+  if(!playing) lastTime = null;
+  const dt = (lastTime && playing) ? Math.min((ts-lastTime)/1000, 0.1) : 0;
+  lastTime = ts;
+
+  if(playing){
+    for(let i=0;i<PLANETS.length;i++){
+      angles[i] += (2*Math.PI / PLANETS[i].period) * speed * dt;
+    }
+    moonAngle += (2*Math.PI / 2) * speed * dt;
+  }
+
+  ctx1.clearRect(0,0,700,440);
+
+  ctx1.fillStyle='#020817';
+  ctx1.fillRect(0,0,700,440);
+
+  stars.forEach(s=>{
+    ctx1.globalAlpha=s.a;
+    ctx1.fillStyle='#fff';
+    ctx1.beginPath();ctx1.arc(s.x,s.y,s.r,0,Math.PI*2);ctx1.fill();
+  });
+  ctx1.globalAlpha=1;
+
+  for(let i=0;i<PLANETS.length;i++){
+    const p=PLANETS[i];
+    ctx1.save();
+    ctx1.setLineDash([4,6]);
+    ctx1.strokeStyle='rgba(255,255,255,0.15)';
+    ctx1.lineWidth=0.8;
+    ctx1.beginPath();
+    ctx1.ellipse(CX, CY, p.r, p.r*FLATTEN, 0, 0, Math.PI*2);
+    ctx1.stroke();
+    ctx1.restore();
+  }
+
+  ctx1.save();
+  const grd=ctx1.createRadialGradient(CX,CY,8,CX,CY,36);
+  grd.addColorStop(0,'#fffde0');
+  grd.addColorStop(0.4,'#fbbf24');
+  grd.addColorStop(0.7,'#f59e0b');
+  grd.addColorStop(1,'rgba(251,191,36,0)');
+  ctx1.fillStyle=grd;
+  ctx1.beginPath();ctx1.arc(CX,CY,36,0,Math.PI*2);ctx1.fill();
+  ctx1.fillStyle='#fbbf24';
+  ctx1.beginPath();ctx1.arc(CX,CY,28,0,Math.PI*2);ctx1.fill();
+  ctx1.restore();
+
+  const planetPositions=[];
+
+  for(let i=0;i<PLANETS.length;i++){
+    const p=PLANETS[i];
+    const a=angles[i];
+    const px=CX+p.r*Math.cos(a);
+    const py=CY+p.r*FLATTEN*Math.sin(a);
+
+    if(p.rings==='saturn'){
+      ctx1.save();
+      ctx1.globalAlpha=0.55;
+      ctx1.strokeStyle='#c8b96a';
+      ctx1.lineWidth=4;
+      ctx1.beginPath();
+      ctx1.ellipse(px,py,p.size+11,4,0.2,0,Math.PI*2);
+      ctx1.stroke();
+      ctx1.globalAlpha=0.35;
+      ctx1.strokeStyle='#e4d191';
+      ctx1.lineWidth=2;
+      ctx1.beginPath();
+      ctx1.ellipse(px,py,p.size+16,5,0.2,0,Math.PI*2);
+      ctx1.stroke();
+      ctx1.restore();
+    }
+    if(p.rings==='faint'){
+      ctx1.save();
+      ctx1.globalAlpha=0.2;
+      ctx1.strokeStyle='#c88b3a';
+      ctx1.lineWidth=2;
+      ctx1.beginPath();
+      ctx1.ellipse(px,py,p.size+7,3,0,0,Math.PI*2);
+      ctx1.stroke();
+      ctx1.restore();
+    }
+
+    const isHov=(i===hoveredPlanet);
+    ctx1.save();
+    if(isHov){
+      ctx1.shadowColor=p.color;
+      ctx1.shadowBlur=14;
+    }
+    ctx1.fillStyle=p.color;
+    ctx1.beginPath();
+    ctx1.arc(px,py,p.size+(isHov?2:0),0,Math.PI*2);
+    ctx1.fill();
+    ctx1.restore();
+
+    if(p.moon){
+      const mx=px+14*Math.cos(moonAngle);
+      const my=py+14*0.7*Math.sin(moonAngle);
+      ctx1.fillStyle='#e2e8f0';
+      ctx1.beginPath();ctx1.arc(mx,my,3,0,Math.PI*2);ctx1.fill();
+    }
+
+    ctx1.save();
+    ctx1.fillStyle='rgba(255,255,255,0.75)';
+    ctx1.font='10px Segoe UI';
+    ctx1.textAlign='center';
+    const shortNames=['Thủy','Kim','Đất','Hỏa','Mộc','Thổ','T.Vương','H.Vương'];
+    ctx1.fillText(shortNames[i], px, py-p.size-5);
+    ctx1.restore();
+
+    planetPositions.push({x:px,y:py,r:p.size+6,idx:i});
+  }
+
+  return planetPositions;
+}
+
+let planetPositions=[];
+
+function loop(ts){
+  planetPositions=drawSolar(ts);
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+canvas1.addEventListener('mousemove',e=>{
+  const rect=canvas1.getBoundingClientRect();
+  const mx=e.clientX-rect.left;
+  const my=e.clientY-rect.top;
+  let found=-1;
+  for(let pp of planetPositions){
+    const dx=mx-pp.x, dy=my-pp.y;
+    if(Math.sqrt(dx*dx+dy*dy)<pp.r+8){found=pp.idx;break;}
+  }
+  hoveredPlanet=found;
+  const tt=document.getElementById('tooltip');
+  if(found>=0){
+    const p=PLANETS[found];
+    document.getElementById('tt-name').textContent='🪐 '+p.name;
+    document.getElementById('tt-dist').textContent=p.dist;
+    document.getElementById('tt-size').textContent=p.relSize;
+    document.getElementById('tt-fact').textContent=p.fact;
+    tt.style.display='block';
+  } else {
+    tt.style.display='none';
+  }
+});
+canvas1.addEventListener('mouseleave',()=>{
+  hoveredPlanet=-1;
+  document.getElementById('tooltip').style.display='none';
+});
+
+document.getElementById('speedSlider').addEventListener('input',function(){
+  speed=parseFloat(this.value);
+  document.getElementById('speedVal').textContent=speed.toFixed(1)+'×';
+});
+
+function togglePlay(){
+  playing=!playing;
+  document.getElementById('playBtn').textContent=playing?'⏸ Dừng':'▶ Chạy';
+  if(playing) lastTime=null;
+}
+
+function switchTab(n){
+  document.getElementById('tab1').classList.toggle('active',n===1);
+  document.getElementById('tab2').classList.toggle('active',n===2);
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',i===n-1));
+  if(n===2) startTab2();
+}
+
+let tab2Started=false;
+let dnAngle=0;
+let seasonAngle=0;
+let tab2Raf=null;
+
+function startTab2(){
+  if(tab2Started) return;
+  tab2Started=true;
+  function loopTab2(ts){
+    dnAngle+=0.008;
+    seasonAngle+=0.003;
+    drawDayNight();
+    drawSeasons();
+    tab2Raf=requestAnimationFrame(loopTab2);
+  }
+  requestAnimationFrame(loopTab2);
+}
+
+const dnCanvas=document.getElementById('dayNightCanvas');
+const dnCtx=dnCanvas.getContext('2d');
+const dnCX=120, dnCY=120, dnR=70;
+
+function drawDayNight(){
+  dnCtx.clearRect(0,0,240,240);
+  dnCtx.fillStyle='#020817';
+  dnCtx.fillRect(0,0,240,240);
+
+  dnCtx.save();
+  dnCtx.beginPath();
+  dnCtx.arc(dnCX,dnCY,dnR,0,Math.PI*2);
+  dnCtx.clip();
+  dnCtx.fillStyle='#1e3a5f';
+  dnCtx.fillRect(dnCX-dnR,dnCY-dnR,dnR*2,dnR*2);
+  const litGrd=dnCtx.createLinearGradient(
+    dnCX+dnR*Math.cos(dnAngle)-10, dnCY+dnR*Math.sin(dnAngle)-10,
+    dnCX-dnR*Math.cos(dnAngle)+10, dnCY-dnR*Math.sin(dnAngle)+10
+  );
+  litGrd.addColorStop(0,'rgba(251,191,36,0.9)');
+  litGrd.addColorStop(0.5,'rgba(251,191,36,0.4)');
+  litGrd.addColorStop(1,'rgba(30,58,95,0)');
+  dnCtx.fillStyle=litGrd;
+  dnCtx.fillRect(dnCX-dnR,dnCY-dnR,dnR*2,dnR*2);
+  dnCtx.restore();
+
+  dnCtx.strokeStyle='rgba(100,160,255,0.5)';
+  dnCtx.lineWidth=2.5;
+  dnCtx.beginPath();
+  dnCtx.arc(dnCX,dnCY,dnR,0,Math.PI*2);
+  dnCtx.stroke();
+
+  const tX=dnCX+dnR*Math.cos(dnAngle+Math.PI/2);
+  const tY=dnCY+dnR*Math.sin(dnAngle+Math.PI/2);
+  const t2X=dnCX+dnR*Math.cos(dnAngle-Math.PI/2);
+  const t2Y=dnCY+dnR*Math.sin(dnAngle-Math.PI/2);
+  dnCtx.strokeStyle='rgba(255,255,255,0.5)';
+  dnCtx.lineWidth=1.5;
+  dnCtx.setLineDash([5,5]);
+  dnCtx.beginPath();
+  dnCtx.moveTo(tX,tY);
+  dnCtx.lineTo(t2X,t2Y);
+  dnCtx.stroke();
+  dnCtx.setLineDash([]);
+
+  const axisAngle=dnAngle+(Math.PI/2)+(23.5*Math.PI/180);
+  dnCtx.strokeStyle='#f87171';
+  dnCtx.lineWidth=2;
+  dnCtx.beginPath();
+  dnCtx.moveTo(dnCX+dnR*0.85*Math.cos(axisAngle),dnCY+dnR*0.85*Math.sin(axisAngle));
+  dnCtx.lineTo(dnCX-dnR*0.85*Math.cos(axisAngle),dnCY-dnR*0.85*Math.sin(axisAngle));
+  dnCtx.stroke();
+
+  const dayAng=dnAngle+Math.PI;
+  dnCtx.fillStyle='#fbbf24';
+  dnCtx.font='bold 11px Segoe UI';
+  dnCtx.textAlign='center';
+  dnCtx.fillText('Ban Ngày ☀️', dnCX+Math.cos(dayAng)*(dnR+22), dnCY+Math.sin(dayAng)*(dnR+22));
+  const nightAng=dnAngle;
+  dnCtx.fillStyle='#93c5fd';
+  dnCtx.fillText('Ban Đêm 🌙', dnCX+Math.cos(nightAng)*(dnR+22), dnCY+Math.sin(nightAng)*(dnR+22));
+
+  const arrowAng=dnAngle-Math.PI*0.5;
+  const arX=dnCX+(dnR+12)*Math.cos(arrowAng);
+  const arY=dnCY+(dnR+12)*Math.sin(arrowAng);
+  dnCtx.save();
+  dnCtx.translate(arX,arY);
+  dnCtx.rotate(arrowAng+Math.PI/2);
+  dnCtx.fillStyle='#4ade80';
+  dnCtx.beginPath();
+  dnCtx.moveTo(0,-7);dnCtx.lineTo(5,3);dnCtx.lineTo(-5,3);dnCtx.closePath();
+  dnCtx.fill();
+  dnCtx.restore();
+
+  dnCtx.fillStyle='#4ade80';
+  dnCtx.font='10px Segoe UI';
+  dnCtx.textAlign='left';
+  dnCtx.fillText('↺ Tự quay',4,14);
+}
+
+const seasCanvas=document.getElementById('seasonsCanvas');
+const seasCtx=seasCanvas.getContext('2d');
+const sCX=210, sCY=170, sunR=28, orbitR=130;
+
+const seasonDefs=[
+  {label:'Xuân (tháng 3)',  angle:Math.PI/2,    color:'#4ade80', info:'Ngày = Đêm'},
+  {label:'Hạ (tháng 6)',   angle:0,             color:'#fbbf24', info:'Ngày dài nhất'},
+  {label:'Thu (tháng 9)',  angle:-Math.PI/2,    color:'#f97316', info:'Ngày = Đêm'},
+  {label:'Đông (tháng 12)',angle:Math.PI,       color:'#93c5fd', info:'Đêm dài nhất'},
+];
+
+function drawSeasons(){
+  seasCtx.clearRect(0,0,420,340);
+  seasCtx.fillStyle='#020817';
+  seasCtx.fillRect(0,0,420,340);
+
+  stars.filter(s=>s.x<420&&s.y<340).forEach(s=>{
+    seasCtx.globalAlpha=s.a*0.5;
+    seasCtx.fillStyle='#fff';
+    seasCtx.beginPath();seasCtx.arc(s.x,s.y,s.r,0,Math.PI*2);seasCtx.fill();
+  });
+  seasCtx.globalAlpha=1;
+
+  seasCtx.strokeStyle='rgba(255,255,255,0.1)';
+  seasCtx.lineWidth=1;
+  seasCtx.setLineDash([4,8]);
+  seasCtx.beginPath();
+  seasCtx.ellipse(sCX,sCY,orbitR,orbitR*0.4,0,0,Math.PI*2);
+  seasCtx.stroke();
+  seasCtx.setLineDash([]);
+
+  const sunGrd=seasCtx.createRadialGradient(sCX,sCY,4,sCX,sCY,sunR);
+  sunGrd.addColorStop(0,'#fffde0');
+  sunGrd.addColorStop(0.5,'#fbbf24');
+  sunGrd.addColorStop(1,'rgba(251,191,36,0)');
+  seasCtx.fillStyle=sunGrd;
+  seasCtx.beginPath();seasCtx.arc(sCX,sCY,sunR+4,0,Math.PI*2);seasCtx.fill();
+  seasCtx.fillStyle='#fbbf24';
+  seasCtx.beginPath();seasCtx.arc(sCX,sCY,sunR,0,Math.PI*2);seasCtx.fill();
+  seasCtx.fillStyle='#fff';
+  seasCtx.font='bold 11px Segoe UI';
+  seasCtx.textAlign='center';
+  seasCtx.textBaseline='middle';
+  seasCtx.fillText('Mặt',sCX,sCY-7);
+  seasCtx.fillText('Trời',sCX,sCY+7);
+  seasCtx.textBaseline='alphabetic';
+
+  for(let sd of seasonDefs){
+    const ex=sCX+orbitR*Math.cos(sd.angle);
+    const ey=sCY+orbitR*0.4*Math.sin(sd.angle);
+    const eR=16;
+
+    const litDir={x:sCX-ex,y:sCY-ey};
+    const litLen=Math.sqrt(litDir.x*litDir.x+litDir.y*litDir.y);
+    const litNorm={x:litDir.x/litLen,y:litDir.y/litLen};
+    const litAngle=Math.atan2(litNorm.y,litNorm.x);
+
+    seasCtx.save();
+    seasCtx.beginPath();seasCtx.arc(ex,ey,eR,0,Math.PI*2);seasCtx.clip();
+    seasCtx.fillStyle='#1e3a5f';
+    seasCtx.fillRect(ex-eR,ey-eR,eR*2,eR*2);
+    const eg=seasCtx.createLinearGradient(
+      ex+litNorm.x*eR, ey+litNorm.y*eR,
+      ex-litNorm.x*eR, ey-litNorm.y*eR
+    );
+    eg.addColorStop(0,'rgba(251,191,36,0.95)');
+    eg.addColorStop(0.5,'rgba(251,191,36,0.3)');
+    eg.addColorStop(1,'rgba(30,58,95,0)');
+    seasCtx.fillStyle=eg;
+    seasCtx.fillRect(ex-eR,ey-eR,eR*2,eR*2);
+    seasCtx.restore();
+
+    seasCtx.strokeStyle='rgba(100,160,255,0.6)';
+    seasCtx.lineWidth=1.5;
+    seasCtx.beginPath();seasCtx.arc(ex,ey,eR,0,Math.PI*2);seasCtx.stroke();
+
+    const axA=litAngle+Math.PI/2+(23.5*Math.PI/180);
+    seasCtx.strokeStyle='#f87171';
+    seasCtx.lineWidth=1.2;
+    seasCtx.beginPath();
+    seasCtx.moveTo(ex+eR*0.8*Math.cos(axA),ey+eR*0.8*Math.sin(axA));
+    seasCtx.lineTo(ex-eR*0.8*Math.cos(axA),ey-eR*0.8*Math.sin(axA));
+    seasCtx.stroke();
+
+    seasCtx.strokeStyle='rgba(255,255,255,0.15)';
+    seasCtx.lineWidth=0.8;
+    seasCtx.beginPath();
+    seasCtx.moveTo(sCX,sCY);seasCtx.lineTo(ex,ey);
+    seasCtx.stroke();
+
+    const offX=sd.angle>=0&&sd.angle<Math.PI ? 0 : 0;
+    const labelY = ey > sCY ? ey+eR+14 : ey-eR-4;
+    const labelX = ex;
+    seasCtx.fillStyle=sd.color;
+    seasCtx.font='bold 12px Segoe UI';
+    seasCtx.textAlign='center';
+    seasCtx.fillText(sd.label,labelX,labelY);
+    seasCtx.fillStyle='rgba(255,255,255,0.55)';
+    seasCtx.font='10px Segoe UI';
+    seasCtx.fillText(sd.info,labelX,labelY+(ey>sCY?14:-4));
+
+    if(ey<sCY-10){
+      seasCtx.fillText(sd.info,labelX,labelY-14);
+      seasCtx.fillStyle=sd.color;
+      seasCtx.font='bold 12px Segoe UI';
+      seasCtx.fillText(sd.label,labelX,labelY);
+    }
+  }
+
+  seasCtx.fillStyle='rgba(255,255,255,0.35)';
+  seasCtx.font='11px Segoe UI';
+  seasCtx.textAlign='center';
+  seasCtx.fillText('Trục nghiêng 23,5° tạo ra bốn mùa',sCX,320);
+  seasCtx.fillStyle='#f87171';
+  seasCtx.fillRect(sCX-24,308,12,3);
+  seasCtx.fillStyle='rgba(255,255,255,0.35)';
+  seasCtx.font='10px Segoe UI';
+  seasCtx.textAlign='left';
+  seasCtx.fillText('= trục Trái Đất',sCX-10,312);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Công Cụ Tạo Đề Kiểm Tra</title>
+<script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+  }
+  .container { max-width: 860px; margin: 0 auto; }
+  h1 {
+    text-align: center;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #c4b5fd;
+    margin-bottom: 0.25rem;
+  }
+  .subtitle { text-align: center; color: #94a3b8; font-size: 0.9rem; margin-bottom: 2rem; }
+  .card {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #334155;
+  }
+  .card h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #a78bfa;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .card h2 .step-badge {
+    background: #8b5cf6;
+    color: #fff;
+    border-radius: 50%;
+    width: 24px; height: 24px;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .form-group { display: flex; flex-direction: column; gap: 0.35rem; }
+  .form-group.full { grid-column: 1 / -1; }
+  label { font-size: 0.82rem; color: #94a3b8; font-weight: 500; }
+  input[type="text"], input[type="date"], textarea, select {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    color: #e2e8f0;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.9rem;
+    font-family: inherit;
+    width: 100%;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  input[type="text"]:focus, input[type="date"]:focus, textarea:focus {
+    border-color: #8b5cf6;
+  }
+  textarea { resize: vertical; min-height: 70px; }
+  .checkbox-row {
+    display: flex; align-items: center; gap: 0.5rem;
+    padding: 0.4rem 0;
+  }
+  input[type="checkbox"] { accent-color: #8b5cf6; width: 16px; height: 16px; cursor: pointer; }
+  .tabs { display: flex; gap: 0; margin-bottom: 1.2rem; border-radius: 8px; overflow: hidden; border: 1px solid #334155; }
+  .tab-btn {
+    flex: 1; padding: 0.6rem 1rem;
+    background: #0f172a; color: #94a3b8;
+    border: none; cursor: pointer; font-size: 0.9rem; font-family: inherit;
+    font-weight: 500; transition: background 0.15s, color 0.15s;
+  }
+  .tab-btn.active { background: #8b5cf6; color: #fff; }
+  .tab-btn:first-child { border-right: 1px solid #334155; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .add-btn {
+    background: transparent;
+    border: 1px dashed #8b5cf6;
+    color: #a78bfa;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.875rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-bottom: 1rem;
+  }
+  .add-btn:hover { background: #2d1f6e44; }
+  .q-card {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 0.9rem;
+    position: relative;
+  }
+  .q-card .q-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 0.75rem;
+  }
+  .q-card .q-num { font-size: 0.82rem; color: #8b5cf6; font-weight: 700; }
+  .del-btn {
+    background: transparent; border: none; color: #ef4444;
+    cursor: pointer; font-size: 0.82rem; padding: 0.2rem 0.5rem;
+    border-radius: 6px; transition: background 0.15s;
+  }
+  .del-btn:hover { background: #2d1010; }
+  .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin: 0.6rem 0; }
+  .option-row { display: flex; align-items: center; gap: 0.4rem; }
+  .option-row label { font-size: 0.82rem; color: #cbd5e1; min-width: 1.4rem; }
+  .option-row input[type="text"] { flex: 1; }
+  .correct-row { display: flex; align-items: center; gap: 1rem; margin-top: 0.6rem; }
+  .correct-row span { font-size: 0.78rem; color: #94a3b8; }
+  .radio-group { display: flex; gap: 1rem; }
+  .radio-group label { display: flex; align-items: center; gap: 0.3rem; font-size: 0.82rem; color: #e2e8f0; cursor: pointer; }
+  input[type="radio"] { accent-color: #8b5cf6; cursor: pointer; }
+  .score-row { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.5rem; }
+  .score-row label { font-size: 0.82rem; color: #94a3b8; white-space: nowrap; }
+  .score-row input { width: 80px; flex-shrink: 0; }
+  .action-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+  .primary-btn {
+    background: #8b5cf6; color: #fff; border: none;
+    border-radius: 8px; padding: 0.7rem 1.5rem;
+    font-size: 0.9rem; font-family: inherit; font-weight: 600;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .primary-btn:hover { background: #7c3aed; }
+  .secondary-btn {
+    background: transparent; color: #a78bfa;
+    border: 1px solid #8b5cf6;
+    border-radius: 8px; padding: 0.7rem 1.5rem;
+    font-size: 0.9rem; font-family: inherit; font-weight: 500;
+    cursor: pointer; transition: background 0.15s;
+  }
+  .secondary-btn:hover { background: #2d1f6e44; }
+  .toast {
+    position: fixed; bottom: 1.5rem; right: 1.5rem;
+    background: #1e293b; border: 1px solid #8b5cf6;
+    color: #c4b5fd; padding: 0.75rem 1.25rem;
+    border-radius: 10px; font-size: 0.875rem;
+    opacity: 0; transform: translateY(8px);
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none; z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  @media (max-width: 540px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .options-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Công Cụ Tạo Đề Kiểm Tra</h1>
+  <p class="subtitle">Tạo đề kiểm tra định dạng Word (.docx) nhanh chóng</p>
+
+  <!-- STEP 1 -->
+  <div class="card">
+    <h2><span class="step-badge">1</span> Thông tin đề thi</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Trường</label>
+        <input type="text" id="truong" value="THCS Long Thọ">
+      </div>
+      <div class="form-group">
+        <label>Môn học</label>
+        <input type="text" id="mon" placeholder="VD: Toán, Văn, Lý...">
+      </div>
+      <div class="form-group">
+        <label>Lớp</label>
+        <input type="text" id="lop" placeholder="VD: 8A1">
+      </div>
+      <div class="form-group">
+        <label>Thời gian</label>
+        <input type="text" id="thoigian" value="45 phút">
+      </div>
+      <div class="form-group">
+        <label>Ngày kiểm tra</label>
+        <input type="date" id="ngaykiemtra">
+      </div>
+      <div class="form-group" style="justify-content: flex-end;">
+        <div class="checkbox-row">
+          <input type="checkbox" id="hoten_check" checked>
+          <label for="hoten_check" style="font-size: 0.875rem; color: #e2e8f0;">Hiển thị dòng Họ tên / Lớp / Ngày</label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="card">
+    <h2><span class="step-badge">2</span> Câu hỏi</h2>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('tn')">Trắc nghiệm</button>
+      <button class="tab-btn" onclick="switchTab('tl')">Tự luận</button>
+    </div>
+
+    <div id="tab-tn" class="tab-panel active">
+      <button class="add-btn" onclick="addTN()">+ Thêm câu trắc nghiệm</button>
+      <div id="tn-list"></div>
+    </div>
+
+    <div id="tab-tl" class="tab-panel">
+      <button class="add-btn" onclick="addTL()">+ Thêm câu tự luận</button>
+      <div id="tl-list"></div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="card">
+    <h2><span class="step-badge">3</span> Xuất file</h2>
+    <div class="action-row">
+      <button class="primary-btn" onclick="exportWord()">Tạo đề kiểm tra (.docx)</button>
+      <button class="secondary-btn" onclick="exportAnswerKey()">Tạo đáp án riêng (.docx)</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let tnCount = 0, tlCount = 0;
+let tnItems = [], tlItems = [];
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    b.classList.toggle('active', (i === 0 && tab === 'tn') || (i === 1 && tab === 'tl'));
+  });
+  document.getElementById('tab-tn').classList.toggle('active', tab === 'tn');
+  document.getElementById('tab-tl').classList.toggle('active', tab === 'tl');
+}
+
+function addTN() {
+  tnCount++;
+  const id = 'tn-' + tnCount;
+  tnItems.push(id);
+  const div = document.createElement('div');
+  div.className = 'q-card';
+  div.id = id;
+  div.innerHTML = `
+    <div class="q-header">
+      <span class="q-num">Câu ${tnItems.indexOf(id) + 1}</span>
+      <button class="del-btn" onclick="delQ('${id}','tn')">Xóa</button>
+    </div>
+    <textarea class="q-text" placeholder="Nhập nội dung câu hỏi..." rows="2"></textarea>
+    <div class="options-grid">
+      <div class="option-row"><label>A.</label><input type="text" class="opt-a" placeholder="Đáp án A"></div>
+      <div class="option-row"><label>B.</label><input type="text" class="opt-b" placeholder="Đáp án B"></div>
+      <div class="option-row"><label>C.</label><input type="text" class="opt-c" placeholder="Đáp án C"></div>
+      <div class="option-row"><label>D.</label><input type="text" class="opt-d" placeholder="Đáp án D"></div>
+    </div>
+    <div class="correct-row">
+      <span>Đáp án đúng:</span>
+      <div class="radio-group">
+        <label><input type="radio" name="ans-${id}" value="A" checked> A</label>
+        <label><input type="radio" name="ans-${id}" value="B"> B</label>
+        <label><input type="radio" name="ans-${id}" value="C"> C</label>
+        <label><input type="radio" name="ans-${id}" value="D"> D</label>
+      </div>
+    </div>`;
+  document.getElementById('tn-list').appendChild(div);
+  renumberAll();
+}
+
+function addTL() {
+  tlCount++;
+  const id = 'tl-' + tlCount;
+  tlItems.push(id);
+  const div = document.createElement('div');
+  div.className = 'q-card';
+  div.id = id;
+  div.innerHTML = `
+    <div class="q-header">
+      <span class="q-num">Câu ${tlItems.indexOf(id) + 1}</span>
+      <button class="del-btn" onclick="delQ('${id}','tl')">Xóa</button>
+    </div>
+    <textarea class="q-text" placeholder="Nhập nội dung câu hỏi..." rows="3"></textarea>
+    <div class="score-row">
+      <label>Điểm:</label>
+      <input type="text" class="q-score" placeholder="VD: 2.0">
+    </div>`;
+  document.getElementById('tl-list').appendChild(div);
+  renumberAll();
+}
+
+function delQ(id, type) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+  if (type === 'tn') tnItems = tnItems.filter(x => x !== id);
+  else tlItems = tlItems.filter(x => x !== id);
+  renumberAll();
+}
+
+function renumberAll() {
+  tnItems.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.querySelector('.q-num').textContent = 'Câu ' + (i + 1);
+  });
+  tlItems.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el) el.querySelector('.q-num').textContent = 'Câu ' + (i + 1);
+  });
+}
+
+function getFormData() {
+  const truong = document.getElementById('truong').value.trim() || 'THCS Long Thọ';
+  const mon = document.getElementById('mon').value.trim() || 'MÔN HỌC';
+  const lop = document.getElementById('lop').value.trim() || '...';
+  const thoigian = document.getElementById('thoigian').value.trim() || '45 phút';
+  const ngay = document.getElementById('ngaykiemtra').value;
+  const showHoten = document.getElementById('hoten_check').checked;
+
+  let ngayStr = '....../....../.........';
+  if (ngay) {
+    const d = new Date(ngay);
+    ngayStr = `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+  }
+
+  const tnData = tnItems.map((id, i) => {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    return {
+      num: i + 1,
+      text: el.querySelector('.q-text').value.trim(),
+      a: el.querySelector('.opt-a').value.trim(),
+      b: el.querySelector('.opt-b').value.trim(),
+      c: el.querySelector('.opt-c').value.trim(),
+      d: el.querySelector('.opt-d').value.trim(),
+      ans: el.querySelector(`input[name="ans-${id}"]:checked`)?.value || 'A'
+    };
+  }).filter(Boolean);
+
+  const tlData = tlItems.map((id, i) => {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    return {
+      num: i + 1,
+      text: el.querySelector('.q-text').value.trim(),
+      score: el.querySelector('.q-score').value.trim()
+    };
+  }).filter(Boolean);
+
+  return { truong, mon, lop, thoigian, ngayStr, showHoten, tnData, tlData };
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function makeParagraph(text, opts = {}) {
+  const { bold = false, center = false, size = 24, spaceAfter = 120 } = opts;
+  return new docx.Paragraph({
+    alignment: center ? docx.AlignmentType.CENTER : docx.AlignmentType.LEFT,
+    spacing: { after: spaceAfter },
+    children: [new docx.TextRun({ text, bold, size, font: 'Times New Roman' })]
+  });
+}
+
+function exportWord() {
+  const { truong, mon, lop, thoigian, ngayStr, showHoten, tnData, tlData } = getFormData();
+  if (tnData.length === 0 && tlData.length === 0) {
+    showToast('Vui lòng thêm ít nhất một câu hỏi!');
+    return;
+  }
+
+  const children = [];
+
+  // Header
+  children.push(makeParagraph('TRƯỜNG: ' + truong.toUpperCase(), { center: true, bold: true, size: 24, spaceAfter: 60 }));
+  children.push(new docx.Paragraph({
+    alignment: docx.AlignmentType.CENTER,
+    spacing: { after: 60 },
+    children: [
+      new docx.TextRun({ text: 'Môn: ', size: 24, font: 'Times New Roman' }),
+      new docx.TextRun({ text: mon, bold: true, size: 24, font: 'Times New Roman' }),
+      new docx.TextRun({ text: '   |   Lớp: ', size: 24, font: 'Times New Roman' }),
+      new docx.TextRun({ text: lop, bold: true, size: 24, font: 'Times New Roman' }),
+      new docx.TextRun({ text: '   |   Thời gian: ', size: 24, font: 'Times New Roman' }),
+      new docx.TextRun({ text: thoigian, bold: true, size: 24, font: 'Times New Roman' }),
+    ]
+  }));
+
+  children.push(new docx.Paragraph({
+    alignment: docx.AlignmentType.CENTER,
+    spacing: { after: 200 },
+    children: [new docx.TextRun({ text: 'ĐỀ KIỂM TRA ' + mon.toUpperCase(), bold: true, size: 32, font: 'Times New Roman' })]
+  }));
+
+  if (showHoten) {
+    children.push(new docx.Paragraph({
+      spacing: { after: 160 },
+      children: [
+        new docx.TextRun({ text: 'Họ và tên: .....................................   ', size: 24, font: 'Times New Roman' }),
+        new docx.TextRun({ text: 'Lớp: ...........   ', size: 24, font: 'Times New Roman' }),
+        new docx.TextRun({ text: 'Ngày: ' + ngayStr, size: 24, font: 'Times New Roman' }),
+      ]
+    }));
+  }
+
+  // Section I: Trắc nghiệm
+  if (tnData.length > 0) {
+    children.push(makeParagraph('I. PHẦN TRẮC NGHIỆM', { bold: true, size: 26, spaceAfter: 100 }));
+    tnData.forEach(q => {
+      children.push(new docx.Paragraph({
+        spacing: { after: 60 },
+        children: [new docx.TextRun({ text: `Câu ${q.num}: ${q.text}`, bold: true, size: 24, font: 'Times New Roman' })]
+      }));
+      children.push(new docx.Paragraph({
+        spacing: { after: 120 },
+        children: [
+          new docx.TextRun({ text: `A. ${q.a}     `, size: 24, font: 'Times New Roman' }),
+          new docx.TextRun({ text: `B. ${q.b}     `, size: 24, font: 'Times New Roman' }),
+          new docx.TextRun({ text: `C. ${q.c}     `, size: 24, font: 'Times New Roman' }),
+          new docx.TextRun({ text: `D. ${q.d}`, size: 24, font: 'Times New Roman' }),
+        ]
+      }));
+    });
+  }
+
+  // Section II: Tự luận
+  if (tlData.length > 0) {
+    children.push(makeParagraph('II. PHẦN TỰ LUẬN', { bold: true, size: 26, spaceAfter: 100 }));
+    tlData.forEach(q => {
+      const scoreText = q.score ? ` (${q.score} điểm)` : '';
+      children.push(new docx.Paragraph({
+        spacing: { after: 60 },
+        children: [new docx.TextRun({ text: `Câu ${q.num}${scoreText}: ${q.text}`, bold: true, size: 24, font: 'Times New Roman' })]
+      }));
+      for (let i = 0; i < 4; i++) {
+        children.push(new docx.Paragraph({
+          spacing: { after: 60 },
+          children: [new docx.TextRun({ text: '...............................................................................................................................................................................................................', size: 24, font: 'Times New Roman' })]
+        }));
+      }
+    });
+  }
+
+  // Footer
+  children.push(new docx.Paragraph({
+    alignment: docx.AlignmentType.CENTER,
+    spacing: { before: 400, after: 0 },
+    children: [new docx.TextRun({ text: '--- Hết ---', italics: true, size: 24, font: 'Times New Roman' })]
+  }));
+
+  // Answer key page
+  if (tnData.length > 0) {
+    children.push(new docx.Paragraph({
+      pageBreakBefore: true,
+      alignment: docx.AlignmentType.CENTER,
+      spacing: { after: 200 },
+      children: [new docx.TextRun({ text: 'BẢNG ĐÁP ÁN', bold: true, size: 32, font: 'Times New Roman' })]
+    }));
+    children.push(new docx.Paragraph({
+      alignment: docx.AlignmentType.CENTER,
+      spacing: { after: 200 },
+      children: [new docx.TextRun({ text: 'Môn: ' + mon + '   |   Lớp: ' + lop, size: 24, font: 'Times New Roman' })]
+    }));
+
+    const tableRows = [
+      new docx.TableRow({
+        tableHeader: true,
+        children: [
+          makeCell('Câu số', true),
+          makeCell('Đáp án', true),
+        ]
+      }),
+      ...tnData.map(q => new docx.TableRow({
+        children: [
+          makeCell('Câu ' + q.num, false),
+          makeCell(q.ans, false),
+        ]
+      }))
+    ];
+
+    children.push(new docx.Table({
+      alignment: docx.AlignmentType.CENTER,
+      rows: tableRows,
+      width: { size: 40, type: docx.WidthType.PERCENTAGE },
+    }));
+  }
+
+  const doc = new docx.Document({
+    sections: [{ children }]
+  });
+
+  docx.Packer.toBlob(doc).then(blob => {
+    saveAs(blob, `de_kiem_tra_${mon.replace(/\s+/g,'_')}.docx`);
+    showToast('Đã xuất đề kiểm tra thành công!');
+  }).catch(e => {
+    showToast('Lỗi tạo file: ' + e.message);
+    console.error(e);
+  });
+}
+
+function makeCell(text, isHeader) {
+  return new docx.TableCell({
+    shading: isHeader ? { fill: '8b5cf6' } : undefined,
+    children: [new docx.Paragraph({
+      alignment: docx.AlignmentType.CENTER,
+      children: [new docx.TextRun({
+        text,
+        bold: isHeader,
+        size: 24,
+        font: 'Times New Roman',
+        color: isHeader ? 'FFFFFF' : '000000'
+      })]
+    })]
+  });
+}
+
+function exportAnswerKey() {
+  const { truong, mon, lop, tnData } = getFormData();
+  if (tnData.length === 0) {
+    showToast('Chưa có câu trắc nghiệm để tạo đáp án!');
+    return;
+  }
+
+  const children = [];
+  children.push(new docx.Paragraph({
+    alignment: docx.AlignmentType.CENTER,
+    spacing: { after: 100 },
+    children: [new docx.TextRun({ text: 'BẢNG ĐÁP ÁN TRẮC NGHIỆM', bold: true, size: 32, font: 'Times New Roman' })]
+  }));
+  children.push(new docx.Paragraph({
+    alignment: docx.AlignmentType.CENTER,
+    spacing: { after: 240 },
+    children: [
+      new docx.TextRun({ text: 'Trường: ' + truong + '   |   Môn: ' + mon + '   |   Lớp: ' + lop, size: 24, font: 'Times New Roman' })
+    ]
+  }));
+
+  const rows = [
+    new docx.TableRow({
+      tableHeader: true,
+      children: [makeCell('Câu số', true), makeCell('Đáp án', true)]
+    }),
+    ...tnData.map(q => new docx.TableRow({
+      children: [makeCell('Câu ' + q.num, false), makeCell(q.ans, false)]
+    }))
+  ];
+
+  children.push(new docx.Table({
+    alignment: docx.AlignmentType.CENTER,
+    rows,
+    width: { size: 40, type: docx.WidthType.PERCENTAGE }
+  }));
+
+  const doc = new docx.Document({ sections: [{ children }] });
+  docx.Packer.toBlob(doc).then(blob => {
+    saveAs(blob, `dap_an_${mon.replace(/\s+/g,'_')}.docx`);
+    showToast('Đã xuất đáp án thành công!');
+  }).catch(e => {
+    showToast('Lỗi tạo file: ' + e.message);
+    console.error(e);
+  });
+}
+
+// Set default date to today
+document.getElementById('ngaykiemtra').value = new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>

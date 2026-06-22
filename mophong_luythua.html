@@ -1,0 +1,532 @@
+Done: 23509 bytes
+tml lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Lũy Thừa – Mô Phỏng</title>
+<style>
+:root{
+  --bg:#0f172a;--card:#1e293b;--border:#334155;
+  --teal:#06b6d4;--purple:#8b5cf6;--orange:#f59e0b;
+  --green:#10b981;--red:#ef4444;--blue:#3b82f6;--text:#e2e8f0;--sub:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);
+     height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.header{background:var(--card);border-bottom:1px solid var(--border);
+        padding:11px 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.header h1{font-size:1.15rem;font-weight:800;}
+.back-link{color:var(--sub);text-decoration:none;font-size:.88rem;font-weight:600;
+           padding:5px 12px;border-radius:8px;border:1px solid var(--border);}
+.tab-bar{display:flex;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;}
+.mbar-tab{flex:1;padding:12px 6px;border:none;font-size:.97rem;font-weight:800;cursor:pointer;
+          background:transparent;color:var(--sub);border-bottom:3px solid transparent;
+          transition:all .15s;font-family:inherit;}
+.mbar-tab.active{color:var(--teal);border-bottom-color:var(--teal);background:rgba(6,182,212,.05);}
+.instr-bar{background:rgba(6,182,212,.1);border-bottom:1px solid rgba(6,182,212,.2);
+           padding:8px 22px;font-size:.9rem;color:#a5f3fc;text-align:center;flex-shrink:0;font-weight:600;}
+.body-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+/* ── SHARED ── */
+.stage{flex:1;overflow:auto;padding:18px 20px;display:flex;flex-direction:column;align-items:center;}
+.ctrl-bar{flex-shrink:0;background:var(--card);border-top:1px solid var(--border);
+          padding:14px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;}
+.pill-group{display:flex;gap:6px;flex-wrap:wrap;}
+.pill{padding:8px 16px;border-radius:20px;border:2px solid var(--border);background:transparent;
+      color:var(--sub);font-size:1rem;font-weight:800;cursor:pointer;font-family:inherit;transition:all .12s;}
+.pill.active{border-color:var(--teal);color:var(--teal);background:rgba(6,182,212,.1);}
+.slider-wrap{display:flex;align-items:center;gap:10px;}
+.slider-wrap label{font-size:.88rem;font-weight:700;color:var(--sub);}
+input[type=range]{width:180px;accent-color:var(--teal);}
+.big-btn{padding:11px 26px;border:none;border-radius:12px;font-size:1rem;font-weight:800;
+         cursor:pointer;font-family:inherit;transition:all .15s;
+         background:linear-gradient(135deg,#06b6d4,#3b82f6);color:#fff;
+         box-shadow:0 3px 12px rgba(6,182,212,.3);}
+.big-btn:hover{transform:translateY(-1px);}
+.big-btn.danger{background:linear-gradient(135deg,#ef4444,#dc2626);}
+.big-btn.sec{background:rgba(255,255,255,.08);box-shadow:none;color:var(--text);border:1.5px solid var(--border);}
+
+/* ══ TAB 1: KHÁM PHÁ ══ */
+.kp-result-row{display:flex;align-items:baseline;gap:8px;margin:8px 0 4px;flex-wrap:wrap;justify-content:center;}
+.kp-formula{font-size:1.1rem;color:var(--sub);font-weight:700;text-align:center;}
+.kp-eq{font-size:2.2rem;font-weight:900;}
+.kp-big{font-size:3rem;font-weight:900;color:var(--teal);}
+.steps-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center;
+           margin:4px 0 8px;font-size:1.1rem;font-weight:800;}
+.step-num{padding:5px 10px;border-radius:8px;background:rgba(139,92,246,.2);color:#c4b5fd;min-width:40px;text-align:center;}
+.step-arrow{color:var(--teal);font-size:1.3rem;}
+/* Rows layout */
+.boxes-rows{display:flex;flex-direction:column;gap:6px;width:100%;max-width:820px;margin-top:4px;}
+.box-row{display:flex;align-items:center;gap:6px;}
+.row-label{font-size:.88rem;font-weight:800;min-width:90px;text-align:right;flex-shrink:0;}
+.row-boxes{display:flex;flex-wrap:wrap;gap:3px;}
+.box{width:26px;height:26px;border-radius:5px;border:2px solid rgba(255,255,255,.15);
+     transition:opacity .2s;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;}
+.row-more{font-size:.82rem;font-weight:700;align-self:center;padding:3px 8px;
+          border-radius:6px;background:rgba(255,255,255,.08);}
+
+/* ══ TAB 2: SO SÁNH ══ */
+.cmp-table{width:100%;max-width:720px;border-collapse:collapse;font-size:.95rem;}
+.cmp-table th{padding:10px 14px;text-align:left;font-weight:800;color:var(--sub);
+              border-bottom:2px solid var(--border);font-size:.82rem;text-transform:uppercase;letter-spacing:.5px;}
+.cmp-table td{padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.05);font-weight:700;}
+.cmp-bar-cell{width:50%;}
+.cmp-bar-wrap{background:rgba(255,255,255,.06);border-radius:6px;height:24px;overflow:hidden;position:relative;}
+.cmp-bar{height:100%;border-radius:6px;transition:width .4s cubic-bezier(.4,0,.2,1);}
+.cmp-val{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:.82rem;font-weight:800;color:#fff;}
+.base-colors{--c2:#06b6d4;--c3:#10b981;--c4:#f59e0b;--c5:#8b5cf6;--c9:#ef4444;}
+
+/* ══ TAB 3: BÀN CỜ SESSA ══ */
+.story-box{background:rgba(245,158,11,.07);border:1.5px solid rgba(245,158,11,.25);border-radius:14px;
+           padding:14px 18px;max-width:800px;width:100%;font-size:.92rem;line-height:1.7;color:#fde68a;}
+.story-box strong{color:var(--orange);font-size:1rem;}
+.chess-area{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;justify-content:center;margin-top:14px;}
+.chess-board{display:grid;grid-template-columns:repeat(8,1fr);gap:2px;
+             border:2px solid var(--border);border-radius:8px;overflow:hidden;
+             flex-shrink:0;width:360px;height:360px;}
+.chess-sq{display:flex;align-items:center;justify-content:center;font-size:9px;
+          font-weight:700;cursor:pointer;transition:all .2s;position:relative;}
+.chess-sq.light{background:#334155;}
+.chess-sq.dark {background:#1e293b;}
+.chess-sq.filled{background:linear-gradient(135deg,#f59e0b,#d97706)!important;}
+.chess-sq.filled .sq-num{color:#fff;}
+.chess-sq.active-sq{box-shadow:inset 0 0 0 3px #06b6d4;z-index:1;}
+.sq-num{font-size:7px;color:rgba(255,255,255,.4);position:absolute;top:2px;left:3px;}
+.chess-sq.filled .sq-num{color:rgba(255,255,255,.6);}
+.sq-val{font-size:9px;font-weight:800;color:#fff;text-align:center;line-height:1.2;pointer-events:none;}
+.chess-sq.filled .sq-val{color:#fff;}
+.chess-sq:not(.filled) .sq-val{color:rgba(255,255,255,.35);}
+.chess-info{flex:1;min-width:240px;max-width:320px;}
+.info-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:10px;}
+.info-label{font-size:.75rem;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.info-val{font-size:1.5rem;font-weight:900;color:var(--teal);word-break:break-all;line-height:1.3;}
+.info-val.orange{color:var(--orange);}
+.progress-bar-wrap{background:rgba(255,255,255,.06);border-radius:8px;height:10px;overflow:hidden;margin-top:8px;}
+.progress-bar{height:100%;background:linear-gradient(90deg,#06b6d4,#8b5cf6);border-radius:8px;transition:width .3s;}
+.chess-ctrl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px;}
+.spd-btn{padding:6px 12px;border-radius:9px;border:1.5px solid var(--border);background:transparent;
+         color:var(--sub);font-size:.85rem;font-weight:700;cursor:pointer;font-family:inherit;}
+.spd-btn.active{border-color:var(--teal);color:var(--teal);}
+</style>
+</head>
+<body>
+<div class="header">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a href="dashboard.html" class="back-link">← Dashboard</a>
+    <h1>🔢 Lũy Thừa Với Số Mũ Tự Nhiên</h1>
+  </div>
+  <button style="background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:9px;
+    padding:7px 14px;color:var(--text);cursor:pointer;font-size:.88rem;font-weight:700;font-family:inherit;"
+    onclick="toggleFS()">⛶ Toàn màn hình</button>
+</div>
+<div class="tab-bar">
+  <button class="mbar-tab active" id="tab-kp"   onclick="switchTab('kp')">📦 Khám Phá</button>
+  <button class="mbar-tab"        id="tab-cmp"  onclick="switchTab('cmp')">📊 So Sánh</button>
+  <button class="mbar-tab"        id="tab-ses"  onclick="switchTab('ses')">♟️ Bàn Cờ Sessa</button>
+</div>
+
+<!-- ══════════ TAB 1: KHÁM PHÁ ══════════ -->
+<div class="body-wrap" id="wrap-kp">
+  <div class="instr-bar">✋ Chọn cơ số <b>a</b> và số mũ <b>n</b> rồi nhấn <b>Tính từng bước</b> để xem quá trình nhân</div>
+  <div class="stage" id="stage-kp">
+    <div class="kp-result-row">
+      <span class="kp-eq" id="kp-expr">2<sup>3</sup></span>
+      <span class="kp-eq" style="color:var(--sub)">=</span>
+      <span class="kp-big" id="kp-result">8</span>
+    </div>
+    <div class="kp-formula" id="kp-formula">2 × 2 × 2 &nbsp;(nhân 3 lần)</div>
+    <div class="steps-row" id="kp-steps"></div>
+    <div class="boxes-rows" id="kp-boxes"></div>
+  </div>
+  <div class="ctrl-bar">
+    <div>
+      <div style="font-size:.75rem;font-weight:700;color:var(--sub);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Cơ số a</div>
+      <div class="pill-group" id="base-pills">
+        <button class="pill active" data-b="2" onclick="setBase(2)">2</button>
+        <button class="pill" data-b="3" onclick="setBase(3)">3</button>
+        <button class="pill" data-b="4" onclick="setBase(4)">4</button>
+        <button class="pill" data-b="5" onclick="setBase(5)">5</button>
+        <button class="pill" data-b="10" onclick="setBase(10)">10</button>
+      </div>
+    </div>
+    <div class="slider-wrap">
+      <label>Số mũ n = <b id="n-label">3</b></label>
+      <input type="range" id="exp-slider" min="0" max="8" value="3" oninput="setExp(+this.value)"/>
+    </div>
+    <button class="big-btn" onclick="animateSteps()">▶ Tính từng bước</button>
+    <button class="big-btn sec" onclick="renderKP()">↺ Đặt lại</button>
+  </div>
+</div>
+
+<!-- ══════════ TAB 2: SO SÁNH ══════════ -->
+<div class="body-wrap" id="wrap-cmp" style="display:none">
+  <div class="instr-bar">📊 Kéo thanh để thay đổi số mũ — quan sát cơ số nào tăng nhanh hơn</div>
+  <div class="stage base-colors" id="stage-cmp" style="justify-content:flex-start;padding-top:14px;">
+    <table class="cmp-table" id="cmp-table">
+      <thead>
+        <tr>
+          <th style="width:80px;">Biểu thức</th>
+          <th style="width:110px;">Giá trị</th>
+          <th class="cmp-bar-cell">So sánh trực quan</th>
+        </tr>
+      </thead>
+      <tbody id="cmp-body"></tbody>
+    </table>
+  </div>
+  <div class="ctrl-bar">
+    <div class="slider-wrap">
+      <label style="font-size:1rem;">Số mũ n = <b id="cmp-n-label" style="font-size:1.3rem;color:var(--teal);">3</b></label>
+      <input type="range" id="cmp-slider" min="0" max="12" value="3" oninput="renderCmp(+this.value)" style="width:260px;"/>
+    </div>
+    <div class="pill-group" id="cmp-base-pills" style="gap:6px;">
+      <label style="font-size:.78rem;font-weight:700;color:var(--sub);align-self:center;">Cơ số:</label>
+      <button class="pill active" data-cb="2"  onclick="toggleCmpBase(2)">2</button>
+      <button class="pill active" data-cb="3"  onclick="toggleCmpBase(3)">3</button>
+      <button class="pill active" data-cb="4"  onclick="toggleCmpBase(4)">4</button>
+      <button class="pill active" data-cb="5"  onclick="toggleCmpBase(5)">5</button>
+      <button class="pill"        data-cb="10" onclick="toggleCmpBase(10)">10</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TAB 3: BÀN CỜ SESSA ══════════ -->
+<div class="body-wrap" id="wrap-ses" style="display:none">
+  <div class="stage" id="stage-ses" style="gap:14px;padding-top:14px;">
+    <div class="story-box">
+      <strong>📜 Bài toán cổ – Nhà thông thái Sessa</strong><br>
+      Truyện kể rằng, nhà thông thái <b>Sessa</b> phát minh ra bàn cờ vua và giới thiệu cho vị vua Ấn Độ. Nhà vua rất thích nên hứa ban thưởng bất kỳ thứ gì. Sessa không xin vàng bạc mà chỉ xin thóc theo quy tắc:<br>
+      <span style="display:inline-block;margin-top:6px;">
+        Ô 1: <b>1</b> hạt &nbsp;·&nbsp; Ô 2: <b>2</b> hạt &nbsp;·&nbsp; Ô 3: <b>4</b> hạt &nbsp;·&nbsp; Ô 4: <b>8</b> hạt &nbsp;·&nbsp; … &nbsp;·&nbsp;
+        Ô <i>k</i>: <b>2<sup>k−1</sup></b> hạt &nbsp;·&nbsp; Cứ thế đến ô thứ <b>64</b>.
+      </span>
+    </div>
+    <div class="chess-area">
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:.75rem;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;">
+            Nhấn ô để xem chi tiết
+          </span>
+          <div style="display:flex;gap:5px;align-items:center;">
+            <span style="font-size:.75rem;color:var(--sub);font-weight:700;">Hiển thị:</span>
+            <button class="spd-btn active" data-dm="power"  onclick="setDispMode('power')">2<sup>k</sup></button>
+            <button class="spd-btn"        data-dm="number" onclick="setDispMode('number')">Số</button>
+            <button class="spd-btn"        data-dm="clean"  onclick="setDispMode('clean')">Ẩn</button>
+          </div>
+        </div>
+        <div class="chess-board" id="chess-board"></div>
+      </div>
+      <div class="chess-info">
+        <div class="info-card">
+          <div class="info-label">Ô hiện tại</div>
+          <div class="info-val" id="ses-sq-num">—</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">Hạt thóc ở ô này (2<sup id="ses-exp-disp">k−1</sup>)</div>
+          <div class="info-val orange" id="ses-sq-val">—</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">Tổng thóc đã đặt (2<sup id="ses-total-exp">k</sup> − 1)</div>
+          <div class="info-val" id="ses-total">0</div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar" id="ses-progress" style="width:0%"></div>
+          </div>
+        </div>
+        <div class="info-card" id="ses-final-card" style="display:none;">
+          <div class="info-label">🎉 Tổng thóc trên toàn bàn cờ</div>
+          <div class="info-val orange" style="font-size:1rem;line-height:1.5;" id="ses-grand-total">
+            2⁶⁴ − 1 = 18.446.744.073.709.551.615
+          </div>
+          <div style="font-size:.82rem;color:var(--sub);margin-top:6px;">
+            ≈ 1800 tỷ tấn thóc — hơn gấp nhiều lần sản lượng thóc cả thế giới!
+          </div>
+        </div>
+        <div class="chess-ctrl">
+          <button class="big-btn" id="ses-play-btn" onclick="sesPlay()">▶ Tự động chạy</button>
+          <button class="big-btn sec" onclick="sesReset()">↺ Đặt lại</button>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:4px;">
+            <span style="font-size:.78rem;color:var(--sub);font-weight:700;">Tốc độ:</span>
+            <button class="spd-btn" data-s="600" onclick="setSpd(this)">Chậm</button>
+            <button class="spd-btn active" data-s="120" onclick="setSpd(this)">Vừa</button>
+            <button class="spd-btn" data-s="30" onclick="setSpd(this)">Nhanh</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══ BASE COLORS ══ */
+const BCOLOR={2:'#06b6d4',3:'#10b981',4:'#f59e0b',5:'#8b5cf6',10:'#ef4444'};
+
+function toggleFS(){
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+
+/* ══════════ TAB SWITCH ══════════ */
+function switchTab(t){
+  ['kp','cmp','ses'].forEach(x=>{
+    document.getElementById('tab-'+x).classList.toggle('active',x===t);
+    document.getElementById('wrap-'+x).style.display=x===t?'flex':'none';
+  });
+}
+
+/* ══════════ TAB 1: KHÁM PHÁ ══════════ */
+let kpBase=2, kpExp=3, kpAF=null;
+const BOX_COLORS=['#06b6d4','#10b981','#f59e0b','#8b5cf6','#ef4444','#3b82f6'];
+
+function setBase(b){ kpBase=b; document.querySelectorAll('#base-pills .pill').forEach(p=>p.classList.toggle('active',+p.dataset.b===b)); renderKP(); }
+function setExp(n){ kpExp=n; document.getElementById('n-label').textContent=n; document.getElementById('exp-slider').value=n; renderKP(); }
+
+function pow(a,n){ let r=1; for(let i=0;i<n;i++) r*=a; return r; }
+
+const MAX_PER_ROW=40; // max boxes shown per row
+
+function buildBoxRow(level, a, col, animate){
+  const count=pow(a,level);
+  const row=document.createElement('div');
+  row.className='box-row'; row.id='kp-row-'+level;
+  // Label
+  const lbl=document.createElement('div');
+  lbl.className='row-label';
+  lbl.style.color=col;
+  lbl.innerHTML=`${a}<sup>${level}</sup> = <b>${count.toLocaleString('vi-VN')}</b>`;
+  row.appendChild(lbl);
+  // Boxes
+  const boxWrap=document.createElement('div');
+  boxWrap.className='row-boxes';
+  const show=Math.min(count, MAX_PER_ROW);
+  for(let j=0;j<show;j++){
+    const d=document.createElement('div');
+    d.className='box';
+    d.style.background=col+'33'; d.style.borderColor=col+'88';
+    if(animate){ d.style.opacity='0'; d.style.transition='opacity .1s'; setTimeout(()=>d.style.opacity='1', j*Math.min(40,280/show)); }
+    boxWrap.appendChild(d);
+  }
+  row.appendChild(boxWrap);
+  if(count>MAX_PER_ROW){
+    const more=document.createElement('div');
+    more.className='row-more'; more.style.color=col;
+    more.textContent=`+${(count-MAX_PER_ROW).toLocaleString('vi-VN')} ô nữa`;
+    row.appendChild(more);
+  }
+  return row;
+}
+
+function renderKP(){
+  cancelAnimationFrame(kpAF);
+  const a=kpBase, n=kpExp, result=pow(a,n);
+  document.getElementById('kp-expr').innerHTML=`${a}<sup>${n}</sup>`;
+  document.getElementById('kp-result').textContent=result.toLocaleString('vi-VN');
+  if(n===0) document.getElementById('kp-formula').textContent='Bất kỳ số nào mũ 0 đều bằng 1 (quy ước)';
+  else if(n===1) document.getElementById('kp-formula').textContent=`${a}¹ = ${a}`;
+  else document.getElementById('kp-formula').innerHTML=`${Array(n).fill(a).join(' × ')} &nbsp;(nhân ${n} lần)`;
+
+  // Steps chain
+  let stepsH='<span style="color:var(--sub)">a⁰=1</span>';
+  let cur=1;
+  for(let i=1;i<=n;i++){
+    cur*=a;
+    const col=BOX_COLORS[(i-1)%BOX_COLORS.length];
+    stepsH+=`<span class="step-arrow">→</span><span class="step-num" style="background:${col}22;color:${col}">${a}<sup>${i}</sup>=${cur.toLocaleString('vi-VN')}</span>`;
+  }
+  document.getElementById('kp-steps').innerHTML=stepsH;
+
+  // Box rows
+  const wrap=document.getElementById('kp-boxes'); wrap.innerHTML='';
+  if(n===0){
+    wrap.innerHTML=`<div style="color:var(--sub);font-size:1rem;margin-top:8px;">a⁰ = 1 (theo quy ước)</div>`;
+    return;
+  }
+  for(let i=1;i<=n;i++){
+    wrap.appendChild(buildBoxRow(i, a, BOX_COLORS[(i-1)%BOX_COLORS.length], false));
+  }
+}
+
+function animateSteps(){
+  cancelAnimationFrame(kpAF);
+  const a=kpBase, n=kpExp;
+  if(n===0){ renderKP(); return; }
+  const stepsEl=document.getElementById('kp-steps');
+  const wrap=document.getElementById('kp-boxes');
+  stepsEl.innerHTML='<span style="color:var(--sub)">a⁰=1</span>';
+  wrap.innerHTML='';
+  document.getElementById('kp-result').textContent='1';
+  let i=0;
+  function nextStep(){
+    if(i>=n) return;
+    i++;
+    const col=BOX_COLORS[(i-1)%BOX_COLORS.length];
+    const cur=pow(a,i);
+    // Append step badge
+    const span=document.createElement('span');
+    span.innerHTML='<span class="step-arrow">→</span>';
+    const num=document.createElement('span');
+    num.className='step-num';
+    num.style.cssText=`background:${col}22;color:${col};transform:scale(1.25);transition:transform .25s`;
+    num.innerHTML=`${a}<sup>${i}</sup>=${cur.toLocaleString('vi-VN')}`;
+    span.appendChild(num);
+    stepsEl.appendChild(span);
+    setTimeout(()=>num.style.transform='scale(1)', 60);
+    document.getElementById('kp-result').textContent=cur.toLocaleString('vi-VN');
+    // Append new row with animation
+    wrap.appendChild(buildBoxRow(i, a, col, true));
+    // Scroll into view
+    wrap.lastChild.scrollIntoView({behavior:'smooth',block:'nearest'});
+    if(i<n) setTimeout(nextStep, 750);
+  }
+  setTimeout(nextStep, 350);
+}
+
+renderKP();
+
+/* ══════════ TAB 2: SO SÁNH ══════════ */
+let cmpBases=new Set([2,3,4,5]);
+function toggleCmpBase(b){
+  const all=[2,3,4,5,10];
+  if(cmpBases.has(b)){ if(cmpBases.size>1) cmpBases.delete(b); }
+  else cmpBases.add(b);
+  document.querySelectorAll('#cmp-base-pills .pill').forEach(p=>{
+    const pb=+p.dataset.cb;
+    p.classList.toggle('active', cmpBases.has(pb));
+  });
+  renderCmp(+document.getElementById('cmp-slider').value);
+}
+
+function renderCmp(n){
+  document.getElementById('cmp-n-label').textContent=n;
+  const bases=[...cmpBases].sort((a,b)=>a-b);
+  const vals=bases.map(b=>({b,v:pow(b,n)}));
+  const maxV=Math.max(...vals.map(v=>v.v), 1);
+  let h='';
+  vals.forEach(({b,v})=>{
+    const col=BCOLOR[b]||'#64748b';
+    const pct=Math.max(2,(v/maxV)*100);
+    h+=`<tr>
+      <td style="color:${col};font-size:1.1rem;">${b}<sup>${n}</sup></td>
+      <td style="color:${col};font-size:1.05rem;">${v.toLocaleString('vi-VN')}</td>
+      <td class="cmp-bar-cell">
+        <div class="cmp-bar-wrap">
+          <div class="cmp-bar" style="width:${pct}%;background:${col};"></div>
+          <span class="cmp-val">${v.toLocaleString('vi-VN')}</span>
+        </div>
+      </td>
+    </tr>`;
+  });
+  document.getElementById('cmp-body').innerHTML=h;
+}
+renderCmp(3);
+
+/* ══════════ TAB 3: BÀN CỜ SESSA ══════════ */
+let sesCurrent=0, sesPlaying=false, sesTimeout=null, sesSpeed=120;
+let sesDispMode='power'; // 'power' | 'number' | 'clean'
+const GRAND_TOTAL='18.446.744.073.709.551.615';
+
+function sesPow2n(n){ return BigInt(1)<<BigInt(n); }
+function sesTotalUpTo(k){ return (BigInt(1)<<BigInt(k))-BigInt(1); }
+function fmtBig(n){ return n.toLocaleString('vi-VN'); }
+
+function sqLabel(i){
+  // i is 0-indexed, square = i+1, grains = 2^i
+  if(sesDispMode==='clean') return '';
+  if(sesDispMode==='power') return i===0?'2⁰':`2<sup>${i}</sup>`;
+  // number mode
+  if(i<=20) return fmtBig(sesPow2n(i)); // show actual number up to 2^20=1M
+  return `2<sup>${i}</sup>`; // fallback to power for huge numbers
+}
+
+function setDispMode(mode){
+  sesDispMode=mode;
+  document.querySelectorAll('[data-dm]').forEach(b=>b.classList.toggle('active',b.dataset.dm===mode));
+  // Refresh all square labels
+  for(let i=0;i<64;i++){
+    const v=document.getElementById('sq'+i).querySelector('.sq-val');
+    if(v) v.innerHTML=sqLabel(i);
+  }
+}
+
+function buildBoard(){
+  const board=document.getElementById('chess-board');
+  board.innerHTML='';
+  for(let i=0;i<64;i++){
+    const row=Math.floor(i/8), col=i%8;
+    const sq=document.createElement('div');
+    sq.className='chess-sq '+((row+col)%2===0?'light':'dark');
+    sq.id='sq'+i;
+    sq.onclick=()=>sesSelectSq(i);
+    // Square number tag
+    const num=document.createElement('div');
+    num.className='sq-num'; num.textContent=i+1;
+    sq.appendChild(num);
+    // Value label
+    const val=document.createElement('div');
+    val.className='sq-val'; val.innerHTML=sqLabel(i);
+    sq.appendChild(val);
+    board.appendChild(sq);
+  }
+}
+buildBoard();
+
+function sesSelectSq(i){
+  document.querySelectorAll('.chess-sq').forEach(s=>s.classList.remove('active-sq'));
+  document.getElementById('sq'+i).classList.add('active-sq');
+  document.getElementById('ses-sq-num').textContent='Ô số '+(i+1);
+  document.getElementById('ses-exp-disp').textContent=i;
+  const grains=sesPow2n(i);
+  document.getElementById('ses-sq-val').textContent=fmtBig(grains);
+}
+
+function sesFill(upTo){
+  for(let i=0;i<64;i++){
+    const sq=document.getElementById('sq'+i);
+    sq.classList.toggle('filled', i<upTo);
+    // Remove stale old dots if any
+    sq.querySelectorAll('.grain-dot').forEach(d=>d.remove());
+  }
+  sesCurrent=upTo;
+  if(upTo>0){
+    const total=sesTotalUpTo(upTo);
+    document.getElementById('ses-total').textContent=fmtBig(total);
+    document.getElementById('ses-total-exp').textContent=upTo;
+    const pct=(upTo/64)*100;
+    document.getElementById('ses-progress').style.width=pct+'%';
+    sesSelectSq(upTo-1);
+  } else {
+    document.getElementById('ses-total').textContent='0';
+    document.getElementById('ses-total-exp').textContent='k';
+    document.getElementById('ses-sq-num').textContent='—';
+    document.getElementById('ses-sq-val').textContent='—';
+    document.getElementById('ses-exp-disp').textContent='k−1';
+    document.getElementById('ses-progress').style.width='0%';
+    document.querySelectorAll('.chess-sq').forEach(s=>s.classList.remove('active-sq'));
+  }
+  document.getElementById('ses-final-card').style.display=upTo>=64?'block':'none';
+}
+
+function sesPlay(){
+  if(sesPlaying){ sesStop(); return; }
+  if(sesCurrent>=64){ sesReset(); setTimeout(sesPlay,300); return; }
+  sesPlaying=true;
+  document.getElementById('ses-play-btn').textContent='⏸ Dừng';
+  document.getElementById('ses-play-btn').classList.add('danger');
+  function step(){
+    sesFill(sesCurrent+1);
+    if(sesCurrent<64 && sesPlaying) sesTimeout=setTimeout(step, sesSpeed);
+    else { sesStop(); }
+  }
+  sesTimeout=setTimeout(step, sesSpeed);
+}
+function sesStop(){
+  sesPlaying=false; clearTimeout(sesTimeout);
+  document.getElementById('ses-play-btn').textContent='▶ Tự động chạy';
+  document.getElementById('ses-play-btn').classList.remove('danger');
+}
+function sesReset(){ sesStop(); sesFill(0); }
+function setSpd(btn){
+  sesSpeed=+btn.dataset.s;
+  document.querySelectorAll('.spd-btn').forEach(b=>b.classList.toggle('active',b===btn));
+}
+sesFill(0);
+</script>
+</body>
+</html>

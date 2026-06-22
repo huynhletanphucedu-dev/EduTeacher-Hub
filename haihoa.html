@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Hái Hoa Dân Chủ – EduTeacher Hub</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --pink:#ec4899;--pink-lt:#fce7f3;--pink-dk:#be185d;
+  --purple:#8b5cf6;--green:#10b981;--yellow:#f59e0b;
+  --text:#1e293b;--muted:#64748b;--bg:#fff5f9;--white:#fff;
+  --shadow:0 8px 32px rgba(236,72,153,.18);
+}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);min-height:100vh;overflow-x:hidden;}
+
+/* ── HEADER ── */
+.app-header{background:linear-gradient(135deg,#ec4899,#8b5cf6);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(139,92,246,.3);}
+.app-logo{color:#fff;font-size:1.1rem;font-weight:900;letter-spacing:.3px;}
+.app-logo span{opacity:.7;font-weight:400;font-size:.85rem;margin-left:8px;}
+.header-btns{display:flex;gap:8px;}
+.hbtn{padding:7px 14px;border-radius:8px;border:none;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .15s;}
+.hbtn-outline{background:rgba(255,255,255,.2);color:#fff;border:1.5px solid rgba(255,255,255,.4);}
+.hbtn-outline:hover{background:rgba(255,255,255,.3);}
+.hbtn-white{background:#fff;color:var(--pink-dk);}
+.hbtn-white:hover{background:#fce7f3;}
+
+/* ── TABS ── */
+.tab-bar{display:flex;gap:0;background:#fff;border-bottom:2px solid #fce7f3;padding:0 20px;}
+.tab{padding:12px 20px;font-size:.85rem;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;}
+.tab.active{color:var(--pink);border-bottom-color:var(--pink);}
+.tab:hover:not(.active){color:var(--text);}
+
+/* ── PAGES ── */
+.page{display:none;padding:24px 20px;}
+.page.active{display:block;}
+
+/* ── SETUP PAGE ── */
+.setup-wrap{max-width:720px;margin:0 auto;}
+.setup-title-row{display:flex;gap:10px;margin-bottom:20px;align-items:center;}
+.setup-title-row input{flex:1;padding:12px 16px;border-radius:10px;border:2px solid #fce7f3;font-size:1rem;font-weight:700;color:var(--text);background:#fff;outline:none;}
+.setup-title-row input:focus{border-color:var(--pink);}
+
+.flowers-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px;}
+.flower-item{background:#fff;border:2px solid #fce7f3;border-radius:12px;padding:12px;position:relative;transition:border-color .15s;}
+.flower-item:hover{border-color:var(--pink);}
+.flower-num{font-size:.65rem;font-weight:800;color:var(--pink);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
+.flower-emoji-pick{display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;}
+.flower-emoji-pick span{font-size:1.1rem;cursor:pointer;padding:2px;border-radius:4px;border:2px solid transparent;transition:all .1s;}
+.flower-emoji-pick span.sel{border-color:var(--pink);background:#fce7f3;}
+.flower-label{width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid #e2e8f0;font-size:.82rem;color:var(--text);margin-bottom:6px;outline:none;}
+.flower-label:focus{border-color:var(--pink);}
+.flower-content{width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid #e2e8f0;font-size:.82rem;color:var(--text);resize:none;height:60px;outline:none;font-family:inherit;}
+.flower-content:focus{border-color:var(--pink);}
+.flower-del{position:absolute;top:8px;right:8px;background:none;border:none;color:#cbd5e1;font-size:1rem;cursor:pointer;padding:2px 6px;border-radius:4px;}
+.flower-del:hover{color:#ef4444;background:#fef2f2;}
+
+.setup-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.btn{padding:10px 20px;border-radius:10px;border:none;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+.btn-pink{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;box-shadow:0 4px 14px rgba(236,72,153,.3);}
+.btn-pink:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(236,72,153,.4);}
+.btn-outline{background:#fff;border:2px solid #fce7f3;color:var(--pink);}
+.btn-outline:hover{background:#fce7f3;}
+.btn-green{background:var(--green);color:#fff;}
+.btn-green:hover{background:#059669;}
+
+/* ── PLAY PAGE ── */
+.play-wrap{max-width:1000px;margin:0 auto;}
+.play-header{text-align:center;margin-bottom:28px;}
+.play-title{font-size:1.8rem;font-weight:900;background:linear-gradient(135deg,var(--pink),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;}
+.play-sub{font-size:.85rem;color:var(--muted);}
+
+.garden{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;padding:20px 0;}
+
+.flower-btn{width:120px;height:140px;border:none;background:none;cursor:pointer;perspective:600px;position:relative;transform-style:preserve-3d;}
+.flower-btn.used{pointer-events:none;opacity:.5;}
+.flower-front,.flower-back{position:absolute;inset:0;border-radius:16px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;transition:transform .6s ease;}
+.flower-front{background:linear-gradient(135deg,#fff,#fce7f3);border:2px solid #f9a8d4;box-shadow:0 4px 16px rgba(236,72,153,.15);transform:rotateY(0deg);}
+.flower-back{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;transform:rotateY(180deg);box-shadow:0 4px 20px rgba(139,92,246,.3);}
+.flower-btn.flipped .flower-front{transform:rotateY(-180deg);}
+.flower-btn.flipped .flower-back{transform:rotateY(0deg);}
+
+.flower-icon{font-size:2.4rem;margin-bottom:6px;transition:transform .3s;}
+.flower-btn:hover:not(.used):not(.flipped) .flower-icon{transform:scale(1.15) rotate(-5deg);}
+.flower-name{font-size:.7rem;font-weight:700;color:var(--pink-dk);}
+.flower-back-icon{font-size:1.4rem;margin-bottom:6px;}
+.flower-back-content{font-size:.72rem;font-weight:700;text-align:center;line-height:1.4;word-break:break-word;}
+
+/* ── REVEAL MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.modal-overlay.show{display:flex;}
+.modal-card{background:#fff;border-radius:24px;padding:40px 36px;max-width:480px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.2);animation:modalIn .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes modalIn{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-flower-icon{font-size:4rem;margin-bottom:12px;animation:bounce 1s ease infinite alternate;}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-8px)}}
+.modal-flower-name{font-size:.82rem;font-weight:700;color:var(--pink);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;}
+.modal-content{font-size:1.3rem;font-weight:800;color:var(--text);line-height:1.5;margin-bottom:24px;}
+.modal-close{padding:12px 32px;border-radius:12px;border:none;background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;font-size:.9rem;font-weight:800;cursor:pointer;transition:all .15s;}
+.modal-close:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(236,72,153,.4);}
+
+/* confetti */
+.confetti-piece{position:fixed;width:10px;height:10px;border-radius:2px;pointer-events:none;z-index:9999;animation:confettiFall 2s ease-in forwards;}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}100%{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-icon{font-size:3rem;margin-bottom:12px;}
+.empty-text{font-size:.9rem;line-height:1.6;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e293b;color:#fff;padding:10px 20px;border-radius:10px;font-size:.82rem;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:9998;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="app-logo">🌸 Hái Hoa Dân Chủ <span>EduTeacher Hub</span></div>
+  <div class="header-btns">
+    <button class="hbtn hbtn-outline" onclick="resetAll()">↺ Chơi lại</button>
+    <button class="hbtn hbtn-white" onclick="switchTab('setup')">⚙️ Thiết lập</button>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <div class="tab active" id="tab-setup" onclick="switchTab('setup')">⚙️ Thiết Lập</div>
+  <div class="tab" id="tab-play" onclick="switchTab('play')">🌸 Chơi</div>
+</div>
+
+<!-- SETUP -->
+<div class="page active" id="page-setup">
+  <div class="setup-wrap">
+    <div class="setup-title-row">
+      <input type="text" id="game-title" placeholder="Tên trò chơi (VD: Hái Hoa Ôn Tập Chương 1)..." value="Hái Hoa Dân Chủ"/>
+    </div>
+
+    <div class="flowers-grid" id="flowers-grid"></div>
+
+    <div class="setup-actions">
+      <button class="btn btn-outline" onclick="addFlower()">➕ Thêm bông hoa</button>
+      <button class="btn btn-pink" onclick="startGame()">🌸 Bắt Đầu Chơi</button>
+      <button class="btn btn-outline" onclick="loadSample()">📋 Dùng mẫu</button>
+    </div>
+  </div>
+</div>
+
+<!-- PLAY -->
+<div class="page" id="page-play">
+  <div class="play-wrap">
+    <div class="play-header">
+      <div class="play-title" id="play-title">Hái Hoa Dân Chủ</div>
+      <div class="play-sub" id="play-sub">Click vào bông hoa để lật câu hỏi</div>
+    </div>
+    <div class="garden" id="garden"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal-card">
+    <div class="modal-flower-icon" id="modal-icon">🌸</div>
+    <div class="modal-flower-name" id="modal-name"></div>
+    <div class="modal-content" id="modal-content"></div>
+    <button class="modal-close" onclick="closeModal()">✅ Đã xong</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const EMOJIS = ['🌸','🌺','🌼','🌻','🌹','💐','🌷','🪷','🌱','🍀'];
+let flowers = [];
+
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+function addFlower(emoji, label, content){
+  const id = uid();
+  flowers.push({ id, emoji: emoji||EMOJIS[flowers.length % EMOJIS.length], label: label||'', content: content||'', used: false });
+  renderSetup();
+}
+
+function removeFlower(id){
+  flowers = flowers.filter(f=>f.id!==id);
+  renderSetup();
+}
+
+function renderSetup(){
+  const grid = document.getElementById('flowers-grid');
+  if(!flowers.length){
+    grid.innerHTML = '<div class="empty-state"><div class="empty-icon">🌱</div><div class="empty-text">Chưa có bông hoa nào.<br>Bấm <b>Thêm bông hoa</b> để bắt đầu.</div></div>';
+    return;
+  }
+  grid.innerHTML = flowers.map((f,i)=>`
+    <div class="flower-item" id="fi-${f.id}">
+      <div class="flower-num">Hoa ${i+1}</div>
+      <div class="flower-emoji-pick">
+        ${EMOJIS.map(e=>`<span class="${e===f.emoji?'sel':''}" onclick="setEmoji('${f.id}','${e}')">${e}</span>`).join('')}
+      </div>
+      <input class="flower-label" type="text" placeholder="Tên hoa (tùy chọn)" value="${escHtml(f.label)}"
+        oninput="updateFlower('${f.id}','label',this.value)"/>
+      <textarea class="flower-content" placeholder="Câu hỏi hoặc phần thưởng..."
+        oninput="updateFlower('${f.id}','content',this.value)">${escHtml(f.content)}</textarea>
+      <button class="flower-del" onclick="removeFlower('${f.id}')">✕</button>
+    </div>
+  `).join('');
+}
+
+function setEmoji(id, emoji){
+  const f = flowers.find(x=>x.id===id);
+  if(f){ f.emoji=emoji; renderSetup(); }
+}
+
+function updateFlower(id, key, val){
+  const f = flowers.find(x=>x.id===id);
+  if(f) f[key]=val;
+}
+
+function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function startGame(){
+  // sync textarea/input values before switching
+  flowers.forEach(f=>{
+    const li = document.querySelector(`#fi-${f.id} .flower-label`);
+    const co = document.querySelector(`#fi-${f.id} .flower-content`);
+    if(li) f.label=li.value;
+    if(co) f.content=co.value;
+  });
+  if(!flowers.length){ showToast('Hãy thêm ít nhất 1 bông hoa!'); return; }
+  const emptyContent = flowers.find(f=>!f.content.trim());
+  if(emptyContent){ showToast('Có bông hoa chưa nhập nội dung!'); return; }
+  // reset used
+  flowers.forEach(f=>f.used=false);
+  renderGarden();
+  switchTab('play');
+}
+
+function renderGarden(){
+  const title = document.getElementById('game-title').value || 'Hái Hoa Dân Chủ';
+  document.getElementById('play-title').textContent = title;
+  const remaining = flowers.filter(f=>!f.used).length;
+  document.getElementById('play-sub').textContent =
+    remaining > 0 ? `🌸 Còn ${remaining}/${flowers.length} bông hoa – Click để lật` : '🎉 Đã hái hết tất cả hoa!';
+
+  document.getElementById('garden').innerHTML = flowers.map(f=>`
+    <button class="flower-btn ${f.used?'used flipped':''}" id="fb-${f.id}" onclick="pickFlower('${f.id}')">
+      <div class="flower-front">
+        <div class="flower-icon">${f.emoji}</div>
+        <div class="flower-name">${escHtml(f.label)||'Hoa bí ẩn'}</div>
+      </div>
+      <div class="flower-back">
+        <div class="flower-back-icon">${f.emoji}</div>
+        <div class="flower-back-content">${escHtml(f.content)}</div>
+      </div>
+    </button>
+  `).join('');
+}
+
+function pickFlower(id){
+  const f = flowers.find(x=>x.id===id);
+  if(!f||f.used) return;
+  f.used = true;
+  // flip animation
+  const btn = document.getElementById('fb-'+id);
+  if(btn) btn.classList.add('flipped');
+  // show modal after flip
+  setTimeout(()=>{
+    document.getElementById('modal-icon').textContent = f.emoji;
+    document.getElementById('modal-name').textContent = f.label||'Hoa bí ẩn';
+    document.getElementById('modal-content').textContent = f.content;
+    document.getElementById('modal').classList.add('show');
+    spawnConfetti();
+  }, 400);
+  // update subtitle
+  const remaining = flowers.filter(x=>!x.used).length;
+  document.getElementById('play-sub').textContent =
+    remaining > 0 ? `🌸 Còn ${remaining}/${flowers.length} bông hoa – Click để lật` : '🎉 Đã hái hết tất cả hoa!';
+}
+
+function closeModal(e){
+  if(e && e.target !== document.getElementById('modal')) return;
+  document.getElementById('modal').classList.remove('show');
+}
+
+function spawnConfetti(){
+  const colors=['#ec4899','#8b5cf6','#f59e0b','#10b981','#3b7de9','#ef4444'];
+  for(let i=0;i<30;i++){
+    const el=document.createElement('div');
+    el.className='confetti-piece';
+    el.style.left=Math.random()*100+'vw';
+    el.style.top='-20px';
+    el.style.background=colors[Math.floor(Math.random()*colors.length)];
+    el.style.animationDelay=Math.random()*.8+'s';
+    el.style.width=(6+Math.random()*8)+'px';
+    el.style.height=(6+Math.random()*8)+'px';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 2500);
+  }
+}
+
+function resetAll(){
+  flowers.forEach(f=>f.used=false);
+  renderGarden();
+  document.getElementById('modal').classList.remove('show');
+  showToast('Đã đặt lại – Chơi lại từ đầu!');
+}
+
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.getElementById('page-'+tab).classList.add('active');
+}
+
+function loadSample(){
+  flowers = [
+    {id:uid(),emoji:'🌸',label:'Hoa số 1',content:'Kể tên 3 tỉnh miền Trung Việt Nam.',used:false},
+    {id:uid(),emoji:'🌺',label:'Hoa số 2',content:'Thủ đô của Pháp là thành phố nào?',used:false},
+    {id:uid(),emoji:'🌼',label:'Hoa số 3',content:'Phần thưởng: Được miễn 1 câu hỏi! 🎁',used:false},
+    {id:uid(),emoji:'🌻',label:'Hoa số 4',content:'2 + 2 × 5 = ?',used:false},
+    {id:uid(),emoji:'🌹',label:'Hoa số 5',content:'Cho cả lớp vỗ tay 👏',used:false},
+    {id:uid(),emoji:'💐',label:'Hoa số 6',content:'Hát một câu bài hát bất kỳ 🎵',used:false},
+  ];
+  renderSetup();
+  showToast('Đã tải dữ liệu mẫu!');
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// Init with 6 empty flowers
+(function(){
+  for(let i=0;i<6;i++) flowers.push({id:uid(),emoji:EMOJIS[i],label:`Hoa ${i+1}`,content:'',used:false});
+  renderSetup();
+})();
+</script>
+</body>
+</html>

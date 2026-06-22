@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Phân Loại Thiết Bị – Tin Học</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0f172a;color:#e2e8f0;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+header{width:100%;background:#1e293b;padding:.75rem 1rem;text-align:center;border-bottom:1px solid #334155}
+header h1{font-size:1.05rem;font-weight:700;color:#a78bfa;letter-spacing:.04em}
+header h2{font-size:.72rem;color:#94a3b8;margin-top:2px}
+
+.mode-bar{display:flex;gap:6px;padding:.5rem 1rem;width:100%;max-width:440px}
+.mode-btn{flex:1;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:.4rem;font-size:.72rem;color:#94a3b8;cursor:pointer;text-align:center}
+.mode-btn.active{background:#3b0764;border-color:#a78bfa;color:#ede9fe}
+
+.stats{display:flex;gap:.8rem;justify-content:center;padding:.3rem 1rem .2rem;width:100%;max-width:440px}
+.stat{background:#1e293b;border-radius:10px;padding:.3rem .8rem;font-size:.78rem;color:#94a3b8;text-align:center}
+.stat span{display:block;font-size:1rem;font-weight:700;color:#f8fafc}
+.prog-wrap{width:100%;max-width:440px;padding:0 1rem .5rem}
+.prog-bar{height:5px;background:#1e293b;border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#5b21b6,#a78bfa);border-radius:3px;transition:width .3s}
+
+/* Mode A: tap to classify */
+.item-card{background:#1e293b;border-radius:16px;margin:.3rem 1rem;padding:1.3rem 1rem;width:calc(100% - 2rem);max-width:440px;text-align:center}
+.item-icon{font-size:3.5rem;line-height:1;margin-bottom:.5rem}
+.item-name{font-size:1.2rem;font-weight:700;color:#f8fafc;margin-bottom:.3rem}
+.item-desc{font-size:.8rem;color:#94a3b8}
+.item-ask{font-size:.85rem;color:#e2e8f0;margin-top:.6rem}
+
+.classify-btns{display:grid;gap:9px;padding:.4rem 1rem;width:100%;max-width:440px}
+.cls-btn{background:#1e293b;border:2px solid #334155;border-radius:12px;padding:.8rem .8rem;font-size:.9rem;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;gap:.7rem;line-height:1.3;transition:all .15s}
+.cls-btn:active{transform:scale(.97)}
+.cls-icon{font-size:1.3rem;flex-shrink:0}
+.cls-btn.correct{background:#052e16;border-color:#16a34a;color:#4ade80}
+.cls-btn.wrong{background:#450a0a;border-color:#dc2626;color:#f87171}
+.cls-btn:disabled{cursor:default}
+
+.explain{background:#1c0530;border-radius:12px;padding:.75rem 1rem;margin:.3rem 1rem;font-size:.82rem;color:#c4b5fd;line-height:1.6;width:calc(100% - 2rem);max-width:440px;display:none}
+.explain strong{color:#ddd6fe;display:block;margin-bottom:.2rem}
+.btn-next{display:none;margin:.4rem 1rem;width:calc(100% - 2rem);max-width:440px;background:#7c3aed;color:#fff;border:none;border-radius:12px;padding:.8rem;font-size:.95rem;font-weight:700;cursor:pointer}
+
+/* Mode B: drag-to-bin (simplified: tap item then tap bin) */
+.bins-wrap{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 1rem;width:100%;max-width:440px}
+.bin{background:#1e293b;border:2px dashed #334155;border-radius:14px;padding:.6rem;min-height:90px;transition:border-color .2s}
+.bin.active-target{border-color:#a78bfa;background:#1e0b38}
+.bin-label{font-size:.72rem;color:#94a3b8;text-align:center;margin-bottom:.5rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.bin-items{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;min-height:36px}
+.placed-chip{font-size:.75rem;background:#3b0764;border:1px solid #7c3aed;color:#ddd6fe;border-radius:6px;padding:3px 7px}
+.placed-chip.ok{background:#052e16;border-color:#16a34a;color:#4ade80}
+.placed-chip.err{background:#450a0a;border-color:#dc2626;color:#f87171}
+
+.pool-label{font-size:.72rem;color:#64748b;padding:.3rem 1rem 0;text-align:center;width:100%;max-width:440px;text-transform:uppercase;letter-spacing:.04em}
+.pool-wrap{display:flex;flex-wrap:wrap;gap:8px;padding:.4rem 1rem;width:100%;max-width:440px;justify-content:center}
+.pool-chip{background:#1e293b;border:2px solid #334155;border-radius:10px;padding:.55rem .8rem;font-size:.85rem;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:5px}
+.pool-chip:active{transform:scale(.94)}
+.pool-chip.selected{border-color:#a78bfa;background:#3b0764;color:#ddd6fe}
+.pool-chip.placed{opacity:.25;pointer-events:none}
+
+.btn-check{margin:.4rem 1rem;width:calc(100% - 2rem);max-width:440px;background:#7c3aed;color:#fff;border:none;border-radius:12px;padding:.8rem;font-size:.95rem;font-weight:700;cursor:pointer}
+
+/* Overlay */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:50}
+.result-card{background:#1e293b;border-radius:18px;padding:2rem;text-align:center;max-width:310px;width:90%}
+.re{font-size:3rem;margin-bottom:.5rem}.rt{font-size:1.3rem;font-weight:700;margin-bottom:.4rem}.rs{font-size:.9rem;color:#94a3b8;margin-bottom:1rem}
+.btn-re{background:#7c3aed;color:#fff;border:none;border-radius:10px;padding:.75rem 2rem;font-size:1rem;font-weight:700;cursor:pointer;width:100%}
+</style>
+</head>
+<body>
+<header>
+  <h1>🗂️ PHÂN LOẠI THIẾT BỊ</h1>
+  <h2>PHẦN CỨNG · PHẦN MỀM · THIẾT BỊ I/O</h2>
+</header>
+
+<div class="mode-bar">
+  <button class="mode-btn active" onclick="setMode(0,this)">Phân loại từng cái</button>
+  <button class="mode-btn" onclick="setMode(1,this)">Xếp vào thùng</button>
+</div>
+
+<div class="stats">
+  <div class="stat"><span id="qNum">1</span>Câu</div>
+  <div class="stat"><span id="correct">0</span>Đúng</div>
+  <div class="stat"><span id="total">15</span>Tổng</div>
+</div>
+<div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div></div>
+
+<!-- Mode A -->
+<div id="modeA">
+  <div class="item-card">
+    <div class="item-icon" id="itemIcon"></div>
+    <div class="item-name" id="itemName"></div>
+    <div class="item-desc" id="itemDesc"></div>
+    <div class="item-ask">Thiết bị / phần mềm này thuộc loại nào?</div>
+  </div>
+  <div class="classify-btns" id="clsBtns"></div>
+  <div class="explain" id="explainA"></div>
+  <button class="btn-next" id="btnNextA" onclick="nextQ()">Câu tiếp →</button>
+</div>
+
+<!-- Mode B: drag to bins -->
+<div id="modeB" style="display:none">
+  <div class="bins-wrap">
+    <div class="bin" id="bin-hw"><div class="bin-label">🔩 Phần cứng</div><div class="bin-items" id="items-hw"></div></div>
+    <div class="bin" id="bin-sw"><div class="bin-label">💾 Phần mềm</div><div class="bin-items" id="items-sw"></div></div>
+    <div class="bin" id="bin-in"><div class="bin-label">📥 Đầu vào</div><div class="bin-items" id="items-in"></div></div>
+    <div class="bin" id="bin-out"><div class="bin-label">📤 Đầu ra</div><div class="bin-items" id="items-out"></div></div>
+  </div>
+  <div class="pool-label">Chọn thiết bị → chọn nhóm</div>
+  <div class="pool-wrap" id="poolWrap"></div>
+  <button class="btn-check" id="btnCheck" onclick="checkBins()">Kiểm tra ✓</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="result-card">
+    <div class="re" id="re"></div><div class="rt" id="rt"></div><div class="rs" id="rs"></div>
+    <button class="btn-re" onclick="restart()">Chơi lại</button>
+  </div>
+</div>
+
+<script>
+const ITEMS = [
+  {icon:'🖥️',name:'Màn hình',desc:'Hiển thị hình ảnh, văn bản',cat:'out',catLabel:'Thiết bị đầu ra',e:'Màn hình nhận tín hiệu từ máy tính và hiển thị ra ngoài → thiết bị đầu ra (output).'},
+  {icon:'⌨️',name:'Bàn phím',desc:'Nhập ký tự vào máy',cat:'in',catLabel:'Thiết bị đầu vào',e:'Bàn phím truyền ký tự người dùng gõ vào máy → thiết bị đầu vào (input).'},
+  {icon:'🖱️',name:'Chuột',desc:'Di chuyển con trỏ, click',cat:'in',catLabel:'Thiết bị đầu vào',e:'Chuột đưa tín hiệu vị trí và lệnh click vào máy → thiết bị đầu vào.'},
+  {icon:'🖨️',name:'Máy in',desc:'In tài liệu ra giấy',cat:'out',catLabel:'Thiết bị đầu ra',e:'Máy in xuất bản in từ máy tính ra giấy → thiết bị đầu ra.'},
+  {icon:'💾',name:'Ổ cứng HDD',desc:'Lưu trữ dữ liệu lâu dài',cat:'hw',catLabel:'Phần cứng',e:'Ổ cứng là thiết bị lưu trữ vật lý → phần cứng (hardware).'},
+  {icon:'🎤',name:'Microphone',desc:'Thu âm thanh đầu vào',cat:'in',catLabel:'Thiết bị đầu vào',e:'Microphone chuyển âm thanh thành tín hiệu điện đưa vào máy → thiết bị đầu vào.'},
+  {icon:'🔊',name:'Loa',desc:'Phát âm thanh',cat:'out',catLabel:'Thiết bị đầu ra',e:'Loa nhận tín hiệu âm thanh từ máy tính và phát ra → thiết bị đầu ra.'},
+  {icon:'📷',name:'Webcam',desc:'Chụp hình, quay video',cat:'in',catLabel:'Thiết bị đầu vào',e:'Webcam đưa hình ảnh/video từ môi trường vào máy → thiết bị đầu vào.'},
+  {icon:'🧠',name:'RAM',desc:'Bộ nhớ tạm thời',cat:'hw',catLabel:'Phần cứng',e:'RAM là thanh nhớ vật lý lắp trên bo mạch → phần cứng.'},
+  {icon:'⚙️',name:'CPU',desc:'Bộ xử lý trung tâm',cat:'hw',catLabel:'Phần cứng',e:'CPU là chip xử lý vật lý → phần cứng. "Bộ não" của máy tính.'},
+  {icon:'🪟',name:'Windows 11',desc:'Hệ điều hành Microsoft',cat:'sw',catLabel:'Phần mềm',e:'Windows là hệ điều hành → phần mềm (software), không phải vật lý.'},
+  {icon:'📄',name:'Microsoft Word',desc:'Soạn thảo văn bản',cat:'sw',catLabel:'Phần mềm',e:'Microsoft Word là ứng dụng → phần mềm ứng dụng.'},
+  {icon:'🌐',name:'Google Chrome',desc:'Trình duyệt web',cat:'sw',catLabel:'Phần mềm',e:'Chrome là trình duyệt web → phần mềm ứng dụng.'},
+  {icon:'🔒',name:'Phần mềm diệt virus',desc:'Bảo vệ máy tính',cat:'sw',catLabel:'Phần mềm',e:'Phần mềm diệt virus là phần mềm hệ thống bảo mật.'},
+  {icon:'📡',name:'Card mạng WiFi',desc:'Kết nối không dây',cat:'hw',catLabel:'Phần cứng',e:'Card mạng WiFi là thiết bị vật lý (chip) lắp trong máy → phần cứng.'},
+  {icon:'🖲️',name:'Máy quét (Scanner)',desc:'Số hóa tài liệu giấy',cat:'in',catLabel:'Thiết bị đầu vào',e:'Scanner chuyển ảnh/văn bản giấy thành dữ liệu số trong máy → đầu vào.'},
+  {icon:'📊',name:'Excel',desc:'Bảng tính điện tử',cat:'sw',catLabel:'Phần mềm',e:'Excel là phần mềm ứng dụng bảng tính của Microsoft.'},
+  {icon:'🎮',name:'Tay cầm chơi game',desc:'Điều khiển nhân vật',cat:'in',catLabel:'Thiết bị đầu vào',e:'Tay cầm gửi lệnh điều khiển vào máy → thiết bị đầu vào.'},
+];
+
+const CATS_A = [
+  {key:'hw',label:'🔩 Phần cứng',color:'#7c3aed'},
+  {key:'sw',label:'💾 Phần mềm',color:'#0369a1'},
+  {key:'in',label:'📥 Thiết bị đầu vào',color:'#059669'},
+  {key:'out',label:'📤 Thiết bị đầu ra',color:'#b45309'},
+];
+
+const TOTAL=12;
+let mode=0, queue=[], qIdx=0, correctCount=0, answered=false;
+// mode B state
+let binAssignments={}, selectedChip=null;
+
+function setMode(m,btn){mode=m;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');restart();}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+
+function restart(){
+  const pool=[...ITEMS];shuffle(pool);
+  queue=pool.slice(0,TOTAL);
+  qIdx=0;correctCount=0;answered=false;
+  document.getElementById('overlay').style.display='none';
+  document.getElementById('correct').textContent=0;
+  document.getElementById('total').textContent=queue.length;
+  if(mode===0){document.getElementById('modeA').style.display='';document.getElementById('modeB').style.display='none';nextQ();}
+  else{document.getElementById('modeA').style.display='none';document.getElementById('modeB').style.display='';startModeB();}
+}
+
+// ── MODE A ──
+function nextQ(){
+  if(qIdx>=queue.length){showFinal();return;}
+  answered=false;
+  document.getElementById('explainA').style.display='none';
+  document.getElementById('btnNextA').style.display='none';
+  const item=queue[qIdx];qIdx++;
+  document.getElementById('qNum').textContent=qIdx;
+  document.getElementById('progFill').style.width=((qIdx-1)/TOTAL*100)+'%';
+  document.getElementById('itemIcon').textContent=item.icon;
+  document.getElementById('itemName').textContent=item.name;
+  document.getElementById('itemDesc').textContent=item.desc;
+  const div=document.getElementById('clsBtns');div.innerHTML='';
+  const shuffled=[...CATS_A];shuffle(shuffled);
+  shuffled.forEach(cat=>{
+    const b=document.createElement('button');b.className='cls-btn';
+    b.innerHTML=`<span class="cls-icon">${cat.label.split(' ')[0]}</span>${cat.label.slice(2)}`;
+    b.style.borderColor=cat.color;
+    b.onclick=()=>pickCat(cat.key,item,b);
+    div.appendChild(b);
+  });
+}
+
+function pickCat(chosen,item,btn){
+  if(answered)return;answered=true;
+  document.querySelectorAll('.cls-btn').forEach(b=>b.disabled=true);
+  if(chosen===item.cat){btn.classList.add('correct');correctCount++;document.getElementById('correct').textContent=correctCount;playSound(true);}
+  else{btn.classList.add('wrong');document.querySelectorAll('.cls-btn').forEach(b=>{if(b.innerText.includes(CATS_A.find(c=>c.key===item.cat).label.slice(2)))b.classList.add('correct');});playSound(false);}
+  const ex=document.getElementById('explainA');ex.style.display='block';
+  ex.innerHTML=`<strong>💡 ${item.icon} ${item.name} → ${item.catLabel}</strong>${item.e}`;
+  document.getElementById('btnNextA').style.display='block';
+}
+
+// ── MODE B ──
+const BIN_ITEMS_COUNT=3; // 3 items per bin = 12 total (4 bins)
+function startModeB(){
+  // pick 3 items from each category for bins
+  const cats=['hw','sw','in','out'];
+  const pool={};cats.forEach(c=>pool[c]=[...ITEMS.filter(i=>i.cat===c)]);
+  cats.forEach(c=>shuffle(pool[c]));
+  const chosen=[];cats.forEach(c=>chosen.push(...pool[c].slice(0,BIN_ITEMS_COUNT)));
+  shuffle(chosen);
+  binAssignments={};selectedChip=null;
+  // clear bins
+  cats.forEach(c=>document.getElementById('items-'+c).innerHTML='');
+  // pool
+  const pw=document.getElementById('poolWrap');pw.innerHTML='';
+  chosen.forEach((item,i)=>{
+    const chip=document.createElement('div');chip.className='pool-chip';chip.dataset.idx=i;chip.dataset.cat=item.cat;
+    chip.innerHTML=`${item.icon} <span>${item.name}</span>`;
+    chip.onclick=()=>selectPoolChip(i,item,chip);
+    pw.appendChild(chip);
+  });
+  // bin click
+  ['hw','sw','in','out'].forEach(binKey=>{
+    document.getElementById('bin-'+binKey).onclick=()=>placeToBin(binKey,chosen);
+  });
+  document.getElementById('btnCheck').style.display='block';
+  document.getElementById('qNum').textContent='—';
+  document.getElementById('progFill').style.width='0%';
+}
+
+function selectPoolChip(idx,item,chip){
+  if(chip.classList.contains('placed'))return;
+  document.querySelectorAll('.pool-chip').forEach(c=>c.classList.remove('selected'));
+  chip.classList.add('selected');selectedChip={idx,item,chip};
+  // highlight bins
+  document.querySelectorAll('.bin').forEach(b=>b.classList.add('active-target'));
+}
+
+function placeToBin(binKey,allItems){
+  if(!selectedChip)return;
+  const {idx,item,chip}=selectedChip;
+  chip.classList.remove('selected');chip.classList.add('placed');
+  binAssignments[idx]={binKey,item};
+  const placed=document.createElement('div');placed.className='placed-chip';placed.textContent=item.icon+' '+item.name;
+  document.getElementById('items-'+binKey).appendChild(placed);
+  selectedChip=null;
+  document.querySelectorAll('.bin').forEach(b=>b.classList.remove('active-target'));
+}
+
+function checkBins(){
+  let ok=0,total=0;
+  document.querySelectorAll('.pool-chip').forEach(c=>{if(!c.classList.contains('placed'))c.style.border='1.5px solid #dc2626';});
+  Object.entries(binAssignments).forEach(([idx,{binKey,item}])=>{
+    total++;
+    const chips=document.getElementById('items-'+binKey).children;
+    const chip=[...chips].find(c=>c.textContent.includes(item.name));
+    if(chip){chip.classList.add(item.cat===binKey?'ok':'err');}
+    if(item.cat===binKey)ok++;
+  });
+  correctCount=ok;
+  document.getElementById('correct').textContent=ok;
+  document.getElementById('total').textContent=total;
+  document.getElementById('progFill').style.width='100%';
+  document.getElementById('btnCheck').style.display='none';
+  setTimeout(()=>showFinal(),800);
+}
+
+function showFinal(){
+  const t=mode===0?TOTAL:Object.keys(binAssignments).length||TOTAL;
+  const pct=Math.round(correctCount/t*100);
+  let e='😊',txt='Hoàn thành!';
+  if(pct>=90){e='🏆';txt='Xuất sắc!';}else if(pct>=70){e='🎉';txt='Tốt lắm!';}else if(pct<50){e='📚';txt='Cần ôn thêm!';}
+  document.getElementById('re').textContent=e;document.getElementById('rt').textContent=txt;
+  document.getElementById('rs').textContent=`${correctCount}/${t} câu đúng (${pct}%)`;
+  document.getElementById('overlay').style.display='flex';
+}
+
+const AC=new (window.AudioContext||window.webkitAudioContext)();
+function playSound(win){
+  const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);
+  if(win){o.frequency.setValueAtTime(659,AC.currentTime);o.frequency.setValueAtTime(784,AC.currentTime+.1);}
+  else{o.frequency.setValueAtTime(250,AC.currentTime);}
+  g.gain.setValueAtTime(.2,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.4);
+  o.start();o.stop(AC.currentTime+.4);
+}
+
+restart();
+</script>
+</body>
+</html>

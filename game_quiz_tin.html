@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Quiz Tin Học</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0f172a;color:#e2e8f0;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+header{width:100%;background:#1e293b;padding:.75rem 1rem;text-align:center;border-bottom:1px solid #334155}
+header h1{font-size:1.05rem;font-weight:700;color:#38bdf8;letter-spacing:.04em}
+header h2{font-size:.72rem;color:#94a3b8;margin-top:2px}
+
+.cats{display:flex;gap:7px;padding:.5rem .8rem;width:100%;max-width:440px;overflow-x:auto;scrollbar-width:none}
+.cats::-webkit-scrollbar{display:none}
+.cat-btn{flex-shrink:0;background:#1e293b;border:1px solid #334155;border-radius:20px;padding:.3rem .75rem;font-size:.72rem;color:#94a3b8;cursor:pointer;white-space:nowrap}
+.cat-btn.active{background:#0c4a6e;border-color:#38bdf8;color:#bae6fd}
+
+.stats{display:flex;gap:.8rem;justify-content:center;padding:.3rem 1rem .2rem;width:100%;max-width:440px}
+.stat{background:#1e293b;border-radius:10px;padding:.3rem .8rem;font-size:.78rem;color:#94a3b8;text-align:center}
+.stat span{display:block;font-size:1rem;font-weight:700;color:#f8fafc}
+.prog-wrap{width:100%;max-width:440px;padding:0 1rem .5rem}
+.prog-bar{height:5px;background:#1e293b;border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#0369a1,#38bdf8);border-radius:3px;transition:width .3s}
+
+/* Question */
+.q-card{background:#1e293b;border-radius:16px;margin:.3rem 1rem;padding:1.1rem 1rem;width:calc(100% - 2rem);max-width:440px}
+.cat-badge{display:inline-block;font-size:.68rem;background:#0c4a6e;color:#7dd3fc;border-radius:20px;padding:2px 9px;margin-bottom:.6rem}
+.q-text{font-size:1rem;color:#f8fafc;line-height:1.55}
+
+.opts{display:flex;flex-direction:column;gap:8px;padding:.4rem 1rem;width:100%;max-width:440px}
+.opt{background:#1e293b;border:2px solid #334155;border-radius:12px;padding:.85rem 1rem;font-size:.9rem;color:#e2e8f0;cursor:pointer;text-align:left;line-height:1.4;transition:all .15s;display:flex;align-items:center;gap:.7rem}
+.opt-letter{width:26px;height:26px;border-radius:50%;background:#334155;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0}
+.opt:active{transform:scale(.98)}
+.opt.correct{background:#052e16;border-color:#16a34a;color:#4ade80}
+.opt.correct .opt-letter{background:#16a34a}
+.opt.wrong{background:#450a0a;border-color:#dc2626;color:#f87171}
+.opt.wrong .opt-letter{background:#dc2626}
+.opt:disabled{cursor:default}
+
+.explain{background:#172554;border-radius:12px;padding:.75rem 1rem;margin:.3rem 1rem;font-size:.82rem;color:#93c5fd;line-height:1.6;width:calc(100% - 2rem);max-width:440px;display:none}
+.explain strong{color:#bfdbfe;display:block;margin-bottom:.2rem}
+
+.btn-next{display:none;margin:.4rem 1rem;width:calc(100% - 2rem);max-width:440px;background:#0369a1;color:#fff;border:none;border-radius:12px;padding:.8rem;font-size:.95rem;font-weight:700;cursor:pointer}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:50}
+.result-card{background:#1e293b;border-radius:18px;padding:2rem;text-align:center;max-width:310px;width:90%}
+.re{font-size:3rem;margin-bottom:.5rem}.rt{font-size:1.3rem;font-weight:700;margin-bottom:.4rem}.rs{font-size:.9rem;color:#94a3b8;margin-bottom:1rem}
+.btn-re{background:#0369a1;color:#fff;border:none;border-radius:10px;padding:.75rem 2rem;font-size:1rem;font-weight:700;cursor:pointer;width:100%}
+</style>
+</head>
+<body>
+<header>
+  <h1>💻 QUIZ TIN HỌC</h1>
+  <h2>KIẾN THỨC MÁY TÍNH & CÔNG NGHỆ THÔNG TIN</h2>
+</header>
+
+<div class="cats" id="cats"></div>
+<div class="stats">
+  <div class="stat"><span id="qNum">1</span>Câu</div>
+  <div class="stat"><span id="correct">0</span>Đúng</div>
+  <div class="stat"><span id="total">15</span>Tổng</div>
+</div>
+<div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div></div>
+
+<div class="q-card">
+  <div class="cat-badge" id="catBadge"></div>
+  <div class="q-text" id="qText"></div>
+</div>
+<div class="opts" id="opts"></div>
+<div class="explain" id="explain"></div>
+<button class="btn-next" id="btnNext" onclick="nextQ()">Câu tiếp →</button>
+
+<div class="overlay" id="overlay">
+  <div class="result-card">
+    <div class="re" id="re"></div><div class="rt" id="rt"></div><div class="rs" id="rs"></div>
+    <button class="btn-re" onclick="restart()">Chơi lại</button>
+  </div>
+</div>
+
+<script>
+const BANK = {
+  'Phần cứng': [
+    {q:'CPU là viết tắt của?',a:'Central Processing Unit',opts:['Central Processing Unit','Computer Primary Unit','Core Power Unit','Control Program Unit'],e:'CPU (Central Processing Unit) là bộ xử lý trung tâm — "bộ não" của máy tính.'},
+    {q:'RAM là bộ nhớ loại nào?',a:'Bộ nhớ trong tạm thời',opts:['Bộ nhớ trong tạm thời','Bộ nhớ ngoài vĩnh cửu','Bộ nhớ chỉ đọc','Bộ nhớ lưu trữ lâu dài'],e:'RAM (Random Access Memory) lưu dữ liệu tạm thời trong khi làm việc, mất khi tắt máy.'},
+    {q:'Thiết bị nào là thiết bị đầu ra?',a:'Màn hình',opts:['Màn hình','Bàn phím','Chuột','Máy quét'],e:'Màn hình hiển thị kết quả ra ngoài → là thiết bị đầu ra (output).'},
+    {q:'Bàn phím là thiết bị gì?',a:'Thiết bị đầu vào',opts:['Thiết bị đầu vào','Thiết bị đầu ra','Thiết bị lưu trữ','Thiết bị xử lý'],e:'Bàn phím nhập dữ liệu vào máy → thiết bị đầu vào (input).'},
+    {q:'Đơn vị nhỏ nhất của dữ liệu trong máy tính là?',a:'Bit',opts:['Bit','Byte','Kilobyte','Megabyte'],e:'1 bit là đơn vị nhỏ nhất, chỉ có giá trị 0 hoặc 1. 8 bit = 1 byte.'},
+    {q:'1 Kilobyte (KB) bằng bao nhiêu byte?',a:'1024 byte',opts:['1024 byte','1000 byte','512 byte','2048 byte'],e:'Trong hệ nhị phân: 1 KB = 2¹⁰ = 1024 byte.'},
+    {q:'Ổ cứng HDD lưu trữ dữ liệu bằng cách nào?',a:'Ghi từ tính trên đĩa quay',opts:['Ghi từ tính trên đĩa quay','Flash memory','Quang học laser','Điện từ trường'],e:'HDD (Hard Disk Drive) dùng đầu đọc/ghi từ tính trên đĩa từ quay.'},
+  ],
+  'Phần mềm': [
+    {q:'Hệ điều hành là gì?',a:'Phần mềm quản lý phần cứng và phần mềm khác',opts:['Phần mềm quản lý phần cứng và phần mềm khác','Trình duyệt web','Phần mềm diệt virus','Ứng dụng văn phòng'],e:'Hệ điều hành (OS) là nền tảng quản lý mọi tài nguyên máy tính và cho phép các phần mềm khác chạy.'},
+    {q:'Microsoft Word là phần mềm thuộc loại nào?',a:'Phần mềm ứng dụng',opts:['Phần mềm ứng dụng','Hệ điều hành','Phần mềm hệ thống','Firmware'],e:'Word là phần mềm ứng dụng phục vụ nhu cầu cụ thể của người dùng (soạn thảo văn bản).'},
+    {q:'Phần mềm mã nguồn mở (open source) nghĩa là?',a:'Phần mềm có thể xem và chỉnh sửa mã nguồn tự do',opts:['Phần mềm có thể xem và chỉnh sửa mã nguồn tự do','Phần mềm miễn phí hoàn toàn','Phần mềm không cần cài đặt','Phần mềm chạy online'],e:'Open source cho phép xem, chỉnh sửa, phân phối lại mã nguồn. Ví dụ: Linux, Firefox.'},
+    {q:'File có đuôi .exe là loại file gì?',a:'File thực thi (chương trình)',opts:['File thực thi (chương trình)','File văn bản','File hình ảnh','File âm thanh'],e:'.exe (executable) là file chứa chương trình có thể chạy trực tiếp trên Windows.'},
+    {q:'Virus máy tính là gì?',a:'Phần mềm độc hại tự sao chép và gây hại',opts:['Phần mềm độc hại tự sao chép và gây hại','Lỗi phần cứng','Chương trình bảo mật','Tập tin bị hỏng'],e:'Virus là phần mềm độc hại có khả năng tự nhân bản và lây lan, gây hại cho hệ thống.'},
+  ],
+  'Internet & Mạng': [
+    {q:'WWW là viết tắt của?',a:'World Wide Web',opts:['World Wide Web','Wide World Website','Web World Window','Wireless World Web'],e:'WWW (World Wide Web) là hệ thống các trang web liên kết nhau qua Internet.'},
+    {q:'Địa chỉ IP dùng để làm gì?',a:'Xác định địa chỉ duy nhất của thiết bị trên mạng',opts:['Xác định địa chỉ duy nhất của thiết bị trên mạng','Lưu trữ mật khẩu','Kết nối với màn hình','Đo tốc độ mạng'],e:'Địa chỉ IP (Internet Protocol) định danh mỗi thiết bị trên mạng, giúp truyền dữ liệu đúng nơi.'},
+    {q:'Trình duyệt web (browser) dùng để làm gì?',a:'Truy cập và hiển thị trang web',opts:['Truy cập và hiển thị trang web','Gửi email','Diệt virus','Lưu trữ file'],e:'Browser (Chrome, Firefox, Edge...) diễn giải mã HTML và hiển thị trang web cho người dùng.'},
+    {q:'HTTP là giao thức dùng để?',a:'Truyền tải dữ liệu web',opts:['Truyền tải dữ liệu web','Gửi email','Truyền file FTP','Kết nối Bluetooth'],e:'HTTP (HyperText Transfer Protocol) là giao thức trao đổi dữ liệu giữa trình duyệt và máy chủ web.'},
+    {q:'Wifi hoạt động dựa trên công nghệ gì?',a:'Sóng vô tuyến không dây',opts:['Sóng vô tuyến không dây','Cáp quang','Bluetooth','Hồng ngoại'],e:'Wifi dùng sóng vô tuyến (radio waves) để kết nối không dây theo chuẩn IEEE 802.11.'},
+    {q:'Cloud computing (điện toán đám mây) là?',a:'Dịch vụ lưu trữ và xử lý dữ liệu qua Internet',opts:['Dịch vụ lưu trữ và xử lý dữ liệu qua Internet','Máy tính chạy bằng năng lượng mặt trời','Mạng nội bộ offline','Phần mềm mã hóa'],e:'Cloud computing cho phép lưu trữ dữ liệu và chạy ứng dụng trên máy chủ từ xa qua Internet.'},
+  ],
+  'Lập trình cơ bản': [
+    {q:'Thuật toán là gì?',a:'Dãy các bước hữu hạn để giải quyết vấn đề',opts:['Dãy các bước hữu hạn để giải quyết vấn đề','Ngôn ngữ lập trình','Phần mềm máy tính','Mã nguồn chương trình'],e:'Thuật toán là tập hợp các bước rõ ràng, hữu hạn để giải quyết một bài toán.'},
+    {q:'Trong lập trình, "biến" (variable) dùng để?',a:'Lưu trữ giá trị dữ liệu tạm thời',opts:['Lưu trữ giá trị dữ liệu tạm thời','Vòng lặp chương trình','Điều kiện rẽ nhánh','Hàm tính toán'],e:'Biến là ô nhớ đặt tên, dùng để lưu giá trị có thể thay đổi trong quá trình chạy chương trình.'},
+    {q:'Cấu trúc điều kiện IF...THEN dùng để?',a:'Thực hiện lệnh khi điều kiện đúng',opts:['Thực hiện lệnh khi điều kiện đúng','Lặp lại nhiều lần','Định nghĩa hàm','Khai báo biến'],e:'IF...THEN cho phép rẽ nhánh: nếu điều kiện đúng thì thực hiện khối lệnh trong THEN.'},
+    {q:'Ngôn ngữ nào phù hợp cho người mới học lập trình?',a:'Scratch hoặc Python',opts:['Scratch hoặc Python','Assembly','C++','SQL'],e:'Scratch (kéo thả) và Python (cú pháp đơn giản) là lựa chọn lý tưởng cho người mới bắt đầu.'},
+  ],
+};
+
+const TOTAL=15;
+let catKeys=Object.keys(BANK);
+let currentCat=null, queue=[], qIdx=0, correctCount=0, answered=false;
+
+function buildCats(){
+  const bar=document.getElementById('cats');
+  const all=document.createElement('button');all.className='cat-btn active';all.textContent='🔀 Tất cả';
+  all.onclick=()=>selectCat(null,all);bar.appendChild(all);
+  catKeys.forEach(k=>{
+    const b=document.createElement('button');b.className='cat-btn';b.textContent=k;
+    b.onclick=()=>selectCat(k,b);bar.appendChild(b);
+  });
+}
+
+function selectCat(key,btn){
+  currentCat=key;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');restart();
+}
+
+function restart(){
+  let pool=[];
+  if(currentCat){pool=[...BANK[currentCat]];}
+  else{catKeys.forEach(k=>pool.push(...BANK[k]));}
+  shuffle(pool);queue=pool.slice(0,Math.min(TOTAL,pool.length));
+  qIdx=0;correctCount=0;answered=false;
+  document.getElementById('overlay').style.display='none';
+  document.getElementById('correct').textContent=0;
+  document.getElementById('total').textContent=queue.length;
+  nextQ();
+}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+
+function nextQ(){
+  if(qIdx>=queue.length){showFinal();return;}
+  answered=false;
+  document.getElementById('explain').style.display='none';
+  document.getElementById('btnNext').style.display='none';
+  const q=queue[qIdx];qIdx++;
+  document.getElementById('qNum').textContent=qIdx;
+  document.getElementById('progFill').style.width=((qIdx-1)/queue.length*100)+'%';
+  // find cat
+  let cat='Tin học';
+  catKeys.forEach(k=>{if(BANK[k].some(x=>x.q===q.q))cat=k;});
+  document.getElementById('catBadge').textContent=cat;
+  document.getElementById('qText').textContent=q.q;
+  const opts=[...q.opts];shuffle(opts);
+  const labels=['A','B','C','D'];
+  const div=document.getElementById('opts');div.innerHTML='';
+  opts.forEach((o,i)=>{
+    const b=document.createElement('button');b.className='opt';
+    b.innerHTML=`<span class="opt-letter">${labels[i]}</span>${o}`;
+    b.onclick=()=>pick(o,q,b);div.appendChild(b);
+  });
+}
+
+function pick(choice,q,btn){
+  if(answered)return;answered=true;
+  document.querySelectorAll('.opt').forEach(b=>{b.disabled=true;if(b.textContent.slice(1)===q.a||(b.querySelector && b.innerText.includes(q.a)))b.classList.add('correct');});
+  // re-check: find the btn with matching text
+  document.querySelectorAll('.opt').forEach(b=>{
+    const txt=b.innerText.replace(/^[ABCD]/,'').trim();
+    if(txt===q.a)b.classList.add('correct');
+  });
+  if(choice===q.a){correctCount++;document.getElementById('correct').textContent=correctCount;playSound(true);}
+  else{btn.classList.add('wrong');playSound(false);}
+  const ex=document.getElementById('explain');ex.style.display='block';
+  ex.innerHTML='<strong>💡 Giải thích:</strong>'+q.e;
+  document.getElementById('btnNext').style.display='block';
+}
+
+function showFinal(){
+  document.getElementById('progFill').style.width='100%';
+  const pct=Math.round(correctCount/queue.length*100);
+  let e='😊',t='Hoàn thành!';
+  if(pct>=90){e='🏆';t='Xuất sắc!';}else if(pct>=70){e='🎉';t='Tốt lắm!';}else if(pct<50){e='📚';t='Cần ôn thêm!';}
+  document.getElementById('re').textContent=e;document.getElementById('rt').textContent=t;
+  document.getElementById('rs').textContent=`${correctCount}/${queue.length} câu đúng (${pct}%)`;
+  document.getElementById('overlay').style.display='flex';
+}
+
+const AC=new (window.AudioContext||window.webkitAudioContext)();
+function playSound(win){
+  const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);
+  if(win){o.frequency.setValueAtTime(523,AC.currentTime);o.frequency.setValueAtTime(659,AC.currentTime+.12);}
+  else{o.frequency.setValueAtTime(250,AC.currentTime);o.frequency.setValueAtTime(200,AC.currentTime+.1);}
+  g.gain.setValueAtTime(.2,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.4);
+  o.start();o.stop(AC.currentTime+.4);
+}
+
+buildCats();restart();
+</script>
+</body>
+</html>

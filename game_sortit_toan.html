@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Xếp Thứ Tự – Toán</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+body{background:#0f172a;color:#e2e8f0;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden}
+header{width:100%;background:#1e293b;padding:.75rem 1rem;text-align:center;border-bottom:1px solid #334155}
+header h1{font-size:1.1rem;font-weight:700;color:#f472b6;letter-spacing:.05em}
+header h2{font-size:.75rem;color:#94a3b8;margin-top:2px}
+.stats{display:flex;gap:1rem;justify-content:center;padding:.6rem 1rem;width:100%;max-width:440px}
+.stat{background:#1e293b;border-radius:10px;padding:.35rem .9rem;font-size:.8rem;color:#94a3b8;text-align:center}
+.stat span{display:block;font-size:1.1rem;font-weight:700;color:#f8fafc}
+.prog-wrap{width:100%;max-width:440px;padding:0 1rem .5rem}
+.prog-bar{height:6px;background:#1e293b;border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#be185d,#f472b6);border-radius:3px;transition:width .3s}
+/* Direction & type */
+.config-bar{display:flex;gap:8px;padding:0 1rem .5rem;width:100%;max-width:440px}
+.cfg-btn{flex:1;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:.4rem;font-size:.75rem;color:#94a3b8;cursor:pointer;text-align:center}
+.cfg-btn.active{background:#831843;border-color:#f472b6;color:#fbcfe8}
+/* Sort slots */
+.sort-label{font-size:.75rem;color:#64748b;padding:.2rem 1rem;width:100%;max-width:440px;display:flex;justify-content:space-between}
+.slots-wrap{display:flex;gap:8px;padding:.3rem 1rem;width:100%;max-width:440px;min-height:70px;align-items:center;flex-wrap:wrap;justify-content:center}
+.slot{width:72px;height:64px;border:2px dashed #334155;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:.85rem;color:#64748b;transition:all .2s;position:relative}
+.slot.has-card{border-style:solid;border-color:#be185d;background:#1e293b}
+.slot-idx{position:absolute;top:4px;left:6px;font-size:.6rem;color:#64748b}
+.card-in-slot{font-size:.9rem;font-weight:700;color:#f8fafc;text-align:center;padding:4px;line-height:1.3}
+/* Number pool */
+.pool-label{font-size:.75rem;color:#64748b;padding:.2rem 1rem;width:100%;max-width:440px}
+.pool-wrap{display:flex;gap:8px;padding:.3rem 1rem;flex-wrap:wrap;width:100%;max-width:440px;justify-content:center;min-height:70px}
+.num-card{background:#1e293b;border:2px solid #334155;border-radius:12px;padding:.7rem .6rem;min-width:64px;font-size:.95rem;font-weight:700;color:#e2e8f0;cursor:pointer;text-align:center;transition:all .15s;line-height:1.3}
+.num-card:active{transform:scale(.93)}
+.num-card.selected{border-color:#f472b6;background:#831843;color:#fbcfe8}
+.num-card.used{opacity:.25;pointer-events:none}
+/* Actions */
+.action-bar{display:flex;gap:8px;padding:.4rem 1rem;width:100%;max-width:440px}
+.btn-check{flex:2;background:#be185d;color:#fff;border:none;border-radius:12px;padding:.8rem;font-size:.95rem;font-weight:700;cursor:pointer}
+.btn-clear{flex:1;background:#1e293b;border:1px solid #334155;color:#94a3b8;border-radius:12px;padding:.8rem;font-size:.85rem;cursor:pointer}
+/* Feedback */
+.fb{border-radius:12px;padding:.7rem 1rem;margin:0 1rem;font-size:.9rem;display:none;width:calc(100%-2rem);max-width:440px;line-height:1.5;width:calc(100% - 2rem)}
+.fb.ok{background:#052e16;border:1px solid #16a34a;color:#4ade80}
+.fb.err{background:#450a0a;border:1px solid #dc2626;color:#f87171}
+.btn-next{display:none;margin:.5rem 1rem;width:calc(100% - 2rem);max-width:440px;background:#0ea5e9;color:#fff;border:none;border-radius:12px;padding:.8rem;font-size:.95rem;font-weight:700;cursor:pointer}
+/* Overlay */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:50}
+.result-card{background:#1e293b;border-radius:18px;padding:2rem;text-align:center;max-width:320px;width:90%}
+.re{font-size:3rem;margin-bottom:.5rem}.rt{font-size:1.4rem;font-weight:700;margin-bottom:.5rem}.rs{font-size:.95rem;color:#94a3b8;margin-bottom:1rem}
+.btn-re{background:#be185d;color:#fff;border:none;border-radius:10px;padding:.75rem 2rem;font-size:1rem;font-weight:700;cursor:pointer;width:100%}
+/* Fraction */
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.1;margin:0 1px;font-size:.85em}
+.frac .num{border-bottom:1.5px solid currentColor;padding:0 2px;min-width:12px;text-align:center}
+.frac .den{padding:0 2px;min-width:12px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <h1>↕️ XẾP THỨ TỰ</h1>
+  <h2>SẮP XẾP CÁC SỐ TỪ NHỎ ĐẾN LỚN</h2>
+</header>
+
+<div class="config-bar">
+  <button class="cfg-btn active" id="typeInt" onclick="setType('int',this)">Số nguyên</button>
+  <button class="cfg-btn" id="typeFrac" onclick="setType('frac',this)">Phân số</button>
+  <button class="cfg-btn" id="typeDec" onclick="setType('dec',this)">Thập phân</button>
+  <button class="cfg-btn" id="typeMix" onclick="setType('mix',this)">Hỗn hợp</button>
+</div>
+
+<div class="stats">
+  <div class="stat"><span id="qNum">1</span>Vòng</div>
+  <div class="stat"><span id="correct">0</span>Đúng</div>
+  <div class="stat"><span id="total">10</span>Tổng</div>
+</div>
+<div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div></div>
+
+<div class="sort-label"><span>Xếp theo thứ tự tăng dần ↑</span><span id="orderDir"></span></div>
+<div class="slots-wrap" id="slotsWrap"></div>
+
+<div class="pool-label">Chọn từng số:</div>
+<div class="pool-wrap" id="poolWrap"></div>
+
+<div class="fb" id="fb"></div>
+<div class="action-bar">
+  <button class="btn-clear" onclick="clearSlots()">↩ Xóa</button>
+  <button class="btn-check" onclick="checkOrder()">Kiểm tra ✓</button>
+</div>
+<button class="btn-next" id="btnNext" onclick="nextRound()">Vòng tiếp theo →</button>
+
+<div class="overlay" id="overlay">
+  <div class="result-card">
+    <div class="re" id="re"></div><div class="rt" id="rt"></div><div class="rs" id="rs"></div>
+    <button class="btn-re" onclick="restart()">Chơi lại</button>
+  </div>
+</div>
+
+<script>
+const TOTAL=10, N=5;
+let numType='int', qIdx=0, correctCount=0;
+let numbers=[], slotContent=[], selectedPoolIdx=null;
+
+function setType(t,btn){
+  numType=t;
+  document.querySelectorAll('.cfg-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  restart();
+}
+
+function restart(){qIdx=0;correctCount=0;document.getElementById('overlay').style.display='none';nextRound();}
+
+// Generate numbers
+function genNumbers(){
+  const nums=[];
+  const usedVals=new Set();
+  while(nums.length<N){
+    let v,disp,val;
+    if(numType==='int'){
+      v=randInt(-20,50);val=v;disp=v<0?'−'+Math.abs(v):String(v);
+    } else if(numType==='frac'){
+      const den=randInt(2,9);const num=randInt(-den+1,den*2);
+      val=num/den;
+      disp=`<span class="frac"><span class="num">${num<0?'−'+Math.abs(num):num}</span><span class="den">${den}</span></span>`;
+    } else if(numType==='dec'){
+      v=(randInt(-20,50)/10);val=v;disp=v<0?'−'+Math.abs(v).toFixed(1):v.toFixed(1);
+    } else { // mix
+      const choice=randInt(0,2);
+      if(choice===0){v=randInt(-10,30);val=v;disp=v<0?'−'+Math.abs(v):String(v);}
+      else if(choice===1){const d=randInt(2,6);const n=randInt(1,d*2);val=n/d;disp=`<span class="frac"><span class="num">${n}</span><span class="den">${d}</span></span>`;}
+      else{v=(randInt(-15,30)/10);val=v;disp=v.toFixed(1);}
+    }
+    // avoid exact duplicates in val
+    const rounded=Math.round(val*1000)/1000;
+    if(usedVals.has(rounded))continue;
+    usedVals.add(rounded);
+    nums.push({val,disp});
+  }
+  return nums;
+}
+
+function randInt(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+
+function nextRound(){
+  if(qIdx>=TOTAL){showFinal();return;}
+  document.getElementById('fb').style.display='none';
+  document.getElementById('btnNext').style.display='none';
+  document.querySelectorAll('.btn-check,.btn-clear').forEach(b=>b.style.display='');
+  qIdx++;
+  document.getElementById('qNum').textContent=qIdx;
+  document.getElementById('progFill').style.width=((qIdx-1)/TOTAL*100)+'%';
+  numbers=genNumbers();
+  slotContent=Array(N).fill(null);
+  selectedPoolIdx=null;
+  renderSlots();renderPool();
+}
+
+function renderSlots(){
+  const w=document.getElementById('slotsWrap');w.innerHTML='';
+  for(let i=0;i<N;i++){
+    const s=document.createElement('div');s.className='slot'+(slotContent[i]!==null?' has-card':'');
+    s.innerHTML=`<span class="slot-idx">${i+1}</span>`;
+    if(slotContent[i]!==null){
+      const cd=document.createElement('div');cd.className='card-in-slot';cd.innerHTML=numbers[slotContent[i]].disp;
+      s.appendChild(cd);
+      s.onclick=()=>removeFromSlot(i);
+    } else {
+      s.onclick=()=>placeInSlot(i);
+    }
+    w.appendChild(s);
+  }
+}
+
+function renderPool(){
+  const w=document.getElementById('poolWrap');w.innerHTML='';
+  numbers.forEach((n,i)=>{
+    const c=document.createElement('div');c.className='num-card';
+    const usedInSlot=slotContent.includes(i);
+    if(usedInSlot)c.classList.add('used');
+    c.innerHTML=n.disp;
+    c.onclick=()=>selectPool(i,c);
+    w.appendChild(c);
+  });
+}
+
+function selectPool(i,card){
+  if(slotContent.includes(i))return;
+  // auto-place in next empty slot
+  const nextEmpty=slotContent.indexOf(null);
+  if(nextEmpty===-1)return;
+  slotContent[nextEmpty]=i;
+  renderSlots();renderPool();
+}
+
+function placeInSlot(slotIdx){
+  // find selected pool card - handled by selectPool auto-place
+}
+
+function removeFromSlot(slotIdx){
+  slotContent[slotIdx]=null;
+  renderSlots();renderPool();
+}
+
+function clearSlots(){
+  slotContent=Array(N).fill(null);
+  renderSlots();renderPool();
+}
+
+function checkOrder(){
+  if(slotContent.some(s=>s===null)){
+    const fb=document.getElementById('fb');fb.className='fb err';fb.style.display='block';
+    fb.textContent='Hãy xếp tất cả các số vào ô!';return;
+  }
+  const orderedVals=slotContent.map(i=>numbers[i].val);
+  const isAsc=orderedVals.every((v,i)=>i===0||v>=orderedVals[i-1]);
+  const fb=document.getElementById('fb');
+  document.querySelectorAll('.btn-check,.btn-clear').forEach(b=>b.style.display='none');
+  document.getElementById('btnNext').style.display='block';
+  if(isAsc){
+    fb.className='fb ok';fb.style.display='block';fb.innerHTML='✅ Chính xác!';
+    correctCount++;document.getElementById('correct').textContent=correctCount;
+    playSound(true);
+  } else {
+    const sorted=[...numbers].sort((a,b)=>a.val-b.val);
+    fb.className='fb err';fb.style.display='block';
+    fb.innerHTML='❌ Chưa đúng. Thứ tự đúng: '+sorted.map(n=>n.disp).join(' < ');
+    playSound(false);
+  }
+}
+
+function showFinal(){
+  document.getElementById('progFill').style.width='100%';
+  const pct=Math.round(correctCount/TOTAL*100);
+  let e='😊',t='Hoàn thành!';
+  if(pct>=90){e='🏆';t='Xuất sắc!';}else if(pct>=70){e='🎉';t='Tốt lắm!';}else if(pct<50){e='📚';t='Cần luyện thêm!';}
+  document.getElementById('re').textContent=e;document.getElementById('rt').textContent=t;
+  document.getElementById('rs').textContent=`${correctCount}/${TOTAL} vòng đúng (${pct}%)`;
+  document.getElementById('overlay').style.display='flex';
+}
+
+const AC=new (window.AudioContext||window.webkitAudioContext)();
+function playSound(win){
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.connect(g);g.connect(AC.destination);
+  if(win){o.frequency.setValueAtTime(523,AC.currentTime);o.frequency.setValueAtTime(659,AC.currentTime+.1);o.frequency.setValueAtTime(784,AC.currentTime+.2);}
+  else{o.frequency.setValueAtTime(300,AC.currentTime);o.frequency.setValueAtTime(200,AC.currentTime+.15);}
+  g.gain.setValueAtTime(.2,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.5);
+  o.start();o.stop(AC.currentTime+.5);
+}
+
+restart();
+</script>
+</body>
+</html>

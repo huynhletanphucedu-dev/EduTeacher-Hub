@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Chia Nhóm Tự Động – EduTeacher Hub</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --blue:#3b7de9;--blue-lt:#eff6ff;--blue-dk:#1d4ed8;
+  --green:#10b981;--orange:#f59e0b;--purple:#8b5cf6;--red:#ef4444;
+  --pink:#ec4899;--teal:#06b6d4;
+  --text:#1e293b;--text2:#334155;--muted:#64748b;
+  --border:#e2e8f0;--bg:#f8fafc;--white:#fff;
+  --shadow:0 4px 20px rgba(59,125,233,.1);
+}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);min-height:100vh;}
+
+.app-header{background:linear-gradient(135deg,#3b7de9,#8b5cf6);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(59,125,233,.3);}
+.app-logo{color:#fff;font-size:1.1rem;font-weight:900;}
+.app-logo span{opacity:.7;font-weight:400;font-size:.85rem;margin-left:8px;}
+.hbtn{padding:7px 14px;border-radius:8px;border:none;font-size:.8rem;font-weight:700;cursor:pointer;}
+.hbtn-white{background:#fff;color:var(--blue-dk);}
+.hbtn-white:hover{background:#eff6ff;}
+
+.main{max-width:960px;margin:0 auto;padding:28px 20px;display:grid;grid-template-columns:320px 1fr;gap:24px;}
+@media(max-width:720px){.main{grid-template-columns:1fr;}}
+
+/* ── LEFT PANEL ── */
+.panel{background:var(--white);border-radius:16px;padding:20px;box-shadow:var(--shadow);border:1.5px solid var(--border);}
+.panel-title{font-size:.82rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px;}
+
+.input-group{margin-bottom:14px;}
+.input-label{font-size:.75rem;font-weight:700;color:var(--text2);margin-bottom:5px;display:block;}
+textarea,input[type=text],input[type=number]{width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid var(--border);font-size:.85rem;color:var(--text);background:#fff;outline:none;font-family:inherit;transition:border-color .15s;}
+textarea:focus,input:focus{border-color:var(--blue);}
+textarea{resize:vertical;min-height:120px;}
+
+.mode-row{display:flex;gap:8px;margin-bottom:6px;}
+.mode-btn{flex:1;padding:8px 6px;border-radius:9px;border:2px solid var(--border);background:#fff;font-size:.78rem;font-weight:700;color:var(--muted);cursor:pointer;text-align:center;transition:all .14s;}
+.mode-btn.sel{border-color:var(--blue);background:var(--blue-lt);color:var(--blue);}
+
+.num-row{display:flex;gap:8px;align-items:center;}
+.num-row input{width:80px;text-align:center;font-size:1rem;font-weight:800;}
+.num-row span{font-size:.82rem;color:var(--muted);}
+
+.divider{height:1px;background:var(--border);margin:16px 0;}
+
+.btn{width:100%;padding:12px;border-radius:11px;border:none;font-size:.9rem;font-weight:800;cursor:pointer;transition:all .15s;margin-bottom:8px;}
+.btn-blue{background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;box-shadow:0 4px 14px rgba(59,125,233,.3);}
+.btn-blue:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(59,125,233,.4);}
+.btn-ghost{background:var(--bg);border:1.5px solid var(--border);color:var(--text2);}
+.btn-ghost:hover{background:var(--border);}
+
+.import-label{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px;border-radius:11px;border:1.5px dashed var(--border);font-size:.82rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;margin-bottom:8px;}
+.import-label:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt);}
+
+.info-bar{background:var(--blue-lt);border-radius:8px;padding:8px 12px;font-size:.75rem;color:var(--blue);font-weight:600;margin-top:4px;}
+
+/* ── RIGHT PANEL ── */
+.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.result-title{font-size:1rem;font-weight:800;color:var(--text);}
+.result-actions{display:flex;gap:8px;}
+.icon-btn{padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:.78rem;font-weight:700;color:var(--text2);cursor:pointer;transition:all .14s;}
+.icon-btn:hover{border-color:var(--blue);color:var(--blue);}
+
+.groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+.group-card{border-radius:12px;padding:14px;border:2px solid;}
+.group-title{font-size:.8rem;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.group-count{font-size:.65rem;font-weight:700;background:rgba(0,0,0,.08);padding:2px 7px;border-radius:10px;}
+.member-list{list-style:none;display:flex;flex-direction:column;gap:5px;}
+.member-item{display:flex;align-items:center;gap:7px;font-size:.82rem;color:var(--text);font-weight:600;}
+.member-avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:#fff;flex-shrink:0;}
+
+.empty-result{text-align:center;padding:60px 20px;color:var(--muted);}
+.empty-icon{font-size:3rem;margin-bottom:12px;}
+.empty-text{font-size:.88rem;line-height:1.6;}
+
+/* animation */
+@keyframes cardIn{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
+.group-card{animation:cardIn .3s ease both;}
+
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e293b;color:#fff;padding:10px 20px;border-radius:10px;font-size:.82rem;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:9999;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="app-logo">👥 Chia Nhóm Tự Động <span>EduTeacher Hub</span></div>
+  <button class="hbtn hbtn-white" onclick="copyResult()">📋 Sao chép kết quả</button>
+</div>
+
+<div class="main">
+  <!-- LEFT -->
+  <div>
+    <div class="panel">
+      <div class="panel-title">📋 Danh Sách</div>
+
+      <div class="input-group">
+        <label class="input-label">Nhập tên học sinh (mỗi dòng 1 tên)</label>
+        <textarea id="names-input" placeholder="Nguyễn Văn A&#10;Trần Thị B&#10;Lê Văn C&#10;..."></textarea>
+      </div>
+
+      <label class="import-label">
+        📂 Nhập từ file .txt
+        <input type="file" accept=".txt" style="display:none" onchange="importTxt(this)"/>
+      </label>
+
+      <div class="divider"></div>
+      <div class="panel-title">⚙️ Cài Đặt</div>
+
+      <div class="input-group">
+        <label class="input-label">Chế độ chia</label>
+        <div class="mode-row">
+          <div class="mode-btn sel" id="mode-groups" onclick="setMode('groups')">Số nhóm</div>
+          <div class="mode-btn" id="mode-size" onclick="setMode('size')">Người/nhóm</div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="num-row">
+          <input type="number" id="num-val" value="4" min="1" max="50" oninput="updateInfo()"/>
+          <span id="num-label">nhóm</span>
+        </div>
+        <div class="info-bar" id="info-bar" style="margin-top:8px;">Nhập danh sách để xem thông tin</div>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Tên nhóm</label>
+        <div class="mode-row">
+          <div class="mode-btn sel" id="name-num" onclick="setNameStyle('num')">Số (Nhóm 1…)</div>
+          <div class="mode-btn" id="name-alpha" onclick="setNameStyle('alpha')">Chữ (A, B, C…)</div>
+          <div class="mode-btn" id="name-color" onclick="setNameStyle('color')">Màu 🌈</div>
+        </div>
+      </div>
+
+      <button class="btn btn-blue" onclick="generate()">🎲 Chia Nhóm Ngẫu Nhiên</button>
+      <button class="btn btn-ghost" onclick="reset()">↺ Làm mới</button>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="panel">
+    <div class="result-header">
+      <div class="result-title">📊 Kết Quả Chia Nhóm</div>
+      <div class="result-actions">
+        <button class="icon-btn" onclick="generate()" title="Xáo trộn lại">🔀 Xáo lại</button>
+        <button class="icon-btn" onclick="copyResult()" title="Sao chép">📋 Copy</button>
+      </div>
+    </div>
+    <div id="result">
+      <div class="empty-result">
+        <div class="empty-icon">👥</div>
+        <div class="empty-text">Nhập danh sách học sinh và bấm<br><b>Chia Nhóm Ngẫu Nhiên</b> để bắt đầu.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const GROUP_COLORS = [
+  {bg:'#eff6ff',border:'#3b7de9',text:'#1d4ed8',av:'#3b7de9'},
+  {bg:'#f0fdf4',border:'#10b981',text:'#047857',av:'#10b981'},
+  {bg:'#fffbeb',border:'#f59e0b',text:'#b45309',av:'#f59e0b'},
+  {bg:'#faf5ff',border:'#8b5cf6',text:'#6d28d9',av:'#8b5cf6'},
+  {bg:'#fdf4ff',border:'#ec4899',text:'#be185d',av:'#ec4899'},
+  {bg:'#ecfeff',border:'#06b6d4',text:'#0e7490',av:'#06b6d4'},
+  {bg:'#fff1f2',border:'#ef4444',text:'#b91c1c',av:'#ef4444'},
+  {bg:'#f0fdfa',border:'#14b8a6',text:'#0f766e',av:'#14b8a6'},
+];
+const COLOR_NAMES = ['Xanh Dương','Xanh Lá','Vàng','Tím','Hồng','Lam','Đỏ','Ngọc'];
+const ALPHA = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+
+let mode = 'groups'; // 'groups' | 'size'
+let nameStyle = 'num'; // 'num' | 'alpha' | 'color'
+let lastGroups = [];
+
+function setMode(m){
+  mode = m;
+  document.querySelectorAll('.mode-btn[id^=mode-]').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('mode-'+m).classList.add('sel');
+  document.getElementById('num-label').textContent = m==='groups' ? 'nhóm' : 'người/nhóm';
+  updateInfo();
+}
+
+function setNameStyle(s){
+  nameStyle = s;
+  document.querySelectorAll('.mode-btn[id^=name-]').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('name-'+s).classList.add('sel');
+  if(lastGroups.length) renderGroups(lastGroups);
+}
+
+function getNames(){
+  return document.getElementById('names-input').value
+    .split('\n').map(s=>s.trim()).filter(s=>s.length>0);
+}
+
+function updateInfo(){
+  const names = getNames();
+  const n = names.length;
+  const val = parseInt(document.getElementById('num-val').value)||1;
+  const bar = document.getElementById('info-bar');
+  if(!n){ bar.textContent='Nhập danh sách để xem thông tin'; return; }
+  if(mode==='groups'){
+    const g = Math.min(val, n);
+    const base = Math.floor(n/g), extra = n%g;
+    bar.textContent = `${n} học sinh → ${g} nhóm · ${extra?`${extra} nhóm ${base+1} người, ${g-extra} nhóm ${base} người`:`Mỗi nhóm ${base} người`}`;
+  } else {
+    const g = Math.ceil(n/val);
+    bar.textContent = `${n} học sinh → ${g} nhóm · ~${val} người/nhóm`;
+  }
+}
+
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function generate(){
+  const names = getNames();
+  if(!names.length){ showToast('Hãy nhập danh sách học sinh!'); return; }
+  const val = parseInt(document.getElementById('num-val').value)||1;
+  const shuffled = shuffle(names);
+  let groups = [];
+
+  if(mode==='groups'){
+    const g = Math.max(1, Math.min(val, names.length));
+    groups = Array.from({length:g}, ()=>[]);
+    shuffled.forEach((name,i)=>groups[i%g].push(name));
+  } else {
+    const size = Math.max(1, val);
+    for(let i=0;i<shuffled.length;i+=size)
+      groups.push(shuffled.slice(i,i+size));
+  }
+
+  lastGroups = groups;
+  renderGroups(groups);
+}
+
+function groupName(i){
+  if(nameStyle==='alpha') return `Nhóm ${ALPHA[i]||i+1}`;
+  if(nameStyle==='color') return `Nhóm ${COLOR_NAMES[i%COLOR_NAMES.length]}`;
+  return `Nhóm ${i+1}`;
+}
+
+function renderGroups(groups){
+  const c = GROUP_COLORS;
+  document.getElementById('result').innerHTML = `<div class="groups-grid">
+    ${groups.map((g,i)=>{
+      const col = c[i%c.length];
+      return `<div class="group-card" style="background:${col.bg};border-color:${col.border};animation-delay:${i*0.05}s">
+        <div class="group-title" style="color:${col.text}">
+          ${groupName(i)} <span class="group-count">${g.length} người</span>
+        </div>
+        <ul class="member-list">
+          ${g.map((name,j)=>`<li class="member-item">
+            <div class="member-avatar" style="background:${col.av}">${getInitial(name)}</div>
+            ${escHtml(name)}
+          </li>`).join('')}
+        </ul>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function getInitial(name){
+  const parts = name.trim().split(' ');
+  return parts[parts.length-1][0]?.toUpperCase()||'?';
+}
+
+function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function copyResult(){
+  if(!lastGroups.length){ showToast('Chưa có kết quả để sao chép!'); return; }
+  const text = lastGroups.map((g,i)=>`${groupName(i)} (${g.length} người):\n${g.map((n,j)=>`  ${j+1}. ${n}`).join('\n')}`).join('\n\n');
+  navigator.clipboard.writeText(text).then(()=>showToast('Đã sao chép kết quả!')).catch(()=>{
+    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();showToast('Đã sao chép!');
+  });
+}
+
+function importTxt(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    document.getElementById('names-input').value=e.target.result.trim();
+    updateInfo(); showToast('Đã nhập '+getNames().length+' học sinh!');
+  };
+  reader.readAsText(file,'utf-8');
+  input.value='';
+}
+
+function reset(){
+  document.getElementById('names-input').value='';
+  document.getElementById('num-val').value='4';
+  lastGroups=[];
+  document.getElementById('result').innerHTML='<div class="empty-result"><div class="empty-icon">👥</div><div class="empty-text">Nhập danh sách học sinh và bấm<br><b>Chia Nhóm Ngẫu Nhiên</b> để bắt đầu.</div></div>';
+  updateInfo();
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+// Live update info when typing
+document.getElementById('names-input').addEventListener('input', updateInfo);
+document.getElementById('num-val').addEventListener('input', updateInfo);
+</script>
+</body>
+</html>

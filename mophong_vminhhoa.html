@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Các Nền Văn Minh Cổ Đại - Lịch Sử Lớp 6</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    min-height: 100vh;
+    padding: 16px;
+  }
+  header {
+    text-align: center;
+    padding: 24px 16px 16px;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border-radius: 16px;
+    margin-bottom: 20px;
+    border: 1px solid #334155;
+  }
+  header h1 { font-size: 2rem; font-weight: 800; color: #f1f5f9; letter-spacing: 1px; }
+  header p { color: #94a3b8; margin-top: 6px; font-size: 1rem; }
+  .tabs {
+    display: flex; gap: 8px; margin-bottom: 16px;
+  }
+  .tab-btn {
+    flex: 1; padding: 12px; border: none; border-radius: 10px;
+    background: #1e293b; color: #94a3b8; font-size: 1rem; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; border: 2px solid transparent;
+  }
+  .tab-btn.active {
+    background: #334155; color: #f1f5f9; border-color: #f59e0b;
+  }
+  .tab-btn:hover:not(.active) { background: #273449; color: #cbd5e1; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .panel {
+    background: #1e293b; border-radius: 14px; padding: 20px;
+    border: 1px solid #334155; margin-bottom: 16px;
+  }
+  .panel h2 { font-size: 1.1rem; color: #94a3b8; margin-bottom: 14px; font-weight: 600; }
+
+  /* MAP */
+  #map-svg { display: block; width: 100%; max-width: 700px; margin: 0 auto; cursor: pointer; }
+  .civ-dot { cursor: pointer; }
+  .pulse-ring {
+    animation: pulse 2s ease-out infinite;
+    transform-origin: center;
+  }
+  @keyframes pulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    100% { transform: scale(2.2); opacity: 0; }
+  }
+  .civ-dot.selected .dot-inner { stroke-width: 3; stroke: #fff; }
+
+  /* INFO PANEL */
+  #info-panel {
+    display: none;
+    background: #1e293b;
+    border-radius: 14px;
+    padding: 20px;
+    border: 2px solid #334155;
+    margin-top: 14px;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  #info-panel.visible { display: block; }
+  #info-panel h3 { font-size: 1.5rem; font-weight: 800; margin-bottom: 4px; }
+  #info-panel .meta { color: #94a3b8; margin-bottom: 14px; font-size: 0.9rem; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .info-card {
+    background: #0f172a; border-radius: 10px; padding: 14px;
+    border: 1px solid #334155;
+  }
+  .info-card h4 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 8px; }
+  .info-card p, .info-card li { font-size: 0.95rem; color: #cbd5e1; line-height: 1.6; }
+  .info-card ul { padding-left: 16px; }
+  .info-card li { margin-bottom: 4px; }
+
+  /* TIMELINE */
+  .timeline-scroll {
+    overflow-x: auto; overflow-y: hidden;
+    border-radius: 10px;
+    border: 1px solid #334155;
+    background: #0d1b2a;
+  }
+  #timeline-svg { display: block; }
+  .event-label { font-size: 9px; fill: #94a3b8; }
+  .bar-label { font-size: 11px; fill: #fff; font-weight: 600; pointer-events: none; }
+  .year-label { font-size: 10px; fill: #64748b; }
+  .axis-line { stroke: #334155; stroke-width: 1; }
+
+  /* COMPARISON TABLE */
+  .table-wrap { overflow-x: auto; }
+  table {
+    width: 100%; border-collapse: collapse; font-size: 0.88rem;
+  }
+  th {
+    background: #0f172a; color: #94a3b8; text-transform: uppercase;
+    font-size: 0.75rem; letter-spacing: 1px; padding: 10px 12px;
+    border-bottom: 2px solid #334155; text-align: left;
+  }
+  td { padding: 10px 12px; border-bottom: 1px solid #1e293b; color: #cbd5e1; }
+  tr:hover td { background: #1e293b; }
+  .dot-badge {
+    display: inline-block; width: 10px; height: 10px;
+    border-radius: 50%; margin-right: 6px; vertical-align: middle;
+  }
+  .section-title {
+    font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;
+    color: #475569; margin-bottom: 12px; font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏛️ Các Nền Văn Minh Cổ Đại</h1>
+  <p>Khám phá 6 nền văn minh đặt nền móng cho thế giới hiện đại</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('map')">🗺️ Bản Đồ Văn Minh</button>
+  <button class="tab-btn" onclick="switchTab('timeline')">📅 Dòng Thời Gian</button>
+</div>
+
+<!-- TAB 1: MAP -->
+<div id="tab-map" class="tab-content active">
+  <div class="panel">
+    <div class="section-title">Nhấp vào các điểm sáng để xem thông tin</div>
+    <svg id="map-svg" viewBox="0 0 700 380" xmlns="http://www.w3.org/2000/svg">
+      <!-- Ocean background -->
+      <rect width="700" height="380" fill="#0d1b2a" rx="10"/>
+
+      <!-- Grid lines subtle -->
+      <line x1="0" y1="190" x2="700" y2="190" stroke="#112233" stroke-width="1"/>
+      <line x1="350" y1="0" x2="350" y2="380" stroke="#112233" stroke-width="1"/>
+
+      <!-- CONTINENTS (simplified polygons) -->
+
+      <!-- NORTH AMERICA -->
+      <polygon points="60,40 130,30 175,50 185,90 165,130 140,160 115,175 80,155 55,120 45,80"
+        fill="#1a2e3d" stroke="#253d52" stroke-width="1"/>
+      <!-- Central America rough -->
+      <polygon points="115,175 140,160 155,180 145,205 125,200 110,190"
+        fill="#1a2e3d" stroke="#253d52" stroke-width="1"/>
+      <!-- SOUTH AMERICA -->
+      <polygon points="125,210 155,200 175,215 185,255 175,300 155,330 130,335 108,315 95,280 100,245 112,220"
+        fill="#1a2e3d" stroke="#253d52" stroke-width="1"/>
+
+      <!-- EUROPE -->
+      <polygon points="272,40 315,35 345,45 360,65 345,85 320,90 300,100 278,95 265,75 268,55"
+        fill="#2d3a4a" stroke="#3d4f62" stroke-width="1"/>
+      <!-- Iberian peninsula -->
+      <polygon points="265,75 278,95 272,110 255,108 250,90 258,78"
+        fill="#2d3a4a" stroke="#3d4f62" stroke-width="1"/>
+      <!-- Italian peninsula -->
+      <polygon points="300,100 320,90 330,110 322,130 308,130 298,115"
+        fill="#2d3a4a" stroke="#3d4f62" stroke-width="1"/>
+      <!-- Scandinavia rough -->
+      <polygon points="300,15 320,10 340,18 345,35 315,35 298,28"
+        fill="#2d3a4a" stroke="#3d4f62" stroke-width="1"/>
+      <!-- UK rough -->
+      <polygon points="268,42 280,38 285,50 278,60 268,55"
+        fill="#2d3a4a" stroke="#3d4f62" stroke-width="1"/>
+      <!-- Greece rough -->
+      <polygon points="328,105 345,100 355,112 348,125 332,122 325,112"
+        fill="#2d3a4a" stroke="#3d4f62" stroke-width="1"/>
+
+      <!-- AFRICA -->
+      <polygon points="255,115 290,108 320,112 345,120 370,130 390,155 400,190 398,230 385,270 360,305 330,325 295,330 265,315 245,290 235,255 238,215 248,175 250,148 252,130"
+        fill="#2d4a1e" stroke="#3a5e28" stroke-width="1"/>
+      <!-- Horn of Africa -->
+      <polygon points="385,220 400,215 415,230 405,250 388,245"
+        fill="#2d4a1e" stroke="#3a5e28" stroke-width="1"/>
+      <!-- Madagascar -->
+      <polygon points="405,270 415,260 422,275 418,295 407,292"
+        fill="#2d4a1e" stroke="#3a5e28" stroke-width="1"/>
+
+      <!-- MIDDLE EAST / ARABIA -->
+      <polygon points="355,118 395,115 420,125 435,145 430,175 415,190 395,185 370,175 355,155 350,135"
+        fill="#2d3520" stroke="#3d4a2a" stroke-width="1"/>
+      <!-- Arabian Peninsula -->
+      <polygon points="370,175 400,170 425,180 435,210 420,240 395,248 375,235 362,210 360,190"
+        fill="#2d3520" stroke="#3d4a2a" stroke-width="1"/>
+
+      <!-- ASIA (Central + East) -->
+      <!-- Central/West Asia -->
+      <polygon points="345,45 410,38 460,42 495,55 515,75 510,105 490,120 460,125 435,118 410,115 390,108 370,95 355,80 350,60"
+        fill="#2d3a4a" stroke="#3d4f62" stroke-width="1"/>
+      <!-- South Asia (India) -->
+      <polygon points="460,125 495,120 520,130 535,150 538,180 525,215 505,240 480,252 455,245 438,225 432,195 435,165 445,140"
+        fill="#2d3a4a" stroke="#3d4f62" stroke-width="1"/>
+      <!-- Southeast Asia -->
+      <polygon points="535,150 570,140 600,150 615,170 605,195 580,205 555,195 538,180"
+        fill="#2d3a4a" stroke="#3d4f62" stroke-width="1"/>
+      <!-- East Asia (China etc) -->
+      <polygon points="495,55 560,42 620,45 660,60 675,90 670,130 640,155 610,165 580,160 550,148 520,135 510,105 515,75"
+        fill="#2d3a4a" stroke="#3d4f62" stroke-width="1"/>
+      <!-- Korean peninsula rough -->
+      <polygon points="620,95 638,88 645,100 635,115 618,112"
+        fill="#2d3a4a" stroke="#3d4f62" stroke-width="1"/>
+      <!-- Japan rough -->
+      <polygon points="648,75 660,65 668,75 660,92 650,88"
+        fill="#2d3a4a" stroke="#3d4f62" stroke-width="1"/>
+      <!-- Indochina -->
+      <polygon points="570,180 600,170 615,185 610,210 585,225 560,218 550,200 558,185"
+        fill="#2d3a4a" stroke="#3d4f62" stroke-width="1"/>
+
+      <!-- AUSTRALIA -->
+      <polygon points="580,265 630,258 660,270 665,300 650,325 615,335 580,325 558,305 555,282 568,268"
+        fill="#1a2e3d" stroke="#253d52" stroke-width="1"/>
+
+      <!-- Ocean labels -->
+      <text x="195" y="220" fill="#0e2030" font-size="11" text-anchor="middle" font-style="italic">Đại Tây Dương</text>
+      <text x="90" y="290" fill="#0e2030" font-size="9" text-anchor="middle" font-style="italic">Nam TBD</text>
+      <text x="500" y="300" fill="#0e2030" font-size="11" text-anchor="middle" font-style="italic">Ấn Độ Dương</text>
+
+      <!-- ========== CIVILIZATION DOTS ========== -->
+
+      <!-- 1. AI CẬP - Egypt (~295,150) -->
+      <g class="civ-dot" id="dot-aicap" onclick="selectCiv('aicap')" transform="translate(295,148)">
+        <circle r="18" fill="#f59e0b" opacity="0.12" class="pulse-ring"/>
+        <circle r="11" fill="#f59e0b" opacity="0.2" class="pulse-ring" style="animation-delay:0.5s"/>
+        <circle r="7" fill="#f59e0b" class="dot-inner" stroke="#fcd34d" stroke-width="2"/>
+        <text x="0" y="-22" text-anchor="middle" fill="#fcd34d" font-size="10" font-weight="700">Ai Cập</text>
+        <text x="0" y="-12" text-anchor="middle" fill="#fbbf24" font-size="8">Cổ Đại</text>
+      </g>
+
+      <!-- 2. LƯỠNG HÀ - Mesopotamia (~385,128) -->
+      <g class="civ-dot" id="dot-luongha" onclick="selectCiv('luongha')" transform="translate(393,130)">
+        <circle r="18" fill="#ef4444" opacity="0.12" class="pulse-ring"/>
+        <circle r="11" fill="#ef4444" opacity="0.2" class="pulse-ring" style="animation-delay:0.5s"/>
+        <circle r="7" fill="#ef4444" class="dot-inner" stroke="#fca5a5" stroke-width="2"/>
+        <text x="0" y="-22" text-anchor="middle" fill="#fca5a5" font-size="10" font-weight="700">Lưỡng Hà</text>
+        <text x="0" y="-12" text-anchor="middle" fill="#f87171" font-size="8">(Mesopotamia)</text>
+      </g>
+
+      <!-- 3. ẤN ĐỘ - India (~492,185) -->
+      <g class="civ-dot" id="dot-andocoda" onclick="selectCiv('andocoda')" transform="translate(492,188)">
+        <circle r="18" fill="#8b5cf6" opacity="0.12" class="pulse-ring"/>
+        <circle r="11" fill="#8b5cf6" opacity="0.2" class="pulse-ring" style="animation-delay:0.5s"/>
+        <circle r="7" fill="#8b5cf6" class="dot-inner" stroke="#c4b5fd" stroke-width="2"/>
+        <text x="0" y="-22" text-anchor="middle" fill="#c4b5fd" font-size="10" font-weight="700">Ấn Độ</text>
+        <text x="0" y="-12" text-anchor="middle" fill="#a78bfa" font-size="8">Cổ Đại</text>
+      </g>
+
+      <!-- 4. TRUNG QUỐC - China (~600,90) -->
+      <g class="civ-dot" id="dot-trungquoc" onclick="selectCiv('trungquoc')" transform="translate(598,92)">
+        <circle r="18" fill="#f97316" opacity="0.12" class="pulse-ring"/>
+        <circle r="11" fill="#f97316" opacity="0.2" class="pulse-ring" style="animation-delay:0.5s"/>
+        <circle r="7" fill="#f97316" class="dot-inner" stroke="#fdba74" stroke-width="2"/>
+        <text x="0" y="-22" text-anchor="middle" fill="#fdba74" font-size="10" font-weight="700">Trung Quốc</text>
+        <text x="0" y="-12" text-anchor="middle" fill="#fb923c" font-size="8">Cổ Đại</text>
+      </g>
+
+      <!-- 5. HY LẠP - Greece (~335,115) -->
+      <g class="civ-dot" id="dot-hylap" onclick="selectCiv('hylap')" transform="translate(338,118)">
+        <circle r="18" fill="#06b6d4" opacity="0.12" class="pulse-ring"/>
+        <circle r="11" fill="#06b6d4" opacity="0.2" class="pulse-ring" style="animation-delay:0.5s"/>
+        <circle r="7" fill="#06b6d4" class="dot-inner" stroke="#67e8f9" stroke-width="2"/>
+        <text x="-28" y="8" text-anchor="middle" fill="#67e8f9" font-size="10" font-weight="700">Hy Lạp</text>
+        <text x="-28" y="18" text-anchor="middle" fill="#22d3ee" font-size="8">Cổ Đại</text>
+      </g>
+
+      <!-- 6. LA MÃ - Rome (~308,118) -->
+      <g class="civ-dot" id="dot-lama" onclick="selectCiv('lama')" transform="translate(310,108)">
+        <circle r="18" fill="#10b981" opacity="0.12" class="pulse-ring"/>
+        <circle r="11" fill="#10b981" opacity="0.2" class="pulse-ring" style="animation-delay:0.5s"/>
+        <circle r="7" fill="#10b981" class="dot-inner" stroke="#6ee7b7" stroke-width="2"/>
+        <text x="0" y="24" text-anchor="middle" fill="#6ee7b7" font-size="10" font-weight="700">La Mã</text>
+        <text x="0" y="34" text-anchor="middle" fill="#34d399" font-size="8">Cổ Đại</text>
+      </g>
+
+      <!-- Compass -->
+      <g transform="translate(660,340)">
+        <circle r="14" fill="#0d1b2a" stroke="#334155" stroke-width="1"/>
+        <text x="0" y="-5" text-anchor="middle" fill="#94a3b8" font-size="8" font-weight="700">N</text>
+        <line x1="0" y1="-10" x2="0" y2="-3" stroke="#f59e0b" stroke-width="1.5"/>
+        <line x1="0" y1="3" x2="0" y2="10" stroke="#64748b" stroke-width="1"/>
+      </g>
+
+      <!-- Scale bar -->
+      <g transform="translate(15,365)">
+        <rect width="60" height="3" fill="#334155" rx="1"/>
+        <text x="0" y="-3" fill="#475569" font-size="8">0</text>
+        <text x="55" y="-3" fill="#475569" font-size="8">5000km</text>
+      </g>
+    </svg>
+
+    <!-- INFO PANEL -->
+    <div id="info-panel">
+      <h3 id="info-name">—</h3>
+      <div class="meta" id="info-meta">—</div>
+      <div class="info-grid">
+        <div class="info-card">
+          <h4>📍 Vị trí địa lý</h4>
+          <p id="info-location">—</p>
+        </div>
+        <div class="info-card">
+          <h4>🌊 Sông ngòi</h4>
+          <p id="info-river">—</p>
+        </div>
+        <div class="info-card" style="grid-column: span 2;">
+          <h4>⭐ Thành tựu nổi bật</h4>
+          <ul id="info-achievements">—</ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 2: TIMELINE -->
+<div id="tab-timeline" class="tab-content">
+  <div class="panel">
+    <div class="section-title">Nhấp vào thanh màu để xem thông tin chi tiết</div>
+    <div class="timeline-scroll">
+      <svg id="timeline-svg" width="1400" height="340" xmlns="http://www.w3.org/2000/svg">
+        <rect width="1400" height="340" fill="#0d1b2a"/>
+
+        <!-- Will be drawn by JS -->
+      </svg>
+    </div>
+    <div id="info-panel-timeline" style="display:none;" class="panel" style="margin-top:14px;">
+      <h3 id="tl-info-name" style="font-size:1.3rem; font-weight:800; margin-bottom:4px;">—</h3>
+      <div id="tl-info-meta" style="color:#94a3b8; margin-bottom:14px; font-size:0.9rem;">—</div>
+      <div class="info-grid">
+        <div class="info-card">
+          <h4>📍 Vị trí</h4>
+          <p id="tl-info-location">—</p>
+        </div>
+        <div class="info-card">
+          <h4>🌊 Sông ngòi</h4>
+          <p id="tl-info-river">—</p>
+        </div>
+        <div class="info-card" style="grid-column: span 2;">
+          <h4>⭐ Thành tựu nổi bật</h4>
+          <ul id="tl-info-achievements">—</ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COMPARISON TABLE -->
+<div class="panel">
+  <div class="section-title">📊 Bảng So Sánh Các Nền Văn Minh</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Tên</th>
+          <th>Thời gian</th>
+          <th>Sông</th>
+          <th>Chữ viết</th>
+          <th>Di sản nổi tiếng</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="dot-badge" style="background:#f59e0b"></span>Ai Cập Cổ Đại</td>
+          <td>3100 – 30 TCN</td>
+          <td>Sông Nile</td>
+          <td>Chữ tượng hình (Hieroglyphics)</td>
+          <td>Kim tự tháp Giza, Sphinx</td>
+        </tr>
+        <tr>
+          <td><span class="dot-badge" style="background:#ef4444"></span>Lưỡng Hà (Mesopotamia)</td>
+          <td>3500 – 539 TCN</td>
+          <td>Tigris & Euphrates</td>
+          <td>Chữ hình nêm (Cuneiform)</td>
+          <td>Bộ luật Hammurabi, Ziggurat</td>
+        </tr>
+        <tr>
+          <td><span class="dot-badge" style="background:#8b5cf6"></span>Ấn Độ Cổ Đại</td>
+          <td>2500 – 550 TCN</td>
+          <td>Sông Ấn & sông Hằng</td>
+          <td>Chữ Brahmi</td>
+          <td>Phật giáo, Chữ số 0</td>
+        </tr>
+        <tr>
+          <td><span class="dot-badge" style="background:#f97316"></span>Trung Quốc Cổ Đại</td>
+          <td>2100 – 221 TCN</td>
+          <td>Hoàng Hà & Dương Tử</td>
+          <td>Chữ Hán</td>
+          <td>Vạn Lý Trường Thành, Nho giáo</td>
+        </tr>
+        <tr>
+          <td><span class="dot-badge" style="background:#06b6d4"></span>Hy Lạp Cổ Đại</td>
+          <td>800 – 146 TCN</td>
+          <td>Biển Địa Trung Hải</td>
+          <td>Chữ Hy Lạp (Greek alphabet)</td>
+          <td>Triết học, Olympic, Dân chủ Athens</td>
+        </tr>
+        <tr>
+          <td><span class="dot-badge" style="background:#10b981"></span>La Mã Cổ Đại</td>
+          <td>753 TCN – 476 SCN</td>
+          <td>Biển Địa Trung Hải</td>
+          <td>Chữ Latin</td>
+          <td>Colosseum, Luật La Mã, Đường sá</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ==================== DATA ====================
+const civData = {
+  aicap: {
+    name: 'Ai Cập Cổ Đại',
+    color: '#f59e0b',
+    time: '3100 TCN – 30 TCN',
+    location: 'Đông Bắc Châu Phi, dọc theo thung lũng sông Nile',
+    river: 'Sông Nile — nguồn sống của nền văn minh',
+    achievements: [
+      'Kim tự tháp Khufu (Giza) — kỳ quan thế giới cổ đại',
+      'Chữ tượng hình Hieroglyphics',
+      'Thuật ướp xác (mummification)',
+      'Lịch 365 ngày đầu tiên',
+      'Giấy papyrus — nền tảng viết lách'
+    ]
+  },
+  luongha: {
+    name: 'Lưỡng Hà (Mesopotamia)',
+    color: '#ef4444',
+    time: '3500 TCN – 539 TCN',
+    location: 'Vùng đất giữa hai sông (Iraq ngày nay)',
+    river: 'Sông Tigris & sông Euphrates',
+    achievements: [
+      'Bộ luật Hammurabi — bộ luật thành văn đầu tiên',
+      'Chữ hình nêm (Cuneiform) — chữ viết sớm nhất',
+      'Kiến trúc Ziggurat — đền thờ bậc thang',
+      'Phát minh bánh xe',
+      'Toán học hệ đếm 60 (giờ, phút, giây)'
+    ]
+  },
+  andocoda: {
+    name: 'Ấn Độ Cổ Đại',
+    color: '#8b5cf6',
+    time: '2500 TCN – 550 TCN',
+    location: 'Tiểu lục địa Nam Á (Ấn Độ, Pakistan ngày nay)',
+    river: 'Sông Ấn (Indus) & sông Hằng (Ganges)',
+    achievements: [
+      'Phát minh chữ số 0 và hệ thập phân',
+      'Phật giáo & Hindu giáo — hai tôn giáo lớn',
+      'Sử thi Mahabharata & Ramayana',
+      'Y học Ayurveda cổ đại',
+      'Thành phố quy hoạch Mohenjo-daro, Harappa'
+    ]
+  },
+  trungquoc: {
+    name: 'Trung Quốc Cổ Đại',
+    color: '#f97316',
+    time: '2100 TCN – 221 TCN',
+    location: 'Đông Á (Trung Quốc ngày nay)',
+    river: 'Sông Hoàng Hà & sông Dương Tử',
+    achievements: [
+      'Chữ Hán — hệ thống chữ viết lâu đời',
+      'Lụa & đồ sứ — hàng hóa độc quyền',
+      'Phát minh giấy & kỹ thuật in ấn',
+      'Vạn Lý Trường Thành',
+      'Nho giáo (Khổng Tử) — triết học ảnh hưởng châu Á'
+    ]
+  },
+  hylap: {
+    name: 'Hy Lạp Cổ Đại',
+    color: '#06b6d4',
+    time: '800 TCN – 146 TCN',
+    location: 'Bán đảo Balkan, Địa Trung Hải (Hy Lạp ngày nay)',
+    river: 'Biển Địa Trung Hải — trung tâm thương mại',
+    achievements: [
+      'Triết học: Socrates, Plato, Aristotle',
+      'Thế vận hội Olympic đầu tiên (776 TCN)',
+      'Nền dân chủ Athens — mô hình chính trị',
+      'Toán học: Euclid, Pythagoras',
+      'Văn học sử thi: Iliad & Odyssey (Homer)'
+    ]
+  },
+  lama: {
+    name: 'La Mã Cổ Đại',
+    color: '#10b981',
+    time: '753 TCN – 476 SCN',
+    location: 'Bán đảo Italy, đế chế trải khắp Địa Trung Hải',
+    river: 'Biển Địa Trung Hải, sông Tiber',
+    achievements: [
+      'Hệ thống luật pháp La Mã (nền tảng luật hiện đại)',
+      'Đường sá và cầu cống — "Mọi con đường đều dẫn đến La Mã"',
+      'Đấu trường Colosseum',
+      'Ngôn ngữ Latin — gốc của các ngôn ngữ Romance',
+      'Kiến trúc vòm & mái vòm (dome)'
+    ]
+  }
+};
+
+// ==================== MAP INTERACTION ====================
+let selectedCiv = null;
+
+function selectCiv(key) {
+  // Remove selected state from all
+  document.querySelectorAll('.civ-dot').forEach(el => el.classList.remove('selected'));
+
+  selectedCiv = key;
+  const dot = document.getElementById('dot-' + key);
+  if (dot) dot.classList.add('selected');
+
+  const data = civData[key];
+  const panel = document.getElementById('info-panel');
+  panel.classList.add('visible');
+
+  const nameEl = document.getElementById('info-name');
+  nameEl.textContent = data.name;
+  nameEl.style.color = data.color;
+
+  document.getElementById('info-meta').textContent = '⏱ ' + data.time;
+  document.getElementById('info-location').textContent = data.location;
+  document.getElementById('info-river').textContent = data.river;
+
+  const ul = document.getElementById('info-achievements');
+  ul.innerHTML = data.achievements.map(a => `<li>${a}</li>`).join('');
+
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ==================== TABS ====================
+function switchTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  event.target.classList.add('active');
+  if (tab === 'timeline') buildTimeline();
+}
+
+// ==================== TIMELINE ====================
+let timelineBuilt = false;
+
+function buildTimeline() {
+  if (timelineBuilt) return;
+  timelineBuilt = true;
+
+  const svg = document.getElementById('timeline-svg');
+  const W = 1400, H = 340;
+  const LEFT = 80, RIGHT = W - 40;
+  const DRAW_W = RIGHT - LEFT;
+  const YEAR_START = -4000, YEAR_END = 500;
+  const YEAR_SPAN = YEAR_END - YEAR_START;
+  const AXIS_Y = 200;
+
+  function xOf(year) {
+    return LEFT + ((year - YEAR_START) / YEAR_SPAN) * DRAW_W;
+  }
+
+  // Year ticks & labels
+  for (let y = -4000; y <= 500; y += 500) {
+    const x = xOf(y);
+    const label = y < 0 ? Math.abs(y) + ' TCN' : (y === 0 ? '0' : y + ' SCN');
+    svg.innerHTML += `<line x1="${x}" y1="${AXIS_Y - 8}" x2="${x}" y2="${AXIS_Y + 8}" stroke="#334155" stroke-width="1"/>`;
+    svg.innerHTML += `<text x="${x}" y="${AXIS_Y + 22}" text-anchor="middle" class="year-label">${label}</text>`;
+    // Minor ticks every 100 years
+    for (let dy = 100; dy < 500; dy += 100) {
+      if (y + dy <= 500) {
+        const mx = xOf(y + dy);
+        svg.innerHTML += `<line x1="${mx}" y1="${AXIS_Y - 3}" x2="${mx}" y2="${AXIS_Y + 3}" stroke="#253040" stroke-width="1"/>`;
+      }
+    }
+  }
+
+  // Axis line
+  svg.innerHTML += `<line x1="${LEFT}" y1="${AXIS_Y}" x2="${RIGHT}" y2="${AXIS_Y}" stroke="#334155" stroke-width="2"/>`;
+
+  // Civilizations: define rows above axis
+  const civTimeline = [
+    { key: 'luongha',  start: -3500, end: -539,  row: 0 },
+    { key: 'aicap',   start: -3100, end: -30,   row: 1 },
+    { key: 'andocoda',start: -2500, end: -550,  row: 2 },
+    { key: 'trungquoc',start: -2100, end: -221, row: 3 },
+    { key: 'hylap',   start: -800,  end: -146,  row: 4 },
+    { key: 'lama',    start: -753,  end: 476,   row: 5 },
+  ];
+
+  const BAR_H = 28;
+  const ROW_SPACING = 34;
+  const BASE_Y = AXIS_Y - 45;
+
+  civTimeline.forEach(civ => {
+    const data = civData[civ.key];
+    const x1 = xOf(civ.start);
+    const x2 = xOf(civ.end);
+    const barW = x2 - x1;
+    const y = BASE_Y - civ.row * ROW_SPACING;
+
+    // Bar
+    svg.innerHTML += `
+      <rect id="tl-bar-${civ.key}" x="${x1}" y="${y - BAR_H/2}" width="${barW}" height="${BAR_H}"
+        rx="6" fill="${data.color}" opacity="0.85" cursor="pointer"
+        onclick="selectCivTimeline('${civ.key}')"
+        style="transition: opacity 0.2s;"
+        onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.85'"/>
+      <text x="${x1 + Math.min(barW/2, 80)}" y="${y + 4}" class="bar-label" text-anchor="middle"
+        style="pointer-events:none; font-size:11px; fill:#fff; font-weight:700;">${data.name}</text>
+    `;
+
+    // Start line to axis
+    svg.innerHTML += `<line x1="${x1}" y1="${y + BAR_H/2}" x2="${x1}" y2="${AXIS_Y}" stroke="${data.color}" stroke-width="1" stroke-dasharray="3,3" opacity="0.3"/>`;
+  });
+
+  // KEY EVENTS
+  const events = [
+    { year: -3100, label: 'Ai Cập\nthống nhất' },
+    { year: -2560, label: 'Kim tự tháp\nGiza' },
+    { year: -1754, label: 'Luật\nHammurabi' },
+    { year: -563,  label: 'Đức Phật\nra đời' },
+    { year: -551,  label: 'Khổng Tử\nra đời' },
+    { year: -469,  label: 'Socrates\nra đời' },
+    { year: -221,  label: 'Tần Thủy\nHoàng TQ' },
+    { year: -44,   label: 'Caesar\nbị ám sát' },
+    { year: 476,   label: 'La Mã\nsụp đổ' },
+  ];
+
+  events.forEach(ev => {
+    const x = xOf(ev.year);
+    const lines = ev.label.split('\n');
+    svg.innerHTML += `<line x1="${x}" y1="${AXIS_Y + 28}" x2="${x}" y2="${AXIS_Y + 50}" stroke="#f59e0b" stroke-width="1.5" opacity="0.7"/>`;
+    svg.innerHTML += `<polygon points="${x},${AXIS_Y + 28} ${x-4},${AXIS_Y + 35} ${x+4},${AXIS_Y + 35}" fill="#f59e0b" opacity="0.7"/>`;
+    lines.forEach((line, i) => {
+      svg.innerHTML += `<text x="${x}" y="${AXIS_Y + 58 + i * 11}" text-anchor="middle" class="event-label">${line}</text>`;
+    });
+  });
+
+  // Row labels (left side)
+  civTimeline.forEach(civ => {
+    const data = civData[civ.key];
+    const y = BASE_Y - civ.row * ROW_SPACING;
+    svg.innerHTML += `<circle cx="12" cy="${y}" r="5" fill="${data.color}"/>`;
+  });
+
+  // Title
+  svg.innerHTML += `<text x="${LEFT}" y="18" fill="#475569" font-size="10" font-weight="700">NĂM</text>`;
+}
+
+function selectCivTimeline(key) {
+  // Dim all bars
+  document.querySelectorAll('[id^="tl-bar-"]').forEach(el => {
+    el.style.opacity = '0.4';
+  });
+  const bar = document.getElementById('tl-bar-' + key);
+  if (bar) { bar.style.opacity = '1'; bar.setAttribute('stroke', '#fff'); bar.setAttribute('stroke-width', '2'); }
+
+  const data = civData[key];
+  const panel = document.getElementById('info-panel-timeline');
+  panel.style.display = 'block';
+
+  const nameEl = document.getElementById('tl-info-name');
+  nameEl.textContent = data.name;
+  nameEl.style.color = data.color;
+  document.getElementById('tl-info-meta').textContent = '⏱ ' + data.time;
+  document.getElementById('tl-info-location').textContent = data.location;
+  document.getElementById('tl-info-river').textContent = data.river;
+
+  const ul = document.getElementById('tl-info-achievements');
+  ul.innerHTML = data.achievements.map(a => `<li>${a}</li>`).join('');
+
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+</script>
+</body>
+</html>

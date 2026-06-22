@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Đua Thuyền Toán Học</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:#0a1628;color:#fff;font-family:'Segoe UI',Arial,sans-serif;overflow:hidden;height:100vh;display:flex;flex-direction:column;}
+#startScreen{position:fixed;inset:0;background:linear-gradient(180deg,#0a1628 0%,#0d2240 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;padding:20px;}
+#startScreen h1{font-size:clamp(22px,5vw,36px);text-align:center;color:#ffd700;text-shadow:0 0 20px rgba(255,215,0,0.5);margin-bottom:8px;letter-spacing:2px;}
+#startScreen p{color:#88aacc;font-size:14px;margin-bottom:24px;text-align:center;}
+.topicGrid{display:flex;flex-direction:column;gap:12px;width:100%;max-width:400px;margin-bottom:24px;}
+.topicCard{background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.15);border-radius:14px;padding:16px 20px;cursor:pointer;transition:all 0.2s;text-align:left;}
+.topicCard:hover,.topicCard.selected{background:rgba(100,180,255,0.2);border-color:#4da6ff;}
+.topicCard h3{font-size:15px;color:#ffd700;margin-bottom:4px;}
+.topicCard p{font-size:12px;color:#88aacc;}
+#startBtn{background:#ffd700;color:#0a1628;border:none;border-radius:12px;padding:14px 48px;font-size:18px;font-weight:700;cursor:pointer;letter-spacing:1px;}
+#startBtn:disabled{opacity:0.4;cursor:not-allowed;}
+#winScreen{position:fixed;inset:0;background:rgba(10,22,40,0.95);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:200;padding:20px;}
+#winScreen h2{font-size:clamp(24px,6vw,48px);text-align:center;color:#ffd700;margin-bottom:16px;}
+#winScreen p{font-size:16px;color:#88aacc;margin-bottom:8px;text-align:center;}
+#restartBtn{background:#ffd700;color:#0a1628;border:none;border-radius:12px;padding:14px 48px;font-size:18px;font-weight:700;cursor:pointer;margin-top:20px;}
+canvas{display:block;flex-shrink:0;}
+#questionArea{background:#0d2240;padding:10px 12px 6px;flex-shrink:0;}
+#questionText{font-size:clamp(15px,3.5vw,18px);text-align:center;margin-bottom:8px;min-height:44px;line-height:1.4;color:#e8f4ff;}
+#qCounter{font-size:12px;color:#4da6ff;text-align:center;margin-bottom:6px;}
+#choicesGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.choiceBtn{border:none;border-radius:10px;padding:0 10px;font-size:clamp(14px,3vw,17px);font-weight:600;cursor:pointer;min-height:58px;transition:transform 0.1s,opacity 0.2s;color:#fff;line-height:1.3;}
+.choiceBtn:active{transform:scale(0.96);}
+.choiceBtn.btnA{background:#c0392b;}
+.choiceBtn.btnB{background:#1a6fa8;}
+.choiceBtn.btnC{background:#1e8449;}
+.choiceBtn.btnD{background:#b7770d;}
+.choiceBtn:disabled{opacity:0.5;cursor:not-allowed;}
+.choiceBtn.flash-correct{animation:flashGreen 0.4s;}
+.choiceBtn.flash-wrong{animation:flashRed 0.4s;}
+@keyframes flashGreen{0%,100%{filter:none;}50%{filter:brightness(2) saturate(0.5);}}
+@keyframes flashRed{0%,100%{filter:none;}25%,75%{filter:brightness(2) hue-rotate(180deg);}}
+</style>
+</head>
+<body>
+
+<div id="startScreen">
+  <h1>⛵ ĐUA THUYỀN TOÁN HỌC</h1>
+  <p>Chọn chủ đề để bắt đầu cuộc đua!</p>
+  <div class="topicGrid">
+    <div class="topicCard" onclick="selectTopic(0)">
+      <h3>📐 Phân số (Lớp 6–7)</h3>
+      <p>Cộng, trừ, nhân, chia và so sánh phân số</p>
+    </div>
+    <div class="topicCard" onclick="selectTopic(1)">
+      <h3>📊 Tỉ số & Phần trăm (Lớp 7)</h3>
+      <p>Tính phần trăm, tỉ số, tăng giảm phần trăm</p>
+    </div>
+    <div class="topicCard" onclick="selectTopic(2)">
+      <h3>🔢 Phương trình (Lớp 8–9)</h3>
+      <p>Giải phương trình bậc nhất một ẩn</p>
+    </div>
+  </div>
+  <button id="startBtn" onclick="startGame()" disabled>XUẤT PHÁT!</button>
+</div>
+
+<div id="winScreen">
+  <h2 id="winTitle"></h2>
+  <p id="winStats"></p>
+  <button id="restartBtn" onclick="returnToStart()">CHƠI LẠI</button>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+<div id="questionArea">
+  <div id="qCounter">Câu 1 / 15</div>
+  <div id="questionText">Đang tải câu hỏi...</div>
+  <div id="choicesGrid">
+    <button class="choiceBtn btnA" onclick="answer(0)">A. ...</button>
+    <button class="choiceBtn btnB" onclick="answer(1)">B. ...</button>
+    <button class="choiceBtn btnC" onclick="answer(2)">C. ...</button>
+    <button class="choiceBtn btnD" onclick="answer(3)">D. ...</button>
+  </div>
+</div>
+
+<script>
+function fracHTML(num, den) {
+  return `<span style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.2;margin:0 3px;font-size:0.88em"><span style="border-bottom:2px solid currentColor;padding:0 2px">${num}</span><span style="padding:0 2px">${den}</span></span>`;
+}
+
+const TOPICS = [
+  {
+    name: "Phân số",
+    questions: [
+      {q:()=>fracHTML(1,3)+' + '+fracHTML(1,4)+' = ?', choices:[()=>fracHTML(7,12),()=>fracHTML(2,7),()=>fracHTML(1,6),()=>fracHTML(5,12)], ans:0},
+      {q:()=>fracHTML(3,4)+' − '+fracHTML(1,3)+' = ?', choices:[()=>fracHTML(5,12),()=>fracHTML(1,2),()=>fracHTML(7,12),()=>fracHTML(2,3)], ans:0},
+      {q:()=>fracHTML(2,3)+' × '+fracHTML(3,5)+' = ?', choices:[()=>fracHTML(2,5),()=>fracHTML(6,8),()=>fracHTML(1,2),()=>fracHTML(3,5)], ans:0},
+      {q:()=>fracHTML(3,4)+' ÷ '+fracHTML(1,2)+' = ?', choices:[()=>fracHTML(3,2),()=>fracHTML(1,2),()=>fracHTML(3,8),()=>fracHTML(6,4)], ans:0},
+      {q:()=>'Phân số nào lớn nhất?', choices:[()=>fracHTML(5,6),()=>fracHTML(3,4),()=>fracHTML(7,8),()=>fracHTML(2,3)], ans:2},
+      {q:()=>fracHTML(1,2)+' + '+fracHTML(2,5)+' = ?', choices:[()=>fracHTML(9,10),()=>fracHTML(3,7),()=>fracHTML(1,5),()=>fracHTML(3,10)], ans:0},
+      {q:()=>fracHTML(5,6)+' − '+fracHTML(1,4)+' = ?', choices:[()=>fracHTML(7,12),()=>fracHTML(1,2),()=>fracHTML(2,3),()=>fracHTML(4,6)], ans:0},
+      {q:()=>fracHTML(3,8)+' × '+fracHTML(4,9)+' = ?', choices:[()=>fracHTML(1,6),()=>fracHTML(12,72),()=>fracHTML(4,12),()=>fracHTML(1,3)], ans:0},
+      {q:()=>fracHTML(5,6)+' ÷ '+fracHTML(5,3)+' = ?', choices:[()=>fracHTML(1,2),()=>fracHTML(25,18),()=>fracHTML(1,3),()=>fracHTML(5,9)], ans:0},
+      {q:()=>'Phân số nào nhỏ nhất?', choices:[()=>fracHTML(2,3),()=>fracHTML(3,5),()=>fracHTML(4,7),()=>fracHTML(5,9)], ans:3},
+      {q:()=>fracHTML(2,7)+' + '+fracHTML(3,14)+' = ?', choices:[()=>fracHTML(7,14),()=>fracHTML(5,14),()=>fracHTML(1,2),()=>fracHTML(1,7)], ans:0},
+      {q:()=>fracHTML(3,5)+' − '+fracHTML(1,10)+' = ?', choices:[()=>fracHTML(1,2),()=>fracHTML(2,5),()=>fracHTML(4,10),()=>fracHTML(7,10)], ans:0},
+      {q:()=>fracHTML(4,5)+' × '+fracHTML(5,8)+' = ?', choices:[()=>fracHTML(1,2),()=>fracHTML(20,40),()=>fracHTML(4,8),()=>fracHTML(1,4)], ans:0},
+      {q:()=>fracHTML(2,3)+' ÷ '+fracHTML(4,9)+' = ?', choices:[()=>fracHTML(3,2),()=>fracHTML(8,27),()=>fracHTML(6,12),()=>fracHTML(1,2)], ans:0},
+      {q:()=>fracHTML(1,4)+' + '+fracHTML(3,8)+' = ?', choices:[()=>fracHTML(5,8),()=>fracHTML(4,12),()=>fracHTML(1,2),()=>fracHTML(4,8)], ans:0},
+    ]
+  },
+  {
+    name: "Tỉ số & Phần trăm",
+    questions: [
+      {q:()=>'30% của 120 = ?', choices:[()=>'36',()=>'30',()=>'40',()=>'24'], ans:0},
+      {q:()=>'Tỉ số của 15 và 25 là?', choices:[()=>fracHTML(3,5),()=>fracHTML(5,3),()=>fracHTML(15,100),()=>fracHTML(2,3)], ans:0},
+      {q:()=>'Tăng 20% từ 50 = ?', choices:[()=>'60',()=>'55',()=>'70',()=>'65'], ans:0},
+      {q:()=>'25% của 200 = ?', choices:[()=>'50',()=>'40',()=>'60',()=>'25'], ans:0},
+      {q:()=>'Giảm 10% từ 90 = ?', choices:[()=>'81',()=>'80',()=>'85',()=>'79'], ans:0},
+      {q:()=>'Tỉ số của 8 và 12 là?', choices:[()=>fracHTML(2,3),()=>fracHTML(3,4),()=>fracHTML(1,2),()=>fracHTML(4,6)], ans:0},
+      {q:()=>'40% của 150 = ?', choices:[()=>'60',()=>'50',()=>'70',()=>'45'], ans:0},
+      {q:()=>'Tăng 15% từ 80 = ?', choices:[()=>'92',()=>'88',()=>'96',()=>'84'], ans:0},
+      {q:()=>'75% của 48 = ?', choices:[()=>'36',()=>'40',()=>'32',()=>'44'], ans:0},
+      {q:()=>'Giảm 25% từ 120 = ?', choices:[()=>'90',()=>'100',()=>'80',()=>'95'], ans:0},
+      {q:()=>'Tỉ số của 21 và 35 là?', choices:[()=>fracHTML(3,5),()=>fracHTML(5,7),()=>fracHTML(7,10),()=>fracHTML(2,3)], ans:0},
+      {q:()=>'50% của 76 = ?', choices:[()=>'38',()=>'40',()=>'36',()=>'42'], ans:0},
+      {q:()=>'Tăng 50% từ 60 = ?', choices:[()=>'90',()=>'80',()=>'100',()=>'70'], ans:0},
+      {q:()=>'60% của 90 = ?', choices:[()=>'54',()=>'60',()=>'48',()=>'56'], ans:0},
+      {q:()=>'Giảm 20% từ 85 = ?', choices:[()=>'68',()=>'70',()=>'65',()=>'72'], ans:0},
+    ]
+  },
+  {
+    name: "Phương trình",
+    questions: [
+      {q:()=>'2x + 3 = 11, x = ?', choices:[()=>'4',()=>'3',()=>'5',()=>'6'], ans:0},
+      {q:()=>fracHTML('x','3')+' − 1 = 2, x = ?', choices:[()=>'9',()=>'6',()=>'12',()=>'3'], ans:0},
+      {q:()=>'3x − 5 = 10, x = ?', choices:[()=>'5',()=>'4',()=>'6',()=>'7'], ans:0},
+      {q:()=>'x + 7 = 15, x = ?', choices:[()=>'8',()=>'7',()=>'9',()=>'6'], ans:0},
+      {q:()=>'4x = 28, x = ?', choices:[()=>'7',()=>'6',()=>'8',()=>'5'], ans:0},
+      {q:()=>'2x − 9 = 5, x = ?', choices:[()=>'7',()=>'6',()=>'8',()=>'9'], ans:0},
+      {q:()=>fracHTML('x','4')+' + 3 = 7, x = ?', choices:[()=>'16',()=>'12',()=>'20',()=>'8'], ans:0},
+      {q:()=>'5x + 2 = 27, x = ?', choices:[()=>'5',()=>'4',()=>'6',()=>'3'], ans:0},
+      {q:()=>'3x + 1 = 19, x = ?', choices:[()=>'6',()=>'5',()=>'7',()=>'8'], ans:0},
+      {q:()=>'x − 8 = 14, x = ?', choices:[()=>'22',()=>'20',()=>'24',()=>'18'], ans:0},
+      {q:()=>fracHTML('2x','3')+' = 8, x = ?', choices:[()=>'12',()=>'10',()=>'14',()=>'8'], ans:0},
+      {q:()=>'6x − 4 = 26, x = ?', choices:[()=>'5',()=>'4',()=>'6',()=>'7'], ans:0},
+      {q:()=>fracHTML('x','5')+' + 2 = 6, x = ?', choices:[()=>'20',()=>'15',()=>'25',()=>'10'], ans:0},
+      {q:()=>'4x + 3 = 19, x = ?', choices:[()=>'4',()=>'3',()=>'5',()=>'6'], ans:0},
+      {q:()=>'7x − 7 = 42, x = ?', choices:[()=>'7',()=>'6',()=>'8',()=>'5'], ans:0},
+    ]
+  }
+];
+
+const BOAT_COLORS = ['#e74c3c','#2980b9','#27ae60','#f39c12'];
+const BOAT_NAMES = ['A','B','C','D'];
+const BOAT_DARK = ['#922b21','#1a5276','#1e8449','#9a7d0a'];
+
+let selectedTopic = -1;
+let currentQ = 0;
+let questions = [];
+let boatProgress = [0,0,0,0];
+let boatSpeed = [0.2,0.2,0.2,0.2];
+let boatBurst = [0,0,0,0];
+let boatRock = [0,0,0,0];
+let boatRockTime = [0,0,0,0];
+let animFrame = null;
+let gameActive = false;
+let waveOffset = 0;
+let windParticles = [];
+let canAnswered = true;
+let canvasW, canvasH;
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+function selectTopic(i){
+  selectedTopic = i;
+  document.querySelectorAll('.topicCard').forEach((c,idx)=>{
+    c.classList.toggle('selected', idx===i);
+  });
+  document.getElementById('startBtn').disabled = false;
+}
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function startGame(){
+  document.getElementById('startScreen').style.display='none';
+  questions = shuffle([...TOPICS[selectedTopic].questions]).slice(0,15);
+  currentQ=0;
+  boatProgress=[0,0,0,0];
+  boatSpeed=[0.2,0.2,0.2,0.2];
+  boatBurst=[0,0,0,0];
+  boatRock=[0,0,0,0];
+  boatRockTime=[0,0,0,0];
+  gameActive=true;
+  canAnswered=true;
+  setupWindParticles();
+  resizeCanvas();
+  showQuestion();
+  if(animFrame) cancelAnimationFrame(animFrame);
+  gameLoop();
+}
+
+function returnToStart(){
+  document.getElementById('winScreen').style.display='none';
+  document.getElementById('startScreen').style.display='flex';
+  gameActive=false;
+  if(animFrame) cancelAnimationFrame(animFrame);
+}
+
+function resizeCanvas(){
+  const qa = document.getElementById('questionArea');
+  const qaH = qa.offsetHeight;
+  canvasW = window.innerWidth;
+  canvasH = window.innerHeight - qaH;
+  canvas.width = canvasW;
+  canvas.height = canvasH;
+}
+
+window.addEventListener('resize', ()=>{
+  if(gameActive) resizeCanvas();
+});
+
+function setupWindParticles(){
+  windParticles = [];
+  for(let i=0;i<40;i++){
+    windParticles.push({
+      x: Math.random()*2000,
+      y: Math.random()*600,
+      r: Math.random()*2+1,
+      speed: Math.random()*1.5+0.5,
+      alpha: Math.random()*0.4+0.1
+    });
+  }
+}
+
+function showQuestion(){
+  const q = questions[currentQ];
+  document.getElementById('qCounter').textContent = `Câu ${currentQ+1} / 15`;
+  document.getElementById('questionText').innerHTML = typeof q.q === 'function' ? q.q() : q.q;
+  const btns = document.querySelectorAll('.choiceBtn');
+  btns.forEach((b,i)=>{
+    const choiceVal = typeof q.choices[i] === 'function' ? q.choices[i]() : q.choices[i];
+    b.innerHTML = BOAT_NAMES[i]+'. '+choiceVal;
+    b.disabled = false;
+    b.className = b.className.replace(/flash-\w+/g,'').trim();
+  });
+  canAnswered = true;
+}
+
+function answer(idx){
+  if(!canAnswered) return;
+  canAnswered = false;
+  const q = questions[currentQ];
+  const btns = document.querySelectorAll('.choiceBtn');
+  btns.forEach(b=>b.disabled=true);
+
+  if(idx === q.ans){
+    btns[idx].classList.add('flash-correct');
+    boatBurst[idx] = 60;
+    boatProgress[idx] = Math.min(100, boatProgress[idx] + 8);
+  } else {
+    btns[idx].classList.add('flash-wrong');
+    boatRock[idx] = 1;
+    boatRockTime[idx] = 30;
+    btns[q.ans].classList.add('flash-correct');
+  }
+
+  setTimeout(()=>{
+    currentQ++;
+    if(currentQ >= 15){
+      endGame();
+    } else {
+      showQuestion();
+    }
+  }, 900);
+}
+
+function endGame(){
+  gameActive = false;
+  let best = 0;
+  for(let i=1;i<4;i++) if(boatProgress[i]>boatProgress[best]) best=i;
+  const colorNames = ['ĐỎ','XANH DƯƠNG','XANH LÁ','VÀNG'];
+  document.getElementById('winTitle').textContent = `🏆 THUYỀN ${colorNames[best]} THẮNG! 🏆`;
+  document.getElementById('winStats').innerHTML = BOAT_NAMES.map((n,i)=>
+    `Thuyền ${n}: ${boatProgress[i].toFixed(1)}%`
+  ).join(' &nbsp;|&nbsp; ');
+  document.getElementById('winScreen').style.display='flex';
+}
+
+function gameLoop(){
+  if(!gameActive){ animFrame=null; return; }
+  update();
+  draw();
+  animFrame = requestAnimationFrame(gameLoop);
+}
+
+let lastTs = 0;
+function update(){
+  waveOffset += 0.03;
+  for(let i=0;i<4;i++){
+    if(boatBurst[i]>0){
+      boatBurst[i]--;
+    }
+    if(boatRockTime[i]>0){
+      boatRockTime[i]--;
+      if(boatRockTime[i]<=0) boatRock[i]=0;
+    }
+    const drift = 0.2/60;
+    boatProgress[i] = Math.min(100, boatProgress[i] + drift);
+  }
+  for(let p of windParticles){
+    p.x += p.speed;
+    if(p.x > canvasW+10) p.x = -10;
+  }
+}
+
+function draw(){
+  ctx.clearRect(0,0,canvasW,canvasH);
+  drawRiver();
+  drawFinishLine();
+  drawWind();
+  drawBoats();
+  drawProgressBars();
+}
+
+function drawRiver(){
+  const laneH = canvasH / 4;
+  const riverColors = ['#0d3b6e','#0a2f5a','#0e3f75','#092a52'];
+  for(let i=0;i<4;i++){
+    ctx.fillStyle = riverColors[i%2];
+    ctx.fillRect(0, i*laneH, canvasW, laneH);
+    ctx.strokeStyle = 'rgba(100,180,255,0.15)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0,(i+1)*laneH);
+    ctx.lineTo(canvasW,(i+1)*laneH);
+    ctx.stroke();
+    drawWaves(i, laneH);
+  }
+}
+
+function drawWaves(lane, laneH){
+  const y0 = lane*laneH + laneH*0.7;
+  ctx.strokeStyle = 'rgba(150,210,255,0.18)';
+  ctx.lineWidth = 1.5;
+  for(let w=0;w<3;w++){
+    const yo = w*8;
+    ctx.beginPath();
+    for(let x=0;x<canvasW;x+=4){
+      const y = y0 + yo + Math.sin((x/40)+waveOffset+(lane*1.3)+(w*0.7))*4;
+      if(x===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+  }
+}
+
+function drawFinishLine(){
+  const x = canvasW * 0.92;
+  ctx.setLineDash([10,8]);
+  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x,0);
+  ctx.lineTo(x,canvasH);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(255,255,255,0.8)';
+  ctx.font='bold 11px Arial';
+  ctx.textAlign='center';
+  ctx.fillText('ĐÍCH',x,14);
+}
+
+function drawWind(){
+  for(let p of windParticles){
+    const lane = Math.floor(p.y % canvasH / (canvasH/4));
+    const ly = lane*(canvasH/4);
+    const py = ly + (p.y % (canvasH/4));
+    ctx.beginPath();
+    ctx.arc(p.x, py, p.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(200,235,255,${p.alpha})`;
+    ctx.fill();
+  }
+}
+
+function drawBoats(){
+  const laneH = canvasH / 4;
+  const trackW = canvasW * 0.85;
+  const startX = canvasW * 0.06;
+
+  for(let i=0;i<4;i++){
+    const pct = boatProgress[i]/100;
+    const bx = startX + trackW * pct;
+    const by = i*laneH + laneH*0.5;
+    let rockY = 0;
+    if(boatRock[i]){
+      rockY = Math.sin(boatRockTime[i]*0.8)*5;
+    }
+    const scale = boatBurst[i]>0 ? 1.05 : 1;
+    drawBoat(ctx, bx, by+rockY, scale, BOAT_COLORS[i], BOAT_DARK[i], BOAT_NAMES[i], laneH);
+  }
+}
+
+function drawBoat(ctx, cx, cy, scale, color, darkColor, label, laneH){
+  const s = scale;
+  const bw = Math.min(laneH*1.4, 90)*s;
+  const bh = Math.min(laneH*0.28, 20)*s;
+  ctx.save();
+  ctx.translate(cx, cy);
+
+  ctx.beginPath();
+  ctx.moveTo(-bw/2, 0);
+  ctx.lineTo(-bw*0.4, bh);
+  ctx.lineTo(bw*0.4, bh);
+  ctx.lineTo(bw/2, 0);
+  ctx.closePath();
+  ctx.fillStyle = darkColor;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(-bw*0.05, 0);
+  ctx.lineTo(-bw*0.05, -bh*4.5);
+  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+  ctx.lineWidth = 1.5*s;
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(-bw*0.05, -bh*4.5);
+  ctx.lineTo(bw*0.45, -bh*2.5);
+  ctx.lineTo(-bw*0.05, -bh*0.5);
+  ctx.closePath();
+  ctx.fillStyle = color;
+  ctx.globalAlpha = 0.9;
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  ctx.fillStyle = '#fff';
+  ctx.font = `bold ${Math.max(10,bh*1.2)*s}px Arial`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, bw*0.18, -bh*2.5);
+
+  ctx.restore();
+}
+
+function drawProgressBars(){
+  const barW = canvasW * 0.12;
+  const barH = 6;
+  const laneH = canvasH/4;
+  for(let i=0;i<4;i++){
+    const y = i*laneH + 4;
+    ctx.fillStyle='rgba(0,0,0,0.3)';
+    ctx.fillRect(4, y, barW, barH);
+    ctx.fillStyle=BOAT_COLORS[i];
+    ctx.fillRect(4, y, barW*(boatProgress[i]/100), barH);
+    ctx.fillStyle='rgba(255,255,255,0.5)';
+    ctx.font='9px Arial';
+    ctx.textAlign='left';
+    ctx.fillText(BOAT_NAMES[i]+' '+Math.round(boatProgress[i])+'%', 6, y+barH+10);
+  }
+}
+
+resizeCanvas();
+</script>
+</body>
+</html>

@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Balloon Pop — Toán</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #0a0a1a; overflow: hidden; font-family: 'Segoe UI', sans-serif; touch-action: none; }
+canvas { display: block; }
+#ui {
+  position: fixed; top: 0; left: 0; width: 100%; pointer-events: none; z-index: 10;
+  padding: 10px 14px; display: flex; align-items: flex-start; justify-content: space-between;
+}
+#question-box {
+  position: fixed; top: 0; left: 0; width: 100%; z-index: 9;
+  background: rgba(10,10,26,0.85);
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  text-align: center;
+}
+#question-text {
+  color: #fff; font-size: 15px; font-weight: 600; line-height: 1.3;
+}
+#score-area { display: flex; flex-direction: column; align-items: flex-start; pointer-events: none; }
+#score { color: #ffd700; font-size: 18px; font-weight: 700; text-shadow: 0 0 8px #ffd70080; }
+#combo { color: #ff9f43; font-size: 13px; font-weight: 600; min-height: 18px; }
+#right-area { display: flex; flex-direction: column; align-items: flex-end; pointer-events: none; }
+#hearts { font-size: 20px; letter-spacing: 2px; }
+#timer { color: #7bed9f; font-size: 18px; font-weight: 700; }
+
+#screen {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: #0a0a1a; z-index: 20;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 20px;
+}
+#screen h1 {
+  color: #ffd700; font-size: 26px; font-weight: 800; text-align: center;
+  margin-bottom: 6px; text-shadow: 0 0 16px #ffd70060;
+}
+#screen .subtitle { color: #aaa; font-size: 13px; margin-bottom: 24px; text-align: center; }
+.mode-card {
+  width: 100%; max-width: 340px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  text-align: left;
+}
+.mode-card:active { background: rgba(255,255,255,0.12); }
+.mode-card.selected { border-color: #ffd700; background: rgba(255,215,0,0.1); }
+.mode-card h2 { color: #fff; font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.mode-card p { color: #bbb; font-size: 12px; line-height: 1.5; }
+#start-btn {
+  margin-top: 10px;
+  background: linear-gradient(135deg, #ffd700, #ff9f43);
+  color: #0a0a1a;
+  border: none; border-radius: 30px;
+  padding: 14px 48px;
+  font-size: 17px; font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 20px #ffd70060;
+}
+#start-btn:active { transform: scale(0.96); }
+
+#gameover-screen {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(10,10,26,0.95); z-index: 25;
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  padding: 30px;
+}
+#gameover-screen h1 { color: #ff4757; font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+#gameover-screen .go-score { color: #ffd700; font-size: 22px; font-weight: 700; margin-bottom: 24px; }
+#replay-btn {
+  background: linear-gradient(135deg, #ffd700, #ff9f43);
+  color: #0a0a1a; border: none; border-radius: 30px;
+  padding: 13px 42px; font-size: 16px; font-weight: 800;
+  cursor: pointer; margin-bottom: 12px;
+}
+#menu-btn {
+  background: transparent; color: #aaa;
+  border: 1px solid rgba(255,255,255,0.2); border-radius: 30px;
+  padding: 12px 36px; font-size: 15px; font-weight: 600;
+  cursor: pointer;
+}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="question-box" style="display:none;">
+  <div id="question-text">Chạm số chia hết cho 3</div>
+</div>
+
+<div id="ui" style="display:none;">
+  <div id="score-area">
+    <div id="score">0</div>
+    <div id="combo"></div>
+  </div>
+  <div id="right-area">
+    <div id="hearts">❤️❤️❤️❤️❤️</div>
+    <div id="timer">90</div>
+  </div>
+</div>
+
+<div id="screen">
+  <h1>🎈 Balloon Pop Toán</h1>
+  <p class="subtitle">Chọn chủ đề và bắt đầu!</p>
+  <div class="mode-card selected" data-mode="1">
+    <h2>Chế độ 1 — Số nguyên</h2>
+    <p>Chia hết, so sánh, phép tính cơ bản<br>Dành cho lớp 6</p>
+  </div>
+  <div class="mode-card" data-mode="2">
+    <h2>Chế độ 2 — Phân số</h2>
+    <p>Phân số bằng nhau, so sánh, tối giản<br>Dành cho lớp 6–7</p>
+  </div>
+  <div class="mode-card" data-mode="3">
+    <h2>Chế độ 3 — Thập phân & %</h2>
+    <p>Làm tròn, tính phần trăm<br>Dành cho lớp 7–8</p>
+  </div>
+  <button id="start-btn">BẮT ĐẦU</button>
+</div>
+
+<div id="gameover-screen">
+  <h1>Hết trò chơi!</h1>
+  <div class="go-score" id="go-score-text">Điểm: 0</div>
+  <button id="replay-btn">Chơi lại</button>
+  <button id="menu-btn">Về menu</button>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+let W, H;
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const COLORS = ['#e74c3c','#3498db','#2ecc71','#f39c12','#9b59b6','#e67e22','#1abc9c','#e91e63'];
+const HEADER_H = 90;
+
+let mode = 1, score = 0, lives = 5, timeLeft = 90, combo = 0, consec = 0;
+let balloons = [], particles = [], feedbacks = [];
+let question = null, correctFn = null;
+let gameActive = false, timerInterval = null;
+
+// ---- Question generators ----
+function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+function randomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function pickQuestion() {
+  if (mode === 1) return pickMode1();
+  if (mode === 2) return pickMode2();
+  return pickMode3();
+}
+
+function pickMode1() {
+  const type = randomInt(0, 2);
+  if (type === 0) {
+    const div = [2,3,4,5,6][randomInt(0,4)];
+    return {
+      text: `Chạm số chia hết cho ${div}`,
+      correct: n => Number.isInteger(n) && n % div === 0,
+      gen: () => randomInt(1, 60),
+      label: n => String(n)
+    };
+  } else if (type === 1) {
+    const x = randomInt(10, 40);
+    return {
+      text: `Chạm số lớn hơn ${x}`,
+      correct: n => n > x,
+      gen: () => randomInt(1, 60),
+      label: n => String(n)
+    };
+  } else {
+    const a = randomInt(2, 9), b = randomInt(2, 9);
+    const ops = [
+      { sym: '+', fn: (x,y) => x+y },
+      { sym: '×', fn: (x,y) => x*y },
+      { sym: '−', fn: (x,y) => x-y }
+    ];
+    const op = ops[randomInt(0,2)];
+    const ans = op.fn(a, b);
+    return {
+      text: `Chạm kết quả: ${a} ${op.sym} ${b}`,
+      correct: n => n === ans,
+      gen: () => randomInt(Math.max(1, ans-15), ans+15),
+      label: n => String(n),
+      forceAnswer: ans
+    };
+  }
+}
+
+function pickMode2() {
+  const type = randomInt(0, 2);
+  if (type === 0) {
+    const denoms = [[1,2],[2,3],[3,4],[1,3],[3,5]];
+    const [pn, pd] = denoms[randomInt(0, denoms.length-1)];
+    return {
+      text: `Chạm phân số bằng ${pn}/${pd}`,
+      html: `Chạm phân số bằng ${fracHTML(pn, pd)}`,
+      correct: n => Math.abs(n.v - pn/pd) < 0.001,
+      gen: () => {
+        const k = randomInt(1,5);
+        const hit = Math.random() < 0.35;
+        if (hit) return { v: pn/pd, top: pn*k, bot: pd*k };
+        const t = randomInt(1,6), b = randomInt(2,8);
+        return { v: t/b, top: t, bot: b };
+      },
+      label: f => `${f.top}/${f.bot}`,
+      isFrac: true
+    };
+  } else if (type === 1) {
+    const comp = [[1,2],[1,3],[2,3],[3,4],[1,4]];
+    const [cn, cd] = comp[randomInt(0, comp.length-1)];
+    return {
+      text: `Chạm phân số lớn hơn ${cn}/${cd}`,
+      html: `Chạm phân số lớn hơn ${fracHTML(cn, cd)}`,
+      correct: n => n.v > cn/cd,
+      gen: () => {
+        const t = randomInt(1,7), b = randomInt(2,8);
+        return { v: t/b, top: t, bot: b };
+      },
+      label: f => `${f.top}/${f.bot}`,
+      isFrac: true
+    };
+  } else {
+    return {
+      text: 'Chạm phân số tối giản',
+      correct: n => gcd(n.top, n.bot) === 1,
+      gen: () => {
+        const hit = Math.random() < 0.4;
+        if (hit) {
+          let t, b;
+          do { t = randomInt(1,9); b = randomInt(2,10); } while (gcd(t,b) !== 1 || t >= b);
+          return { v: t/b, top: t, bot: b };
+        }
+        const k = randomInt(2,4);
+        const t2 = randomInt(1,5), b2 = randomInt(t2+1, 7);
+        return { v: (t2*k)/(b2*k), top: t2*k, bot: b2*k };
+      },
+      label: f => `${f.top}/${f.bot}`,
+      isFrac: true
+    };
+  }
+}
+
+function pickMode3() {
+  const type = randomInt(0, 1);
+  if (type === 0) {
+    const rawNum = randomInt(10, 99) + 0.3 + Math.random() * 0.5;
+    const target = Math.round(rawNum);
+    return {
+      text: `Chạm số làm tròn thành ${target}`,
+      correct: n => Math.round(n) === target,
+      gen: () => {
+        const hit = Math.random() < 0.35;
+        if (hit) return parseFloat((target - 0.4 + Math.random()*0.8).toFixed(1));
+        return parseFloat((randomInt(target-5, target+5) - 0.4 + Math.random()*0.8).toFixed(1));
+      },
+      label: n => n.toFixed(1)
+    };
+  } else {
+    const pct = [10,20,25,50][randomInt(0,3)];
+    const base = randomInt(2, 20) * 10;
+    const ans = base * pct / 100;
+    return {
+      text: `Chạm ${pct}% của ${base}`,
+      correct: n => n === ans,
+      gen: () => randomInt(Math.max(1, ans - 20), ans + 20),
+      label: n => String(n),
+      forceAnswer: ans
+    };
+  }
+}
+
+// ---- Balloon management ----
+function spawnBalloon() {
+  if (!question) return;
+  const q = question;
+  const raw = q.gen();
+  const val = q.isFrac ? raw : raw;
+  const isCorrect = q.correct(val);
+  const color = COLORS[randomInt(0, COLORS.length-1)];
+  const x = randomInt(40, W - 40);
+  const speed = 0.6 + Math.random() * 0.8;
+  const sway = (Math.random() - 0.5) * 0.3;
+  balloons.push({
+    x, y: H + 80,
+    vy: -speed, vx: sway,
+    color,
+    val, isCorrect,
+    label: q.label(val),
+    isFrac: !!q.isFrac,
+    w: 54, h: 68,
+    alive: true,
+    wobble: Math.random() * Math.PI * 2,
+    wobbleSpeed: 0.02 + Math.random() * 0.01
+  });
+}
+
+function ensureBalloons() {
+  if (!gameActive) return;
+  const target = randomInt(3, 5);
+  const needed = target - balloons.filter(b => b.alive).length;
+  for (let i = 0; i < needed; i++) {
+    if (Math.random() < 0.3) spawnBalloon();
+  }
+  if (balloons.filter(b => b.alive).length < 2) spawnBalloon();
+  // Guarantee at least one correct answer on screen
+  const hasCorrect = balloons.some(b => b.alive && b.isCorrect);
+  if (!hasCorrect && Math.random() < 0.6) {
+    spawnCorrect();
+  }
+}
+
+function spawnCorrect() {
+  const q = question;
+  if (!q) return;
+  let raw, attempts = 0;
+  do {
+    raw = q.gen();
+    attempts++;
+    if (attempts > 30) break;
+  } while (!q.correct(raw));
+  if (q.forceAnswer !== undefined) raw = q.forceAnswer;
+  const color = COLORS[randomInt(0, COLORS.length-1)];
+  balloons.push({
+    x: randomInt(40, W-40), y: H + 80,
+    vy: -(0.6 + Math.random()*0.8), vx: (Math.random()-0.5)*0.3,
+    color, val: raw, isCorrect: true,
+    label: q.label(raw),
+    isFrac: !!q.isFrac,
+    w: 54, h: 68, alive: true,
+    wobble: Math.random()*Math.PI*2,
+    wobbleSpeed: 0.02 + Math.random()*0.01
+  });
+}
+
+// ---- Particles ----
+function burst(x, y, color) {
+  const n = randomInt(8, 12);
+  for (let i = 0; i < n; i++) {
+    const angle = (Math.PI * 2 / n) * i + Math.random() * 0.3;
+    const speed = 2 + Math.random() * 4;
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      r: 4 + Math.random() * 5,
+      color: COLORS[randomInt(0, COLORS.length-1)],
+      life: 1.0
+    });
+  }
+}
+
+// ---- Feedback text ----
+function showFeedback(x, y, text, color) {
+  feedbacks.push({ x, y, text, color, life: 1.0, vy: -2 });
+}
+
+// ---- Fraction helpers ----
+function drawFraction(ctx, num, den, x, y, fontSize) {
+  const smallSize = fontSize * 0.75;
+  ctx.font = `bold ${smallSize}px sans-serif`;
+  ctx.textAlign = 'center';
+  // numerator above center line
+  ctx.fillText(String(num), x, y - smallSize * 0.3);
+  // horizontal line
+  const lineW = Math.max(ctx.measureText(String(num)).width, ctx.measureText(String(den)).width) + 6;
+  ctx.fillRect(x - lineW/2, y + 1, lineW, 1.5);
+  // denominator below
+  ctx.fillText(String(den), x, y + smallSize * 0.9);
+}
+
+function fracHTML(num, den) {
+  return `<span style="display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.2;margin:0 3px;font-size:0.85em"><span style="border-bottom:2px solid currentColor;padding:0 2px">${num}</span><span style="padding:0 2px">${den}</span></span>`;
+}
+
+// ---- Drawing ----
+function drawBalloon(b) {
+  const wx = Math.sin(b.wobble) * 3;
+  const x = b.x + wx;
+  const y = b.y;
+  // String
+  ctx.beginPath();
+  ctx.moveTo(x, y + b.h/2);
+  ctx.lineTo(x + Math.sin(b.wobble)*4, y + b.h/2 + 22);
+  ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  // Oval
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(1, 1.25);
+  ctx.beginPath();
+  ctx.arc(0, 0, b.w/2, 0, Math.PI*2);
+  ctx.fillStyle = b.color;
+  ctx.fill();
+  // Shine
+  ctx.beginPath();
+  ctx.arc(-b.w*0.12, -b.w*0.18, b.w*0.12, 0, Math.PI*2);
+  ctx.fillStyle = 'rgba(255,255,255,0.28)';
+  ctx.fill();
+  ctx.restore();
+  // Text
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = '#fff';
+  ctx.shadowColor = 'rgba(0,0,0,0.6)';
+  ctx.shadowBlur = 3;
+  if (b.isFrac && b.val && b.val.top !== undefined) {
+    drawFraction(ctx, b.val.top, b.val.bot, 0, 0, 15);
+  } else {
+    const label = b.label;
+    const fontSize = label.length > 4 ? 12 : 15;
+    ctx.font = `700 ${fontSize}px 'Segoe UI', sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, 0, 0);
+  }
+  ctx.restore();
+}
+
+function drawParticles() {
+  particles.forEach(p => {
+    ctx.globalAlpha = p.life;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r * p.life, 0, Math.PI*2);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+}
+
+function drawFeedbacks() {
+  feedbacks.forEach(f => {
+    ctx.globalAlpha = f.life;
+    ctx.font = '700 22px Segoe UI, sans-serif';
+    ctx.fillStyle = f.color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(f.text, f.x, f.y);
+  });
+  ctx.globalAlpha = 1;
+}
+
+// ---- Update ----
+function update() {
+  if (!gameActive) return;
+
+  balloons.forEach(b => {
+    if (!b.alive) return;
+    b.x += b.vx;
+    b.y += b.vy;
+    b.wobble += b.wobbleSpeed;
+    if (b.x < 30) { b.x = 30; b.vx *= -1; }
+    if (b.x > W - 30) { b.x = W - 30; b.vx *= -1; }
+    // Escaped
+    if (b.y < HEADER_H - 40) {
+      b.alive = false;
+      if (b.isCorrect) loseLife();
+    }
+  });
+  balloons = balloons.filter(b => b.alive);
+
+  particles.forEach(p => {
+    p.x += p.vx; p.y += p.vy;
+    p.vy += 0.1;
+    p.life -= 0.03;
+  });
+  particles = particles.filter(p => p.life > 0);
+
+  feedbacks.forEach(f => {
+    f.y += f.vy;
+    f.life -= 0.025;
+  });
+  feedbacks = feedbacks.filter(f => f.life > 0);
+
+  ensureBalloons();
+}
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+  // Dark bg gradient
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, '#0a0a1a');
+  grad.addColorStop(1, '#0d0d2b');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Stars
+  ctx.fillStyle = 'rgba(255,255,255,0.4)';
+  for (let i = 0; i < 40; i++) {
+    const sx = ((i * 137 + 50) % W);
+    const sy = ((i * 211 + 30) % (H - HEADER_H)) + HEADER_H;
+    const sr = i % 3 === 0 ? 1.5 : 0.8;
+    ctx.beginPath();
+    ctx.arc(sx, sy, sr, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  balloons.forEach(drawBalloon);
+  drawParticles();
+  drawFeedbacks();
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// ---- Hit detection ----
+function hitTest(tx, ty, b) {
+  const wx = Math.sin(b.wobble) * 3;
+  const bx = b.x + wx;
+  const dx = tx - bx;
+  const dy = ty - b.y;
+  // Oval: (dx/rw)^2 + (dy/rh)^2 <= 1
+  const rw = b.w / 2 + 6;
+  const rh = (b.h * 1.25) / 2 + 6;
+  return (dx*dx)/(rw*rw) + (dy*dy)/(rh*rh) <= 1;
+}
+
+function onTap(tx, ty) {
+  if (!gameActive) return;
+  let hit = false;
+  for (let i = balloons.length - 1; i >= 0; i--) {
+    const b = balloons[i];
+    if (!b.alive) continue;
+    if (hitTest(tx, ty, b)) {
+      hit = true;
+      b.alive = false;
+      if (b.isCorrect) {
+        consec++;
+        if (consec >= 3) combo = 2;
+        const pts = 10 * combo;
+        score += pts;
+        burst(tx, ty, b.color);
+        showFeedback(tx, ty - 30, combo >= 2 ? `+${pts} x${combo}!` : `+${pts}`, '#ffd700');
+        updateScore();
+        refreshQuestion();
+      } else {
+        consec = 0; combo = 1;
+        loseLife();
+        showFeedback(tx, ty - 20, '✗', '#ff4757');
+        updateCombo();
+      }
+      break;
+    }
+  }
+}
+
+canvas.addEventListener('touchstart', e => {
+  e.preventDefault();
+  const t = e.changedTouches[0];
+  const rect = canvas.getBoundingClientRect();
+  onTap(t.clientX - rect.left, t.clientY - rect.top);
+}, { passive: false });
+
+canvas.addEventListener('click', e => {
+  const rect = canvas.getBoundingClientRect();
+  onTap(e.clientX - rect.left, e.clientY - rect.top);
+});
+
+// ---- UI Updates ----
+function updateScore() {
+  document.getElementById('score').textContent = score;
+}
+function updateCombo() {
+  const el = document.getElementById('combo');
+  el.textContent = combo >= 2 ? `Combo x${combo}` : '';
+}
+function updateHearts() {
+  document.getElementById('hearts').textContent = '❤️'.repeat(Math.max(0, lives)) + '🖤'.repeat(Math.max(0, 5 - lives));
+}
+function updateTimer() {
+  const el = document.getElementById('timer');
+  el.textContent = timeLeft;
+  el.style.color = timeLeft <= 15 ? '#ff4757' : '#7bed9f';
+}
+
+function loseLife() {
+  lives--;
+  updateHearts();
+  if (lives <= 0) endGame();
+}
+
+function refreshQuestion() {
+  question = pickQuestion();
+  const qtEl = document.getElementById('question-text');
+  if (question.html) {
+    qtEl.innerHTML = question.html;
+  } else {
+    qtEl.textContent = question.text;
+  }
+  balloons = [];
+  combo = Math.max(1, combo);
+  updateCombo();
+}
+
+// ---- Game flow ----
+function startGame() {
+  score = 0; lives = 5; timeLeft = 90; combo = 1; consec = 0;
+  balloons = []; particles = []; feedbacks = [];
+  gameActive = true;
+  updateScore(); updateHearts(); updateTimer(); updateCombo();
+  refreshQuestion();
+  document.getElementById('ui').style.display = 'flex';
+  document.getElementById('question-box').style.display = 'block';
+  document.getElementById('screen').style.display = 'none';
+  document.getElementById('gameover-screen').style.display = 'none';
+
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimer();
+    if (timeLeft <= 0) endGame();
+  }, 1000);
+}
+
+function endGame() {
+  gameActive = false;
+  clearInterval(timerInterval);
+  document.getElementById('go-score-text').textContent = `Điểm: ${score}`;
+  document.getElementById('gameover-screen').style.display = 'flex';
+  document.getElementById('ui').style.display = 'none';
+  document.getElementById('question-box').style.display = 'none';
+}
+
+// ---- Menu ----
+document.querySelectorAll('.mode-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    mode = parseInt(card.dataset.mode);
+  });
+});
+
+document.getElementById('start-btn').addEventListener('click', startGame);
+document.getElementById('replay-btn').addEventListener('click', startGame);
+document.getElementById('menu-btn').addEventListener('click', () => {
+  document.getElementById('gameover-screen').style.display = 'none';
+  document.getElementById('screen').style.display = 'flex';
+  balloons = []; particles = [];
+});
+
+// ---- Initial spawn fill ----
+setInterval(() => {
+  if (gameActive && balloons.filter(b=>b.alive).length < 4) spawnBalloon();
+}, 1200);
+
+loop();
+</script>
+</body>
+</html>

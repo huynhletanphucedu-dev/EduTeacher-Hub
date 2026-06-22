@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mạch Điện & Định Luật Ohm – KHTN Lớp 8</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 16px;
+  }
+  h1 { font-size: 1.6rem; font-weight: 700; color: #fef08a; text-align: center; margin-bottom: 4px; }
+  .subtitle { text-align: center; color: #94a3b8; font-size: 0.9rem; margin-bottom: 20px; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tab-btn {
+    flex: 1;
+    padding: 10px 16px;
+    background: #1e293b;
+    border: 2px solid #334155;
+    border-radius: 8px;
+    color: #94a3b8;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab-btn.active {
+    background: #1d4ed8;
+    border-color: #3b82f6;
+    color: #fff;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* PANEL */
+  .panel {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .panel-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fbbf24;
+    margin-bottom: 12px;
+  }
+
+  /* CIRCUIT SVG */
+  .circuit-wrap {
+    background: #0f172a;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  svg { display: block; width: 100%; }
+
+  /* SLIDERS */
+  .sliders-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  @media (max-width: 560px) { .sliders-grid { grid-template-columns: 1fr; } }
+  .slider-group label { display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 4px; }
+  .slider-group .val { color: #fbbf24; font-weight: 700; }
+  input[type=range] {
+    width: 100%;
+    accent-color: #fbbf24;
+    cursor: pointer;
+  }
+
+  /* SWITCH BTN */
+  .switch-btn {
+    display: block;
+    width: 100%;
+    padding: 9px;
+    margin-bottom: 14px;
+    background: #166534;
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .switch-btn.open { background: #7f1d1d; }
+
+  /* INFO TABLE */
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid #334155; }
+  th { color: #94a3b8; font-weight: 600; }
+  td:last-child { color: #fbbf24; font-weight: 700; text-align: right; }
+  .highlight-row td { color: #34d399; }
+  .highlight-row td:last-child { color: #34d399; }
+
+  /* KEY FACT CARDS */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 14px; }
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-left: 4px solid #3b82f6;
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .card h3 { font-size: 0.9rem; color: #fbbf24; margin-bottom: 6px; }
+  .card p { font-size: 0.82rem; color: #cbd5e1; line-height: 1.5; }
+
+  /* OHM TRIANGLE */
+  .ohm-section { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .ohm-triangle { position: relative; width: 140px; height: 130px; flex-shrink: 0; }
+  .tri-seg {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 900;
+    cursor: pointer;
+    user-select: none;
+    border-radius: 6px;
+    transition: background 0.2s;
+  }
+  .tri-top { top: 0; left: 35px; width: 70px; height: 50px; background: #1d4ed8; color: #fff; }
+  .tri-left { bottom: 0; left: 0; width: 65px; height: 50px; background: #065f46; color: #fff; }
+  .tri-right { bottom: 0; right: 0; width: 65px; height: 50px; background: #7c2d12; color: #fff; }
+  .tri-seg:hover { filter: brightness(1.3); }
+  .tri-divider-h { position: absolute; top: 50px; left: 0; width: 100%; height: 2px; background: #94a3b8; }
+  .tri-divider-v { position: absolute; top: 50px; left: 50%; width: 2px; height: 50px; background: #94a3b8; }
+  .ohm-formula { font-size: 1.3rem; font-weight: 700; color: #fef08a; }
+  .ohm-note { font-size: 0.82rem; color: #94a3b8; margin-top: 6px; }
+
+  /* COMPARISON TABLE */
+  .cmp-table th { color: #fbbf24; background: #0f172a; }
+  .cmp-table td { color: #e2e8f0; }
+  .cmp-table td:last-child { color: #e2e8f0; font-weight: 400; text-align: left; }
+  .cmp-table tr:hover td { background: #263348; }
+</style>
+</head>
+<body>
+
+<h1>💡 Mạch Điện & Định Luật Ohm</h1>
+<p class="subtitle">Kéo slider để xem bóng đèn sáng/tối theo điện trở và điện áp · KHTN Lớp 8 – Kết nối tri thức với cuộc sống</p>
+
+<!-- OHM LAW -->
+<div class="panel">
+  <div class="panel-title">Định Luật Ohm</div>
+  <div class="ohm-section">
+    <div class="ohm-triangle">
+      <div class="tri-seg tri-top" onclick="showFormula('U')">U</div>
+      <div class="tri-divider-h"></div>
+      <div class="tri-divider-v"></div>
+      <div class="tri-seg tri-left" onclick="showFormula('I')">I</div>
+      <div class="tri-seg tri-right" onclick="showFormula('R')">R</div>
+    </div>
+    <div>
+      <div class="ohm-formula" id="ohmDisplay">I = U / R</div>
+      <div class="ohm-note" id="ohmNote">Bấm vào mỗi ô để xem công thức tính</div>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('series')">⚡ Nối Tiếp</button>
+  <button class="tab-btn" onclick="switchTab('parallel')">⚡ Song Song</button>
+</div>
+
+<!-- SERIES TAB -->
+<div id="tab-series" class="tab-panel active">
+  <div class="panel">
+    <div class="panel-title">Mạch Nối Tiếp</div>
+    <div class="circuit-wrap">
+      <svg id="svgSeries" viewBox="0 0 580 280" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="glow1">
+            <feGaussianBlur stdDeviation="5" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="glow2">
+            <feGaussianBlur stdDeviation="10" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <!-- WIRES -->
+        <!-- top wire: left=60,top=60 → right=520,top=60 -->
+        <line x1="60" y1="60" x2="520" y2="60" stroke="#475569" stroke-width="3"/>
+        <!-- bottom wire -->
+        <line x1="60" y1="220" x2="520" y2="220" stroke="#475569" stroke-width="3"/>
+        <!-- left wire (battery side) -->
+        <line x1="60" y1="60" x2="60" y2="80" stroke="#475569" stroke-width="3"/>
+        <line x1="60" y1="200" x2="60" y2="220" stroke="#475569" stroke-width="3"/>
+        <!-- right wire -->
+        <line x1="520" y1="60" x2="520" y2="220" stroke="#475569" stroke-width="3"/>
+
+        <!-- BATTERY at left (x=60, y=100 to y=200) -->
+        <line x1="60" y1="80" x2="60" y2="200" stroke="#475569" stroke-width="3"/>
+        <!-- battery plates -->
+        <line x1="42" y1="110" x2="78" y2="110" stroke="#fbbf24" stroke-width="4"/>
+        <line x1="50" y1="130" x2="70" y2="130" stroke="#fbbf24" stroke-width="2"/>
+        <line x1="42" y1="150" x2="78" y2="150" stroke="#fbbf24" stroke-width="4"/>
+        <line x1="50" y1="170" x2="70" y2="170" stroke="#fbbf24" stroke-width="2"/>
+        <text x="30" y="125" fill="#34d399" font-size="13" font-weight="bold">+</text>
+        <text x="30" y="170" fill="#f87171" font-size="13" font-weight="bold">−</text>
+        <text x="15" y="145" fill="#94a3b8" font-size="11">U</text>
+
+        <!-- BULB 1 at x=200, y=60 -->
+        <!-- glow circles (brightness-driven, updated by JS) -->
+        <circle id="s-glow1a" cx="200" cy="60" r="38" fill="#fef08a" opacity="0"/>
+        <circle id="s-glow1b" cx="200" cy="60" r="28" fill="#fef08a" opacity="0"/>
+        <!-- bulb body -->
+        <circle id="s-bulb1" cx="200" cy="60" r="22" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+        <!-- filament zigzag -->
+        <polyline id="s-fil1" points="190,55 194,65 198,50 202,70 206,55 210,65" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round"/>
+        <!-- bulb base lines -->
+        <line x1="192" y1="78" x2="192" y2="84" stroke="#64748b" stroke-width="2"/>
+        <line x1="208" y1="78" x2="208" y2="84" stroke="#64748b" stroke-width="2"/>
+        <line x1="188" y1="84" x2="212" y2="84" stroke="#64748b" stroke-width="2"/>
+        <text x="200" y="100" fill="#94a3b8" font-size="12" text-anchor="middle">R₁</text>
+
+        <!-- BULB 2 at x=380, y=60 -->
+        <circle id="s-glow2a" cx="380" cy="60" r="38" fill="#fef08a" opacity="0"/>
+        <circle id="s-glow2b" cx="380" cy="60" r="28" fill="#fef08a" opacity="0"/>
+        <circle id="s-bulb2" cx="380" cy="60" r="22" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+        <polyline id="s-fil2" points="370,55 374,65 378,50 382,70 386,55 390,65" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round"/>
+        <line x1="372" y1="78" x2="372" y2="84" stroke="#64748b" stroke-width="2"/>
+        <line x1="388" y1="78" x2="388" y2="84" stroke="#64748b" stroke-width="2"/>
+        <line x1="368" y1="84" x2="392" y2="84" stroke="#64748b" stroke-width="2"/>
+        <text x="380" y="100" fill="#94a3b8" font-size="12" text-anchor="middle">R₂</text>
+
+        <!-- AMMETER on bottom wire -->
+        <circle cx="290" cy="220" r="18" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+        <text x="290" y="225" fill="#3b82f6" font-size="14" font-weight="bold" text-anchor="middle">A</text>
+
+        <!-- VOLTMETER V1 across R1 -->
+        <line x1="200" y1="110" x2="200" y2="160" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <line x1="200" y1="160" x2="150" y2="160" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <circle cx="150" cy="160" r="14" fill="#1e293b" stroke="#a78bfa" stroke-width="2"/>
+        <text x="150" y="165" fill="#a78bfa" font-size="11" font-weight="bold" text-anchor="middle">V₁</text>
+
+        <!-- VOLTMETER V2 across R2 -->
+        <line x1="380" y1="110" x2="380" y2="195" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <line x1="380" y1="195" x2="440" y2="195" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <circle cx="440" cy="195" r="14" fill="#1e293b" stroke="#a78bfa" stroke-width="2"/>
+        <text x="440" y="200" fill="#a78bfa" font-size="11" font-weight="bold" text-anchor="middle">V₂</text>
+
+        <!-- SWITCH indicator -->
+        <circle id="s-switch-dot" cx="520" cy="140" r="7" fill="#22c55e"/>
+        <text x="520" y="170" fill="#94a3b8" font-size="10" text-anchor="middle">Đóng</text>
+
+        <!-- CURRENT DOTS (series) – 8 dots along the rectangle path -->
+        <g id="s-dots"></g>
+      </svg>
+    </div>
+
+    <!-- SLIDERS -->
+    <div class="sliders-grid">
+      <div class="slider-group">
+        <label>Nguồn U = <span class="val" id="s-uVal">9</span> V</label>
+        <input type="range" id="s-u" min="1" max="20" value="9" oninput="updateSeries()">
+      </div>
+      <div class="slider-group">
+        <label>Điện trở R₁ = <span class="val" id="s-r1Val">20</span> Ω</label>
+        <input type="range" id="s-r1" min="1" max="100" value="20" oninput="updateSeries()">
+      </div>
+      <div class="slider-group">
+        <label>Điện trở R₂ = <span class="val" id="s-r2Val">30</span> Ω</label>
+        <input type="range" id="s-r2" min="1" max="100" value="30" oninput="updateSeries()">
+      </div>
+    </div>
+
+    <button class="switch-btn" id="s-switchBtn" onclick="toggleSeriesSwitch()">🔋 Đóng mạch</button>
+
+    <!-- INFO TABLE -->
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-title">Kết Quả Tính Toán</div>
+      <table>
+        <tr><th>Đại lượng</th><th>Công thức</th><th>Giá trị</th></tr>
+        <tr><td>Điện trở tổng</td><td>R = R₁ + R₂</td><td id="s-Rtotal">—</td></tr>
+        <tr class="highlight-row">
+          <td colspan="2">⚡ Cường độ dòng điện (như nhau mọi điểm)</td><td id="s-I">—</td>
+        </tr>
+        <tr><td>Hiệu điện thế R₁</td><td>U₁ = I × R₁</td><td id="s-U1">—</td></tr>
+        <tr><td>Hiệu điện thế R₂</td><td>U₂ = I × R₂</td><td id="s-U2">—</td></tr>
+        <tr><td>Công suất P₁</td><td>P₁ = I² × R₁</td><td id="s-P1">—</td></tr>
+        <tr><td>Công suất P₂</td><td>P₂ = I² × R₂</td><td id="s-P2">—</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- PARALLEL TAB -->
+<div id="tab-parallel" class="tab-panel">
+  <div class="panel">
+    <div class="panel-title">Mạch Song Song</div>
+    <div class="circuit-wrap">
+      <svg id="svgParallel" viewBox="0 0 580 280" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="pglow1">
+            <feGaussianBlur stdDeviation="5" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <!-- TOP RAIL -->
+        <line x1="60" y1="50" x2="520" y2="50" stroke="#475569" stroke-width="3"/>
+        <!-- BOTTOM RAIL -->
+        <line x1="60" y1="230" x2="520" y2="230" stroke="#475569" stroke-width="3"/>
+        <!-- LEFT wire battery -->
+        <line x1="60" y1="50" x2="60" y2="90" stroke="#475569" stroke-width="3"/>
+        <line x1="60" y1="190" x2="60" y2="230" stroke="#475569" stroke-width="3"/>
+        <!-- RIGHT wire -->
+        <line x1="520" y1="50" x2="520" y2="230" stroke="#475569" stroke-width="3"/>
+
+        <!-- BATTERY -->
+        <line x1="60" y1="90" x2="60" y2="190" stroke="#475569" stroke-width="3"/>
+        <line x1="42" y1="105" x2="78" y2="105" stroke="#fbbf24" stroke-width="4"/>
+        <line x1="50" y1="120" x2="70" y2="120" stroke="#fbbf24" stroke-width="2"/>
+        <line x1="42" y1="155" x2="78" y2="155" stroke="#fbbf24" stroke-width="4"/>
+        <line x1="50" y1="170" x2="70" y2="170" stroke="#fbbf24" stroke-width="2"/>
+        <text x="28" y="118" fill="#34d399" font-size="13" font-weight="bold">+</text>
+        <text x="28" y="165" fill="#f87171" font-size="13" font-weight="bold">−</text>
+        <text x="14" y="142" fill="#94a3b8" font-size="11">U</text>
+
+        <!-- BRANCH 1 (x=220, top to bottom) -->
+        <line x1="220" y1="50" x2="220" y2="108" stroke="#475569" stroke-width="3"/>
+        <line x1="220" y1="172" x2="220" y2="230" stroke="#475569" stroke-width="3"/>
+        <!-- Bulb 1 -->
+        <circle id="p-glow1a" cx="220" cy="140" r="38" fill="#fef08a" opacity="0"/>
+        <circle id="p-glow1b" cx="220" cy="140" r="28" fill="#fef08a" opacity="0"/>
+        <circle id="p-bulb1" cx="220" cy="140" r="22" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+        <polyline id="p-fil1" points="210,135 214,145 218,130 222,150 226,135 230,145" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round"/>
+        <text x="220" y="104" fill="#94a3b8" font-size="12" text-anchor="middle">R₁</text>
+
+        <!-- BRANCH 2 (x=380, top to bottom) -->
+        <line x1="380" y1="50" x2="380" y2="108" stroke="#475569" stroke-width="3"/>
+        <line x1="380" y1="172" x2="380" y2="230" stroke="#475569" stroke-width="3"/>
+        <!-- Bulb 2 -->
+        <circle id="p-glow2a" cx="380" cy="140" r="38" fill="#fef08a" opacity="0"/>
+        <circle id="p-glow2b" cx="380" cy="140" r="28" fill="#fef08a" opacity="0"/>
+        <circle id="p-bulb2" cx="380" cy="140" r="22" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+        <polyline id="p-fil2" points="370,135 374,145 378,130 382,150 386,135 390,145" fill="none" stroke="#475569" stroke-width="2" stroke-linecap="round"/>
+        <text x="380" y="104" fill="#94a3b8" font-size="12" text-anchor="middle">R₂</text>
+
+        <!-- Ammeter total on top rail -->
+        <circle cx="130" cy="50" r="16" fill="#1e293b" stroke="#3b82f6" stroke-width="2"/>
+        <text x="130" y="55" fill="#3b82f6" font-size="12" font-weight="bold" text-anchor="middle">A</text>
+        <!-- Ammeter I1 in branch1 -->
+        <circle cx="220" cy="200" r="14" fill="#1e293b" stroke="#06b6d4" stroke-width="2"/>
+        <text x="220" y="205" fill="#06b6d4" font-size="11" font-weight="bold" text-anchor="middle">A₁</text>
+        <!-- Ammeter I2 in branch2 -->
+        <circle cx="380" cy="200" r="14" fill="#1e293b" stroke="#06b6d4" stroke-width="2"/>
+        <text x="380" y="205" fill="#06b6d4" font-size="11" font-weight="bold" text-anchor="middle">A₂</text>
+
+        <!-- Voltmeter across battery -->
+        <line x1="90" y1="140" x2="130" y2="140" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <circle cx="150" cy="140" r="15" fill="#1e293b" stroke="#a78bfa" stroke-width="2"/>
+        <text x="150" y="145" fill="#a78bfa" font-size="11" font-weight="bold" text-anchor="middle">V</text>
+
+        <!-- Switch -->
+        <circle id="p-switch-dot" cx="520" cy="140" r="7" fill="#22c55e"/>
+        <text x="520" y="165" fill="#94a3b8" font-size="10" text-anchor="middle">Đóng</text>
+
+        <!-- CURRENT DOTS -->
+        <g id="p-dots"></g>
+      </svg>
+    </div>
+
+    <div class="sliders-grid">
+      <div class="slider-group">
+        <label>Nguồn U = <span class="val" id="p-uVal">9</span> V</label>
+        <input type="range" id="p-u" min="1" max="20" value="9" oninput="updateParallel()">
+      </div>
+      <div class="slider-group">
+        <label>Điện trở R₁ = <span class="val" id="p-r1Val">20</span> Ω</label>
+        <input type="range" id="p-r1" min="1" max="100" value="20" oninput="updateParallel()">
+      </div>
+      <div class="slider-group">
+        <label>Điện trở R₂ = <span class="val" id="p-r2Val">30</span> Ω</label>
+        <input type="range" id="p-r2" min="1" max="100" value="30" oninput="updateParallel()">
+      </div>
+    </div>
+
+    <button class="switch-btn" id="p-switchBtn" onclick="toggleParallelSwitch()">🔋 Đóng mạch</button>
+
+    <div class="panel" style="margin-bottom:0">
+      <div class="panel-title">Kết Quả Tính Toán</div>
+      <table>
+        <tr><th>Đại lượng</th><th>Công thức</th><th>Giá trị</th></tr>
+        <tr class="highlight-row">
+          <td colspan="2">⚡ Hiệu điện thế hai đầu mỗi nhánh (bằng nhau)</td><td id="p-U">—</td>
+        </tr>
+        <tr><td>Cường độ nhánh 1</td><td>I₁ = U / R₁</td><td id="p-I1">—</td></tr>
+        <tr><td>Cường độ nhánh 2</td><td>I₂ = U / R₂</td><td id="p-I2">—</td></tr>
+        <tr><td>Cường độ tổng</td><td>I = I₁ + I₂</td><td id="p-Itotal">—</td></tr>
+        <tr><td>Điện trở tương đương</td><td>1/R = 1/R₁ + 1/R₂</td><td id="p-Rtotal">—</td></tr>
+        <tr><td>Công suất P₁</td><td>P₁ = U²/R₁</td><td id="p-P1">—</td></tr>
+        <tr><td>Công suất P₂</td><td>P₂ = U²/R₂</td><td id="p-P2">—</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- COMPARISON TABLE -->
+<div class="panel">
+  <div class="panel-title">So Sánh Mạch Nối Tiếp & Song Song</div>
+  <table class="cmp-table">
+    <tr>
+      <th>Đặc điểm</th>
+      <th>⚡ Nối Tiếp</th>
+      <th>⚡ Song Song</th>
+    </tr>
+    <tr>
+      <td>Cường độ I</td>
+      <td>Như nhau: I = I₁ = I₂</td>
+      <td>Khác nhau: I = I₁ + I₂</td>
+    </tr>
+    <tr>
+      <td>Hiệu điện thế U</td>
+      <td>Khác nhau: U = U₁ + U₂</td>
+      <td>Như nhau: U = U₁ = U₂</td>
+    </tr>
+    <tr>
+      <td>Điện trở tương đương</td>
+      <td>R = R₁ + R₂</td>
+      <td>1/R = 1/R₁ + 1/R₂</td>
+    </tr>
+    <tr>
+      <td>Ứng dụng thực tế</td>
+      <td>Đèn trang trí cũ (dây điện dài)</td>
+      <td>Đèn điện gia đình (220V mỗi bóng)</td>
+    </tr>
+    <tr>
+      <td>Khi 1 thiết bị hỏng</td>
+      <td>Toàn mạch ngắt – tất cả tắt</td>
+      <td>Nhánh còn lại hoạt động bình thường</td>
+    </tr>
+  </table>
+</div>
+
+<!-- KEY FACT CARDS -->
+<div class="cards">
+  <div class="card">
+    <h3>📐 Định Luật Ohm</h3>
+    <p>I = U / R<br>Cường độ dòng điện tỉ lệ thuận với hiệu điện thế và tỉ lệ nghịch với điện trở.<br><em>Đơn vị: I (A), U (V), R (Ω)</em></p>
+  </div>
+  <div class="card">
+    <h3>🔌 Điện Trở R</h3>
+    <p>Đặc trưng cho mức độ cản trở dòng điện.<br>R phụ thuộc vào vật liệu, chiều dài, tiết diện dây.<br><em>Đơn vị: Ω (Ohm)</em></p>
+  </div>
+  <div class="card">
+    <h3>⚡ Công Suất Điện</h3>
+    <p>P = U × I = I²R = U²/R<br>Bóng đèn 60W tiêu thụ 60J mỗi giây.<br><em>Đơn vị: W (Watt)</em></p>
+  </div>
+</div>
+
+<script>
+// ===========================
+// TABS
+// ===========================
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach((b, i) => {
+    if ((name === 'series' && i === 0) || (name === 'parallel' && i === 1)) b.classList.add('active');
+  });
+}
+
+// ===========================
+// OHM TRIANGLE
+// ===========================
+const formulas = {
+  U: { f: 'U = I × R', note: 'Hiệu điện thế = Cường độ × Điện trở' },
+  I: { f: 'I = U / R', note: 'Cường độ = Hiệu điện thế ÷ Điện trở' },
+  R: { f: 'R = U / I', note: 'Điện trở = Hiệu điện thế ÷ Cường độ' },
+};
+function showFormula(key) {
+  document.getElementById('ohmDisplay').textContent = formulas[key].f;
+  document.getElementById('ohmNote').textContent = formulas[key].note;
+}
+
+// ===========================
+// BULB COLOR HELPER
+// ===========================
+function brightnessToColor(b) {
+  // b: 0..1
+  if (b <= 0) return '#1e293b';
+  const r = Math.round(30 + b * 225);
+  const g = Math.round(41 + b * 200);
+  const bl = Math.round(59 + b * (b > 0.5 ? 180 : 50));
+  return `rgb(${r},${g},${bl})`;
+}
+function brightnessToFilament(b) {
+  if (b <= 0) return '#475569';
+  const r = Math.round(200 + b * 55);
+  const g = Math.round(150 + b * 100);
+  const bl = Math.round(40 + b * 100);
+  return `rgb(${r},${g},${bl})`;
+}
+
+// ===========================
+// SERIES CIRCUIT
+// ===========================
+let seriesOpen = false;
+
+function updateSeries() {
+  const U = parseFloat(document.getElementById('s-u').value);
+  const R1 = parseFloat(document.getElementById('s-r1').value);
+  const R2 = parseFloat(document.getElementById('s-r2').value);
+  document.getElementById('s-uVal').textContent = U;
+  document.getElementById('s-r1Val').textContent = R1;
+  document.getElementById('s-r2Val').textContent = R2;
+
+  const Rt = R1 + R2;
+  const I = seriesOpen ? 0 : U / Rt;
+  const U1 = I * R1;
+  const U2 = I * R2;
+  const P1 = I * I * R1;
+  const P2 = I * I * R2;
+  const Pmax = (20 / 1) * (20 / 1) * 100; // U=20, R=1 → I=20 → P=20²×100 nope
+  // Reasonable max brightness: P at U=20, R1=1, R2=1 → I=10, P=100W
+  const maxP = 100;
+
+  document.getElementById('s-Rtotal').textContent = Rt.toFixed(2) + ' Ω';
+  document.getElementById('s-I').textContent = I.toFixed(3) + ' A';
+  document.getElementById('s-U1').textContent = U1.toFixed(2) + ' V';
+  document.getElementById('s-U2').textContent = U2.toFixed(2) + ' V';
+  document.getElementById('s-P1').textContent = P1.toFixed(2) + ' W';
+  document.getElementById('s-P2').textContent = P2.toFixed(2) + ' W';
+
+  const b1 = Math.min(1, P1 / maxP);
+  const b2 = Math.min(1, P2 / maxP);
+
+  // Bulb 1
+  document.getElementById('s-bulb1').style.fill = brightnessToColor(b1);
+  document.getElementById('s-fil1').style.stroke = brightnessToFilament(b1);
+  document.getElementById('s-glow1a').style.opacity = b1 * 0.15;
+  document.getElementById('s-glow1b').style.opacity = b1 * 0.3;
+  // Bulb 2
+  document.getElementById('s-bulb2').style.fill = brightnessToColor(b2);
+  document.getElementById('s-fil2').style.stroke = brightnessToFilament(b2);
+  document.getElementById('s-glow2a').style.opacity = b2 * 0.15;
+  document.getElementById('s-glow2b').style.opacity = b2 * 0.3;
+
+  // Current speed
+  seriesCurrentI = I;
+}
+
+function toggleSeriesSwitch() {
+  seriesOpen = !seriesOpen;
+  const btn = document.getElementById('s-switchBtn');
+  const dot = document.getElementById('s-switch-dot');
+  const label = btn.nextElementSibling; // doesn't exist, use dot sibling
+  if (seriesOpen) {
+    btn.textContent = '🔌 Ngắt mạch';
+    btn.classList.add('open');
+    dot.style.fill = '#ef4444';
+    dot.nextElementSibling && (dot.nextElementSibling.textContent = 'Ngắt');
+  } else {
+    btn.textContent = '🔋 Đóng mạch';
+    btn.classList.remove('open');
+    dot.style.fill = '#22c55e';
+  }
+  updateSeries();
+}
+
+// ===========================
+// PARALLEL CIRCUIT
+// ===========================
+let parallelOpen = false;
+
+function updateParallel() {
+  const U = parseFloat(document.getElementById('p-u').value);
+  const R1 = parseFloat(document.getElementById('p-r1').value);
+  const R2 = parseFloat(document.getElementById('p-r2').value);
+  document.getElementById('p-uVal').textContent = U;
+  document.getElementById('p-r1Val').textContent = R1;
+  document.getElementById('p-r2Val').textContent = R2;
+
+  const I1 = parallelOpen ? 0 : U / R1;
+  const I2 = parallelOpen ? 0 : U / R2;
+  const Itotal = I1 + I2;
+  const Rt = parallelOpen ? Infinity : 1 / (1/R1 + 1/R2);
+  const P1 = parallelOpen ? 0 : U * U / R1;
+  const P2 = parallelOpen ? 0 : U * U / R2;
+  const maxP = 100;
+
+  document.getElementById('p-U').textContent = (parallelOpen ? 0 : U).toFixed(2) + ' V';
+  document.getElementById('p-I1').textContent = I1.toFixed(3) + ' A';
+  document.getElementById('p-I2').textContent = I2.toFixed(3) + ' A';
+  document.getElementById('p-Itotal').textContent = Itotal.toFixed(3) + ' A';
+  document.getElementById('p-Rtotal').textContent = parallelOpen ? '∞ Ω' : Rt.toFixed(2) + ' Ω';
+  document.getElementById('p-P1').textContent = P1.toFixed(2) + ' W';
+  document.getElementById('p-P2').textContent = P2.toFixed(2) + ' W';
+
+  const b1 = Math.min(1, P1 / maxP);
+  const b2 = Math.min(1, P2 / maxP);
+
+  document.getElementById('p-bulb1').style.fill = brightnessToColor(b1);
+  document.getElementById('p-fil1').style.stroke = brightnessToFilament(b1);
+  document.getElementById('p-glow1a').style.opacity = b1 * 0.15;
+  document.getElementById('p-glow1b').style.opacity = b1 * 0.3;
+
+  document.getElementById('p-bulb2').style.fill = brightnessToColor(b2);
+  document.getElementById('p-fil2').style.stroke = brightnessToFilament(b2);
+  document.getElementById('p-glow2a').style.opacity = b2 * 0.15;
+  document.getElementById('p-glow2b').style.opacity = b2 * 0.3;
+
+  parallelI1 = I1;
+  parallelI2 = I2;
+  parallelItotal = Itotal;
+}
+
+function toggleParallelSwitch() {
+  parallelOpen = !parallelOpen;
+  const btn = document.getElementById('p-switchBtn');
+  const dot = document.getElementById('p-switch-dot');
+  if (parallelOpen) {
+    btn.textContent = '🔌 Ngắt mạch';
+    btn.classList.add('open');
+    dot.style.fill = '#ef4444';
+  } else {
+    btn.textContent = '🔋 Đóng mạch';
+    btn.classList.remove('open');
+    dot.style.fill = '#22c55e';
+  }
+  updateParallel();
+}
+
+// ===========================
+// ANIMATED CURRENT DOTS
+// ===========================
+
+// Series: rectangle path
+// Points along the path: top-left(60,60) → top-right(520,60) → right-bottom(520,220) → bottom-left(60,220) → left-top(60,60)
+// Total perimeter length: 2*(460+160)=1240
+
+const S_PATH = [
+  {x:60,y:60}, {x:520,y:60}, {x:520,y:220}, {x:60,y:220}, {x:60,y:60}
+];
+const S_TOTAL = 460 + 160 + 460 + 160; // 1240
+
+function pathPointSeries(t) {
+  // t: 0..1
+  const d = t * S_TOTAL;
+  const segs = [
+    {len:460, x1:60,y1:60, x2:520,y2:60},
+    {len:160, x1:520,y1:60, x2:520,y2:220},
+    {len:460, x1:520,y1:220, x2:60,y2:220},
+    {len:160, x1:60,y1:220, x2:60,y2:60},
+  ];
+  let acc = 0;
+  for (const seg of segs) {
+    if (d <= acc + seg.len) {
+      const f = (d - acc) / seg.len;
+      return { x: seg.x1 + f*(seg.x2-seg.x1), y: seg.y1 + f*(seg.y2-seg.y1) };
+    }
+    acc += seg.len;
+  }
+  return {x:60,y:60};
+}
+
+// Parallel paths
+// Branch 1: top(220,50)→down(220,108)→circle area→down(220,172)→(220,230)→bottom rail to left(60,230)→battery up(60,50)→top rail to right(220,50)
+// Simplified: top rail section from 60→220 (160), branch down 220,50→220,230 (180), bottom rail 220→60 (160), battery 60,230→60,50 (180)
+// Total branch1 loop: 160+180+160+180=680
+
+function pathPointParallel(t, branch) {
+  // branch=1: loop through battery + branch1
+  // battery left (60,50)→(60,230)=180 going down, bottom 60→220=160, branch 220,230→220,50=180 going up, top 220→60=160
+  // going in conventional current direction (from + terminal):
+  // + top left: battery top → right along top rail → down branch → bottom rail → back to battery
+  // Conventional current: from + of battery (top) → right along top → branch down → bottom rail left → into battery bottom
+  const segs1 = [
+    // top rail from battery to branch
+    {len:160, x1:60,y1:50, x2:220,y2:50},
+    // branch down
+    {len:180, x1:220,y1:50, x2:220,y2:230},
+    // bottom rail back
+    {len:160, x1:220,y1:230, x2:60,y2:230},
+    // battery (inside, going up — not shown, but completes loop)
+    {len:180, x1:60,y1:230, x2:60,y2:50},
+  ];
+  const segs2 = [
+    {len:300, x1:60,y1:50, x2:380,y2:50},
+    {len:180, x1:380,y1:50, x2:380,y2:230},
+    {len:300, x1:380,y1:230, x2:60,y2:230},
+    {len:180, x1:60,y1:230, x2:60,y2:50},
+  ];
+  const segs = branch === 1 ? segs1 : segs2;
+  const total = segs.reduce((s,sg)=>s+sg.len,0);
+  const d = t * total;
+  let acc = 0;
+  for (const seg of segs) {
+    if (d <= acc + seg.len) {
+      const f = (d - acc) / seg.len;
+      return { x: seg.x1 + f*(seg.x2-seg.x1), y: seg.y1 + f*(seg.y2-seg.y1) };
+    }
+    acc += seg.len;
+  }
+  return {x:60,y:50};
+}
+
+let seriesCurrentI = 9/50;
+let parallelI1 = 9/20;
+let parallelI2 = 9/30;
+let parallelItotal = 9/20 + 9/30;
+
+const NUM_DOTS = 8;
+let sDotOffsets = Array.from({length: NUM_DOTS}, (_,i) => i / NUM_DOTS);
+let p1DotOffsets = Array.from({length: 6}, (_,i) => i / 6);
+let p2DotOffsets = Array.from({length: 6}, (_,i) => i / 6);
+
+// Create dot elements
+function createDots(gId, n, color, r=5) {
+  const g = document.getElementById(gId);
+  g.innerHTML = '';
+  const dots = [];
+  for (let i = 0; i < n; i++) {
+    const c = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('r', r);
+    c.setAttribute('fill', color);
+    c.setAttribute('opacity', '0.9');
+    g.appendChild(c);
+    dots.push(c);
+  }
+  return dots;
+}
+
+const sDots = createDots('s-dots', NUM_DOTS, '#fbbf24');
+const p1Dots = createDots('p-dots', 6, '#fbbf24', 4);
+const p2Dots = createDots('p-dots', 6, '#fb923c', 4);
+
+// Append p2 dots to same group
+(function() {
+  const g = document.getElementById('p-dots');
+  p2Dots.forEach(d => g.appendChild(d));
+})();
+
+let lastTime = null;
+function animate(ts) {
+  if (!lastTime) lastTime = ts;
+  const dt = (ts - lastTime) / 1000;
+  lastTime = ts;
+
+  const maxSpeed = 0.5; // max fraction per second at max current
+  const maxI = 20; // A (max expected)
+
+  // Series dots
+  const sSpeed = seriesOpen ? 0 : Math.min(1, seriesCurrentI / maxI) * maxSpeed;
+  sDotOffsets = sDotOffsets.map(o => (o + sSpeed * dt) % 1);
+  sDots.forEach((dot, i) => {
+    const pt = pathPointSeries(sDotOffsets[i]);
+    dot.setAttribute('cx', pt.x);
+    dot.setAttribute('cy', pt.y);
+    dot.setAttribute('opacity', sSpeed > 0 ? '0.9' : '0');
+  });
+
+  // Parallel branch 1
+  const p1Speed = parallelOpen ? 0 : Math.min(1, parallelI1 / maxI) * maxSpeed;
+  p1DotOffsets = p1DotOffsets.map(o => (o + p1Speed * dt) % 1);
+  p1Dots.forEach((dot, i) => {
+    const pt = pathPointParallel(p1DotOffsets[i], 1);
+    dot.setAttribute('cx', pt.x);
+    dot.setAttribute('cy', pt.y);
+    dot.setAttribute('opacity', p1Speed > 0 ? '0.9' : '0');
+  });
+
+  // Parallel branch 2
+  const p2Speed = parallelOpen ? 0 : Math.min(1, parallelI2 / maxI) * maxSpeed;
+  p2DotOffsets = p2DotOffsets.map(o => (o + p2Speed * dt) % 1);
+  p2Dots.forEach((dot, i) => {
+    const pt = pathPointParallel(p2DotOffsets[i], 2);
+    dot.setAttribute('cx', pt.x);
+    dot.setAttribute('cy', pt.y);
+    dot.setAttribute('opacity', p2Speed > 0 ? '0.9' : '0');
+  });
+
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+
+// Init
+updateSeries();
+updateParallel();
+</script>
+</body>
+</html>

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Góc – EduTeacher Hub</title>
+<style>
+:root{
+  --bg:#0f172a;--card:#1e293b;--border:#334155;
+  --teal:#06b6d4;--purple:#8b5cf6;--orange:#f59e0b;
+  --green:#10b981;--red:#ef4444;--blue:#3b82f6;--text:#e2e8f0;--sub:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);
+     height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.header{background:var(--card);border-bottom:1px solid var(--border);
+        padding:13px 24px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.header h1{font-size:1.25rem;font-weight:800;}
+.back-link{color:var(--sub);text-decoration:none;font-size:.9rem;font-weight:600;
+           padding:6px 13px;border-radius:8px;border:1px solid var(--border);}
+.tab-bar{display:flex;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;}
+.mbar-tab{flex:1;padding:15px 8px;border:none;font-size:1.08rem;font-weight:800;cursor:pointer;
+          background:transparent;color:var(--sub);border-bottom:3px solid transparent;
+          transition:all .15s;font-family:inherit;}
+.mbar-tab.active{color:var(--teal);border-bottom-color:var(--teal);background:rgba(6,182,212,.05);}
+.instr-bar{background:rgba(6,182,212,.1);border-bottom:1px solid rgba(6,182,212,.2);
+           padding:10px 24px;font-size:.95rem;color:#a5f3fc;text-align:center;flex-shrink:0;font-weight:600;}
+.body-wrap{flex:1;display:flex;overflow:hidden;}
+.stage-area{flex:1;display:flex;align-items:center;justify-content:center;
+            background:var(--bg);padding:14px;}
+/* SVG fills available space, keeps viewBox aspect ratio */
+#svg-stage{display:block;border-radius:22px;cursor:crosshair;
+           box-shadow:0 12px 50px rgba(0,0,0,.6);
+           width:100%;height:100%;max-width:860px;max-height:580px;}
+.controls{width:330px;flex-shrink:0;background:var(--card);border-left:1px solid var(--border);
+          padding:20px 18px;display:flex;flex-direction:column;gap:15px;overflow-y:auto;}
+.sec-title{font-size:.8rem;font-weight:800;color:var(--sub);text-transform:uppercase;
+           letter-spacing:.6px;margin-bottom:5px;}
+.angle-display{text-align:center;padding:18px 10px;background:rgba(255,255,255,.04);
+               border-radius:16px;border:1px solid var(--border);}
+.angle-num{font-size:5.5rem;font-weight:900;line-height:1;transition:color .2s;}
+.angle-unit{font-size:1.4rem;font-weight:700;color:var(--sub);}
+.type-badge{display:inline-block;margin-top:10px;padding:7px 22px;border-radius:22px;
+            font-size:1.1rem;font-weight:800;transition:all .2s;}
+.type-def{font-size:.9rem;color:var(--sub);margin-top:8px;line-height:1.5;text-align:center;}
+.action-btn{width:100%;padding:13px;border:none;border-radius:13px;font-size:1rem;
+            font-weight:800;cursor:pointer;font-family:inherit;transition:all .15s;
+            display:flex;align-items:center;justify-content:center;gap:7px;}
+.action-btn:hover{transform:translateY(-1px);}
+.btn-spin{background:linear-gradient(135deg,#8b5cf6,#3b82f6);color:#fff;
+          box-shadow:0 4px 16px rgba(139,92,246,.3);}
+.btn-snap{background:rgba(255,255,255,.07);color:var(--text);border:1.5px solid var(--border);}
+.btn-snap.on{background:rgba(6,182,212,.15);color:var(--teal);border-color:var(--teal);}
+.btn-reset{background:rgba(255,255,255,.06);color:var(--sub);border:1px solid var(--border);}
+.preset-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;}
+.preset-btn{padding:9px 2px;background:rgba(255,255,255,.05);border:1.5px solid var(--border);
+            border-radius:9px;color:var(--text);font-size:.88rem;font-weight:700;
+            cursor:pointer;text-align:center;font-family:inherit;}
+.preset-btn:hover{border-color:var(--teal);color:var(--teal);}
+/* quiz */
+.quiz-wrap{flex:1;display:flex;flex-direction:column;align-items:center;
+           justify-content:center;gap:20px;padding:20px;}
+.quiz-angle-box{background:#f8fafc;border-radius:22px;box-shadow:0 12px 50px rgba(0,0,0,.6);}
+#svg-quiz{display:block;width:440px;height:290px;}
+.quiz-types{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
+.quiz-btn{padding:16px 28px;border:2.5px solid var(--border);border-radius:16px;
+          background:rgba(255,255,255,.05);color:var(--text);font-size:1.15rem;font-weight:800;
+          cursor:pointer;font-family:inherit;transition:all .15s;min-width:130px;text-align:center;}
+.quiz-btn:hover{border-color:var(--teal);color:var(--teal);}
+.quiz-btn.correct{border-color:#10b981;background:rgba(16,185,129,.15);color:#34d399;}
+.quiz-btn.wrong{border-color:#ef4444;background:rgba(239,68,68,.1);color:#f87171;}
+.quiz-score{font-size:1.05rem;font-weight:700;color:var(--sub);}
+.quiz-feedback{font-size:1.25rem;font-weight:700;min-height:26px;text-align:center;}
+.quiz-next{background:linear-gradient(135deg,#06b6d4,#3b82f6);color:#fff;border:none;
+           padding:13px 34px;border-radius:14px;font-size:1.05rem;font-weight:800;
+           cursor:pointer;font-family:inherit;display:none;}
+</style>
+</head>
+<body>
+<div class="header">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a href="dashboard.html" class="back-link">← Dashboard</a>
+    <h1>📐 Góc</h1>
+  </div>
+  <button style="background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:9px;
+    padding:8px 16px;color:var(--text);cursor:pointer;font-size:.9rem;font-weight:700;font-family:inherit;"
+    onclick="toggleFS()">⛶ Toàn màn hình</button>
+</div>
+<div class="tab-bar">
+  <button class="mbar-tab active" id="tab-kp" onclick="switchTab('kp')">🔭 Khám Phá</button>
+  <button class="mbar-tab" id="tab-th" onclick="switchTab('th')">🎯 Thực Hành</button>
+</div>
+<div class="instr-bar" id="instr-kp">
+  ✋ Kéo tia xanh hoặc nhấn bất kỳ điểm nào trên thước đo để tạo góc · Quan sát tên gọi thay đổi theo màu sắc
+</div>
+<div class="instr-bar" id="instr-th" style="display:none">
+  🎯 Nhìn vào góc được vẽ sẵn và chọn đúng tên gọi của nó
+</div>
+
+<!-- TAB KHÁM PHÁ -->
+<div class="body-wrap" id="wrap-kp">
+  <div class="stage-area">
+    <svg id="svg-stage" viewBox="-240 -230 480 305" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <marker id="arrow-fixed" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+          <path d="M0,0 L0,7 L9,3.5 z" fill="#475569"/>
+        </marker>
+        <marker id="arrow-move" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+          <path id="arrow-move-path" d="M0,0 L0,7 L9,3.5 z" fill="#06b6d4"/>
+        </marker>
+      </defs>
+      <!-- Protractor bg -->
+      <path id="proto-bg" d="M -200 0 A 200 200 0 0 0 200 0 Z"
+            fill="rgba(241,245,249,0.6)" stroke="#cbd5e1" stroke-width="1.5"/>
+      <g id="g-ticks" stroke="#94a3b8"></g>
+      <!-- Angle arc fill + stroke -->
+      <path id="angle-arc-fill" fill="rgba(6,182,212,0.12)" d=""/>
+      <path id="angle-arc" fill="none" stroke="#06b6d4" stroke-width="4" stroke-linecap="round" d=""/>
+      <!-- Right-angle box -->
+      <g id="right-angle-box" opacity="0">
+        <rect x="0" y="-26" width="26" height="26" fill="none" stroke="#3b82f6" stroke-width="3"/>
+      </g>
+      <!-- Fixed ray -->
+      <line x1="-10" y1="0" x2="205" y2="0"
+            stroke="#475569" stroke-width="3.5" stroke-linecap="round"
+            marker-end="url(#arrow-fixed)"/>
+      <!-- Movable ray -->
+      <line id="ray-move" x1="0" y1="0" x2="195" y2="0"
+            stroke="#06b6d4" stroke-width="4.5" stroke-linecap="round"
+            marker-end="url(#arrow-move)"/>
+      <!-- Fat invisible hit-line -->
+      <line id="ray-hit" x1="0" y1="0" x2="205" y2="0"
+            stroke="transparent" stroke-width="36" style="cursor:grab"/>
+      <!-- Vertex -->
+      <circle cx="0" cy="0" r="7" fill="#1e293b" stroke="#e2e8f0" stroke-width="2.5"/>
+      <!-- Drag handle -->
+      <circle id="drag-handle" cx="195" cy="0" r="15" fill="#06b6d4" stroke="#fff"
+              stroke-width="3" style="cursor:grab"/>
+      <!-- Angle label -->
+      <text id="angle-label" x="0" y="0" text-anchor="middle" dominant-baseline="central"
+            font-size="24" font-weight="900" fill="#0284c7" font-family="Segoe UI,sans-serif"></text>
+      <!-- Static labels -->
+      <text x="-16" y="20" font-size="18" font-weight="800" fill="#475569"
+            font-family="Segoe UI,sans-serif">O</text>
+      <text x="208" y="18" font-size="15" font-weight="700" fill="#475569"
+            font-family="Segoe UI,sans-serif">Ox</text>
+      <text id="ray-label" x="0" y="0" font-size="15" font-weight="700" fill="#06b6d4"
+            font-family="Segoe UI,sans-serif">Oy</text>
+      <!-- Base line -->
+      <line x1="-205" y1="0" x2="205" y2="0" stroke="#94a3b8" stroke-width="1" opacity="0.5"/>
+    </svg>
+  </div>
+  <div class="controls">
+    <div class="angle-display">
+      <div class="angle-num" id="angle-num">45</div>
+      <span class="angle-unit">độ (°)</span>
+      <div><span class="type-badge" id="type-badge">Góc nhọn</span></div>
+      <div class="type-def" id="type-def">0° &lt; α &lt; 90°</div>
+    </div>
+    <div>
+      <div class="sec-title">Đặt góc nhanh</div>
+      <div class="preset-grid">
+        <button class="preset-btn" onclick="setAngle(30)">30°</button>
+        <button class="preset-btn" onclick="setAngle(45)">45°</button>
+        <button class="preset-btn" onclick="setAngle(60)">60°</button>
+        <button class="preset-btn" onclick="setAngle(90)">90°</button>
+        <button class="preset-btn" onclick="setAngle(120)">120°</button>
+        <button class="preset-btn" onclick="setAngle(135)">135°</button>
+        <button class="preset-btn" onclick="setAngle(150)">150°</button>
+        <button class="preset-btn" onclick="setAngle(180)">180°</button>
+      </div>
+    </div>
+    <button class="action-btn btn-snap" id="snap-btn" onclick="toggleSnap()">📌 Snap tự động: TẮT</button>
+    <button class="action-btn btn-spin" onclick="doSpin()">▶ Quay từ 0° → 180°</button>
+    <button class="action-btn btn-reset" onclick="setAngle(45)">↺ Đặt lại</button>
+  </div>
+</div>
+
+<!-- TAB THỰC HÀNH -->
+<div class="body-wrap" id="wrap-th" style="display:none">
+  <div class="quiz-wrap">
+    <div class="quiz-score" id="quiz-score">Điểm: 0 / 0</div>
+    <div class="quiz-angle-box">
+      <svg id="svg-quiz" viewBox="-200 -200 400 265" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <marker id="qa-arr1" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+            <path d="M0,0 L0,7 L9,3.5 z" fill="#475569"/>
+          </marker>
+          <marker id="qa-arr2" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+            <path d="M0,0 L0,7 L9,3.5 z" fill="#1e293b"/>
+          </marker>
+        </defs>
+        <path d="M -180 0 A 180 180 0 0 0 180 0 Z"
+              fill="rgba(241,245,249,0.6)" stroke="#cbd5e1" stroke-width="1.5"/>
+        <path id="q-arc-fill" fill="rgba(100,116,139,0.12)" d=""/>
+        <path id="q-arc" fill="none" stroke="#64748b" stroke-width="3" d=""/>
+        <g id="q-rightbox" opacity="0">
+          <rect x="0" y="-24" width="24" height="24" fill="none" stroke="#64748b" stroke-width="2.5"/>
+        </g>
+        <line x1="-10" y1="0" x2="185" y2="0" stroke="#475569" stroke-width="3.5"
+              stroke-linecap="round" marker-end="url(#qa-arr1)"/>
+        <line id="q-ray" x1="0" y1="0" x2="172" y2="0" stroke="#1e293b" stroke-width="3.5"
+              stroke-linecap="round" marker-end="url(#qa-arr2)"/>
+        <circle cx="0" cy="0" r="6" fill="#1e293b" stroke="#e2e8f0" stroke-width="2"/>
+        <line x1="-185" y1="0" x2="185" y2="0" stroke="#94a3b8" stroke-width="1" opacity="0.4"/>
+        <text x="-16" y="20" font-size="16" font-weight="800" fill="#475569" font-family="Segoe UI,sans-serif">O</text>
+      </svg>
+    </div>
+    <div class="quiz-types" id="quiz-types">
+      <button class="quiz-btn" onclick="answer('nhon')">Góc nhọn<br><small style="font-weight:500;font-size:.75rem">0° &lt; α &lt; 90°</small></button>
+      <button class="quiz-btn" onclick="answer('vuong')">Góc vuông<br><small style="font-weight:500;font-size:.75rem">α = 90°</small></button>
+      <button class="quiz-btn" onclick="answer('tu')">Góc tù<br><small style="font-weight:500;font-size:.75rem">90° &lt; α &lt; 180°</small></button>
+      <button class="quiz-btn" onclick="answer('bet')">Góc bẹt<br><small style="font-weight:500;font-size:.75rem">α = 180°</small></button>
+    </div>
+    <div class="quiz-feedback" id="quiz-feedback"></div>
+    <button class="quiz-next" id="quiz-next" onclick="nextQuiz()">Câu tiếp theo →</button>
+  </div>
+</div>
+
+<script>
+/* ═══ STATE ═══ */
+let angleDeg=45, snapOn=false, dragging=false, spinAF=null;
+const SNAP_VALS=[0,30,45,60,90,120,135,150,180];
+const RAY_R=195, ARC_R=85, LABEL_R=115;
+
+const TYPES={
+  nhon: {name:'Góc nhọn', color:'#10b981', def:'0° < α < 90°',  bg:'rgba(16,185,129,.15)'},
+  vuong:{name:'Góc vuông',color:'#3b82f6', def:'α = 90°',        bg:'rgba(59,130,246,.15)'},
+  tu:   {name:'Góc tù',   color:'#f59e0b', def:'90° < α < 180°',bg:'rgba(245,158,11,.15)'},
+  bet:  {name:'Góc bẹt',  color:'#ef4444', def:'α = 180°',       bg:'rgba(239,68,68,.15)'},
+};
+function getType(a){
+  if(Math.abs(a-90)<1.5) return 'vuong';
+  if(Math.abs(a-180)<1.5) return 'bet';
+  if(a<90) return 'nhon';
+  return 'tu';
+}
+
+function svgPt(e){
+  const svg=document.getElementById('svg-stage');
+  const pt=svg.createSVGPoint();
+  const src=e.touches?e.touches[0]:e;
+  pt.x=src.clientX; pt.y=src.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+function arcPath(deg,r,cx=0,cy=0){
+  if(deg<=0) return '';
+  if(deg>=180) return `M ${cx+r} ${cy} A ${r} ${r} 0 0 0 ${cx-r} ${cy}`;
+  const rad=deg*Math.PI/180, ex=cx+r*Math.cos(rad), ey=cy-r*Math.sin(rad);
+  return `M ${cx+r} ${cy} A ${r} ${r} 0 ${deg>180?1:0} 0 ${ex.toFixed(3)} ${ey.toFixed(3)}`;
+}
+function arcFill(deg,r,cx=0,cy=0){
+  if(deg<=0) return '';
+  if(deg>=180) return `M ${cx} ${cy} L ${cx+r} ${cy} A ${r} ${r} 0 0 0 ${cx-r} ${cy} Z`;
+  const rad=deg*Math.PI/180, ex=cx+r*Math.cos(rad), ey=cy-r*Math.sin(rad);
+  return `M ${cx} ${cy} L ${cx+r} ${cy} A ${r} ${r} 0 ${deg>180?1:0} 0 ${ex.toFixed(3)} ${ey.toFixed(3)} Z`;
+}
+
+/* ═══ TICK MARKS ═══ */
+(function drawTicks(){
+  let h='';
+  const R=200;
+  for(let d=0;d<=180;d+=10){
+    const rad=d*Math.PI/180, cs=Math.cos(rad), sn=Math.sin(rad);
+    const big=(d%30===0), len=big?20:11;
+    const r1=R-len;
+    h+=`<line x1="${(r1*cs).toFixed(2)}" y1="${(-r1*sn).toFixed(2)}"
+             x2="${(R*cs).toFixed(2)}"  y2="${(-R*sn).toFixed(2)}"
+             stroke-width="${big?2.2:1.2}"/>`;
+    if(big&&d>0&&d<180){
+      const lr=R-38;
+      h+=`<text x="${(lr*cs).toFixed(1)}" y="${(-lr*sn+5).toFixed(1)}"
+               text-anchor="middle" font-size="14" font-weight="600"
+               fill="#64748b" font-family="Segoe UI,sans-serif">${d}</text>`;
+    }
+  }
+  h+=`<text x="200" y="22" text-anchor="start" font-size="13" font-weight="600" fill="#64748b" font-family="Segoe UI,sans-serif">0°</text>`;
+  h+=`<text x="-200" y="22" text-anchor="end"  font-size="13" font-weight="600" fill="#64748b" font-family="Segoe UI,sans-serif">180°</text>`;
+  document.getElementById('g-ticks').innerHTML=h;
+})();
+
+/* ═══ RENDER ═══ */
+function render(){
+  const d=Math.max(1,Math.min(179,angleDeg));
+  const rad=d*Math.PI/180;
+  const tx=RAY_R*Math.cos(rad), ty=-RAY_R*Math.sin(rad);
+  const hx=(RAY_R-10)*Math.cos(rad), hy=-(RAY_R-10)*Math.sin(rad);
+
+  document.getElementById('ray-move').setAttribute('x2',tx.toFixed(2));
+  document.getElementById('ray-move').setAttribute('y2',ty.toFixed(2));
+  document.getElementById('ray-hit').setAttribute('x2',tx.toFixed(2));
+  document.getElementById('ray-hit').setAttribute('y2',ty.toFixed(2));
+  document.getElementById('drag-handle').setAttribute('cx',hx.toFixed(2));
+  document.getElementById('drag-handle').setAttribute('cy',hy.toFixed(2));
+
+  const lx=(RAY_R+22)*Math.cos(rad), ly=-(RAY_R+22)*Math.sin(rad);
+  const rl=document.getElementById('ray-label');
+  rl.setAttribute('x',(lx-7).toFixed(1)); rl.setAttribute('y',(ly+6).toFixed(1));
+
+  document.getElementById('angle-arc').setAttribute('d',arcPath(d,ARC_R));
+  document.getElementById('angle-arc-fill').setAttribute('d',arcFill(d,ARC_R));
+
+  const isRight=Math.abs(d-90)<2;
+  document.getElementById('right-angle-box').setAttribute('opacity',isRight?'1':'0');
+  if(isRight) document.getElementById('right-angle-box').setAttribute('transform',`rotate(${-d})`);
+
+  const midRad=d/2*Math.PI/180;
+  const lbr=d<25?LABEL_R*0.5:(d<50?LABEL_R*0.7:LABEL_R);
+  const al=document.getElementById('angle-label');
+  al.setAttribute('x',(lbr*Math.cos(midRad)).toFixed(1));
+  al.setAttribute('y',(-lbr*Math.sin(midRad)).toFixed(1));
+  al.textContent=d+'°';
+
+  const type=getType(d), T=TYPES[type];
+  const numEl=document.getElementById('angle-num');
+  numEl.textContent=d; numEl.style.color=T.color;
+  const badge=document.getElementById('type-badge');
+  badge.textContent=T.name;
+  badge.style.background=T.bg; badge.style.color=T.color;
+  badge.style.border='1.5px solid '+T.color;
+  document.getElementById('type-def').textContent=T.def;
+  document.getElementById('angle-arc').setAttribute('stroke',T.color);
+  al.setAttribute('fill',T.color);
+  document.getElementById('arrow-move-path').setAttribute('fill',T.color);
+  document.getElementById('ray-move').setAttribute('stroke',T.color);
+  document.getElementById('drag-handle').setAttribute('fill',T.color);
+}
+
+function applySnap(deg){
+  if(!snapOn) return deg;
+  for(const s of SNAP_VALS) if(Math.abs(deg-s)<4) return s;
+  return deg;
+}
+function setAngle(d){
+  cancelAnimationFrame(spinAF);
+  angleDeg=Math.max(1,Math.min(179,d));
+  render();
+}
+function toggleSnap(){
+  snapOn=!snapOn;
+  const btn=document.getElementById('snap-btn');
+  btn.textContent='📌 Snap tự động: '+(snapOn?'BẬT':'TẮT');
+  btn.classList.toggle('on',snapOn);
+}
+
+(function setupDrag(){
+  const svg=document.getElementById('svg-stage');
+  function update(e){
+    const pt=svgPt(e);
+    const dx=pt.x, dy=pt.y;
+    if(Math.abs(dx)<2&&Math.abs(dy)<2) return;
+    let deg=Math.atan2(-dy,dx)*180/Math.PI;
+    if(deg<0) deg+=360;
+    angleDeg=Math.round(applySnap(Math.max(1,Math.min(179,deg))));
+    render();
+  }
+  function start(e){ cancelAnimationFrame(spinAF); dragging=true; update(e); e.preventDefault(); }
+  function move(e){ if(!dragging) return; update(e); e.preventDefault(); }
+  function end(){ dragging=false; }
+
+  ['ray-hit','drag-handle','proto-bg'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.addEventListener('mousedown',start);
+    el.addEventListener('touchstart',start,{passive:false});
+  });
+  svg.addEventListener('mousemove',move);
+  svg.addEventListener('mouseup',end);
+  svg.addEventListener('touchmove',move,{passive:false});
+  svg.addEventListener('touchend',end);
+})();
+
+function doSpin(){
+  cancelAnimationFrame(spinAF);
+  let d=1;
+  function step(){
+    d=Math.min(d+1.5,179);
+    angleDeg=Math.round(d); render();
+    if(d<179) spinAF=requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+/* ═══ QUIZ ═══ */
+let qCorrect=0,qTotal=0,qType='',qAnswered=false;
+const QUIZ_ANGLES={
+  nhon:[22,35,40,50,55,63,70,76,82],
+  vuong:[90],
+  tu:[95,100,110,118,125,133,142,155,168],
+  bet:[180],
+};
+function nextQuiz(){
+  qAnswered=false;
+  document.getElementById('quiz-feedback').textContent='';
+  document.getElementById('quiz-next').style.display='none';
+  document.querySelectorAll('.quiz-btn').forEach(b=>b.className='quiz-btn');
+
+  const types=['nhon','nhon','vuong','tu','tu','bet'];
+  qType=types[Math.floor(Math.random()*types.length)];
+  const angles=QUIZ_ANGLES[qType];
+  let qa=angles[Math.floor(Math.random()*angles.length)];
+  if(qType!=='vuong'&&qType!=='bet') qa=Math.round(Math.max(5,Math.min(175,qa+(Math.random()*8-4))));
+
+  const rad=qa*Math.PI/180, R=172;
+  const ex=R*Math.cos(rad), ey=-R*Math.sin(rad);
+  document.getElementById('q-ray').setAttribute('x2',ex.toFixed(2));
+  document.getElementById('q-ray').setAttribute('y2',ey.toFixed(2));
+  const ar=62;
+  document.getElementById('q-arc').setAttribute('d',arcPath(qa,ar));
+  document.getElementById('q-arc-fill').setAttribute('d',arcFill(qa,ar));
+  const isR=Math.abs(qa-90)<2;
+  document.getElementById('q-rightbox').setAttribute('opacity',isR?'1':'0');
+  if(isR) document.getElementById('q-rightbox').setAttribute('transform',`rotate(${-qa})`);
+}
+function answer(type){
+  if(qAnswered) return;
+  qAnswered=true; qTotal++;
+  const map={nhon:0,vuong:1,tu:2,bet:3};
+  const btns=document.querySelectorAll('.quiz-btn');
+  if(type===qType){
+    qCorrect++;
+    btns[map[type]].className='quiz-btn correct';
+    document.getElementById('quiz-feedback').innerHTML='<span style="color:#34d399">✅ Chính xác!</span>';
+  } else {
+    btns[map[type]].className='quiz-btn wrong';
+    btns[map[qType]].className='quiz-btn correct';
+    document.getElementById('quiz-feedback').innerHTML=
+      `<span style="color:#f87171">❌ Sai! Đây là <b>${TYPES[qType].name}</b></span>`;
+  }
+  document.getElementById('quiz-score').textContent=`Điểm: ${qCorrect} / ${qTotal}`;
+  document.getElementById('quiz-next').style.display='inline-block';
+}
+
+function switchTab(t){
+  ['kp','th'].forEach(x=>{
+    document.getElementById('tab-'+x).classList.toggle('active',x===t);
+    document.getElementById('wrap-'+x).style.display=x===t?'flex':'none';
+    document.getElementById('instr-'+x).style.display=x===t?'block':'none';
+  });
+  if(t==='th'){ qTotal=0; qCorrect=0;
+    document.getElementById('quiz-score').textContent='Điểm: 0 / 0';
+    nextQuiz();
+  }
+}
+function toggleFS(){
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+render();
+</script>
+</body>
+</html>

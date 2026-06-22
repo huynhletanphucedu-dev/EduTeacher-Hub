@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Fill in the Blank – Grammar</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0f172a;color:#e2e8f0;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden}
+header{width:100%;background:#1e293b;padding:.75rem 1rem;text-align:center;border-bottom:1px solid #334155}
+header h1{font-size:1.1rem;font-weight:700;color:#a78bfa;letter-spacing:.05em}
+header h2{font-size:.75rem;color:#94a3b8;margin-top:2px}
+.stats{display:flex;gap:1rem;justify-content:center;padding:.6rem 1rem;width:100%;max-width:440px}
+.stat{background:#1e293b;border-radius:10px;padding:.35rem .9rem;font-size:.8rem;color:#94a3b8;text-align:center}
+.stat span{display:block;font-size:1.1rem;font-weight:700;color:#f8fafc}
+/* Progress bar */
+.prog-wrap{width:100%;max-width:440px;padding:0 1rem .4rem}
+.prog-bar{height:6px;background:#1e293b;border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#7c3aed,#a78bfa);border-radius:3px;transition:width .3s}
+/* Question card */
+.q-card{background:#1e293b;border-radius:16px;margin:.4rem 1rem;padding:1.2rem 1rem;width:calc(100% - 2rem);max-width:440px}
+.topic-badge{display:inline-block;font-size:.7rem;background:#2d1b69;color:#a78bfa;border-radius:20px;padding:2px 10px;margin-bottom:.7rem}
+.sentence{font-size:1.15rem;line-height:1.8;color:#f8fafc;text-align:center}
+.blank{display:inline-block;min-width:70px;border-bottom:2.5px solid #7c3aed;padding:0 6px;color:#a78bfa;font-weight:700;text-align:center;vertical-align:middle;transition:color .2s}
+/* Options */
+.options{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 1rem;margin:.8rem 0;width:100%;max-width:440px}
+.opt-btn{background:#1e293b;border:2px solid #334155;border-radius:12px;padding:.85rem .5rem;font-size:1rem;font-weight:600;color:#e2e8f0;cursor:pointer;transition:all .15s;text-align:center}
+.opt-btn:active{transform:scale(.96)}
+.opt-btn.correct{background:#052e16;border-color:#16a34a;color:#4ade80}
+.opt-btn.wrong{background:#450a0a;border-color:#dc2626;color:#f87171}
+.opt-btn:disabled{cursor:default}
+/* Explanation */
+.explain{background:#172554;border-radius:12px;padding:.8rem 1rem;margin:0 1rem;font-size:.85rem;color:#93c5fd;line-height:1.6;width:calc(100% - 2rem);max-width:440px;display:none}
+.explain strong{color:#bfdbfe;display:block;margin-bottom:.2rem}
+/* Next btn */
+.next-wrap{width:100%;max-width:440px;padding:.8rem 1rem}
+.btn-next{display:none;width:100%;background:#7c3aed;color:#fff;border:none;border-radius:12px;padding:.85rem;font-size:1rem;font-weight:700;cursor:pointer}
+/* Category btns */
+.cats{display:flex;gap:8px;padding:.5rem 1rem;width:100%;max-width:440px;overflow-x:auto;scrollbar-width:none}
+.cats::-webkit-scrollbar{display:none}
+.cat-btn{flex-shrink:0;background:#1e293b;border:1px solid #334155;border-radius:20px;padding:.3rem .8rem;font-size:.75rem;color:#94a3b8;cursor:pointer;white-space:nowrap}
+.cat-btn.active{background:#4c1d95;border-color:#7c3aed;color:#e9d5ff}
+/* Result */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:50}
+.result-card{background:#1e293b;border-radius:18px;padding:2rem;text-align:center;max-width:320px;width:90%}
+.result-emoji{font-size:3rem;margin-bottom:.5rem}
+.result-title{font-size:1.4rem;font-weight:700;margin-bottom:.5rem}
+.result-stat{font-size:.95rem;color:#94a3b8;margin-bottom:1rem}
+.btn-restart{background:#7c3aed;color:#fff;border:none;border-radius:10px;padding:.75rem 2rem;font-size:1rem;font-weight:700;cursor:pointer;width:100%}
+</style>
+</head>
+<body>
+<header>
+  <h1>✏️ FILL IN THE BLANK</h1>
+  <h2>ENGLISH GRAMMAR</h2>
+</header>
+
+<div class="cats" id="cats"></div>
+
+<div class="stats">
+  <div class="stat"><span id="qNum">1</span>Câu</div>
+  <div class="stat"><span id="correct">0</span>Đúng</div>
+  <div class="stat"><span id="total">20</span>Tổng</div>
+</div>
+<div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div></div>
+
+<div class="q-card">
+  <div class="topic-badge" id="topicBadge"></div>
+  <div class="sentence" id="sentence"></div>
+</div>
+
+<div class="options" id="options"></div>
+<div class="explain" id="explain"></div>
+<div class="next-wrap"><button class="btn-next" id="btnNext" onclick="nextQ()">Câu tiếp theo →</button></div>
+
+<div class="overlay" id="overlay">
+  <div class="result-card">
+    <div class="result-emoji" id="resEmoji">🏆</div>
+    <div class="result-title" id="resTitle"></div>
+    <div class="result-stat" id="resStat"></div>
+    <button class="btn-restart" onclick="restart()">Chơi lại</button>
+  </div>
+</div>
+
+<script>
+const BANKS = {
+  'Giới từ': [
+    {s:'She is good ___ math.',a:'at',opts:['at','in','on','for'],e:'"good at" = giỏi về (kỹ năng/môn học)'},
+    {s:'He arrived ___ school late.',a:'at',opts:['at','in','to','on'],e:'"arrived at school" — dùng "at" cho địa điểm cụ thể nhỏ'},
+    {s:'We live ___ a small town.',a:'in',opts:['in','at','on','to'],e:'"live in" + nơi chốn (thành phố, quốc gia, phòng kín)'},
+    {s:'The book is ___ the table.',a:'on',opts:['on','in','at','under'],e:'"on the table" = ở trên bàn (tiếp xúc bề mặt)'},
+    {s:'I go to school ___ bus.',a:'by',opts:['by','on','in','with'],e:'"by bus/car/bike" = phương tiện di chuyển'},
+    {s:'She was born ___ May.',a:'in',opts:['in','on','at','by'],e:'"in" + tháng/năm/mùa'},
+    {s:'The party starts ___ 7 pm.',a:'at',opts:['at','in','on','by'],e:'"at" + giờ cụ thể'},
+    {s:'I will see you ___ Monday.',a:'on',opts:['on','at','in','by'],e:'"on" + ngày trong tuần / ngày cụ thể'},
+    {s:'He is interested ___ science.',a:'in',opts:['in','at','on','about'],e:'"interested in" = quan tâm đến'},
+    {s:'She is afraid ___ spiders.',a:'of',opts:['of','from','about','with'],e:'"afraid of" = sợ (cái gì đó)'},
+    {s:'The store is ___ the corner.',a:'on',opts:['on','at','in','by'],e:'"on the corner" = ở góc đường'},
+    {s:'I waited ___ an hour.',a:'for',opts:['for','during','in','since'],e:'"wait for" + khoảng thời gian'},
+    {s:'She has lived here ___ 2010.',a:'since',opts:['since','for','from','in'],e:'"since" + thời điểm cụ thể trong quá khứ'},
+    {s:'We have known each other ___ years.',a:'for',opts:['for','since','in','during'],e:'"for" + khoảng thời gian kéo dài'},
+    {s:'He is different ___ his brother.',a:'from',opts:['from','to','than','with'],e:'"different from" = khác với'},
+  ],
+  'Thì động từ': [
+    {s:'She ___ TV every evening.',a:'watches',opts:['watches','watch','watched','is watching'],e:'Hiện tại đơn: chủ ngữ she/he/it → thêm "-es/-s"'},
+    {s:'We ___ dinner when he called.',a:'were having',opts:['were having','had','have had','are having'],e:'Quá khứ tiếp diễn: hành động đang xảy ra khi có việc khác xen vào'},
+    {s:'I ___ my homework yet.',a:"haven't finished",opts:["haven't finished","didn't finish","don't finish","won't finish"],e:'HTHT phủ định với "yet": haven\'t/hasn\'t + V3'},
+    {s:'She ___ to Paris last year.',a:'traveled',opts:['traveled','has traveled','travels','is traveling'],e:'Quá khứ đơn: hành động hoàn thành tại thời điểm xác định trong quá khứ (last year)'},
+    {s:'By 2030, they ___ a new school.',a:'will have built',opts:['will have built','will build','are building','have built'],e:'TLHT: will have + V3 — hoàn thành trước một thời điểm tương lai'},
+    {s:'He ___ here since Monday.',a:'has been',opts:['has been','is','was','had been'],e:'HTHT: has/have been — từ thời điểm cụ thể đến hiện tại'},
+    {s:'Look! It ___.',a:'is raining',opts:['is raining','rains','rained','has rained'],e:'Hiện tại tiếp diễn: dùng "Look!" — đang xảy ra ngay lúc nói'},
+    {s:'I ___ her since we were kids.',a:'have known',opts:['have known','know','knew','had known'],e:'HTHT với "since" — trạng thái kéo dài đến hiện tại'},
+    {s:'They ___ the match yesterday.',a:'lost',opts:['lost','have lost','lose','had lost'],e:'Quá khứ đơn: "yesterday" xác định thời điểm quá khứ'},
+    {s:'She always ___ when she is nervous.',a:'smiles',opts:['smiles','smile','is smiling','smiled'],e:'Hiện tại đơn với "always" — thói quen/đặc điểm'},
+  ],
+  'Mạo từ': [
+    {s:'She is ___ honest person.',a:'an',opts:['an','a','the','—'],e:'"an" trước âm tiết bắt đầu bằng âm nguyên âm (honest = /ˈɒnɪst/)'},
+    {s:'___ sun rises in the east.',a:'The',opts:['The','A','An','—'],e:'"The" cho danh từ duy nhất/xác định (mặt trời chỉ có một)'},
+    {s:'I have ___ dog and ___ cat.',a:'a',opts:['a','an','the','—'],e:'"a" trước phụ âm, lần đề cập đầu tiên'},
+    {s:'___ Mekong River is long.',a:'The',opts:['The','A','An','—'],e:'"The" với tên sông, biển, núi...'},
+    {s:'She plays ___ guitar very well.',a:'the',opts:['the','a','an','—'],e:'"the" với tên nhạc cụ'},
+    {s:'He wants to be ___ engineer.',a:'an',opts:['an','a','the','—'],e:'"an" trước âm nguyên âm "e" trong "engineer"'},
+    {s:'We go to school by ___ bus.',a:'—',opts:['—','the','a','an'],e:'Không dùng mạo từ với "by + phương tiện" (by bus, by car)'},
+    {s:'___ English is an international language.',a:'—',opts:['—','The','A','An'],e:'Không dùng mạo từ với tên ngôn ngữ'},
+    {s:'I saw ___ accident on ___ way home.',a:'an',opts:['an','a','the','—'],e:'"an accident" (lần đầu đề cập) + "the way" (đường quen thuộc)'},
+    {s:'Can you close ___ window, please?',a:'the',opts:['the','a','an','—'],e:'"the" khi người nghe biết chiếc cửa sổ nào đang nói đến'},
+  ],
+  'Từ loại': [
+    {s:'She is a very ___ student.',a:'hardworking',opts:['hardworking','hardwork','hardly','hardworked'],e:'Tính từ "hardworking" bổ nghĩa cho danh từ "student"'},
+    {s:'He speaks English ___.',a:'fluently',opts:['fluently','fluent','fluence','fluency'],e:'Trạng từ "fluently" bổ nghĩa cho động từ "speaks"'},
+    {s:'The ___ of the city is beautiful.',a:'beauty',opts:['beauty','beautiful','beautifully','beautify'],e:'Danh từ "beauty" làm chủ ngữ'},
+    {s:'We should ___ our time well.',a:'manage',opts:['manage','management','manager','managing'],e:'Động từ nguyên mẫu sau "should"'},
+    {s:'Her singing was truly ___.',a:'wonderful',opts:['wonderful','wonder','wonderfully','wonders'],e:'Tính từ "wonderful" bổ nghĩa cho chủ ngữ qua động từ "was"'},
+    {s:'The ___ announced the results.',a:'teacher',opts:['teacher','teach','teaching','taught'],e:'Danh từ "teacher" làm chủ ngữ'},
+    {s:'She looked ___ after the race.',a:'tired',opts:['tired','tiredly','tiring','tiresome'],e:'"looked tired" = trông mệt — tính từ sau look/feel/seem'},
+    {s:'The project was completed ___.',a:'successfully',opts:['successfully','successful','success','succeed'],e:'Trạng từ bổ nghĩa cho động từ bị động'},
+  ],
+};
+
+const TOTAL=20;
+let catKeys=Object.keys(BANKS);
+let currentCat=null;
+let queue=[], qIdx=0, correctCount=0, answered=false;
+
+function buildCats(){
+  const div=document.getElementById('cats');
+  const all=document.createElement('button');
+  all.className='cat-btn active';all.textContent='🔀 Tất cả';all.onclick=()=>startCat(null,all);
+  div.appendChild(all);
+  catKeys.forEach(k=>{
+    const b=document.createElement('button');b.className='cat-btn';b.textContent=k;
+    b.onclick=()=>startCat(k,b);div.appendChild(b);
+  });
+}
+
+function startCat(key,btn){
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  currentCat=key;restart();
+}
+
+function buildQueue(){
+  let pool=[];
+  if(currentCat){
+    pool=[...BANKS[currentCat]];
+  } else {
+    catKeys.forEach(k=>pool.push(...BANKS[k]));
+  }
+  // shuffle and take TOTAL
+  for(let i=pool.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]];}
+  queue=pool.slice(0,TOTAL);
+  qIdx=0;correctCount=0;
+}
+
+function restart(){
+  buildQueue();
+  document.getElementById('overlay').style.display='none';
+  nextQ();
+}
+
+function nextQ(){
+  if(qIdx>=queue.length){showFinal();return;}
+  answered=false;
+  document.getElementById('explain').style.display='none';
+  document.getElementById('btnNext').style.display='none';
+  const q=queue[qIdx];
+  qIdx++;
+  document.getElementById('qNum').textContent=qIdx;
+  document.getElementById('correct').textContent=correctCount;
+  document.getElementById('progFill').style.width=((qIdx-1)/TOTAL*100)+'%';
+  // detect category
+  let cat='Ngữ pháp';
+  catKeys.forEach(k=>{if(BANKS[k].includes(q))cat=k;});
+  // if mixed, find by question
+  if(!currentCat){
+    catKeys.forEach(k=>{if(BANKS[k].some(x=>x.s===q.s))cat=k;});
+  } else cat=currentCat;
+  document.getElementById('topicBadge').textContent=cat;
+  // Sentence with blank
+  const parts=q.s.split('___');
+  let html='';
+  parts.forEach((p,i)=>{
+    html+=p;
+    if(i<parts.length-1)html+='<span class="blank" id="blankSpan">___</span>';
+  });
+  document.getElementById('sentence').innerHTML=html;
+  // Shuffle options
+  const opts=[...q.opts];
+  for(let i=opts.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[opts[i],opts[j]]=[opts[j],opts[i]];}
+  const div=document.getElementById('options');div.innerHTML='';
+  opts.forEach(o=>{
+    const b=document.createElement('button');b.className='opt-btn';b.textContent=o;
+    b.onclick=()=>pick(o,q,b);div.appendChild(b);
+  });
+}
+
+function pick(choice,q,btn){
+  if(answered)return;answered=true;
+  const allBtns=document.querySelectorAll('.opt-btn');
+  allBtns.forEach(b=>{b.disabled=true;if(b.textContent===q.a)b.classList.add('correct');});
+  const blank=document.getElementById('blankSpan');
+  if(choice===q.a){
+    btn.classList.add('correct');
+    if(blank){blank.textContent=q.a;blank.style.color='#4ade80';}
+    correctCount++;
+    document.getElementById('correct').textContent=correctCount;
+    playSound(true);
+  } else {
+    btn.classList.add('wrong');
+    if(blank){blank.textContent=q.a;blank.style.color='#4ade80';}
+    playSound(false);
+  }
+  const ex=document.getElementById('explain');
+  ex.style.display='block';
+  ex.innerHTML='<strong>💡 Giải thích:</strong>'+q.e;
+  document.getElementById('btnNext').style.display='block';
+}
+
+function showFinal(){
+  document.getElementById('progFill').style.width='100%';
+  const pct=Math.round(correctCount/TOTAL*100);
+  let emoji='😊',title='Hoàn thành!';
+  if(pct>=90){emoji='🏆';title='Xuất sắc!';}
+  else if(pct>=70){emoji='🎉';title='Tốt lắm!';}
+  else if(pct<50){emoji='📚';title='Cần ôn thêm!';}
+  document.getElementById('resEmoji').textContent=emoji;
+  document.getElementById('resTitle').textContent=title;
+  document.getElementById('resStat').textContent=`${correctCount}/${TOTAL} câu đúng (${pct}%)`;
+  document.getElementById('overlay').style.display='flex';
+}
+
+const AC=new (window.AudioContext||window.webkitAudioContext)();
+function playSound(win){
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.connect(g);g.connect(AC.destination);
+  if(win){o.frequency.setValueAtTime(523,AC.currentTime);o.frequency.setValueAtTime(784,AC.currentTime+.12);}
+  else{o.frequency.setValueAtTime(250,AC.currentTime);o.frequency.setValueAtTime(200,AC.currentTime+.1);}
+  g.gain.setValueAtTime(.2,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.4);
+  o.start();o.stop(AC.currentTime+.4);
+}
+
+buildCats();restart();
+</script>
+</body>
+</html>

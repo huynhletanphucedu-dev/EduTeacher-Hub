@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Chu Vi & Diện Tích</title>
+<style>
+:root{--bg:#0f172a;--card:#1e293b;--border:#334155;--teal:#06b6d4;--purple:#8b5cf6;--orange:#f59e0b;--green:#10b981;--red:#ef4444;--text:#e2e8f0;--sub:#94a3b8;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.header{background:var(--card);border-bottom:1px solid var(--border);padding:11px 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.header h1{font-size:1.15rem;font-weight:800;}
+.back-link{color:var(--sub);text-decoration:none;font-size:.88rem;font-weight:600;padding:5px 12px;border-radius:8px;border:1px solid var(--border);}
+.tab-bar{display:flex;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;}
+.mbar-tab{flex:1;padding:11px 4px;border:none;font-size:.9rem;font-weight:800;cursor:pointer;background:transparent;color:var(--sub);border-bottom:3px solid transparent;transition:all .15s;font-family:inherit;}
+.mbar-tab.active{color:var(--teal);border-bottom-color:var(--teal);background:rgba(6,182,212,.05);}
+.body-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.stage{flex:1;overflow:auto;padding:14px 20px;display:flex;flex-direction:column;align-items:center;gap:14px;}
+.ctrl-bar{flex-shrink:0;background:var(--card);border-top:1px solid var(--border);padding:11px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;justify-content:center;}
+.slider-group{display:flex;flex-direction:column;gap:6px;}
+.slider-row{display:flex;align-items:center;gap:10px;}
+.slider-label{font-size:.78rem;font-weight:800;color:var(--sub);min-width:72px;}
+.slider-val{font-size:1.3rem;font-weight:900;min-width:40px;text-align:right;}
+.num-input{width:64px;padding:7px;background:rgba(255,255,255,.07);border:2px solid var(--border);border-radius:10px;color:var(--text);font-size:1.2rem;font-weight:800;text-align:center;font-family:inherit;outline:none;}
+.num-input:focus{border-color:var(--teal);}
+.shape-canvas{background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:10px;width:100%;max-width:640px;display:flex;justify-content:center;}
+.formula-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;width:100%;max-width:640px;}
+.formula-card{flex:1;min-width:200px;background:var(--card);border:2px solid var(--border);border-radius:14px;padding:14px 18px;display:flex;flex-direction:column;gap:6px;}
+.formula-card.cv{border-color:#8b5cf644;}
+.formula-card.dt{border-color:#06b6d444;}
+.formula-title{font-size:.75rem;font-weight:800;text-transform:uppercase;letter-spacing:.5px;}
+.formula-expr{font-size:1.05rem;font-weight:800;color:var(--text);font-family:'Courier New',monospace;background:rgba(255,255,255,.05);border-radius:8px;padding:6px 10px;}
+.formula-val{font-size:2rem;font-weight:900;}
+.formula-unit{font-size:.85rem;font-weight:700;color:var(--sub);}
+.dim-tag{font-size:.8rem;font-weight:800;padding:3px 8px;border-radius:6px;border:1.5px solid;white-space:nowrap;}
+</style>
+</head>
+<body>
+<div class="header">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a href="dashboard.html" class="back-link">← Dashboard</a>
+    <h1>📐 Chu Vi & Diện Tích</h1>
+  </div>
+  <button style="background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:9px;padding:7px 14px;color:var(--text);cursor:pointer;font-size:.88rem;font-weight:700;font-family:inherit;"
+    onclick="if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen()">⛶ Toàn màn hình</button>
+</div>
+<div class="tab-bar">
+  <button class="mbar-tab active" id="tab-hcn" onclick="switchTab('hcn')">▭ Hình Chữ Nhật</button>
+  <button class="mbar-tab"        id="tab-hv"  onclick="switchTab('hv')">■ Hình Vuông</button>
+  <button class="mbar-tab"        id="tab-tg"  onclick="switchTab('tg')">△ Tam Giác</button>
+  <button class="mbar-tab"        id="tab-ht"  onclick="switchTab('ht')">⬠ Hình Thang</button>
+  <button class="mbar-tab"        id="tab-hbh" onclick="switchTab('hbh')">▱ Bình Hành</button>
+  <button class="mbar-tab"        id="tab-hth" onclick="switchTab('hth')">◇ Hình Thoi</button>
+</div>
+
+<!-- ══ HCN ══ -->
+<div class="body-wrap" id="wrap-hcn">
+  <div class="stage">
+    <div class="shape-canvas"><svg id="svg-hcn" viewBox="0 0 500 300" width="100%" style="max-height:260px;"></svg></div>
+    <div class="formula-row">
+      <div class="formula-card cv">
+        <div class="formula-title" style="color:#8b5cf6;">Chu Vi</div>
+        <div class="formula-expr">C = 2 × (a + b)</div>
+        <div class="formula-val" style="color:#8b5cf6;" id="hcn-cv">—</div>
+        <div class="formula-unit">đơn vị dài</div>
+      </div>
+      <div class="formula-card dt">
+        <div class="formula-title" style="color:#06b6d4;">Diện Tích</div>
+        <div class="formula-expr">S = a × b</div>
+        <div class="formula-val" style="color:#06b6d4;" id="hcn-dt">—</div>
+        <div class="formula-unit">đơn vị vuông</div>
+      </div>
+    </div>
+  </div>
+  <div class="ctrl-bar">
+    <div class="slider-group">
+      <div class="slider-row">
+        <span class="slider-label" style="color:#f59e0b;">Chiều dài a</span>
+        <input type="range" min="1" max="20" value="8" id="hcn-a" oninput="drawHCN()" style="width:160px;accent-color:#f59e0b;"/>
+        <input class="num-input" type="number" min="1" max="20" value="8" id="hcn-an" oninput="syncHCN('a')" style="border-color:#f59e0b44;"/>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label" style="color:#10b981;">Chiều rộng b</span>
+        <input type="range" min="1" max="20" value="5" id="hcn-b" oninput="drawHCN()" style="width:160px;accent-color:#10b981;"/>
+        <input class="num-input" type="number" min="1" max="20" value="5" id="hcn-bn" oninput="syncHCN('b')" style="border-color:#10b98144;"/>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HV ══ -->
+<div class="body-wrap" id="wrap-hv" style="display:none">
+  <div class="stage">
+    <div class="shape-canvas"><svg id="svg-hv" viewBox="0 0 300 300" width="100%" style="max-height:260px;"></svg></div>
+    <div class="formula-row">
+      <div class="formula-card cv">
+        <div class="formula-title" style="color:#8b5cf6;">Chu Vi</div>
+        <div class="formula-expr">C = 4 × a</div>
+        <div class="formula-val" style="color:#8b5cf6;" id="hv-cv">—</div>
+        <div class="formula-unit">đơn vị dài</div>
+      </div>
+      <div class="formula-card dt">
+        <div class="formula-title" style="color:#06b6d4;">Diện Tích</div>
+        <div class="formula-expr">S = a × a = a²</div>
+        <div class="formula-val" style="color:#06b6d4;" id="hv-dt">—</div>
+        <div class="formula-unit">đơn vị vuông</div>
+      </div>
+    </div>
+  </div>
+  <div class="ctrl-bar">
+    <div class="slider-row">
+      <span class="slider-label" style="color:#f59e0b;">Cạnh a</span>
+      <input type="range" min="1" max="15" value="6" id="hv-a" oninput="drawHV()" style="width:200px;accent-color:#f59e0b;"/>
+      <input class="num-input" type="number" min="1" max="15" value="6" id="hv-an" oninput="syncHV()" style="border-color:#f59e0b44;"/>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAM GIÁC ══ -->
+<div class="body-wrap" id="wrap-tg" style="display:none">
+  <div class="stage">
+    <div class="shape-canvas"><svg id="svg-tg" viewBox="0 0 500 300" width="100%" style="max-height:260px;"></svg></div>
+    <div class="formula-row">
+      <div class="formula-card cv">
+        <div class="formula-title" style="color:#8b5cf6;">Chu Vi</div>
+        <div class="formula-expr">C = a + b + c</div>
+        <div class="formula-val" style="color:#8b5cf6;" id="tg-cv">—</div>
+        <div class="formula-unit">đơn vị dài</div>
+      </div>
+      <div class="formula-card dt">
+        <div class="formula-title" style="color:#06b6d4;">Diện Tích</div>
+        <div class="formula-expr">S = (đáy × h) / 2</div>
+        <div class="formula-val" style="color:#06b6d4;" id="tg-dt">—</div>
+        <div class="formula-unit">đơn vị vuông</div>
+      </div>
+    </div>
+  </div>
+  <div class="ctrl-bar">
+    <div class="slider-group">
+      <div class="slider-row">
+        <span class="slider-label" style="color:#f59e0b;">Đáy a</span>
+        <input type="range" min="2" max="18" value="10" id="tg-a" oninput="drawTG()" style="width:160px;accent-color:#f59e0b;"/>
+        <input class="num-input" type="number" min="2" max="18" value="10" id="tg-an" oninput="syncTG('a')" style="border-color:#f59e0b44;"/>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label" style="color:#10b981;">Chiều cao h</span>
+        <input type="range" min="1" max="14" value="6" id="tg-h" oninput="drawTG()" style="width:160px;accent-color:#10b981;"/>
+        <input class="num-input" type="number" min="1" max="14" value="6" id="tg-hn" oninput="syncTG('h')" style="border-color:#10b98144;"/>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-direction:column;">
+      <div style="font-size:.75rem;font-weight:700;color:var(--sub);">Loại tam giác</div>
+      <div style="display:flex;gap:6px;">
+        <button class="mbar-tab sel" id="tg-iso" onclick="setTGType('iso')" style="border-radius:10px;padding:6px 12px;border:1.5px solid var(--teal);color:var(--teal);">Cân</button>
+        <button class="mbar-tab" id="tg-right" onclick="setTGType('right')" style="border-radius:10px;padding:6px 12px;border:1.5px solid var(--border);">Vuông</button>
+        <button class="mbar-tab" id="tg-scalene" onclick="setTGType('scalene')" style="border-radius:10px;padding:6px 12px;border:1.5px solid var(--border);">Thường</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HÌNH THANG ══ -->
+<div class="body-wrap" id="wrap-ht" style="display:none">
+  <div class="stage">
+    <div class="shape-canvas"><svg id="svg-ht" viewBox="0 0 500 300" width="100%" style="max-height:260px;"></svg></div>
+    <div class="formula-row">
+      <div class="formula-card cv">
+        <div class="formula-title" style="color:#8b5cf6;">Chu Vi</div>
+        <div class="formula-expr">C = a + b + c + d</div>
+        <div class="formula-val" style="color:#8b5cf6;" id="ht-cv">—</div>
+        <div class="formula-unit">đơn vị dài</div>
+      </div>
+      <div class="formula-card dt">
+        <div class="formula-title" style="color:#06b6d4;">Diện Tích</div>
+        <div class="formula-expr">S = (a + b) × h / 2</div>
+        <div class="formula-val" style="color:#06b6d4;" id="ht-dt">—</div>
+        <div class="formula-unit">đơn vị vuông</div>
+      </div>
+    </div>
+  </div>
+  <div class="ctrl-bar">
+    <div class="slider-group">
+      <div class="slider-row">
+        <span class="slider-label" style="color:#f59e0b;">Đáy lớn a</span>
+        <input type="range" min="4" max="18" value="12" id="ht-a" oninput="drawHT()" style="width:130px;accent-color:#f59e0b;"/>
+        <input class="num-input" type="number" min="4" max="18" value="12" id="ht-an" oninput="syncHT('a')" style="border-color:#f59e0b44;"/>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label" style="color:#8b5cf6;">Đáy nhỏ b</span>
+        <input type="range" min="1" max="14" value="6" id="ht-b" oninput="drawHT()" style="width:130px;accent-color:#8b5cf6;"/>
+        <input class="num-input" type="number" min="1" max="14" value="6" id="ht-bn" oninput="syncHT('b')" style="border-color:#8b5cf644;"/>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label" style="color:#10b981;">Chiều cao h</span>
+        <input type="range" min="1" max="12" value="5" id="ht-h" oninput="drawHT()" style="width:130px;accent-color:#10b981;"/>
+        <input class="num-input" type="number" min="1" max="12" value="5" id="ht-hn" oninput="syncHT('h')" style="border-color:#10b98144;"/>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HÌNH BÌNH HÀNH ══ -->
+<div class="body-wrap" id="wrap-hbh" style="display:none">
+  <div class="stage">
+    <div class="shape-canvas"><svg id="svg-hbh" viewBox="0 0 500 300" width="100%" style="max-height:260px;"></svg></div>
+    <div class="formula-row">
+      <div class="formula-card cv">
+        <div class="formula-title" style="color:#8b5cf6;">Chu Vi</div>
+        <div class="formula-expr">C = 2 × (a + b)</div>
+        <div class="formula-val" style="color:#8b5cf6;" id="hbh-cv">—</div>
+        <div class="formula-unit">đơn vị dài</div>
+      </div>
+      <div class="formula-card dt">
+        <div class="formula-title" style="color:#06b6d4;">Diện Tích</div>
+        <div class="formula-expr">S = a × h</div>
+        <div class="formula-val" style="color:#06b6d4;" id="hbh-dt">—</div>
+        <div class="formula-unit">đơn vị vuông</div>
+      </div>
+    </div>
+  </div>
+  <div class="ctrl-bar">
+    <div class="slider-group">
+      <div class="slider-row">
+        <span class="slider-label" style="color:#f59e0b;">Cạnh đáy a</span>
+        <input type="range" min="3" max="18" value="10" id="hbh-a" oninput="drawHBH()" style="width:150px;accent-color:#f59e0b;"/>
+        <input class="num-input" type="number" min="3" max="18" value="10" id="hbh-an" oninput="syncHBH('a')" style="border-color:#f59e0b44;"/>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label" style="color:#8b5cf6;">Cạnh bên b</span>
+        <input type="range" min="2" max="12" value="6" id="hbh-b" oninput="drawHBH()" style="width:150px;accent-color:#8b5cf6;"/>
+        <input class="num-input" type="number" min="2" max="12" value="6" id="hbh-bn" oninput="syncHBH('b')" style="border-color:#8b5cf644;"/>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label" style="color:#10b981;">Chiều cao h</span>
+        <input type="range" min="1" max="10" value="4" id="hbh-h" oninput="drawHBH()" style="width:150px;accent-color:#10b981;"/>
+        <input class="num-input" type="number" min="1" max="10" value="4" id="hbh-hn" oninput="syncHBH('h')" style="border-color:#10b98144;"/>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HÌNH THOI ══ -->
+<div class="body-wrap" id="wrap-hth" style="display:none">
+  <div class="stage">
+    <div class="shape-canvas"><svg id="svg-hth" viewBox="0 0 400 300" width="100%" style="max-height:260px;"></svg></div>
+    <div class="formula-row">
+      <div class="formula-card cv">
+        <div class="formula-title" style="color:#8b5cf6;">Chu Vi</div>
+        <div class="formula-expr">C = 4 × a</div>
+        <div class="formula-val" style="color:#8b5cf6;" id="hth-cv">—</div>
+        <div class="formula-unit">đơn vị dài</div>
+      </div>
+      <div class="formula-card dt">
+        <div class="formula-title" style="color:#06b6d4;">Diện Tích</div>
+        <div class="formula-expr">S = (d₁ × d₂) / 2</div>
+        <div class="formula-val" style="color:#06b6d4;" id="hth-dt">—</div>
+        <div class="formula-unit">đơn vị vuông</div>
+      </div>
+    </div>
+  </div>
+  <div class="ctrl-bar">
+    <div class="slider-group">
+      <div class="slider-row">
+        <span class="slider-label" style="color:#f59e0b;">Đường chéo d₁</span>
+        <input type="range" min="2" max="18" value="12" id="hth-d1" oninput="drawHTH()" style="width:150px;accent-color:#f59e0b;"/>
+        <input class="num-input" type="number" min="2" max="18" value="12" id="hth-d1n" oninput="syncHTH('d1')" style="border-color:#f59e0b44;"/>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label" style="color:#06b6d4;">Đường chéo d₂</span>
+        <input type="range" min="2" max="16" value="8" id="hth-d2" oninput="drawHTH()" style="width:150px;accent-color:#06b6d4;"/>
+        <input class="num-input" type="number" min="2" max="16" value="8" id="hth-d2n" oninput="syncHTH('d2')" style="border-color:#06b6d444;"/>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TABS=['hcn','hv','tg','ht','hbh','hth'];
+function switchTab(t){
+  TABS.forEach(x=>{
+    document.getElementById('tab-'+x).classList.toggle('active',x===t);
+    document.getElementById('wrap-'+x).style.display=x===t?'flex':'none';
+  });
+  if(t==='hcn')drawHCN();
+  if(t==='hv')drawHV();
+  if(t==='tg')drawTG();
+  if(t==='ht')drawHT();
+  if(t==='hbh')drawHBH();
+  if(t==='hth')drawHTH();
+}
+
+const NS='http://www.w3.org/2000/svg';
+function el(tag,attrs){const e=document.createElementNS(NS,tag);Object.entries(attrs).forEach(([k,v])=>e.setAttribute(k,v));return e;}
+function txt(x,y,s,col,sz=14,anchor='middle',fw=700){
+  const t=el('text',{x,y,'text-anchor':anchor,'font-size':sz,'font-weight':fw,fill:col,'font-family':'Segoe UI,sans-serif'});
+  t.textContent=s;return t;
+}
+function dim(svg,x1,y1,x2,y2,label,col,offset=20){
+  const mx=(x1+x2)/2, my=(y1+y2)/2;
+  const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);
+  if(len<1)return;
+  const nx=-dy/len*offset, ny=dx/len*offset;
+  svg.appendChild(el('line',{x1:x1+nx,y1:y1+ny,x2:x2+nx,y2:y2+ny,stroke:col,'stroke-width':1.5,'stroke-dasharray':'4,3'}));
+  svg.appendChild(txt(mx+nx,my+ny-4,label,col,12));
+}
+function hatchFill(svg,x,y,w,h,col){
+  const id='hatch-'+Math.random().toString(36).slice(2,7);
+  const defs=el('defs',{});
+  const pat=el('pattern',{id,patternUnits:'userSpaceOnUse',width:10,height:10});
+  const ln=el('line',{x1:0,y1:10,x2:10,y2:0,stroke:col,'stroke-width':1,'stroke-opacity':'.25'});
+  pat.appendChild(ln); defs.appendChild(pat); svg.appendChild(defs);
+  const r=el('rect',{x,y,width:w,height:h,fill:`url(#${id})`}); svg.appendChild(r);
+}
+
+/* ── HCN ── */
+function syncHCN(f){
+  if(f==='a') document.getElementById('hcn-a').value=document.getElementById('hcn-an').value;
+  else document.getElementById('hcn-b').value=document.getElementById('hcn-bn').value;
+  drawHCN();
+}
+function drawHCN(){
+  const a=+document.getElementById('hcn-a').value;
+  const b=+document.getElementById('hcn-b').value;
+  document.getElementById('hcn-an').value=a; document.getElementById('hcn-bn').value=b;
+  const svg=document.getElementById('svg-hcn'); svg.innerHTML='';
+  const PAD=60, W=500, H=300;
+  const scale=Math.min((W-PAD*2)/a,(H-PAD*2)/b);
+  const rw=a*scale, rh=b*scale;
+  const ox=(W-rw)/2, oy=(H-rh)/2;
+  hatchFill(svg,ox,oy,rw,rh,'#06b6d4');
+  svg.appendChild(el('rect',{x:ox,y:oy,width:rw,height:rh,fill:'rgba(6,182,212,.12)',stroke:'#06b6d4','stroke-width':2.5,'rx':3}));
+  dim(svg,ox,oy+rh,ox+rw,oy+rh,'a = '+a,'#f59e0b',26);
+  dim(svg,ox+rw,oy,ox+rw,oy+rh,'b = '+b,'#10b981',30);
+  svg.appendChild(txt(W/2,oy-12,'Hình chữ nhật','#94a3b8',13,'middle',600));
+  document.getElementById('hcn-cv').textContent=2*(a+b);
+  document.getElementById('hcn-dt').textContent=a*b;
+}
+
+/* ── HV ── */
+function syncHV(){document.getElementById('hv-a').value=document.getElementById('hv-an').value;drawHV();}
+function drawHV(){
+  const a=+document.getElementById('hv-a').value;
+  document.getElementById('hv-an').value=a;
+  const svg=document.getElementById('svg-hv'); svg.innerHTML='';
+  const PAD=55, W=300, H=300;
+  const scale=Math.min((W-PAD*2)/a,(H-PAD*2)/a);
+  const s=a*scale, ox=(W-s)/2, oy=(H-s)/2;
+  hatchFill(svg,ox,oy,s,s,'#8b5cf6');
+  svg.appendChild(el('rect',{x:ox,y:oy,width:s,height:s,fill:'rgba(139,92,246,.12)',stroke:'#8b5cf6','stroke-width':2.5,'rx':3}));
+  dim(svg,ox,oy+s,ox+s,oy+s,'a = '+a,'#f59e0b',26);
+  dim(svg,ox+s,oy,ox+s,oy+s,'a = '+a,'#f59e0b',30);
+  svg.appendChild(txt(W/2,oy-12,'Hình vuông','#94a3b8',13,'middle',600));
+  document.getElementById('hv-cv').textContent=4*a;
+  document.getElementById('hv-dt').textContent=a*a;
+}
+
+/* ── TG ── */
+let tgType='iso';
+function setTGType(t){
+  tgType=t;
+  ['iso','right','scalene'].forEach(x=>{
+    const b=document.getElementById('tg-'+x);
+    b.style.borderColor=x===t?'var(--teal)':'var(--border)';
+    b.style.color=x===t?'var(--teal)':'var(--sub)';
+  });
+  drawTG();
+}
+function syncTG(f){
+  if(f==='a') document.getElementById('tg-a').value=document.getElementById('tg-an').value;
+  else document.getElementById('tg-h').value=document.getElementById('tg-hn').value;
+  drawTG();
+}
+function drawTG(){
+  const a=+document.getElementById('tg-a').value;
+  const h=+document.getElementById('tg-h').value;
+  document.getElementById('tg-an').value=a; document.getElementById('tg-hn').value=h;
+  const svg=document.getElementById('svg-tg'); svg.innerHTML='';
+  const W=500, H=300, PAD=60;
+  const scale=Math.min((W-PAD*2)/a,(H-PAD*2)/h);
+  const bw=a*scale, bh=h*scale;
+  const ox=(W-bw)/2, oy=(H-bh)/2;
+  // apex x position
+  let apx;
+  if(tgType==='iso') apx=ox+bw/2;
+  else if(tgType==='right') apx=ox;
+  else apx=ox+bw*0.35;
+  const apy=oy;
+  const pts=`${apx},${apy} ${ox},${oy+bh} ${ox+bw},${oy+bh}`;
+  // hatch
+  const id='hatch-tg';
+  const defs=el('defs',{});
+  const pat=el('pattern',{id,patternUnits:'userSpaceOnUse',width:10,height:10});
+  pat.appendChild(el('line',{x1:0,y1:10,x2:10,y2:0,stroke:'#10b981','stroke-width':1,'stroke-opacity':'.25'}));
+  defs.appendChild(pat); svg.appendChild(defs);
+  const poly=el('polygon',{points:pts,fill:'rgba(16,185,129,.12)',stroke:'#10b981','stroke-width':2.5});
+  svg.appendChild(el('polygon',{points:pts,fill:`url(#${id})`}));
+  svg.appendChild(poly);
+  // height line
+  svg.appendChild(el('line',{x1:apx,y1:apy,x2:apx,y2:oy+bh,stroke:'#ef4444','stroke-width':1.5,'stroke-dasharray':'5,4'}));
+  // right-angle mark at foot
+  if(tgType==='right'){
+    svg.appendChild(el('rect',{x:ox,y:oy+bh-12,width:12,height:12,fill:'none',stroke:'#ef4444','stroke-width':1.5}));
+  }
+  // dims
+  dim(svg,ox,oy+bh+6,ox+bw,oy+bh+6,'a = '+a,'#f59e0b',22);
+  svg.appendChild(el('line',{x1:apx-16,y1:apy,x2:apx-16,y2:oy+bh,stroke:'#ef4444','stroke-width':1.5,'stroke-dasharray':'4,3'}));
+  svg.appendChild(txt(apx-28,(apy+oy+bh)/2,'h='+h,'#ef4444',12,'middle',800));
+  // side labels for iso
+  const b_side=Math.sqrt(((apx-ox)*(apx-ox))+(bh*bh));
+  const c_side=Math.sqrt(((apx-(ox+bw))*(apx-(ox+bw)))+(bh*bh));
+  svg.appendChild(txt(W/2,oy-12,'Tam giác','#94a3b8',13,'middle',600));
+  const perim=a+Math.round(b_side/scale)+Math.round(c_side/scale);
+  document.getElementById('tg-cv').textContent=perim;
+  document.getElementById('tg-dt').textContent=(a*h/2).toFixed(1).replace('.0','');
+}
+
+/* ── HT ── */
+function syncHT(f){
+  const ids={'a':'ht-a','b':'ht-b','h':'ht-h'};
+  document.getElementById(ids[f]).value=document.getElementById(ids[f]+'n').value;
+  drawHT();
+}
+function drawHT(){
+  const a=+document.getElementById('ht-a').value;
+  const b=Math.min(+document.getElementById('ht-b').value,a-1);
+  const h=+document.getElementById('ht-h').value;
+  document.getElementById('ht-an').value=a; document.getElementById('ht-bn').value=b; document.getElementById('ht-hn').value=h;
+  const svg=document.getElementById('svg-ht'); svg.innerHTML='';
+  const W=500, H=300, PAD=65;
+  const scale=Math.min((W-PAD*2)/a,(H-PAD*2)/h);
+  const aw=a*scale, bw=b*scale, bh=h*scale;
+  const ox=(W-aw)/2, oy=(H-bh)/2;
+  const offset=(aw-bw)/2;
+  const pts=`${ox+offset},${oy} ${ox+offset+bw},${oy} ${ox+aw},${oy+bh} ${ox},${oy+bh}`;
+  const id2='hatch-ht';
+  const defs2=el('defs',{});
+  const pat2=el('pattern',{id:id2,patternUnits:'userSpaceOnUse',width:10,height:10});
+  pat2.appendChild(el('line',{x1:0,y1:10,x2:10,y2:0,stroke:'#f59e0b','stroke-width':1,'stroke-opacity':'.25'}));
+  defs2.appendChild(pat2); svg.appendChild(defs2);
+  svg.appendChild(el('polygon',{points:pts,fill:`url(#${id2})`}));
+  svg.appendChild(el('polygon',{points:pts,fill:'rgba(245,158,11,.12)',stroke:'#f59e0b','stroke-width':2.5}));
+  // height
+  const hx=ox+offset+(bw/2);
+  svg.appendChild(el('line',{x1:hx,y1:oy,x2:hx,y2:oy+bh,stroke:'#ef4444','stroke-width':1.5,'stroke-dasharray':'5,4'}));
+  svg.appendChild(txt(hx-16,(oy+oy+bh)/2,'h='+h,'#ef4444',12,'middle',800));
+  dim(svg,ox+offset,oy-6,ox+offset+bw,oy-6,'b = '+b,'#8b5cf6',22);
+  dim(svg,ox,oy+bh+6,ox+aw,oy+bh+6,'a = '+a,'#f59e0b',22);
+  svg.appendChild(txt(W/2,oy-32,'Hình thang','#94a3b8',13,'middle',600));
+  // side lengths approx
+  const c=Math.round(Math.sqrt(offset*offset+bh*bh)/scale);
+  const d=Math.round(Math.sqrt(offset*offset+bh*bh)/scale);
+  document.getElementById('ht-cv').textContent=a+b+c+d;
+  document.getElementById('ht-dt').textContent=((a+b)*h/2).toFixed(1).replace('.0','');
+}
+
+/* ── HBH ── */
+function syncHBH(f){
+  const map={a:['hbh-a','hbh-an'],b:['hbh-b','hbh-bn'],h:['hbh-h','hbh-hn']};
+  document.getElementById(map[f][0]).value=document.getElementById(map[f][1]).value;
+  drawHBH();
+}
+function drawHBH(){
+  const a=+document.getElementById('hbh-a').value;
+  const b=+document.getElementById('hbh-b').value;
+  let h=+document.getElementById('hbh-h').value;
+  // h cannot exceed b
+  if(h>b){h=b;document.getElementById('hbh-h').value=h;document.getElementById('hbh-hn').value=h;}
+  document.getElementById('hbh-an').value=a; document.getElementById('hbh-bn').value=b; document.getElementById('hbh-hn').value=h;
+  const svg=document.getElementById('svg-hbh'); svg.innerHTML='';
+  const W=500,H=300,PAD=70;
+  const scale=Math.min((W-PAD*2)/a,(H-PAD*2)/h*0.8);
+  const aw=a*scale, hh=h*scale;
+  // slant offset from h and b
+  const bh=b*scale;
+  const slant=Math.sqrt(bh*bh-hh*hh)<aw*0.4?Math.sqrt(Math.max(0,bh*bh-hh*hh)):aw*0.25;
+  const ox=(W-aw-slant)/2, oy=(H-hh)/2;
+  const pts=`${ox+slant},${oy} ${ox+slant+aw},${oy} ${ox+aw},${oy+hh} ${ox},${oy+hh}`;
+  const id='hatch-hbh';
+  const defs=el('defs',{});
+  const pat=el('pattern',{id,patternUnits:'userSpaceOnUse',width:10,height:10});
+  pat.appendChild(el('line',{x1:0,y1:10,x2:10,y2:0,stroke:'#ec4899','stroke-width':1,'stroke-opacity':'.25'}));
+  defs.appendChild(pat); svg.appendChild(defs);
+  svg.appendChild(el('polygon',{points:pts,fill:`url(#${id})`}));
+  svg.appendChild(el('polygon',{points:pts,fill:'rgba(236,72,153,.12)',stroke:'#ec4899','stroke-width':2.5}));
+  // height line
+  svg.appendChild(el('line',{x1:ox+slant,y1:oy,x2:ox+slant,y2:oy+hh,stroke:'#ef4444','stroke-width':1.5,'stroke-dasharray':'5,4'}));
+  svg.appendChild(el('rect',{x:ox+slant,y:oy+hh-11,width:11,height:11,fill:'none',stroke:'#ef4444','stroke-width':1.5}));
+  svg.appendChild(txt(ox+slant-16,(oy+oy+hh)/2,'h='+h,'#ef4444',12,'middle',800));
+  dim(svg,ox,oy+hh+6,ox+aw,oy+hh+6,'a = '+a,'#f59e0b',22);
+  dim(svg,ox+aw,oy,ox+aw+slant+6,oy+hh,'b = '+b,'#8b5cf6',22);
+  svg.appendChild(txt(W/2,oy-14,'Hình bình hành','#94a3b8',13,'middle',600));
+  document.getElementById('hbh-cv').textContent=2*(a+b);
+  document.getElementById('hbh-dt').textContent=a*h;
+}
+
+/* ── HTH ── */
+function syncHTH(f){
+  if(f==='d1'){document.getElementById('hth-d1').value=document.getElementById('hth-d1n').value;}
+  else{document.getElementById('hth-d2').value=document.getElementById('hth-d2n').value;}
+  drawHTH();
+}
+function drawHTH(){
+  const d1=+document.getElementById('hth-d1').value;
+  const d2=+document.getElementById('hth-d2').value;
+  document.getElementById('hth-d1n').value=d1; document.getElementById('hth-d2n').value=d2;
+  const svg=document.getElementById('svg-hth'); svg.innerHTML='';
+  const W=400,H=300,PAD=65;
+  const scale=Math.min((W-PAD*2)/d1,(H-PAD*2)/d2);
+  const hw=d1*scale/2, hh=d2*scale/2;
+  const cx=W/2, cy=H/2;
+  const pts=`${cx},${cy-hh} ${cx+hw},${cy} ${cx},${cy+hh} ${cx-hw},${cy}`;
+  const id='hatch-hth';
+  const defs=el('defs',{});
+  const pat=el('pattern',{id,patternUnits:'userSpaceOnUse',width:10,height:10});
+  pat.appendChild(el('line',{x1:0,y1:10,x2:10,y2:0,stroke:'#06b6d4','stroke-width':1,'stroke-opacity':'.25'}));
+  defs.appendChild(pat); svg.appendChild(defs);
+  svg.appendChild(el('polygon',{points:pts,fill:`url(#${id})`}));
+  svg.appendChild(el('polygon',{points:pts,fill:'rgba(6,182,212,.12)',stroke:'#06b6d4','stroke-width':2.5}));
+  // diagonals
+  svg.appendChild(el('line',{x1:cx-hw,y1:cy,x2:cx+hw,y2:cy,stroke:'#f59e0b','stroke-width':1.5,'stroke-dasharray':'5,4'}));
+  svg.appendChild(el('line',{x1:cx,y1:cy-hh,x2:cx,y2:cy+hh,stroke:'#8b5cf6','stroke-width':1.5,'stroke-dasharray':'5,4'}));
+  svg.appendChild(txt(cx,cy-hh-14,'Hình thoi','#94a3b8',13,'middle',600));
+  svg.appendChild(txt(cx,cy+8,'d₁ = '+d1,'#f59e0b',12,'middle',800));
+  svg.appendChild(txt(cx+hw/2+14,cy-hh/2,'d₂='+d2,'#8b5cf6',12,'middle',800));
+  // cạnh a = sqrt((d1/2)²+(d2/2)²)
+  const a=Math.sqrt((d1/2)*(d1/2)+(d2/2)*(d2/2)).toFixed(2);
+  document.getElementById('hth-cv').textContent=(4*a).toFixed(2);
+  document.getElementById('hth-dt').textContent=(d1*d2/2).toFixed(1).replace('.0','');
+}
+
+// init
+drawHCN();
+</script>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Đoán Nốt Nhạc – Âm Nhạc</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0f172a;color:#e2e8f0;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+header{width:100%;background:#1e293b;padding:.75rem 1rem;text-align:center;border-bottom:1px solid #334155}
+header h1{font-size:1.05rem;font-weight:700;color:#e879f9;letter-spacing:.04em}
+header h2{font-size:.72rem;color:#94a3b8;margin-top:2px}
+
+.mode-bar{display:flex;gap:6px;padding:.5rem 1rem;width:100%;max-width:440px}
+.mode-btn{flex:1;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:.4rem;font-size:.72rem;color:#94a3b8;cursor:pointer;text-align:center}
+.mode-btn.active{background:#4a044e;border-color:#e879f9;color:#f5d0fe}
+
+.stats{display:flex;gap:.8rem;justify-content:center;padding:.3rem 1rem .2rem;width:100%;max-width:440px}
+.stat{background:#1e293b;border-radius:10px;padding:.3rem .8rem;font-size:.78rem;color:#94a3b8;text-align:center}
+.stat span{display:block;font-size:1rem;font-weight:700;color:#f8fafc}
+.prog-wrap{width:100%;max-width:440px;padding:0 1rem .5rem}
+.prog-bar{height:5px;background:#1e293b;border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#86198f,#e879f9);border-radius:3px;transition:width .3s}
+
+/* Staff canvas */
+.staff-wrap{background:#1e293b;border-radius:16px;margin:.3rem 1rem;padding:1rem;width:calc(100% - 2rem);max-width:440px;display:flex;flex-direction:column;align-items:center}
+.staff-label{font-size:.78rem;color:#94a3b8;margin-bottom:.6rem}
+canvas#staff{border-radius:8px}
+.btn-play{margin-top:.5rem;background:#4a044e;border:1px solid #e879f9;color:#f0abfc;border-radius:8px;padding:.35rem 1rem;font-size:.78rem;cursor:pointer}
+
+.q-ask{font-size:.85rem;color:#e2e8f0;text-align:center;padding:.2rem 1rem .5rem;width:100%;max-width:440px}
+
+/* Options */
+.opts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:.2rem 1rem;width:100%;max-width:440px}
+.opt{background:#1e293b;border:2px solid #334155;border-radius:10px;padding:.75rem .2rem;font-size:1rem;font-weight:700;color:#e2e8f0;cursor:pointer;text-align:center;transition:all .15s}
+.opt:active{transform:scale(.92)}
+.opt.correct{background:#052e16;border-color:#16a34a;color:#4ade80}
+.opt.wrong{background:#450a0a;border-color:#dc2626;color:#f87171}
+.opt:disabled{cursor:default}
+
+/* Mode B: name to position */
+.word-show{text-align:center;font-size:2rem;font-weight:700;color:#e879f9;padding:.4rem 1rem;width:100%;max-width:440px}
+.octave-hint{text-align:center;font-size:.78rem;color:#94a3b8;margin-bottom:.3rem}
+.opts8{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:.2rem 1rem;width:100%;max-width:440px}
+.opt8{background:#1e293b;border:2px solid #334155;border-radius:10px;padding:.6rem .2rem;font-size:.75rem;color:#e2e8f0;cursor:pointer;text-align:center;transition:all .15s;line-height:1.3}
+.opt8:active{transform:scale(.92)}
+.opt8.correct{background:#052e16;border-color:#16a34a;color:#4ade80}
+.opt8.wrong{background:#450a0a;border-color:#dc2626;color:#f87171}
+
+.explain{background:#1e0330;border-radius:12px;padding:.7rem 1rem;margin:.3rem 1rem;font-size:.82rem;color:#d8b4fe;line-height:1.55;width:calc(100% - 2rem);max-width:440px;display:none}
+.btn-next{display:none;margin:.4rem 1rem;width:calc(100% - 2rem);max-width:440px;background:#86198f;color:#fff;border:none;border-radius:12px;padding:.8rem;font-size:.95rem;font-weight:700;cursor:pointer}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:50}
+.result-card{background:#1e293b;border-radius:18px;padding:2rem;text-align:center;max-width:310px;width:90%}
+.re{font-size:3rem;margin-bottom:.5rem}.rt{font-size:1.3rem;font-weight:700;margin-bottom:.4rem}.rs{font-size:.9rem;color:#94a3b8;margin-bottom:1rem}
+.btn-re{background:#86198f;color:#fff;border:none;border-radius:10px;padding:.75rem 2rem;font-size:1rem;font-weight:700;cursor:pointer;width:100%}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎵 ĐOÁN NỐT NHẠC</h1>
+  <h2>ÂM NHẠC THCS – KHUÔNG NHẠC TREBLE CLEF</h2>
+</header>
+<div class="mode-bar">
+  <button class="mode-btn active" onclick="setMode(0,this)">Nhìn khuông → Tên nốt</button>
+  <button class="mode-btn" onclick="setMode(1,this)">Tên nốt → Vị trí</button>
+</div>
+<div class="stats">
+  <div class="stat"><span id="qNum">1</span>Câu</div>
+  <div class="stat"><span id="correct">0</span>Đúng</div>
+  <div class="stat"><span id="total">12</span>Tổng</div>
+</div>
+<div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div></div>
+
+<!-- Mode A -->
+<div id="modeA">
+  <div class="staff-wrap">
+    <div class="staff-label">Nốt nhạc nào đây?</div>
+    <canvas id="staff" width="300" height="130"></canvas>
+    <button class="btn-play" onclick="playNote()">🔊 Nghe nốt</button>
+  </div>
+  <div class="opts" id="opts"></div>
+</div>
+
+<!-- Mode B -->
+<div id="modeB" style="display:none">
+  <div class="word-show" id="wordShow"></div>
+  <div class="octave-hint" id="octaveHint"></div>
+  <div class="staff-wrap" style="padding:.6rem">
+    <div class="staff-label" style="margin-bottom:.3rem">Chọn vị trí đúng trên khuông:</div>
+    <canvas id="staff2" width="300" height="130"></canvas>
+  </div>
+  <div class="opts8" id="opts8"></div>
+</div>
+
+<div class="explain" id="explain"></div>
+<button class="btn-next" id="btnNext" onclick="nextQ()">Câu tiếp →</button>
+
+<div class="overlay" id="overlay">
+  <div class="result-card">
+    <div class="re" id="re"></div><div class="rt" id="rt"></div><div class="rs" id="rs"></div>
+    <button class="btn-re" onclick="restart()">Chơi lại</button>
+  </div>
+</div>
+
+<script>
+// Treble clef staff: lines are E4,G4,B4,D5,F5 (bottom to top)
+// Positions (line/space from bottom): 0=below staff, then 1=1st line(E4),2=1st space(F4),...
+// We encode note as {name, solfege, pos, freq}
+// pos: 0=ledger below (C4), 1=E4 line, 2=F4 space, 3=G4 line, 4=A4 space, 5=B4 line, 6=C5 space, 7=D5 line, 8=E5 space, 9=F5 line, 10=G5 space
+const NOTES = [
+  {name:'Đô (C4)',solfege:'Đô',pos:0,freq:261.63,note:'C4',desc:'Đô giữa — nốt dưới khuông, nằm trên gạch phụ'},
+  {name:'Rê (D4)',solfege:'Rê',pos:0.5,freq:293.66,note:'D4',desc:'Rê — nốt dưới khuông, nằm ngay dưới dòng kẻ 1'},
+  {name:'Mi (E4)',solfege:'Mi',pos:1,freq:329.63,note:'E4',desc:'Mi — nốt nằm trên dòng kẻ 1 (dòng dưới cùng)'},
+  {name:'Fa (F4)',solfege:'Fa',pos:2,freq:349.23,note:'F4',desc:'Fa — nốt nằm ở khe 1 (giữa dòng 1 và 2)'},
+  {name:'Son (G4)',solfege:'Son',pos:3,freq:392.00,note:'G4',desc:'Son — nốt nằm trên dòng kẻ 2'},
+  {name:'La (A4)',solfege:'La',pos:4,freq:440.00,note:'A4',desc:'La — nốt nằm ở khe 2 (giữa dòng 2 và 3)'},
+  {name:'Si (B4)',solfege:'Si',pos:5,freq:493.88,note:'B4',desc:'Si — nốt nằm trên dòng kẻ 3 (giữa)'},
+  {name:'Đô (C5)',solfege:'Đô',pos:6,freq:523.25,note:'C5',desc:'Đô cao — nốt nằm ở khe 3 (giữa dòng 3 và 4)'},
+  {name:'Rê (D5)',solfege:'Rê',pos:7,freq:587.33,note:'D5',desc:'Rê cao — nốt nằm trên dòng kẻ 4'},
+  {name:'Mi (E5)',solfege:'Mi',pos:8,freq:659.25,note:'E5',desc:'Mi cao — nốt nằm ở khe 4 (giữa dòng 4 và 5)'},
+  {name:'Fa (F5)',solfege:'Fa',pos:9,freq:698.46,note:'F5',desc:'Fa cao — nốt nằm trên dòng kẻ 5 (dòng trên cùng)'},
+  {name:'Son (G5)',solfege:'Son',pos:10,freq:783.99,note:'G5',desc:'Son cao — nốt nằm ở khe trên (trên dòng 5)'},
+];
+
+const TOTAL=12;
+let mode=0, queue=[], qIdx=0, correctCount=0, answered=false;
+let currentNote=null;
+const AC=new (window.AudioContext||window.webkitAudioContext)();
+
+function setMode(m,btn){mode=m;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');restart();}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+
+function restart(){
+  const pool=[...NOTES];shuffle(pool);queue=pool.slice(0,TOTAL);
+  qIdx=0;correctCount=0;answered=false;
+  document.getElementById('overlay').style.display='none';
+  document.getElementById('correct').textContent=0;document.getElementById('total').textContent=TOTAL;
+  if(mode===0){document.getElementById('modeA').style.display='';document.getElementById('modeB').style.display='none';}
+  else{document.getElementById('modeA').style.display='none';document.getElementById('modeB').style.display='';}
+  nextQ();
+}
+
+// Staff drawing
+function drawStaff(canvasId, notePos, highlight){
+  const cvs=document.getElementById(canvasId);
+  const ctx=cvs.getContext('2d');
+  ctx.clearRect(0,0,cvs.width,cvs.height);
+  const W=cvs.width, H=cvs.height;
+  const staffTop=25, lineGap=16, staffH=4*lineGap;
+  ctx.strokeStyle='#475569';ctx.lineWidth=1.5;
+  // 5 staff lines
+  for(let i=0;i<5;i++){
+    const y=staffTop+i*lineGap;
+    ctx.beginPath();ctx.moveTo(40,y);ctx.lineTo(W-20,y);ctx.stroke();
+  }
+  // Treble clef (simplified symbol)
+  ctx.fillStyle='#94a3b8';ctx.font='bold 48px serif';ctx.textBaseline='top';
+  ctx.fillText('𝄞',10,staffTop-14);
+  // Ledger line for C4/D4
+  if(notePos<=0.5){
+    ctx.strokeStyle='#64748b';ctx.lineWidth=1.5;
+    const ly=staffTop+4*lineGap+lineGap; // one below bottom line
+    ctx.beginPath();ctx.moveTo(W/2-14,ly);ctx.lineTo(W/2+14,ly);ctx.stroke();
+  }
+  // Draw note head
+  // pos 0=C4 (ledger below), pos 1=E4 (line1 bottom), pos 2=F4 (space1)...
+  // y position: line 1 = staffTop+4*lineGap; line 5 = staffTop
+  // pos 0 = below line 1 = staffTop+4*lineGap+lineGap*0.5 (ledger)
+  // pos 1 = line 1
+  // pos 2 = space 1 = between line1 and line2
+  function posToY(p){
+    // p=0 → C4 on ledger below: staffTop+4*lineGap+lineGap (one half step below line1)
+    // each half-step = lineGap/2
+    const baseY=staffTop+4*lineGap;
+    return baseY-(p*lineGap/2);
+  }
+  if(notePos!==null){
+    const ny=posToY(notePos);
+    const nx=W/2;
+    ctx.fillStyle=highlight||'#e879f9';
+    ctx.beginPath();ctx.ellipse(nx,ny,9,7,Math.PI*-0.2,0,Math.PI*2);ctx.fill();
+    // stem
+    ctx.strokeStyle=highlight||'#e879f9';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(nx+8,ny);ctx.lineTo(nx+8,ny-36);ctx.stroke();
+  }
+}
+
+// Draw multiple notes (for mode B options)
+function drawMultiStaff(canvasId, positions){
+  const cvs=document.getElementById(canvasId);
+  const ctx=cvs.getContext('2d');
+  ctx.clearRect(0,0,cvs.width,cvs.height);
+  const W=cvs.width,H=cvs.height;
+  const staffTop=25,lineGap=16;
+  ctx.strokeStyle='#334155';ctx.lineWidth=1;
+  for(let i=0;i<5;i++){const y=staffTop+i*lineGap;ctx.beginPath();ctx.moveTo(20,y);ctx.lineTo(W-10,y);ctx.stroke();}
+  ctx.fillStyle='#64748b';ctx.font='bold 40px serif';ctx.fillText('𝄞',2,staffTop-10);
+}
+
+function nextQ(){
+  if(qIdx>=queue.length){showFinal();return;}
+  answered=false;
+  document.getElementById('explain').style.display='none';
+  document.getElementById('btnNext').style.display='none';
+  currentNote=queue[qIdx];qIdx++;
+  document.getElementById('qNum').textContent=qIdx;
+  document.getElementById('progFill').style.width=((qIdx-1)/TOTAL*100)+'%';
+
+  if(mode===0){
+    drawStaff('staff',currentNote.pos,null);
+    // Options: current note's solfege + 3 distractors
+    const pool=NOTES.filter(n=>n!==currentNote);shuffle(pool);
+    const opts=[currentNote,...pool.slice(0,3)];shuffle(opts);
+    const div=document.getElementById('opts');div.innerHTML='';
+    opts.forEach(n=>{
+      const b=document.createElement('button');b.className='opt';b.textContent=n.solfege;
+      b.onclick=()=>pick(n,currentNote,b);div.appendChild(b);
+    });
+  } else {
+    document.getElementById('wordShow').textContent=currentNote.solfege;
+    document.getElementById('octaveHint').textContent=`(${currentNote.note})`;
+    drawStaff('staff2',null,null);
+    // 4 position options showing different notes
+    const pool=NOTES.filter(n=>n!==currentNote);shuffle(pool);
+    const opts=[currentNote,...pool.slice(0,3)];shuffle(opts);
+    const div=document.getElementById('opts8');div.innerHTML='';
+    opts.forEach(n=>{
+      const b=document.createElement('button');b.className='opt8';
+      b.innerHTML=`<svg width="60" height="50">${miniStaff(n.pos)}</svg><br>${n.note}`;
+      b.onclick=()=>pick(n,currentNote,b);div.appendChild(b);
+    });
+  }
+  setTimeout(()=>playNote(),300);
+}
+
+function miniStaff(pos){
+  const linesY=[8,14,20,26,32];
+  let svg='';
+  linesY.forEach(y=>svg+=`<line x1="6" y1="${y}" x2="54" y2="${y}" stroke="#475569" stroke-width="1"/>`);
+  // note position
+  const baseY=linesY[4];const noteY=baseY-(pos*3);
+  svg+=`<ellipse cx="30" cy="${noteY}" rx="6" ry="4.5" transform="rotate(-10,30,${noteY})" fill="#e879f9"/>`;
+  if(pos<=0.5){svg+=`<line x1="22" y1="${linesY[4]+5}" x2="38" y2="${linesY[4]+5}" stroke="#64748b" stroke-width="1"/>`;}
+  return svg;
+}
+
+function pick(chosen,correct,btn){
+  if(answered)return;answered=true;
+  document.querySelectorAll('.opt,.opt8').forEach(b=>{b.disabled=true;});
+  if(chosen===correct){
+    btn.classList.add('correct');correctCount++;document.getElementById('correct').textContent=correctCount;
+    drawStaff(mode===0?'staff':'staff2',correct.pos,'#4ade80');playSound(true);
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.opt,.opt8').forEach(b=>{if(b.textContent.includes(correct.solfege)||b.innerHTML.includes(correct.note))b.classList.add('correct');});
+    drawStaff(mode===0?'staff':'staff2',correct.pos,'#f87171');playSound(false);
+  }
+  const ex=document.getElementById('explain');ex.style.display='block';
+  ex.innerHTML=`<strong>🎵 ${correct.name}</strong>${correct.desc}`;
+  document.getElementById('btnNext').style.display='block';
+}
+
+function playNote(){
+  if(!currentNote)return;
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.type='sine';o.frequency.value=currentNote.freq;
+  o.connect(g);g.connect(AC.destination);
+  g.gain.setValueAtTime(.3,AC.currentTime);g.gain.setValueAtTime(.3,AC.currentTime+.4);
+  g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.8);
+  o.start();o.stop(AC.currentTime+.8);
+}
+
+function playSound(win){
+  const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);
+  if(win){o.frequency.setValueAtTime(880,AC.currentTime);o.frequency.setValueAtTime(1046,AC.currentTime+.1);}
+  else{o.frequency.setValueAtTime(220,AC.currentTime);}
+  g.gain.setValueAtTime(.15,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.4);
+  o.start();o.stop(AC.currentTime+.4);
+}
+
+function showFinal(){
+  document.getElementById('progFill').style.width='100%';
+  const pct=Math.round(correctCount/TOTAL*100);
+  let e='😊',t='Hoàn thành!';
+  if(pct>=90){e='🏆';t='Xuất sắc!';}else if(pct>=70){e='🎉';t='Tốt lắm!';}else if(pct<50){e='🎵';t='Hãy luyện thêm!';}
+  document.getElementById('re').textContent=e;document.getElementById('rt').textContent=t;
+  document.getElementById('rs').textContent=`${correctCount}/${TOTAL} câu đúng (${pct}%)`;
+  document.getElementById('overlay').style.display='flex';
+}
+
+restart();
+</script>
+</body>
+</html>

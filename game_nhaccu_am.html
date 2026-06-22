@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Nhận Biết Nhạc Cụ – Âm Nhạc</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0f172a;color:#e2e8f0;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+header{width:100%;background:#1e293b;padding:.75rem 1rem;text-align:center;border-bottom:1px solid #334155}
+header h1{font-size:1.05rem;font-weight:700;color:#f0abfc;letter-spacing:.04em}
+header h2{font-size:.72rem;color:#94a3b8;margin-top:2px}
+
+.mode-bar{display:flex;gap:6px;padding:.5rem 1rem;width:100%;max-width:440px}
+.mode-btn{flex:1;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:.4rem;font-size:.72rem;color:#94a3b8;cursor:pointer;text-align:center}
+.mode-btn.active{background:#4a044e;border-color:#e879f9;color:#f5d0fe}
+
+.cat-bar{display:flex;gap:7px;padding:0 1rem .4rem;width:100%;max-width:440px;overflow-x:auto;scrollbar-width:none}
+.cat-bar::-webkit-scrollbar{display:none}
+.cat-btn{flex-shrink:0;background:#1e293b;border:1px solid #334155;border-radius:20px;padding:.28rem .7rem;font-size:.7rem;color:#94a3b8;cursor:pointer;white-space:nowrap}
+.cat-btn.active{background:#4a044e;border-color:#e879f9;color:#f5d0fe}
+
+.stats{display:flex;gap:.8rem;justify-content:center;padding:.3rem 1rem .2rem;width:100%;max-width:440px}
+.stat{background:#1e293b;border-radius:10px;padding:.3rem .8rem;font-size:.78rem;color:#94a3b8;text-align:center}
+.stat span{display:block;font-size:1rem;font-weight:700;color:#f8fafc}
+.prog-wrap{width:100%;max-width:440px;padding:0 1rem .5rem}
+.prog-bar{height:5px;background:#1e293b;border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#86198f,#e879f9);border-radius:3px;transition:width .3s}
+
+/* Instrument display */
+.inst-card{background:#1e293b;border-radius:16px;margin:.3rem 1rem;padding:1.1rem 1rem;width:calc(100% - 2rem);max-width:440px;text-align:center}
+.inst-icon{font-size:4.5rem;line-height:1;margin-bottom:.4rem;filter:drop-shadow(0 2px 8px rgba(232,121,249,.4))}
+.inst-desc{font-size:.78rem;color:#94a3b8;margin-top:.3rem;min-height:1.2em}
+.inst-ask{font-size:.88rem;color:#e2e8f0;margin-top:.5rem}
+.btn-sound{background:#4a044e;border:1px solid #e879f9;color:#f0abfc;border-radius:8px;padding:.3rem .9rem;font-size:.75rem;cursor:pointer;margin-top:.4rem}
+
+/* Options */
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:.3rem 1rem;width:100%;max-width:440px}
+.opt{background:#1e293b;border:2px solid #334155;border-radius:12px;padding:.8rem .5rem;font-size:.88rem;color:#e2e8f0;cursor:pointer;text-align:center;transition:all .15s;line-height:1.4}
+.opt:active{transform:scale(.95)}
+.opt.correct{background:#052e16;border-color:#16a34a;color:#4ade80}
+.opt.wrong{background:#450a0a;border-color:#dc2626;color:#f87171}
+.opt:disabled{cursor:default}
+
+/* Mode B: match icon to name */
+.match-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:.3rem 1rem;width:100%;max-width:440px}
+.match-col-label{font-size:.68rem;color:#64748b;text-align:center;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+.match-col{display:flex;flex-direction:column;gap:7px}
+.m-item{background:#1e293b;border:2px solid #334155;border-radius:12px;padding:.55rem .6rem;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:.5rem;font-size:.85rem}
+.m-item:active{transform:scale(.95)}
+.m-item.selected{border-color:#e879f9;background:#3b0764}
+.m-item.matched{border-color:#16a34a;background:#052e16;color:#4ade80;cursor:default}
+.m-item.wrong-flash{border-color:#dc2626;background:#450a0a}
+.m-icon{font-size:1.4rem;flex-shrink:0}
+
+.explain{background:#1e0330;border-radius:12px;padding:.7rem 1rem;margin:.3rem 1rem;font-size:.82rem;color:#d8b4fe;line-height:1.55;width:calc(100% - 2rem);max-width:440px;display:none}
+.explain strong{color:#f0abfc;display:block;margin-bottom:.2rem}
+.btn-next{display:none;margin:.4rem 1rem;width:calc(100% - 2rem);max-width:440px;background:#86198f;color:#fff;border:none;border-radius:12px;padding:.8rem;font-size:.95rem;font-weight:700;cursor:pointer}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:50}
+.result-card{background:#1e293b;border-radius:18px;padding:2rem;text-align:center;max-width:310px;width:90%}
+.re{font-size:3rem;margin-bottom:.5rem}.rt{font-size:1.3rem;font-weight:700;margin-bottom:.4rem}.rs{font-size:.9rem;color:#94a3b8;margin-bottom:1rem}
+.btn-re{background:#86198f;color:#fff;border:none;border-radius:10px;padding:.75rem 2rem;font-size:1rem;font-weight:700;cursor:pointer;width:100%}
+</style>
+</head>
+<body>
+<header>
+  <h1>🎸 NHẬN BIẾT NHẠC CỤ</h1>
+  <h2>ÂM NHẠC THCS – NHẠC CỤ THẾ GIỚI</h2>
+</header>
+
+<div class="mode-bar">
+  <button class="mode-btn active" onclick="setMode(0,this)">Nhìn icon → Tên</button>
+  <button class="mode-btn" onclick="setMode(1,this)">Nối đôi</button>
+</div>
+<div class="cat-bar" id="catBar"></div>
+<div class="stats">
+  <div class="stat"><span id="qNum">1</span>Câu</div>
+  <div class="stat"><span id="correct">0</span>Đúng</div>
+  <div class="stat"><span id="total">12</span>Tổng</div>
+</div>
+<div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div></div>
+
+<!-- Mode A -->
+<div id="modeA">
+  <div class="inst-card">
+    <div class="inst-icon" id="instIcon"></div>
+    <div class="inst-ask">Đây là nhạc cụ gì?</div>
+    <div class="inst-desc" id="instDesc"></div>
+    <button class="btn-sound" onclick="playInstrumentSound()">🔊 Nghe âm thanh</button>
+  </div>
+  <div class="opts" id="opts"></div>
+</div>
+
+<!-- Mode B: matching -->
+<div id="modeB" style="display:none">
+  <div style="font-size:.82rem;color:#94a3b8;text-align:center;padding:.2rem 1rem .4rem">Chạm icon → chạm tên tương ứng</div>
+  <div class="match-grid">
+    <div>
+      <div class="match-col-label">Icon</div>
+      <div class="match-col" id="colIcon"></div>
+    </div>
+    <div>
+      <div class="match-col-label">Tên nhạc cụ</div>
+      <div class="match-col" id="colName"></div>
+    </div>
+  </div>
+  <button class="btn-next" id="btnNextB" onclick="nextMatchRound()" style="display:none">Vòng tiếp →</button>
+</div>
+
+<div class="explain" id="explain"></div>
+<button class="btn-next" id="btnNext" onclick="nextQ()">Câu tiếp →</button>
+
+<div class="overlay" id="overlay">
+  <div class="result-card">
+    <div class="re" id="re"></div><div class="rt" id="rt"></div><div class="rs" id="rs"></div>
+    <button class="btn-re" onclick="restart()">Chơi lại</button>
+  </div>
+</div>
+
+<script>
+const INSTRUMENTS = {
+  'Dây': [
+    {icon:'🎸',name:'Đàn guitar',vi:'Ghi-ta',desc:'Nhạc cụ dây gảy phổ biến nhất thế giới, có 6 dây.',freq:196,wave:'sawtooth'},
+    {icon:'🎻',name:'Đàn violin',vi:'Vi-ô-lông',desc:'Nhạc cụ dây kéo cổ điển, âm thanh ngọt ngào, tinh tế.',freq:440,wave:'sawtooth'},
+    {icon:'🪕',name:'Đàn ukulele',vi:'U-ku-le-le',desc:'Đàn dây nhỏ gốc Hawaii, 4 dây, âm thanh vui tươi.',freq:330,wave:'triangle'},
+    {icon:'🎹',name:'Đàn piano',vi:'Pi-a-nô',desc:'Nhạc cụ phím, âm thanh phát ra từ dây đàn bị búa gõ.',freq:262,wave:'sine'},
+    {icon:'🪗',name:'Đàn accordion',vi:'Ắc-coóc-đê-ông',desc:'Nhạc cụ phong cầm dùng tay kéo để tạo gió qua dây lưỡi.',freq:370,wave:'square'},
+  ],
+  'Gõ': [
+    {icon:'🥁',name:'Trống',vi:'Trống',desc:'Nhạc cụ gõ cơ bản nhất, tạo nhịp điệu cho ban nhạc.',freq:80,wave:'sawtooth'},
+    {icon:'🪘',name:'Trống conga',vi:'Công-ga',desc:'Trống trụ gốc Châu Phi – Cuba, dùng tay vỗ trực tiếp.',freq:100,wave:'triangle'},
+    {icon:'🔔',name:'Chuông tam giác',vi:'Tam-tam',desc:'Nhạc cụ gõ hình tam giác kim loại, âm thanh trong trẻo.',freq:1000,wave:'sine'},
+    {icon:'🪇',name:'Maracas',vi:'Ma-ra-cát',desc:'Nhạc cụ lắc gốc Mỹ Latinh, bên trong chứa hạt nhỏ.',freq:600,wave:'sawtooth'},
+  ],
+  'Hơi': [
+    {icon:'🎺',name:'Kèn trumpet',vi:'Trum-pét',desc:'Kèn đồng phát ra âm thanh bằng cách thổi và bấm van.',freq:392,wave:'square'},
+    {icon:'🎷',name:'Kèn saxophone',vi:'Sắc-xô-phôn',desc:'Kèn đồng-gỗ, âm thanh ấm nồng, phổ biến trong nhạc jazz.',freq:311,wave:'square'},
+    {icon:'🪈',name:'Sáo trúc',vi:'Sáo',desc:'Nhạc cụ hơi truyền thống Việt Nam làm từ ống trúc.',freq:523,wave:'sine'},
+    {icon:'🎵',name:'Kèn harmonica',vi:'Ha-mô-ni-ca',desc:'Kèn miệng nhỏ gọn, thổi vào/hút ra để tạo âm thanh.',freq:440,wave:'triangle'},
+  ],
+  'Dân tộc VN': [
+    {icon:'🎎',name:'Đàn tranh',vi:'Đàn tranh',desc:'Đàn dây gảy truyền thống VN, có 16-21 dây, âm thanh thanh thoát.',freq:523,wave:'triangle'},
+    {icon:'🎐',name:'Đàn bầu',vi:'Đàn bầu',desc:'Nhạc cụ độc đáo của VN, một dây, dùng cần uốn tạo âm.',freq:440,wave:'sine'},
+    {icon:'🪗',name:'Đàn nhị',vi:'Đàn nhị',desc:'Đàn dây kéo hai dây của âm nhạc dân tộc VN.',freq:330,wave:'sawtooth'},
+    {icon:'🎙️',name:'Trống cái',vi:'Trống cái',desc:'Trống lớn dùng trong âm nhạc lễ hội và sân khấu dân tộc VN.',freq:60,wave:'sawtooth'},
+  ],
+};
+
+const TOTAL=12;
+let catKeys=Object.keys(INSTRUMENTS);
+let currentCat=null, mode=0, queue=[], qIdx=0, correctCount=0, answered=false;
+let currentInst=null;
+// Mode B state
+let matchSelectedIcon=null, matchedPairs=new Set(), matchRoundData=[], matchRoundIdx=0;
+const AC=new (window.AudioContext||window.webkitAudioContext)();
+
+function buildCatBar(){
+  const bar=document.getElementById('catBar');
+  const all=document.createElement('button');all.className='cat-btn active';all.textContent='🔀 Tất cả';
+  all.onclick=()=>selectCat(null,all);bar.appendChild(all);
+  catKeys.forEach(k=>{const b=document.createElement('button');b.className='cat-btn';b.textContent=k;b.onclick=()=>selectCat(k,b);bar.appendChild(b);});
+}
+
+function selectCat(key,btn){currentCat=key;document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');restart();}
+function setMode(m,btn){mode=m;document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');restart();}
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+
+function restart(){
+  let pool=[];
+  if(currentCat)pool=[...INSTRUMENTS[currentCat]];
+  else catKeys.forEach(k=>pool.push(...INSTRUMENTS[k]));
+  shuffle(pool);queue=pool.slice(0,TOTAL);
+  qIdx=0;correctCount=0;answered=false;
+  document.getElementById('overlay').style.display='none';
+  document.getElementById('correct').textContent=0;
+  document.getElementById('total').textContent=queue.length;
+  document.getElementById('explain').style.display='none';
+  document.getElementById('btnNext').style.display='none';
+  if(mode===0){
+    document.getElementById('modeA').style.display='';
+    document.getElementById('modeB').style.display='none';
+    nextQ();
+  } else {
+    document.getElementById('modeA').style.display='none';
+    document.getElementById('modeB').style.display='';
+    startMatchMode();
+  }
+}
+
+// ── MODE A ──
+function nextQ(){
+  if(qIdx>=queue.length){showFinal();return;}
+  answered=false;
+  document.getElementById('explain').style.display='none';
+  document.getElementById('btnNext').style.display='none';
+  currentInst=queue[qIdx];qIdx++;
+  document.getElementById('qNum').textContent=qIdx;
+  document.getElementById('progFill').style.width=((qIdx-1)/queue.length*100)+'%';
+  document.getElementById('instIcon').textContent=currentInst.icon;
+  document.getElementById('instDesc').textContent='';
+  // build options
+  const pool=queue.filter(i=>i!==currentInst);shuffle(pool);
+  const opts=[currentInst,...pool.slice(0,3)];shuffle(opts);
+  const div=document.getElementById('opts');div.innerHTML='';
+  opts.forEach(inst=>{
+    const b=document.createElement('button');b.className='opt';b.textContent=inst.vi;
+    b.onclick=()=>pickA(inst,currentInst,b);div.appendChild(b);
+  });
+  setTimeout(()=>playInstrumentSound(),400);
+}
+
+function pickA(chosen,correct,btn){
+  if(answered)return;answered=true;
+  document.querySelectorAll('.opt').forEach(b=>{b.disabled=true;if(b.textContent===correct.vi)b.classList.add('correct');});
+  if(chosen===correct){btn.classList.add('correct');correctCount++;document.getElementById('correct').textContent=correctCount;playBeep(true);}
+  else{btn.classList.add('wrong');playBeep(false);}
+  document.getElementById('instDesc').textContent=correct.desc;
+  const ex=document.getElementById('explain');ex.style.display='block';
+  ex.innerHTML=`<strong>${correct.icon} ${correct.name} (${correct.vi})</strong>${correct.desc}`;
+  document.getElementById('btnNext').style.display='block';
+}
+
+function playInstrumentSound(){
+  if(!currentInst)return;
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.type=currentInst.wave||'sine';o.frequency.value=currentInst.freq;
+  o.connect(g);g.connect(AC.destination);
+  g.gain.setValueAtTime(.25,AC.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.8);
+  o.start();o.stop(AC.currentTime+.8);
+}
+
+// ── MODE B: matching ──
+const MATCH_SIZE=4;
+function startMatchMode(){
+  matchRoundIdx=0;matchedPairs=new Set();
+  matchRoundData=[];correctCount=0;
+  document.getElementById('btnNextB').style.display='none';
+  loadMatchRound();
+}
+
+function loadMatchRound(){
+  const start=matchRoundIdx*MATCH_SIZE;
+  const chunk=queue.slice(start,start+MATCH_SIZE);
+  if(!chunk.length){showFinal();return;}
+  matchRoundData=chunk;matchedPairs=new Set();matchSelectedIcon=null;
+  const icons=[...chunk];const names=[...chunk];shuffle(names);
+  const ci=document.getElementById('colIcon');const cn=document.getElementById('colName');
+  ci.innerHTML='';cn.innerHTML='';
+  document.getElementById('qNum').textContent=start+1+'–'+(start+chunk.length);
+  document.getElementById('progFill').style.width=(start/queue.length*100)+'%';
+
+  icons.forEach((inst,i)=>{
+    const d=document.createElement('div');d.className='m-item';d.dataset.idx=i;
+    d.innerHTML=`<span class="m-icon">${inst.icon}</span>`;
+    d.onclick=()=>tapIcon(i,d);ci.appendChild(d);
+  });
+  names.forEach((inst,i)=>{
+    const d=document.createElement('div');d.className='m-item';d.dataset.name=inst.name;
+    d.innerHTML=`<span style="font-size:.82rem">${inst.vi}</span>`;
+    d.onclick=()=>tapName(inst,d);cn.appendChild(d);
+  });
+}
+
+function tapIcon(idx,el){
+  if(matchedPairs.has(idx))return;
+  document.querySelectorAll('#colIcon .m-item').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');matchSelectedIcon={idx,el};
+}
+
+function tapName(inst,el){
+  if(!matchSelectedIcon)return;
+  if(el.classList.contains('matched'))return;
+  const correctIdx=matchRoundData.indexOf(inst);
+  if(correctIdx===matchSelectedIcon.idx){
+    el.classList.add('matched');matchSelectedIcon.el.classList.remove('selected');matchSelectedIcon.el.classList.add('matched');
+    matchedPairs.add(correctIdx);correctCount++;
+    document.getElementById('correct').textContent=correctCount;
+    matchSelectedIcon=null;playBeep(true);
+    if(matchedPairs.size===matchRoundData.length){
+      setTimeout(()=>{
+        matchRoundIdx++;
+        const nextStart=matchRoundIdx*MATCH_SIZE;
+        if(nextStart>=queue.length)showFinal();
+        else{document.getElementById('btnNextB').style.display='block';}
+      },500);
+    }
+  } else {
+    el.classList.add('wrong-flash');matchSelectedIcon.el.classList.add('wrong-flash');
+    setTimeout(()=>{el.classList.remove('wrong-flash');matchSelectedIcon&&matchSelectedIcon.el.classList.remove('wrong-flash','selected');matchSelectedIcon=null;},400);
+    playBeep(false);
+  }
+}
+
+function nextMatchRound(){
+  document.getElementById('btnNextB').style.display='none';loadMatchRound();
+}
+
+function showFinal(){
+  document.getElementById('progFill').style.width='100%';
+  const t=queue.length;const pct=Math.round(correctCount/t*100);
+  let e='😊',txt='Hoàn thành!';
+  if(pct>=90){e='🏆';txt='Xuất sắc!';}else if(pct>=70){e='🎉';txt='Tốt lắm!';}else if(pct<50){e='🎵';txt='Hãy luyện thêm!';}
+  document.getElementById('re').textContent=e;document.getElementById('rt').textContent=txt;
+  document.getElementById('rs').textContent=`${correctCount}/${t} câu đúng (${pct}%)`;
+  document.getElementById('overlay').style.display='flex';
+}
+
+function playBeep(win){
+  const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);
+  if(win){o.frequency.setValueAtTime(880,AC.currentTime);o.frequency.setValueAtTime(1046,AC.currentTime+.1);}
+  else{o.frequency.setValueAtTime(220,AC.currentTime);}
+  g.gain.setValueAtTime(.15,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.35);
+  o.start();o.stop(AC.currentTime+.35);
+}
+
+buildCatBar();restart();
+</script>
+</body>
+</html>

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Nối Đôi — Tiếng Anh</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#0f172a;color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+#app{width:100%;max-width:420px;min-height:100vh;display:flex;flex-direction:column;padding:0 8px 16px}
+h1{font-size:20px;font-weight:700;text-align:center;padding:14px 0 4px;letter-spacing:.5px;color:#e2e8f0}
+.sub{font-size:12px;color:#94a3b8;text-align:center;margin-bottom:12px}
+
+/* START SCREEN */
+#start-screen{flex:1;display:flex;flex-direction:column;padding:16px 0}
+.card{background:#1e293b;border-radius:12px;padding:16px;margin-bottom:12px}
+.card h2{font-size:15px;font-weight:600;margin-bottom:12px;color:#cbd5e1}
+.subject-btn{display:block;width:100%;min-height:52px;background:#0f172a;border:1.5px solid #334155;border-radius:8px;color:#e2e8f0;font-size:14px;padding:10px 14px;text-align:left;cursor:pointer;margin-bottom:8px;transition:border-color .15s,background .15s}
+.subject-btn:hover,.subject-btn.active{border-color:#3b82f6;background:#1e3a5f;color:#fff}
+.subject-btn:last-child{margin-bottom:0}
+#custom-area{margin-top:10px;display:none}
+#custom-input{width:100%;min-height:120px;background:#0f172a;border:1.5px solid #334155;border-radius:8px;color:#e2e8f0;font-size:13px;padding:10px;resize:vertical;font-family:monospace}
+#custom-input::placeholder{color:#475569}
+.hint{font-size:11px;color:#64748b;margin-top:6px}
+#start-btn{display:block;width:100%;min-height:52px;background:#2563eb;border:none;border-radius:10px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-top:8px;letter-spacing:.3px;transition:background .15s}
+#start-btn:hover{background:#1d4ed8}
+#start-btn:disabled{background:#1e3a5f;color:#475569;cursor:default}
+
+/* GAME SCREEN */
+#game-screen{flex:1;display:none;flex-direction:column}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 4px;flex-shrink:0}
+.top-bar .round{font-size:13px;font-weight:600;color:#94a3b8}
+.top-bar .timer{font-size:18px;font-weight:700;color:#38bdf8;font-variant-numeric:tabular-nums}
+.top-bar .score{font-size:13px;font-weight:700;color:#a78bfa}
+.progress-bar{height:3px;background:#1e293b;border-radius:2px;margin-bottom:10px;overflow:hidden}
+.progress-fill{height:100%;background:#2563eb;border-radius:2px;transition:width .4s}
+.cols{display:flex;gap:6px;flex:1}
+.col{flex:1;display:flex;flex-direction:column;gap:5px}
+.col-label{font-size:11px;font-weight:700;color:#64748b;text-align:center;padding-bottom:4px;letter-spacing:1px;text-transform:uppercase}
+.word-item{min-height:52px;background:#1e293b;border:.5px solid #334155;border-radius:8px;font-size:13px;color:#e2e8f0;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px 8px;cursor:pointer;transition:all .15s;overflow:hidden;user-select:none;line-height:1.3}
+.word-item:active{transform:scale(.97)}
+.word-item.selected{background:#1d4ed8;border-color:#3b82f6;color:#fff;border-width:1.5px}
+.word-item.correct{background:#15803d;border-color:#22c55e;color:#fff;animation:flash-green .4s ease}
+.word-item.wrong{background:#dc2626;border-color:#ef4444;color:#fff;animation:shake .4s ease}
+.word-item.gone{min-height:0;height:0;padding:0;border:none;margin:0;opacity:0;pointer-events:none;transition:all .35s ease}
+
+@keyframes flash-green{0%{background:#15803d}50%{background:#4ade80;color:#14532d}100%{background:#15803d}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+
+/* END SCREEN */
+#end-screen{flex:1;display:none;flex-direction:column;justify-content:center;padding:16px 0}
+.end-card{background:#1e293b;border-radius:16px;padding:24px 20px;margin-bottom:12px;text-align:center}
+.end-card h2{font-size:22px;font-weight:800;color:#38bdf8;margin-bottom:4px}
+.end-card .sub2{font-size:13px;color:#64748b;margin-bottom:20px}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.stat{background:#0f172a;border-radius:10px;padding:14px 10px}
+.stat .val{font-size:22px;font-weight:800;color:#f1f5f9}
+.stat .lbl{font-size:11px;color:#64748b;margin-top:2px}
+.btn-row{display:flex;gap:10px}
+.btn-primary{flex:1;min-height:52px;background:#2563eb;border:none;border-radius:10px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-primary:hover{background:#1d4ed8}
+.btn-secondary{flex:1;min-height:52px;background:#1e293b;border:1.5px solid #334155;border-radius:10px;color:#cbd5e1;font-size:15px;font-weight:600;cursor:pointer;transition:background .15s}
+.btn-secondary:hover{background:#0f172a}
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>Nối Đôi</h1>
+  <p class="sub">English Matching Game</p>
+
+  <!-- START SCREEN -->
+  <div id="start-screen">
+    <div class="card">
+      <h2>Chọn chủ đề</h2>
+      <button class="subject-btn active" data-subject="school">📚 Từ vựng chủ đề Trường học (30 từ)</button>
+      <button class="subject-btn" data-subject="v2">🔤 Động từ bất quy tắc V1→V2 (30 cặp)</button>
+      <button class="subject-btn" data-subject="v3">🔤 Động từ bất quy tắc V1→V3 (30 cặp)</button>
+      <button class="subject-btn" data-subject="custom">✏️ Nhập tuỳ ý</button>
+      <div id="custom-area">
+        <textarea id="custom-input" placeholder="Nhập mỗi cặp một dòng, dạng: từ|nghĩa&#10;Ví dụ:&#10;apple|quả táo&#10;book|cuốn sách"></textarea>
+        <p class="hint">Cần ít nhất 8 cặp</p>
+      </div>
+    </div>
+    <button id="start-btn">Bắt đầu chơi</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div id="game-screen">
+    <div class="top-bar">
+      <span class="round" id="round-label">Vòng 1/4</span>
+      <span class="timer" id="timer">00:00</span>
+      <span class="score" id="score-label">0 đ</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="cols">
+      <div class="col">
+        <div class="col-label">English</div>
+        <div id="left-col"></div>
+      </div>
+      <div class="col">
+        <div class="col-label">Nghĩa</div>
+        <div id="right-col"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- END SCREEN -->
+  <div id="end-screen">
+    <div class="end-card">
+      <h2>🎉 Hoàn thành!</h2>
+      <p class="sub2" id="end-sub">Bạn đã hoàn thành tất cả các vòng</p>
+      <div class="stats-grid">
+        <div class="stat"><div class="val" id="stat-time">--</div><div class="lbl">Tổng thời gian</div></div>
+        <div class="stat"><div class="val" id="stat-acc">--%</div><div class="lbl">Độ chính xác</div></div>
+        <div class="stat"><div class="val" id="stat-score">0</div><div class="lbl">Điểm số</div></div>
+        <div class="stat"><div class="val" id="stat-best">--</div><div class="lbl">Vòng nhanh nhất</div></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" id="replay-btn">Chơi lại</button>
+        <button class="btn-secondary" id="change-btn">Đổi chủ đề</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  school: [
+    ["school","trường học"],["teacher","giáo viên"],["student","học sinh"],["book","sách"],
+    ["pencil","bút chì"],["classroom","phòng học"],["homework","bài tập về nhà"],["library","thư viện"],
+    ["computer","máy tính"],["science","khoa học"],["history","lịch sử"],["geography","địa lý"],
+    ["mathematics","toán học"],["music","âm nhạc"],["sports","thể thao"],["family","gia đình"],
+    ["mother","mẹ"],["father","bố"],["friend","bạn bè"],["hospital","bệnh viện"],
+    ["doctor","bác sĩ"],["market","chợ"],["mountain","núi"],["river","sông"],
+    ["beach","bãi biển"],["flower","hoa"],["weather","thời tiết"],["birthday","sinh nhật"],
+    ["holiday","ngày lễ"],["morning","buổi sáng"]
+  ],
+  v2: [
+    ["am/is → ?","was"],["are → ?","were"],["do/does → ?","did"],["have/has → ?","had"],
+    ["go → ?","went"],["teach → ?","taught"],["become → ?","became"],["sing → ?","sang"],
+    ["win → ?","won"],["meet → ?","met"],["sit → ?","sat"],["stand → ?","stood"],
+    ["buy → ?","bought"],["think → ?","thought"],["read → ?","read (đọc)"],["write → ?","wrote"],
+    ["speak → ?","spoke"],["send → ?","sent"],["get → ?","got"],["ride → ?","rode"],
+    ["make → ?","made"],["eat → ?","ate"],["take → ?","took"],["drink → ?","drank"],
+    ["see → ?","saw"],["sell → ?","sold"],["leave → ?","left"],["feel → ?","felt"],
+    ["lose → ?","lost"],["put → ?","put (đặt)"]
+  ],
+  v3: [
+    ["am/is → ?","been"],["are → ?","been (to be)"],["do/does → ?","done"],["have/has → ?","had (có)"],
+    ["go → ?","gone"],["teach → ?","taught (V3)"],["become → ?","become (V3)"],["sing → ?","sung"],
+    ["win → ?","won (V3)"],["meet → ?","met (V3)"],["sit → ?","sat (V3)"],["stand → ?","stood (V3)"],
+    ["buy → ?","bought (V3)"],["think → ?","thought (V3)"],["read → ?","read (V3)"],["write → ?","written"],
+    ["speak → ?","spoken"],["send → ?","sent (V3)"],["get → ?","gotten/got"],["ride → ?","ridden"],
+    ["make → ?","made (V3)"],["eat → ?","eaten"],["take → ?","taken"],["drink → ?","drunk"],
+    ["see → ?","seen"],["sell → ?","sold (V3)"],["leave → ?","left (V3)"],["feel → ?","felt (V3)"],
+    ["lose → ?","lost (V3)"],["put → ?","put (V3)"]
+  ]
+};
+
+let state = {
+  subject: 'school',
+  pairs: [],
+  rounds: [],
+  roundIdx: 0,
+  score: 0,
+  totalWrong: 0,
+  totalAttempts: 0,
+  startTime: 0,
+  roundStart: 0,
+  bestRound: Infinity,
+  timerInterval: null,
+  selectedLeft: null,
+  selectedRight: null,
+  locked: false,
+  remainLeft: [],
+  remainRight: [],
+  currentPairs: [],
+  matchedCount: 0,
+  roundScore: 0,
+  roundWrong: 0
+};
+
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function fmt(ms){
+  const s=Math.floor(ms/1000);
+  return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+}
+
+function getPairs(){
+  if(state.subject==='custom'){
+    const lines=document.getElementById('custom-input').value.trim().split('\n');
+    const pairs=[];
+    for(const l of lines){
+      const p=l.split('|');
+      if(p.length>=2&&p[0].trim()&&p[1].trim()) pairs.push([p[0].trim(),p[1].trim()]);
+    }
+    return pairs;
+  }
+  return DATA[state.subject]||[];
+}
+
+function buildRounds(pairs){
+  const shuffled=shuffle(pairs);
+  const rounds=[];
+  for(let i=0;i<shuffled.length;i+=8) rounds.push(shuffled.slice(i,i+8));
+  return rounds;
+}
+
+// Subject selection
+document.querySelectorAll('.subject-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.subject-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    state.subject=btn.dataset.subject;
+    document.getElementById('custom-area').style.display=state.subject==='custom'?'block':'none';
+    validateStart();
+  });
+});
+
+document.getElementById('custom-input').addEventListener('input',validateStart);
+
+function validateStart(){
+  const btn=document.getElementById('start-btn');
+  if(state.subject==='custom'){
+    const pairs=getPairs();
+    btn.disabled=pairs.length<8;
+    btn.textContent=pairs.length<8?`Cần thêm ${8-pairs.length} cặp nữa`:'Bắt đầu chơi';
+  } else {
+    btn.disabled=false;
+    btn.textContent='Bắt đầu chơi';
+  }
+}
+
+document.getElementById('start-btn').addEventListener('click',startGame);
+document.getElementById('replay-btn').addEventListener('click',startGame);
+document.getElementById('change-btn').addEventListener('click',()=>{
+  clearInterval(state.timerInterval);
+  document.getElementById('end-screen').style.display='none';
+  document.getElementById('game-screen').style.display='none';
+  document.getElementById('start-screen').style.display='flex';
+  validateStart();
+});
+
+function startGame(){
+  const pairs=getPairs();
+  if(pairs.length<8) return;
+  state.pairs=pairs;
+  state.rounds=buildRounds(pairs);
+  state.roundIdx=0;
+  state.score=0;
+  state.totalWrong=0;
+  state.totalAttempts=0;
+  state.startTime=Date.now();
+  state.bestRound=Infinity;
+
+  document.getElementById('start-screen').style.display='none';
+  document.getElementById('end-screen').style.display='none';
+  document.getElementById('game-screen').style.display='flex';
+  document.getElementById('game-screen').style.flexDirection='column';
+
+  clearInterval(state.timerInterval);
+  state.timerInterval=setInterval(updateTimer,500);
+
+  startRound();
+}
+
+function updateTimer(){
+  document.getElementById('timer').textContent=fmt(Date.now()-state.startTime);
+}
+
+function startRound(){
+  state.roundStart=Date.now();
+  state.matchedCount=0;
+  state.roundScore=100;
+  state.roundWrong=0;
+  state.selectedLeft=null;
+  state.selectedRight=null;
+  state.locked=false;
+
+  const round=state.rounds[state.roundIdx];
+  state.currentPairs=round;
+
+  const total=state.rounds.length;
+  document.getElementById('round-label').textContent=`Vòng ${state.roundIdx+1}/${total}`;
+  document.getElementById('score-label').textContent=`${state.score} đ`;
+
+  const pairsDone=state.rounds.slice(0,state.roundIdx).reduce((a,r)=>a+r.length,0);
+  const pct=Math.round(pairsDone/state.pairs.length*100);
+  document.getElementById('progress-fill').style.width=pct+'%';
+
+  const leftItems=round.map((_,i)=>i);
+  const rightItems=shuffle([...leftItems]);
+
+  const leftCol=document.getElementById('left-col');
+  const rightCol=document.getElementById('right-col');
+  leftCol.innerHTML='';
+  rightCol.innerHTML='';
+
+  leftItems.forEach(i=>{
+    const el=document.createElement('div');
+    el.className='word-item';
+    el.textContent=round[i][0];
+    el.dataset.idx=i;
+    el.dataset.side='left';
+    el.addEventListener('click',()=>onTap(el,'left'));
+    leftCol.appendChild(el);
+  });
+
+  rightItems.forEach(i=>{
+    const el=document.createElement('div');
+    el.className='word-item';
+    el.textContent=round[i][1];
+    el.dataset.idx=i;
+    el.dataset.side='right';
+    el.addEventListener('click',()=>onTap(el,'right'));
+    rightCol.appendChild(el);
+  });
+}
+
+function onTap(el,side){
+  if(state.locked) return;
+  if(el.classList.contains('gone')) return;
+
+  if(side==='left'){
+    // Deselect previous left
+    if(state.selectedLeft) state.selectedLeft.classList.remove('selected');
+    if(state.selectedLeft===el){state.selectedLeft=null;return;}
+    state.selectedLeft=el;
+    el.classList.add('selected');
+    if(state.selectedRight) tryMatch();
+  } else {
+    if(state.selectedRight) state.selectedRight.classList.remove('selected');
+    if(state.selectedRight===el){state.selectedRight=null;return;}
+    state.selectedRight=el;
+    el.classList.add('selected');
+    if(state.selectedLeft) tryMatch();
+  }
+}
+
+function tryMatch(){
+  const L=state.selectedLeft;
+  const R=state.selectedRight;
+  state.selectedLeft=null;
+  state.selectedRight=null;
+  state.locked=true;
+  state.totalAttempts++;
+
+  const li=parseInt(L.dataset.idx);
+  const ri=parseInt(R.dataset.idx);
+
+  if(li===ri){
+    // Correct
+    L.classList.remove('selected');
+    R.classList.remove('selected');
+    L.classList.add('correct');
+    R.classList.add('correct');
+    state.matchedCount++;
+
+    setTimeout(()=>{
+      L.classList.add('gone');
+      R.classList.add('gone');
+      state.locked=false;
+
+      if(state.matchedCount===state.currentPairs.length){
+        endRound();
+      }
+    },500);
+  } else {
+    // Wrong
+    L.classList.remove('selected');
+    R.classList.remove('selected');
+    L.classList.add('wrong');
+    R.classList.add('wrong');
+    state.roundWrong++;
+    state.totalWrong++;
+    state.roundScore=Math.max(0,state.roundScore-5);
+
+    setTimeout(()=>{
+      L.classList.remove('wrong');
+      R.classList.remove('wrong');
+      state.locked=false;
+    },650);
+  }
+}
+
+function endRound(){
+  const elapsed=Date.now()-state.roundStart;
+  if(elapsed<state.bestRound) state.bestRound=elapsed;
+
+  // Speed bonus: up to +50 for under 30s, scales down
+  const secs=elapsed/1000;
+  let bonus=0;
+  if(secs<30) bonus=50;
+  else if(secs<60) bonus=Math.round(30*(1-(secs-30)/30));
+  else if(secs<120) bonus=Math.round(15*(1-(secs-60)/60));
+
+  state.score+=state.roundScore+bonus;
+  document.getElementById('score-label').textContent=`${state.score} đ`;
+
+  state.roundIdx++;
+  if(state.roundIdx>=state.rounds.length){
+    endGame();
+  } else {
+    setTimeout(startRound,400);
+  }
+}
+
+function endGame(){
+  clearInterval(state.timerInterval);
+  const total=Date.now()-state.startTime;
+  const acc=state.totalAttempts>0
+    ?Math.round((state.totalAttempts-state.totalWrong)/state.totalAttempts*100)
+    :100;
+
+  document.getElementById('game-screen').style.display='none';
+  document.getElementById('end-screen').style.display='flex';
+  document.getElementById('end-screen').style.flexDirection='column';
+
+  document.getElementById('end-sub').textContent=
+    `${state.pairs.length} cặp từ • ${state.rounds.length} vòng`;
+  document.getElementById('stat-time').textContent=fmt(total);
+  document.getElementById('stat-acc').textContent=acc+'%';
+  document.getElementById('stat-score').textContent=state.score;
+  document.getElementById('stat-best').textContent=
+    state.bestRound===Infinity?'--':fmt(state.bestRound);
+
+  const pct=100;
+  document.getElementById('progress-fill').style.width=pct+'%';
+}
+</script>
+</body>
+</html>

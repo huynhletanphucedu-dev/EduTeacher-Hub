@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Các Đới Khí Hậu Trái Đất – Địa Lí Lớp 6</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0f172a;
+    color: #f1f5f9;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    min-height: 100vh;
+  }
+  header {
+    text-align: center;
+    padding: 28px 16px 18px;
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    border-bottom: 1px solid #334155;
+  }
+  header h1 { font-size: 2rem; font-weight: 800; letter-spacing: .5px; }
+  header p { color: #94a3b8; margin-top: 6px; font-size: 1rem; }
+
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 18px 16px 0;
+  }
+  .tab-btn {
+    background: #1e293b;
+    border: 2px solid #334155;
+    color: #94a3b8;
+    padding: 10px 26px;
+    border-radius: 10px 10px 0 0;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all .2s;
+  }
+  .tab-btn.active {
+    background: #0ea5e9;
+    border-color: #0ea5e9;
+    color: #fff;
+  }
+  .tab-btn:hover:not(.active) { border-color: #0ea5e9; color: #e2e8f0; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── TAB 1 ── */
+  #tab1 { padding: 0 12px 32px; }
+
+  .diagram-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  #earth-svg { cursor: pointer; display: block; }
+
+  /* band highlight animation */
+  .band { transition: opacity .2s; }
+  .band:hover { opacity: .85; }
+  .band.selected { opacity: 1; filter: brightness(1.25); }
+
+  /* Info panel */
+  #info-panel {
+    width: 100%;
+    max-width: 620px;
+    background: #1e293b;
+    border: 2px solid #334155;
+    border-radius: 14px;
+    padding: 22px 26px;
+    margin-top: 20px;
+    transition: border-color .3s;
+  }
+  #info-panel.hidden { display: none; }
+  #info-zone-name {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+  }
+  .info-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 7px;
+    font-size: .92rem;
+    align-items: flex-start;
+  }
+  .info-label { color: #94a3b8; min-width: 120px; flex-shrink: 0; }
+  .info-value { color: #f1f5f9; }
+
+  .why-box {
+    background: #0f172a;
+    border-left: 4px solid #f59e0b;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-top: 12px;
+    font-size: .9rem;
+    color: #fde68a;
+  }
+
+  /* Sunlight angle diagram */
+  #angle-section {
+    width: 100%;
+    max-width: 620px;
+    margin-top: 24px;
+    background: #1e293b;
+    border: 2px solid #334155;
+    border-radius: 14px;
+    padding: 18px 20px;
+  }
+  #angle-section h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: #fbbf24;
+  }
+
+  /* ── TAB 2 ── */
+  #tab2 { padding: 24px 12px 40px; }
+  .compare-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  @media (max-width: 700px) {
+    .compare-grid { grid-template-columns: 1fr; }
+  }
+  .zone-card {
+    background: #1e293b;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 2px solid #334155;
+  }
+  .zone-card-header {
+    padding: 14px 18px;
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: #0f172a;
+  }
+  .zone-card-body { padding: 16px 18px; }
+  .zone-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-size: .88rem;
+    align-items: flex-start;
+  }
+  .zone-icon { font-size: 1.1rem; flex-shrink: 0; }
+  .zone-key { color: #94a3b8; font-size: .82rem; display: block; margin-bottom: 1px; }
+  .zone-val { color: #f1f5f9; }
+
+  .season-chart { margin-top: 14px; }
+  .season-chart-title { font-size: .78rem; color: #94a3b8; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌍 Các Đới Khí Hậu Trái Đất</h1>
+  <p>Tại sao Việt Nam nóng còn Bắc Cực lại lạnh? — Địa Lí Lớp 6</p>
+</header>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab(1)">🌍 Sơ Đồ Đới Khí Hậu</button>
+  <button class="tab-btn" onclick="switchTab(2)">🌡️ So Sánh Đặc Điểm</button>
+</div>
+
+<!-- TAB 1 -->
+<div id="tab1" class="tab-panel active">
+  <div class="diagram-wrap">
+    <svg id="earth-svg" width="640" height="590" viewBox="0 0 640 590" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Clip earth circle -->
+        <clipPath id="earthClip">
+          <circle cx="300" cy="280" r="230"/>
+        </clipPath>
+        <!-- Glow filter -->
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="4" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- ── SUN (right side) ── -->
+      <circle cx="590" cy="280" r="34" fill="#fbbf24" filter="url(#glow)" opacity=".9"/>
+      <!-- Sun rays toward equator -->
+      <!-- Ray 1: equator -->
+      <line x1="556" y1="280" x2="530" y2="280" stroke="#fbbf24" stroke-width="2.5" stroke-dasharray="5,3" opacity=".8"/>
+      <!-- Ray 2: upper -->
+      <line x1="560" y1="255" x2="530" y2="258" stroke="#fbbf24" stroke-width="1.8" stroke-dasharray="5,3" opacity=".6"/>
+      <!-- Ray 3: lower -->
+      <line x1="560" y1="305" x2="530" y2="302" stroke="#fbbf24" stroke-width="1.8" stroke-dasharray="5,3" opacity=".6"/>
+      <!-- Ray to north -->
+      <line x1="565" y1="228" x2="530" y2="232" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="4,4" opacity=".4"/>
+      <!-- Ray to south -->
+      <line x1="565" y1="332" x2="530" y2="328" stroke="#fbbf24" stroke-width="1.2" stroke-dasharray="4,4" opacity=".4"/>
+
+      <!-- ── EARTH bands (clipped) ── -->
+      <!-- Đới lạnh Bắc: 66.5°N – 90°N — top -->
+      <!-- lat 66.5°N → y = 280 - 230*sin(66.5°) ≈ 280 - 211 = 69 -->
+      <!-- lat 90°N → y = 280 - 230 = 50 -->
+      <rect id="band-cold-n" class="band" x="70" y="50" width="460" height="119" fill="#a5f3fc" clip-path="url(#earthClip)"
+            onclick="selectZone('cold')" style="cursor:pointer"/>
+
+      <!-- Đới ôn hòa Bắc: 23.5°N – 66.5°N -->
+      <!-- lat 23.5°N → y = 280 - 230*sin(23.5°) ≈ 280 - 91.7 = 188 -->
+      <rect id="band-temp-n" class="band" x="70" y="169" width="460" height="111" fill="#86efac" clip-path="url(#earthClip)"
+            onclick="selectZone('temperate')" style="cursor:pointer"/>
+
+      <!-- Đới nóng: 23.5°S – 23.5°N -->
+      <!-- lat 23.5°S → y = 280 + 91.7 = 372 -->
+      <rect id="band-hot" class="band" x="70" y="280" width="460" height="92" fill="#fbbf24" clip-path="url(#earthClip)"
+            onclick="selectZone('hot')" style="cursor:pointer"/>
+      <!-- hot top half: 0 to 23.5N -->
+      <rect id="band-hot-top" class="band" x="70" y="188" width="460" height="92" fill="#fbbf24" clip-path="url(#earthClip)"
+            onclick="selectZone('hot')" style="cursor:pointer"/>
+
+      <!-- Đới ôn hòa Nam: 23.5°S – 66.5°S -->
+      <rect id="band-temp-s" class="band" x="70" y="372" width="460" height="119" fill="#86efac" clip-path="url(#earthClip)"
+            onclick="selectZone('temperate')" style="cursor:pointer"/>
+
+      <!-- Đới lạnh Nam: 66.5°S – 90°S -->
+      <!-- lat 66.5°S → y = 280 + 211 = 491; lat 90°S → y = 280+230=510 -->
+      <rect id="band-cold-s" class="band" x="70" y="491" width="460" height="70" fill="#a5f3fc" clip-path="url(#earthClip)"
+            onclick="selectZone('cold')" style="cursor:pointer"/>
+
+      <!-- ── Earth border ── -->
+      <circle cx="300" cy="280" r="230" fill="none" stroke="#1e3a5f" stroke-width="3"/>
+      <!-- Ocean sheen overlay -->
+      <circle cx="300" cy="280" r="230" fill="url(#oceanOverlay)" opacity=".08" clip-path="url(#earthClip)"/>
+
+      <!-- ── Latitude lines ── -->
+      <!-- Xích đạo 0° → y=280 -->
+      <line x1="70" y1="280" x2="530" y2="280" stroke="white" stroke-width="2.2" stroke-dasharray="none" clip-path="url(#earthClip)" opacity=".9"/>
+      <text x="534" y="284" fill="white" font-size="11" font-weight="600">Xích đạo 0°</text>
+
+      <!-- Chí tuyến Bắc 23.5°N → y=188 -->
+      <line x1="70" y1="188" x2="530" y2="188" stroke="white" stroke-width="1.2" stroke-dasharray="6,4" clip-path="url(#earthClip)" opacity=".75"/>
+      <text x="534" y="192" fill="#fde68a" font-size="10.5">Chí tuyến Bắc 23.5°</text>
+
+      <!-- Chí tuyến Nam 23.5°S → y=372 -->
+      <line x1="70" y1="372" x2="530" y2="372" stroke="white" stroke-width="1.2" stroke-dasharray="6,4" clip-path="url(#earthClip)" opacity=".75"/>
+      <text x="534" y="376" fill="#fde68a" font-size="10.5">Chí tuyến Nam 23.5°</text>
+
+      <!-- Vòng cực Bắc 66.5°N → y=69 -->
+      <line x1="70" y1="69" x2="530" y2="69" stroke="white" stroke-width="1.2" stroke-dasharray="4,5" clip-path="url(#earthClip)" opacity=".65"/>
+      <text x="534" y="73" fill="#bae6fd" font-size="10.5">Vòng cực Bắc 66.5°</text>
+
+      <!-- Vòng cực Nam 66.5°S → y=491 -->
+      <line x1="70" y1="491" x2="530" y2="491" stroke="white" stroke-width="1.2" stroke-dasharray="4,5" clip-path="url(#earthClip)" opacity=".65"/>
+      <text x="534" y="495" fill="#bae6fd" font-size="10.5">Vòng cực Nam 66.5°</text>
+
+      <!-- ── Labels left side with pointer lines ── -->
+      <!-- Đới lạnh Bắc label -->
+      <line x1="70" y1="109" x2="22" y2="109" stroke="#a5f3fc" stroke-width="1.2" stroke-dasharray="3,3"/>
+      <text x="20" y="105" fill="#a5f3fc" font-size="11" font-weight="700" text-anchor="end">❄️ Đới lạnh Bắc</text>
+
+      <!-- Đới ôn hòa Bắc label -->
+      <line x1="70" y1="228" x2="22" y2="228" stroke="#86efac" stroke-width="1.2" stroke-dasharray="3,3"/>
+      <text x="20" y="224" fill="#86efac" font-size="11" font-weight="700" text-anchor="end">🌿 Đới ôn hòa Bắc</text>
+
+      <!-- Đới nóng label -->
+      <line x1="70" y1="280" x2="22" y2="280" stroke="#fbbf24" stroke-width="1.4" stroke-dasharray="3,3"/>
+      <text x="20" y="276" fill="#fbbf24" font-size="11" font-weight="700" text-anchor="end">☀️ Đới nóng</text>
+
+      <!-- Đới ôn hòa Nam label -->
+      <line x1="70" y1="420" x2="22" y2="420" stroke="#86efac" stroke-width="1.2" stroke-dasharray="3,3"/>
+      <text x="20" y="416" fill="#86efac" font-size="11" font-weight="700" text-anchor="end">🌿 Đới ôn hòa Nam</text>
+
+      <!-- Đới lạnh Nam label -->
+      <line x1="70" y1="510" x2="22" y2="510" stroke="#a5f3fc" stroke-width="1.2" stroke-dasharray="3,3"/>
+      <text x="20" y="506" fill="#a5f3fc" font-size="11" font-weight="700" text-anchor="end">❄️ Đới lạnh Nam</text>
+
+      <!-- Pole labels -->
+      <text x="300" y="58" fill="#e0f2fe" font-size="10" text-anchor="middle" font-weight="600">BẮC CỰC</text>
+      <text x="300" y="524" fill="#e0f2fe" font-size="10" text-anchor="middle" font-weight="600">NAM CỰC</text>
+
+      <!-- Hint text -->
+      <text x="300" y="570" fill="#64748b" font-size="11" text-anchor="middle">← Nhấp vào đới để xem thông tin chi tiết →</text>
+    </svg>
+
+    <!-- Info panel -->
+    <div id="info-panel" class="hidden">
+      <div id="info-zone-name"></div>
+      <div class="info-row">
+        <span class="info-label">📍 Vị trí:</span>
+        <span class="info-value" id="info-location"></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">🌡️ Nhiệt độ:</span>
+        <span class="info-value" id="info-temp"></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">🌧️ Lượng mưa:</span>
+        <span class="info-value" id="info-rain"></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">🌿 Thực vật:</span>
+        <span class="info-value" id="info-plant"></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">✨ Đặc điểm:</span>
+        <span class="info-value" id="info-feature"></span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">🏳️ Quốc gia:</span>
+        <span class="info-value" id="info-countries"></span>
+      </div>
+      <div class="why-box" id="info-why"></div>
+    </div>
+
+    <!-- Sunlight angle explainer -->
+    <div id="angle-section">
+      <h3>☀️ Tại sao góc chiếu sáng quyết định nhiệt độ?</h3>
+      <svg width="100%" viewBox="0 0 580 200" xmlns="http://www.w3.org/2000/svg">
+        <!-- ── Scenario 1: Xích đạo (90°) ── -->
+        <g transform="translate(30,20)">
+          <!-- Surface -->
+          <rect x="10" y="140" width="120" height="12" fill="#374151" rx="3"/>
+          <!-- Rays – near vertical -->
+          <line x1="50" y1="20" x2="50" y2="140" stroke="#fbbf24" stroke-width="2.5"/>
+          <line x1="65" y1="20" x2="65" y2="140" stroke="#fbbf24" stroke-width="2.5"/>
+          <line x1="80" y1="20" x2="80" y2="140" stroke="#fbbf24" stroke-width="2.5"/>
+          <!-- Angle arc -->
+          <path d="M50,140 A20,20 0 0,1 50,120" fill="none" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="52" y="125" fill="#fbbf24" font-size="10">≈90°</text>
+          <!-- Heat zone indicator -->
+          <rect x="40" y="130" width="55" height="10" fill="#ef4444" opacity=".35" rx="2"/>
+          <text x="67" y="126" fill="#ef4444" font-size="9" text-anchor="middle">nhỏ → nhiều năng lượng</text>
+          <!-- Label -->
+          <text x="67" y="170" fill="#fbbf24" font-size="12" font-weight="700" text-anchor="middle">🔥 Xích đạo</text>
+          <text x="67" y="185" fill="#f87171" font-size="11" text-anchor="middle">Nóng nhất</text>
+        </g>
+
+        <!-- ── Scenario 2: Ôn đới (45°) ── -->
+        <g transform="translate(220,20)">
+          <rect x="10" y="140" width="140" height="12" fill="#374151" rx="3"/>
+          <!-- Rays – 45° angle -->
+          <line x1="30" y1="30" x2="55" y2="140" stroke="#fbbf24" stroke-width="2.5"/>
+          <line x1="55" y1="30" x2="80" y2="140" stroke="#fbbf24" stroke-width="2.5"/>
+          <line x1="80" y1="30" x2="105" y2="140" stroke="#fbbf24" stroke-width="2.5"/>
+          <path d="M55,140 A24,24 0 0,1 55,116" fill="none" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="62" y="124" fill="#fbbf24" font-size="10">≈45°</text>
+          <rect x="30" y="130" width="85" height="10" fill="#f59e0b" opacity=".3" rx="2"/>
+          <text x="73" y="126" fill="#f59e0b" font-size="9" text-anchor="middle">vừa → năng lượng vừa</text>
+          <text x="73" y="170" fill="#86efac" font-size="12" font-weight="700" text-anchor="middle">🌤️ Ôn đới</text>
+          <text x="73" y="185" fill="#86efac" font-size="11" text-anchor="middle">Ấm áp</text>
+        </g>
+
+        <!-- ── Scenario 3: Vùng cực (<10°) ── -->
+        <g transform="translate(420,20)">
+          <rect x="10" y="140" width="145" height="12" fill="#374151" rx="3"/>
+          <!-- Rays – very low angle -->
+          <line x1="20" y1="100" x2="80" y2="140" stroke="#fbbf24" stroke-width="2.5"/>
+          <line x1="35" y1="90" x2="100" y2="140" stroke="#fbbf24" stroke-width="2.5"/>
+          <line x1="50" y1="80" x2="120" y2="140" stroke="#fbbf24" stroke-width="2.5"/>
+          <path d="M80,140 A30,30 0 0,1 80,115" fill="none" stroke="#f59e0b" stroke-width="1.5"/>
+          <text x="93" y="130" fill="#fbbf24" font-size="10">&lt;10°</text>
+          <rect x="10" y="130" width="130" height="10" fill="#93c5fd" opacity=".3" rx="2"/>
+          <text x="72" y="126" fill="#93c5fd" font-size="9" text-anchor="middle">rộng → ít năng lượng</text>
+          <text x="72" y="170" fill="#a5f3fc" font-size="12" font-weight="700" text-anchor="middle">❄️ Vùng cực</text>
+          <text x="72" y="185" fill="#7dd3fc" font-size="11" text-anchor="middle">Lạnh nhất</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- TAB 2 -->
+<div id="tab2" class="tab-panel">
+  <div class="compare-grid">
+
+    <!-- Đới Lạnh -->
+    <div class="zone-card">
+      <div class="zone-card-header" style="background:#a5f3fc;">❄️ Đới Lạnh</div>
+      <div class="zone-card-body">
+        <div class="zone-row">
+          <span class="zone-icon">🌡️</span>
+          <div>
+            <span class="zone-key">Nhiệt độ trung bình</span>
+            <span class="zone-val">-30°C đến 10°C<br><small style="color:#94a3b8">Mùa đông kéo dài</small></span>
+          </div>
+        </div>
+        <div class="zone-row">
+          <span class="zone-icon">🌧️</span>
+          <div>
+            <span class="zone-key">Lượng mưa</span>
+            <span class="zone-val">Rất ít &lt;200mm/năm<br><small style="color:#94a3b8">Chủ yếu dưới dạng tuyết</small></span>
+          </div>
+        </div>
+        <div class="zone-row">
+          <span class="zone-icon">🌿</span>
+          <div>
+            <span class="zone-key">Thực vật</span>
+            <span class="zone-val">Rêu địa y, cây tundra thấp lùn, không có cây cao</span>
+          </div>
+        </div>
+        <div class="zone-row">
+          <span class="zone-icon">🦁</span>
+          <div>
+            <span class="zone-key">Động vật đặc trưng</span>
+            <span class="zone-val">Gấu Bắc Cực, chim cánh cụt, hải cẩu, tuần lộc</span>
+          </div>
+        </div>
+        <div class="zone-row">
+          <span class="zone-icon">🏙️</span>
+          <div>
+            <span class="zone-key">Quốc gia tiêu biểu</span>
+            <span class="zone-val">Na Uy, Canada, Nga, Greenland, Iceland</span>
+          </div>
+        </div>
+        <div class="zone-row">
+          <span class="zone-icon">✨</span>
+          <div>
+            <span class="zone-key">Đặc điểm nổi bật</span>
+            <span class="zone-val">Ngày hoặc đêm kéo dài 6 tháng, băng tuyết quanh năm</span>
+          </div>
+        </div>
+        <!-- Mini season chart -->
+        <div class="season-chart">
+          <div class="season-chart-title">Nhiệt độ theo mùa (°C)</div>
+          <svg width="100%" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="50" width="30" height="20" fill="#a5f3fc" rx="3"/>
+            <text x="25" y="45" fill="#e2e8f0" font-size="9" text-anchor="middle">-25</text>
+            <text x="25" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">Đông</text>
+            <rect x="60" y="45" width="30" height="25" fill="#7dd3fc" rx="3"/>
+            <text x="75" y="40" fill="#e2e8f0" font-size="9" text-anchor="middle">-10</text>
+            <text x="75" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">Xuân</text>
+            <rect x="110" y="35" width="30" height="35" fill="#38bdf8" rx="3"/>
+            <text x="125" y="30" fill="#e2e8f0" font-size="9" text-anchor="middle">5</text>
+            <text x="125" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">Hè</text>
+            <rect x="160" y="42" width="30" height="28" fill="#7dd3fc" rx="3"/>
+            <text x="175" y="37" fill="#e2e8f0" font-size="9" text-anchor="middle">-8</text>
+            <text x="175" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">Thu</text>
+            <!-- baseline -->
+            <line x1="5" y1="70" x2="200" y2="70" stroke="#475569" stroke-width="1"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Đới Ôn Hòa -->
+    <div class="zone-card">
+      <div class="zone-card-header" style="background:#86efac;">🌿 Đới Ôn Hòa</div>
+      <div class="zone-card-body">
+        <div class="zone-row">
+          <span class="zone-icon">🌡️</span>
+          <div>
+            <span class="zone-key">Nhiệt độ trung bình</span>
+            <span class="zone-val">5°C đến 25°C<br><small style="color:#94a3b8">Có 4 mùa rõ rệt</small></span>
+          </div>
+        </div>
+        <div class="zone-row">
+          <span class="zone-icon">🌧️</span>
+          <div>
+            <span class="zone-key">Lượng mưa</span>
+            <span class="zone-val">500–1500mm/năm<br><small style="color:#94a3b8">Phân bố tương đối đều</small></span>
+          </div>
+        </div>
+        <div class="zone-row">
+          <span class="zone-icon">🌿</span>
+          <div>
+            <span class="zone-key">Thực vật</span>
+            <span class="zone-val">Rừng lá rộng rụng lá, đồng cỏ, rừng lá kim</span>
+          </div>
+        </div>
+        <div class="zone-row">
+          <span class="zone-icon">🦁</span>
+          <div>
+            <span class="zone-key">Động vật đặc trưng</span>
+            <span class="zone-val">Nai, sói, gấu nâu, cáo, hươu, đại bàng</span>
+          </div>
+        </div>
+        <div class="zone-row">
+          <span class="zone-icon">🏙️</span>
+          <div>
+            <span class="zone-key">Quốc gia tiêu biểu</span>
+            <span class="zone-val">Pháp, Đức, Nhật Bản, Mỹ, Trung Quốc</span>
+          </div>
+        </div>
+        <div class="zone-row">
+          <span class="zone-icon">✨</span>
+          <div>
+            <span class="zone-key">Đặc điểm nổi bật</span>
+            <span class="zone-val">Khí hậu mát mẻ, dễ chịu, rất thuận lợi cho nông nghiệp</span>
+          </div>
+        </div>
+        <!-- Mini season chart -->
+        <div class="season-chart">
+          <div class="season-chart-title">Nhiệt độ theo mùa (°C)</div>
+          <svg width="100%" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="48" width="30" height="22" fill="#93c5fd" rx="3"/>
+            <text x="25" y="43" fill="#e2e8f0" font-size="9" text-anchor="middle">5</text>
+            <text x="25" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">Đông</text>
+            <rect x="60" y="38" width="30" height="32" fill="#86efac" rx="3"/>
+            <text x="75" y="33" fill="#e2e8f0" font-size="9" text-anchor="middle">14</text>
+            <text x="75" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">Xuân</text>
+            <rect x="110" y="20" width="30" height="50" fill="#4ade80" rx="3"/>
+            <text x="125" y="15" fill="#e2e8f0" font-size="9" text-anchor="middle">25</text>
+            <text x="125" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">Hè</text>
+            <rect x="160" y="33" width="30" height="37" fill="#86efac" rx="3"/>
+            <text x="175" y="28" fill="#e2e8f0" font-size="9" text-anchor="middle">16</text>
+            <text x="175" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">Thu</text>
+            <line x1="5" y1="70" x2="200" y2="70" stroke="#475569" stroke-width="1"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Đới Nóng -->
+    <div class="zone-card">
+      <div class="zone-card-header" style="background:#fbbf24;">☀️ Đới Nóng (Nhiệt Đới)</div>
+      <div class="zone-card-body">
+        <div class="zone-row">
+          <span class="zone-icon">🌡️</span>
+          <div>
+            <span class="zone-key">Nhiệt độ trung bình</span>
+            <span class="zone-val">20°C đến 40°C<br><small style="color:#94a3b8">Nóng quanh năm</small></span>
+          </div>
+        </div>
+        <div class="zone-row">
+          <span class="zone-icon">🌧️</span>
+          <div>
+            <span class="zone-key">Lượng mưa</span>
+            <span class="zone-val">&gt;2000mm/năm (xích đạo)<br><small style="color:#94a3b8">Hoặc rất ít ở vùng sa mạc chí tuyến</small></span>
+          </div>
+        </div>
+        <div class="zone-row">
+          <span class="zone-icon">🌿</span>
+          <div>
+            <span class="zone-key">Thực vật</span>
+            <span class="zone-val">Rừng mưa nhiệt đới rậm rạp (xích đạo) hoặc sa mạc (chí tuyến)</span>
+          </div>
+        </div>
+        <div class="zone-row">
+          <span class="zone-icon">🦁</span>
+          <div>
+            <span class="zone-key">Động vật đặc trưng</span>
+            <span class="zone-val">Voi, sư tử, khỉ, hổ, vẹt, cá sấu</span>
+          </div>
+        </div>
+        <div class="zone-row">
+          <span class="zone-icon">🏙️</span>
+          <div>
+            <span class="zone-key">Quốc gia tiêu biểu</span>
+            <span class="zone-val">Việt Nam 🇻🇳, Brazil, Ấn Độ, Indonesia, Nigeria</span>
+          </div>
+        </div>
+        <div class="zone-row">
+          <span class="zone-icon">✨</span>
+          <div>
+            <span class="zone-key">Đặc điểm nổi bật</span>
+            <span class="zone-val">Mặt Trời chiếu gần thẳng đứng, ít thay đổi nhiệt độ giữa các tháng</span>
+          </div>
+        </div>
+        <!-- Mini season chart -->
+        <div class="season-chart">
+          <div class="season-chart-title">Nhiệt độ theo mùa (°C)</div>
+          <svg width="100%" viewBox="0 0 200 80" xmlns="http://www.w3.org/2000/svg">
+            <rect x="10" y="28" width="30" height="42" fill="#fb923c" rx="3"/>
+            <text x="25" y="23" fill="#e2e8f0" font-size="9" text-anchor="middle">25</text>
+            <text x="25" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">Đông</text>
+            <rect x="60" y="16" width="30" height="54" fill="#f97316" rx="3"/>
+            <text x="75" y="11" fill="#e2e8f0" font-size="9" text-anchor="middle">32</text>
+            <text x="75" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">Xuân</text>
+            <rect x="110" y="10" width="30" height="60" fill="#ef4444" rx="3"/>
+            <text x="125" y="5" fill="#e2e8f0" font-size="9" text-anchor="middle">38</text>
+            <text x="125" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">Hè</text>
+            <rect x="160" y="22" width="30" height="48" fill="#fb923c" rx="3"/>
+            <text x="175" y="17" fill="#e2e8f0" font-size="9" text-anchor="middle">28</text>
+            <text x="175" y="78" fill="#94a3b8" font-size="8" text-anchor="middle">Thu</text>
+            <line x1="5" y1="70" x2="200" y2="70" stroke="#475569" stroke-width="1"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ── Tab switching ──
+  function switchTab(n) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab' + n).classList.add('active');
+    document.querySelectorAll('.tab-btn')[n - 1].classList.add('active');
+  }
+
+  // ── Zone data ──
+  const zoneData = {
+    cold: {
+      name: '❄️ Đới Lạnh (Hàn Đới)',
+      color: '#a5f3fc',
+      location: '66.5° – 90° (Bắc Cực và Nam Cực)',
+      temp: '-30°C đến 10°C, mùa đông kéo dài hầu như cả năm',
+      rain: 'Rất ít, dưới 200mm/năm, chủ yếu dưới dạng tuyết và băng',
+      plant: 'Rêu địa y, cây tundra thấp lùn, không có cây cao do đất đóng băng',
+      feature: 'Có hiện tượng ngày cực (Mặt Trời không lặn) hoặc đêm cực (Mặt Trời không mọc) kéo dài lên đến 6 tháng',
+      countries: 'Na Uy, Nga, Canada, Greenland (Đan Mạch), Iceland, Nam Cực (không có quốc gia)',
+      why: '💡 Nguyên nhân: Góc chiếu sáng Mặt Trời rất nhỏ (dưới 10°), tia sáng trải rộng trên diện tích lớn nên mang ít năng lượng nhiệt. Ngoài ra, mùa đông kéo dài nhiều tháng không có ánh sáng Mặt Trời.'
+    },
+    temperate: {
+      name: '🌿 Đới Ôn Hòa (Ôn Đới)',
+      color: '#86efac',
+      location: '23.5° – 66.5° (cả hai bán cầu)',
+      temp: '5°C đến 25°C, có 4 mùa Xuân – Hạ – Thu – Đông rõ rệt',
+      rain: '500–1500mm/năm, phân bố tương đối đều trong năm',
+      plant: 'Rừng lá rộng rụng lá theo mùa, đồng cỏ mênh mông, rừng lá kim ở phía Bắc',
+      feature: 'Khí hậu mát mẻ, dễ chịu nhất trong các đới, rất thuận lợi cho sản xuất nông nghiệp và sinh sống của con người',
+      countries: 'Pháp, Đức, Nhật Bản, Mỹ (miền Bắc), Trung Quốc (miền Bắc), Úc (miền Nam)',
+      why: '💡 Nguyên nhân: Góc chiếu sáng Mặt Trời ở mức vừa phải (khoảng 30°–60°), thay đổi theo mùa do Trái Đất nghiêng khi quay quanh Mặt Trời, tạo ra bốn mùa có đặc điểm khác nhau rõ rệt.'
+    },
+    hot: {
+      name: '☀️ Đới Nóng (Nhiệt Đới)',
+      color: '#fbbf24',
+      location: '23.5°N – 23.5°S (vùng xích đạo và chí tuyến)',
+      temp: '20°C đến 40°C quanh năm, ít thay đổi giữa các tháng',
+      rain: 'Vùng xích đạo: >2000mm/năm (mưa nhiều nhất thế giới). Vùng chí tuyến: rất ít, hình thành sa mạc lớn',
+      plant: 'Rừng mưa nhiệt đới rậm rạp (xích đạo) — đa dạng sinh học nhất thế giới. Sa mạc khô cằn (chí tuyến)',
+      feature: 'Mặt Trời chiếu thẳng đứng hoặc gần thẳng đứng, đây là đới nóng nhất. Việt Nam nằm trong đới này!',
+      countries: 'Việt Nam 🇻🇳, Brazil, Ấn Độ, Indonesia, Nigeria, Thái Lan, Mexico, Philippines',
+      why: '💡 Nguyên nhân: Góc chiếu sáng Mặt Trời gần 90° (gần thẳng đứng), tia sáng tập trung vào diện tích nhỏ nên mang rất nhiều năng lượng nhiệt. Đây chính là lý do Việt Nam nóng quanh năm!'
+    }
+  };
+
+  let selectedZone = null;
+
+  function selectZone(zone) {
+    // Reset all bands
+    document.querySelectorAll('.band').forEach(b => b.classList.remove('selected'));
+
+    // Highlight relevant bands
+    if (zone === 'cold') {
+      document.getElementById('band-cold-n').classList.add('selected');
+      document.getElementById('band-cold-s').classList.add('selected');
+    } else if (zone === 'temperate') {
+      document.getElementById('band-temp-n').classList.add('selected');
+      document.getElementById('band-temp-s').classList.add('selected');
+    } else if (zone === 'hot') {
+      document.getElementById('band-hot').classList.add('selected');
+      document.getElementById('band-hot-top').classList.add('selected');
+    }
+
+    selectedZone = zone;
+    const d = zoneData[zone];
+    const panel = document.getElementById('info-panel');
+    panel.classList.remove('hidden');
+    panel.style.borderColor = d.color;
+
+    document.getElementById('info-zone-name').textContent = d.name;
+    document.getElementById('info-zone-name').style.color = d.color;
+    document.getElementById('info-location').textContent = d.location;
+    document.getElementById('info-temp').textContent = d.temp;
+    document.getElementById('info-rain').textContent = d.rain;
+    document.getElementById('info-plant').textContent = d.plant;
+    document.getElementById('info-feature').textContent = d.feature;
+    document.getElementById('info-countries').textContent = d.countries;
+    document.getElementById('info-why').textContent = d.why;
+
+    // Scroll to info panel
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+</script>
+</body>
+</html>

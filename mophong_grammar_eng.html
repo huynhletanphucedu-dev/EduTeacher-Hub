@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Sentence Structure Visualizer</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:#0f172a;color:#e2e8f0;font-family:'Segoe UI',Arial,sans-serif;min-height:100vh;}
+header{background:#1e293b;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #334155;}
+header h1{font-size:1.1rem;color:#38bdf8;font-weight:800;}
+.badge{background:#7c3aed;color:#fff;padding:3px 10px;border-radius:6px;font-size:.72rem;font-weight:700;}
+
+/* Pattern tabs */
+.pat-bar{display:flex;gap:6px;padding:14px 16px 10px;overflow-x:auto;scrollbar-width:none;}
+.pat-bar::-webkit-scrollbar{display:none;}
+.pat-btn{flex-shrink:0;background:#1e293b;border:1px solid #334155;color:#94a3b8;padding:7px 14px;border-radius:8px;font-size:.78rem;cursor:pointer;font-weight:600;transition:all .15s;}
+.pat-btn.active{background:#7c3aed;border-color:#7c3aed;color:#fff;}
+
+/* Diagram area */
+#diagramArea{padding:14px 16px;min-height:160px;}
+.diagram-title{font-size:.72rem;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.diagram-formula{font-size:.85rem;font-family:monospace;color:#f59e0b;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:8px 12px;margin-bottom:12px;}
+/* Block diagram */
+.block-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;align-items:flex-end;}
+.block{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;}
+.block-pill{border-radius:10px;padding:8px 12px;font-size:.82rem;font-weight:700;color:#fff;min-width:48px;text-align:center;transition:transform .15s,box-shadow .15s;}
+.block:active .block-pill{transform:translateY(-3px);box-shadow:0 4px 12px rgba(0,0,0,.4);}
+.block-label{font-size:.62rem;color:#64748b;text-transform:uppercase;}
+.block-plus{font-size:1rem;color:#475569;margin-bottom:14px;align-self:center;}
+
+/* Colours per role */
+.b-S .block-pill{background:#0ea5e9;}
+.b-V .block-pill{background:#059669;}
+.b-O .block-pill{background:#dc2626;}
+.b-C .block-pill{background:#d97706;}
+.b-A .block-pill{background:#7c3aed;}
+.b-Adj .block-pill{background:#be185d;}
+.b-Adv .block-pill{background:#0891b2;}
+.b-Conj .block-pill{background:#475569;}
+.b-Prep .block-pill{background:#64748b;}
+
+/* Legend */
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:.7rem;color:#94a3b8;}
+.leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+
+/* Example sentences */
+.ex-section{padding:0 16px 16px;}
+.ex-section h3{font-size:.72rem;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.ex-card{background:#1e293b;border:1px solid #334155;border-radius:10px;margin-bottom:8px;overflow:hidden;}
+.ex-sentence{padding:10px 12px;font-size:.9rem;display:flex;flex-wrap:wrap;gap:4px;align-items:center;}
+.ex-foot{background:#0f172a;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;}
+.ex-label{font-size:.72rem;color:#64748b;}
+.play-btn{background:#0ea5e9;border:none;color:#fff;border-radius:6px;padding:4px 12px;font-size:.75rem;cursor:pointer;}
+/* coloured word chips in sentences */
+.w-S{background:#0ea5e920;color:#38bdf8;border:1px solid #0ea5e940;border-radius:5px;padding:2px 6px;font-size:.85rem;}
+.w-V{background:#05966920;color:#34d399;border:1px solid #05966940;border-radius:5px;padding:2px 6px;font-size:.85rem;}
+.w-O{background:#dc262620;color:#fca5a5;border:1px solid #dc262640;border-radius:5px;padding:2px 6px;font-size:.85rem;}
+.w-C{background:#d9770620;color:#fcd34d;border:1px solid #d9770640;border-radius:5px;padding:2px 6px;font-size:.85rem;}
+.w-A{background:#7c3aed20;color:#c4b5fd;border:1px solid #7c3aed40;border-radius:5px;padding:2px 6px;font-size:.85rem;}
+.w-Adj{background:#be185d20;color:#f9a8d4;border:1px solid #be185d40;border-radius:5px;padding:2px 6px;font-size:.85rem;}
+.w-Adv{background:#0891b220;color:#67e8f9;border:1px solid #0891b240;border-radius:5px;padding:2px 6px;font-size:.85rem;}
+span.plain{font-size:.85rem;color:#e2e8f0;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔤 Sentence Structure</h1>
+  <span class="badge">Grammar Visual</span>
+</header>
+
+<div class="pat-bar" id="patBar"></div>
+
+<div id="diagramArea"></div>
+
+<div class="ex-section">
+  <h3>Examples</h3>
+  <div id="exList"></div>
+</div>
+
+<script>
+// S=Subject V=Verb O=Object C=Complement A=Adjunct(place/time) Adj=Adjective Adv=Adverb
+const PATTERNS = [
+  {
+    id:'SV',
+    name:'S + V',
+    desc:'Subject + Verb (intransitive)',
+    formula:'Subject  +  Verb',
+    blocks:[
+      {role:'S',label:'Subject',ex:'The baby'},
+      {role:'V',label:'Verb',ex:'cries'},
+    ],
+    legend:['S','V'],
+    examples:[
+      {parts:[{t:'The baby',r:'S'},{t:'cries',r:'V'},{t:'.',r:'plain'}], full:'The baby cries.'},
+      {parts:[{t:'Birds',r:'S'},{t:'sing',r:'V'},{t:'.',r:'plain'}], full:'Birds sing.'},
+      {parts:[{t:'She',r:'S'},{t:'runs',r:'V'},{t:'every morning',r:'A'},{t:'.',r:'plain'}], full:'She runs every morning.'},
+    ]
+  },
+  {
+    id:'SVO',
+    name:'S + V + O',
+    desc:'Subject + Verb (transitive) + Object',
+    formula:'Subject  +  Verb  +  Object',
+    blocks:[
+      {role:'S',label:'Subject',ex:'She'},
+      {role:'V',label:'Verb',ex:'reads'},
+      {role:'O',label:'Object',ex:'a book'},
+    ],
+    legend:['S','V','O'],
+    examples:[
+      {parts:[{t:'She',r:'S'},{t:'reads',r:'V'},{t:'a book',r:'O'},{t:'.',r:'plain'}], full:'She reads a book.'},
+      {parts:[{t:'The dog',r:'S'},{t:'bit',r:'V'},{t:'the man',r:'O'},{t:'.',r:'plain'}], full:'The dog bit the man.'},
+      {parts:[{t:'I',r:'S'},{t:'love',r:'V'},{t:'English',r:'O'},{t:'.',r:'plain'}], full:'I love English.'},
+    ]
+  },
+  {
+    id:'SVC',
+    name:'S + V + C',
+    desc:'Subject + Linking Verb + Complement',
+    formula:'Subject  +  Linking Verb  +  Complement',
+    blocks:[
+      {role:'S',label:'Subject',ex:'He'},
+      {role:'V',label:'Linking Verb',ex:'is / became / seems'},
+      {role:'C',label:'Complement',ex:'a teacher'},
+    ],
+    legend:['S','V','C'],
+    examples:[
+      {parts:[{t:'He',r:'S'},{t:'is',r:'V'},{t:'a teacher',r:'C'},{t:'.',r:'plain'}], full:'He is a teacher.'},
+      {parts:[{t:'The food',r:'S'},{t:'smells',r:'V'},{t:'delicious',r:'C'},{t:'.',r:'plain'}], full:'The food smells delicious.'},
+      {parts:[{t:'She',r:'S'},{t:'became',r:'V'},{t:'very famous',r:'C'},{t:'.',r:'plain'}], full:'She became very famous.'},
+    ]
+  },
+  {
+    id:'SVOO',
+    name:'S + V + O + O',
+    desc:'Subject + Verb + Indirect Object + Direct Object',
+    formula:'Subject  +  Verb  +  Ind. Object  +  Dir. Object',
+    blocks:[
+      {role:'S',label:'Subject',ex:'He'},
+      {role:'V',label:'Verb',ex:'gave'},
+      {role:'O',label:'Ind. Object',ex:'her'},
+      {role:'O',label:'Dir. Object',ex:'a gift'},
+    ],
+    legend:['S','V','O'],
+    examples:[
+      {parts:[{t:'He',r:'S'},{t:'gave',r:'V'},{t:'her',r:'O'},{t:'a gift',r:'O'},{t:'.',r:'plain'}], full:'He gave her a gift.'},
+      {parts:[{t:'She',r:'S'},{t:'told',r:'V'},{t:'me',r:'O'},{t:'the truth',r:'O'},{t:'.',r:'plain'}], full:'She told me the truth.'},
+      {parts:[{t:'I',r:'S'},{t:'bought',r:'V'},{t:'my sister',r:'O'},{t:'flowers',r:'O'},{t:'.',r:'plain'}], full:'I bought my sister flowers.'},
+    ]
+  },
+  {
+    id:'SVOC',
+    name:'S + V + O + C',
+    desc:'Subject + Verb + Object + Object Complement',
+    formula:'Subject  +  Verb  +  Object  +  Complement',
+    blocks:[
+      {role:'S',label:'Subject',ex:'They'},
+      {role:'V',label:'Verb',ex:'made'},
+      {role:'O',label:'Object',ex:'him'},
+      {role:'C',label:'Complement',ex:'captain'},
+    ],
+    legend:['S','V','O','C'],
+    examples:[
+      {parts:[{t:'They',r:'S'},{t:'made',r:'V'},{t:'him',r:'O'},{t:'captain',r:'C'},{t:'.',r:'plain'}], full:'They made him captain.'},
+      {parts:[{t:'We',r:'S'},{t:'found',r:'V'},{t:'the test',r:'O'},{t:'difficult',r:'C'},{t:'.',r:'plain'}], full:'We found the test difficult.'},
+      {parts:[{t:'She',r:'S'},{t:'kept',r:'V'},{t:'the room',r:'O'},{t:'clean',r:'C'},{t:'.',r:'plain'}], full:'She kept the room clean.'},
+    ]
+  },
+  {
+    id:'SVOA',
+    name:'S + V + O + A',
+    desc:'Subject + Verb + Object + Adjunct (place / time)',
+    formula:'Subject  +  Verb  +  Object  +  Adjunct',
+    blocks:[
+      {role:'S',label:'Subject',ex:'She'},
+      {role:'V',label:'Verb',ex:'put'},
+      {role:'O',label:'Object',ex:'the book'},
+      {role:'A',label:'Adjunct',ex:'on the table'},
+    ],
+    legend:['S','V','O','A'],
+    examples:[
+      {parts:[{t:'She',r:'S'},{t:'put',r:'V'},{t:'the book',r:'O'},{t:'on the table',r:'A'},{t:'.',r:'plain'}], full:'She put the book on the table.'},
+      {parts:[{t:'He',r:'S'},{t:'placed',r:'V'},{t:'his bag',r:'O'},{t:'near the door',r:'A'},{t:'.',r:'plain'}], full:'He placed his bag near the door.'},
+    ]
+  },
+  {
+    id:'SVADV',
+    name:'Adverbs',
+    desc:'How adverbs modify verbs and adjectives',
+    formula:'S  +  V  +  Adverb  /  Adverb  +  Adjective',
+    blocks:[
+      {role:'S',label:'Subject',ex:'She'},
+      {role:'V',label:'Verb',ex:'speaks'},
+      {role:'Adv',label:'Adverb',ex:'very clearly'},
+    ],
+    legend:['S','V','Adv'],
+    examples:[
+      {parts:[{t:'She',r:'S'},{t:'speaks',r:'V'},{t:'very clearly',r:'Adv'},{t:'.',r:'plain'}], full:'She speaks very clearly.'},
+      {parts:[{t:'He',r:'S'},{t:'runs',r:'V'},{t:'incredibly fast',r:'Adv'},{t:'.',r:'plain'}], full:'He runs incredibly fast.'},
+      {parts:[{t:'The music',r:'S'},{t:'is',r:'V'},{t:'extremely',r:'Adv'},{t:'loud',r:'Adj'},{t:'.',r:'plain'}], full:'The music is extremely loud.'},
+    ]
+  },
+];
+
+const ROLE_COLOR={'S':'#0ea5e9','V':'#059669','O':'#dc2626','C':'#d97706','A':'#7c3aed','Adj':'#be185d','Adv':'#0891b2','Conj':'#475569'};
+
+let current = PATTERNS[0];
+
+function buildPatBar(){
+  const bar = document.getElementById('patBar');
+  bar.innerHTML = PATTERNS.map((p,i)=>`
+    <button class="pat-btn${i===0?' active':''}" onclick="selectPat('${p.id}',this)">${p.name}</button>
+  `).join('');
+}
+
+function selectPat(id, btn){
+  document.querySelectorAll('.pat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  current = PATTERNS.find(p=>p.id===id);
+  renderDiagram();
+  renderExamples();
+}
+
+function renderDiagram(){
+  const p = current;
+  let blockHtml = '<div class="block-row">';
+  p.blocks.forEach((b,i)=>{
+    if(i>0) blockHtml+=`<div class="block-plus">+</div>`;
+    blockHtml+=`<div class="block b-${b.role}">
+      <div class="block-pill">${b.ex}</div>
+      <div class="block-label">${b.label}</div>
+    </div>`;
+  });
+  blockHtml+='</div>';
+
+  // legend
+  const legendRoles=[...new Set(p.blocks.map(b=>b.role))];
+  let legHtml='<div class="legend">'+legendRoles.map(r=>`
+    <div class="leg-item">
+      <div class="leg-dot" style="background:${ROLE_COLOR[r]||'#64748b'};"></div>
+      <span>${r==='S'?'Subject':r==='V'?'Verb':r==='O'?'Object':r==='C'?'Complement':r==='A'?'Adjunct':r==='Adv'?'Adverb':r==='Adj'?'Adjective':r}</span>
+    </div>`).join('')+'</div>';
+
+  document.getElementById('diagramArea').innerHTML=`
+    <div class="diagram-title">${p.name} — ${p.desc}</div>
+    <div class="diagram-formula">${p.formula}</div>
+    ${blockHtml}
+    ${legHtml}`;
+}
+
+function renderExamples(){
+  document.getElementById('exList').innerHTML = current.examples.map(ex=>`
+    <div class="ex-card">
+      <div class="ex-sentence">
+        ${ex.parts.map(pt=>`<span class="${pt.r==='plain'?'plain':'w-'+pt.r}">${pt.t}</span>`).join(' ')}
+      </div>
+      <div class="ex-foot">
+        <span class="ex-label">${current.name}</span>
+        <button class="play-btn" onclick="speak(\`${ex.full.replace(/`/g,'\\`')}\`)">🔊 Listen</button>
+      </div>
+    </div>`).join('');
+}
+
+function speak(text){
+  if('speechSynthesis' in window){
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(text);
+    u.lang='en-US'; u.rate=0.85;
+    speechSynthesis.speak(u);
+  }
+}
+
+buildPatBar();
+renderDiagram();
+renderExamples();
+</script>
+</body>
+</html>

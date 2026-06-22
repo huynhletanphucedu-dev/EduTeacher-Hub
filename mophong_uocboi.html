@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Ước và Bội – Phân Tích TSNT</title>
+<style>
+:root{
+  --bg:#0f172a;--card:#1e293b;--border:#334155;
+  --teal:#06b6d4;--purple:#8b5cf6;--orange:#f59e0b;
+  --green:#10b981;--red:#ef4444;--blue:#3b82f6;--text:#e2e8f0;--sub:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);
+     height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.header{background:var(--card);border-bottom:1px solid var(--border);
+        padding:11px 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.header h1{font-size:1.15rem;font-weight:800;}
+.back-link{color:var(--sub);text-decoration:none;font-size:.88rem;font-weight:600;
+           padding:5px 12px;border-radius:8px;border:1px solid var(--border);}
+.tab-bar{display:flex;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;}
+.mbar-tab{flex:1;padding:12px 6px;border:none;font-size:.95rem;font-weight:800;cursor:pointer;
+          background:transparent;color:var(--sub);border-bottom:3px solid transparent;
+          transition:all .15s;font-family:inherit;}
+.mbar-tab.active{color:var(--teal);border-bottom-color:var(--teal);background:rgba(6,182,212,.05);}
+.instr-bar{background:rgba(6,182,212,.1);border-bottom:1px solid rgba(6,182,212,.2);
+           padding:8px 22px;font-size:.9rem;color:#a5f3fc;text-align:center;flex-shrink:0;font-weight:600;}
+.body-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.stage{flex:1;overflow:auto;padding:14px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;}
+.ctrl-bar{flex-shrink:0;background:var(--card);border-top:1px solid var(--border);
+          padding:11px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;}
+.big-btn{padding:10px 22px;border:none;border-radius:12px;font-size:.95rem;font-weight:800;
+         cursor:pointer;font-family:inherit;transition:all .15s;
+         background:linear-gradient(135deg,#06b6d4,#3b82f6);color:#fff;
+         box-shadow:0 3px 12px rgba(6,182,212,.3);}
+.big-btn:hover{transform:translateY(-1px);}
+.big-btn.sec{background:rgba(255,255,255,.08);box-shadow:none;color:var(--text);border:1.5px solid var(--border);}
+.big-btn.warn{background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 3px 12px rgba(245,158,11,.3);}
+.num-input{width:90px;padding:9px;background:rgba(255,255,255,.07);border:2px solid var(--border);
+           border-radius:12px;color:var(--text);font-size:1.5rem;font-weight:800;text-align:center;
+           font-family:inherit;outline:none;}
+.num-input:focus{border-color:var(--teal);}
+.sel-display{font-size:1.1rem;font-weight:800;color:var(--sub);padding:8px 18px;
+             background:rgba(255,255,255,.05);border-radius:10px;border:1.5px solid var(--border);}
+.sel-display b{color:var(--teal);font-size:1.4rem;}
+
+/* ══ TAB 1: ƯỚC ══ */
+.grid-100{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;max-width:580px;width:100%;}
+.gcell{height:46px;border-radius:8px;border:2px solid var(--border);display:flex;align-items:center;
+       justify-content:center;font-size:.95rem;font-weight:700;cursor:pointer;
+       background:rgba(255,255,255,.04);color:var(--sub);transition:all .18s;user-select:none;}
+.gcell:hover{border-color:#475569;color:var(--text);}
+.gcell.target{background:rgba(245,158,11,.2);border-color:var(--orange);color:var(--orange);
+              transform:scale(1.1);font-size:1.1rem;font-weight:900;}
+.gcell.revealed{background:rgba(6,182,212,.18);border-color:var(--teal);color:var(--teal);
+                transform:scale(1.06);font-weight:800;}
+.gcell.not-uoc{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3);color:rgba(239,68,68,.5);}
+.hint-bar{background:rgba(255,255,255,.04);border:1.5px solid var(--border);border-radius:12px;
+          padding:10px 18px;max-width:580px;width:100%;display:flex;align-items:center;
+          justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.found-chips{display:flex;flex-wrap:wrap;gap:6px;}
+.uchip{padding:5px 13px;border-radius:9px;border:1.5px solid var(--teal);
+       color:var(--teal);background:rgba(6,182,212,.1);font-weight:800;font-size:.95rem;}
+
+/* ══ TAB 2: BỘI ══ */
+.boi-track{width:100%;max-width:840px;overflow-x:auto;padding:6px 0;}
+.boi-row{display:flex;gap:5px;min-width:max-content;}
+.bcell{width:58px;height:58px;border-radius:10px;border:2px solid var(--border);flex-shrink:0;
+       display:flex;flex-direction:column;align-items:center;justify-content:center;
+       font-size:.95rem;font-weight:700;color:var(--sub);background:rgba(255,255,255,.04);
+       transition:all .2s;cursor:pointer;user-select:none;}
+.bcell:hover{border-color:#475569;}
+.bcell.revealed{background:rgba(16,185,129,.18);border-color:var(--green);color:var(--green);transform:scale(1.08);}
+.bcell.boi-zero{background:rgba(245,158,11,.2);border-color:var(--orange);color:var(--orange);transform:scale(1.1);}
+.bcell .mult-tag{font-size:9px;color:inherit;opacity:.7;font-weight:600;}
+.boi-hint{background:rgba(255,255,255,.04);border:1.5px solid var(--border);border-radius:12px;
+          padding:10px 18px;max-width:840px;width:100%;font-size:.92rem;font-weight:700;color:var(--sub);}
+
+/* ══ TAB 3: TSNT ══ */
+.tsnt-area{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;width:100%;max-width:900px;}
+.tsnt-col{background:var(--card);border:1.5px solid var(--border);border-radius:14px;
+          padding:18px 20px;flex:1;min-width:300px;}
+.tsnt-col h3{font-size:.88rem;font-weight:800;color:var(--sub);text-transform:uppercase;
+             letter-spacing:.5px;margin-bottom:14px;text-align:center;}
+/* Division ladder */
+.ladder{display:flex;flex-direction:column;align-items:flex-end;gap:0;}
+.ladder-row{display:flex;align-items:center;gap:0;font-size:1.3rem;font-weight:800;opacity:0;
+            transition:opacity .3s;}
+.ladder-row.show{opacity:1;}
+.lr-num{min-width:64px;text-align:right;padding:6px 10px;color:var(--text);}
+.lr-bar{width:3px;background:#475569;align-self:stretch;}
+.lr-div{min-width:48px;text-align:center;padding:6px 10px;color:var(--teal);}
+.lr-line{width:100%;height:2px;background:#334155;margin:0;}
+.ladder-result{margin-top:12px;font-size:1.05rem;font-weight:800;color:var(--sub);
+               opacity:0;transition:opacity .3s;}
+.ladder-result.show{opacity:1;}
+.ladder-result b{color:var(--orange);}
+/* Factor tree SVG */
+#tree-svg{width:100%;display:block;}
+.tsnt-result{text-align:center;margin-top:12px;font-size:1.1rem;font-weight:800;
+             background:rgba(245,158,11,.1);border:1.5px solid rgba(245,158,11,.3);
+             border-radius:10px;padding:10px 16px;color:var(--orange);}
+.step-ctrl{display:flex;gap:8px;justify-content:center;margin-bottom:10px;}
+.step-btn{padding:7px 16px;border-radius:9px;border:1.5px solid var(--border);
+          background:rgba(255,255,255,.06);color:var(--text);font-size:.88rem;font-weight:700;
+          cursor:pointer;font-family:inherit;transition:all .12s;}
+.step-btn:hover{border-color:var(--teal);color:var(--teal);}
+</style>
+</head>
+<body>
+<div class="header">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a href="dashboard.html" class="back-link">← Dashboard</a>
+    <h1>🔢 Ước – Bội – Phân Tích TSNT</h1>
+  </div>
+  <button style="background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:9px;
+    padding:7px 14px;color:var(--text);cursor:pointer;font-size:.88rem;font-weight:700;font-family:inherit;"
+    onclick="if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen()">⛶ Toàn màn hình</button>
+</div>
+<div class="tab-bar">
+  <button class="mbar-tab active" id="tab-uoc"  onclick="switchTab('uoc')">🔢 Ước Số</button>
+  <button class="mbar-tab"        id="tab-boi"  onclick="switchTab('boi')">↗️ Bội Số</button>
+  <button class="mbar-tab"        id="tab-tsnt" onclick="switchTab('tsnt')">🌲 Phân Tích TSNT</button>
+</div>
+
+<!-- ══ TAB 1: ƯỚC SỐ ══ -->
+<div class="body-wrap" id="wrap-uoc">
+  <div class="instr-bar">📌 Nhấn vào số để chọn → nhấn từng ô để tiết lộ ước, hoặc dùng nút bên dưới</div>
+  <div class="stage">
+    <div class="grid-100" id="grid-uoc"></div>
+    <div class="hint-bar" id="uoc-hint" style="display:none">
+      <div>
+        <div style="font-size:.75rem;font-weight:700;color:var(--sub);margin-bottom:5px;">Ước đã tìm được:</div>
+        <div class="found-chips" id="uoc-found"></div>
+      </div>
+      <div style="text-align:right;font-size:.88rem;color:var(--sub);" id="uoc-count"></div>
+    </div>
+  </div>
+  <div class="ctrl-bar">
+    <div class="sel-display" id="uoc-sel-display">Chưa chọn số</div>
+    <span style="font-size:.85rem;font-weight:700;color:var(--sub);">Hoặc nhập:</span>
+    <input class="num-input" id="uoc-input" type="number" min="1" max="100" placeholder="n"
+           oninput="selectTarget(+this.value,'uoc')" style="width:80px"/>
+    <button class="big-btn warn" onclick="revealOneUoc()">💡 Tiết lộ 1 ước</button>
+    <button class="big-btn" onclick="revealAllUoc()">👁 Hiển thị tất cả</button>
+    <button class="big-btn sec" onclick="clearUoc()">↺ Xoá</button>
+  </div>
+</div>
+
+<!-- ══ TAB 2: BỘI SỐ ══ -->
+<div class="body-wrap" id="wrap-boi" style="display:none">
+  <div class="instr-bar">📌 Nhập số → nhấn từng ô bội để sáng lên, hoặc dùng nút tiết lộ</div>
+  <div class="stage">
+    <div class="boi-track"><div class="boi-row" id="boi-row"></div></div>
+    <div class="boi-hint" id="boi-hint" style="display:none">
+      <span id="boi-hint-text"></span>
+    </div>
+  </div>
+  <div class="ctrl-bar">
+    <span style="font-size:.88rem;font-weight:700;color:var(--sub);">Số n =</span>
+    <input class="num-input" id="boi-n" type="number" min="1" max="20" value="3" style="width:78px"
+           oninput="buildBoiGrid()"/>
+    <span style="font-size:.88rem;font-weight:700;color:var(--sub);">Số bội hiển thị:</span>
+    <input class="num-input" id="boi-lim" type="number" min="5" max="20" value="10" style="width:78px"
+           oninput="buildBoiGrid()"/>
+    <button class="big-btn warn" onclick="revealOneBoi()">💡 Tiết lộ 1 bội</button>
+    <button class="big-btn" onclick="revealAllBoi()">👁 Hiển thị tất cả</button>
+    <button class="big-btn sec" onclick="buildBoiGrid()">↺ Đặt lại</button>
+  </div>
+</div>
+
+<!-- ══ TAB 3: PHÂN TÍCH TSNT ══ -->
+<div class="body-wrap" id="wrap-tsnt" style="display:none">
+  <div class="instr-bar">🌲 Phân tích số thành tích các thừa số nguyên tố — xem 2 cách trình bày</div>
+  <div class="stage">
+    <div class="tsnt-area">
+      <!-- Cột dọc -->
+      <div class="tsnt-col">
+        <h3>📋 Cách 1 — Cột dọc (chia liên tiếp)</h3>
+        <div class="step-ctrl">
+          <button class="step-btn" onclick="ladderStep()">▶ Bước tiếp</button>
+          <button class="step-btn" onclick="ladderAll()">👁 Hiện tất cả</button>
+          <button class="step-btn" onclick="ladderReset()">↺ Lại</button>
+        </div>
+        <div class="ladder" id="ladder"></div>
+        <div class="ladder-result" id="ladder-result"></div>
+      </div>
+      <!-- Sơ đồ cây -->
+      <div class="tsnt-col">
+        <h3>🌲 Cách 2 — Sơ đồ cây</h3>
+        <div class="step-ctrl">
+          <button class="step-btn" onclick="treeStep()">▶ Bước tiếp</button>
+          <button class="step-btn" onclick="treeAll()">👁 Hiện tất cả</button>
+          <button class="step-btn" onclick="treeReset()">↺ Lại</button>
+        </div>
+        <svg id="tree-svg" viewBox="0 0 340 300"></svg>
+        <div class="tsnt-result" id="tree-result" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+  <div class="ctrl-bar">
+    <span style="font-size:.88rem;font-weight:700;color:var(--sub);">Số cần phân tích:</span>
+    <input class="num-input" id="tsnt-n" type="number" min="2" max="1000" value="60"
+           oninput="initTSNT(+this.value)"/>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button class="big-btn sec" onclick="setTsnt(12)">12</button>
+      <button class="big-btn sec" onclick="setTsnt(36)">36</button>
+      <button class="big-btn sec" onclick="setTsnt(60)">60</button>
+      <button class="big-btn sec" onclick="setTsnt(180)">180</button>
+      <button class="big-btn sec" onclick="setTsnt(360)">360</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══ TAB SWITCH ══ */
+function switchTab(t){
+  ['uoc','boi','tsnt'].forEach(x=>{
+    document.getElementById('tab-'+x).classList.toggle('active',x===t);
+    document.getElementById('wrap-'+x).style.display=x===t?'flex':'none';
+  });
+}
+
+/* ══════ TAB 1: ƯỚC SỐ ══════ */
+let uocTarget=0, uocRevealed=new Set(), uocDivs=[];
+
+(function buildGrid(){
+  const g=document.getElementById('grid-uoc');
+  for(let i=1;i<=100;i++){
+    const c=document.createElement('div');
+    c.className='gcell'; c.id='gc'+i; c.textContent=i;
+    c.onclick=()=>onUocCellClick(i);
+    g.appendChild(c);
+  }
+})();
+
+function selectTarget(n, tab){
+  n=Math.max(1,Math.min(100,Math.round(n)||1));
+  if(tab==='uoc'){
+    uocTarget=n; uocRevealed=new Set(); uocDivs=[];
+    for(let i=1;i<=n;i++) if(n%i===0) uocDivs.push(i);
+    // Reset grid
+    for(let i=1;i<=100;i++){
+      const c=document.getElementById('gc'+i);
+      c.className='gcell'+(i===n?' target':'');
+    }
+    document.getElementById('uoc-input').value=n;
+    document.getElementById('uoc-sel-display').innerHTML=`Số đã chọn: <b>${n}</b> &nbsp;(có ${uocDivs.length} ước)`;
+    document.getElementById('uoc-hint').style.display='flex';
+    updateUocHint();
+  }
+}
+
+function onUocCellClick(i){
+  if(uocTarget===0){ selectTarget(i,'uoc'); return; }
+  if(i===uocTarget) return;
+  const c=document.getElementById('gc'+i);
+  if(uocTarget%i===0){
+    if(!uocRevealed.has(i)){
+      uocRevealed.add(i);
+      c.className='gcell revealed';
+      updateUocHint();
+    }
+  } else {
+    // Flash red briefly
+    c.className='gcell not-uoc';
+    setTimeout(()=>{ if(!uocRevealed.has(i)) c.className='gcell'; },700);
+  }
+}
+
+function updateUocHint(){
+  const found=uocDivs.filter(d=>uocRevealed.has(d)||(d===uocTarget));
+  const chips=document.getElementById('uoc-found'); chips.innerHTML='';
+  // Always show target itself as found
+  const allFound=[...uocRevealed, uocTarget].sort((a,b)=>a-b);
+  [...new Set(allFound)].forEach(d=>{
+    const ch=document.createElement('div'); ch.className='uchip'; ch.textContent=d;
+    chips.appendChild(ch);
+  });
+  const cnt=uocRevealed.size+(uocDivs.includes(uocTarget)?1:0);
+  document.getElementById('uoc-count').innerHTML=`<b style="color:var(--teal)">${uocRevealed.size+1}</b> / ${uocDivs.length} ước`;
+}
+
+function revealOneUoc(){
+  if(!uocTarget){return;}
+  const next=uocDivs.find(d=>d!==uocTarget&&!uocRevealed.has(d));
+  if(next){ uocRevealed.add(next); document.getElementById('gc'+next).className='gcell revealed'; updateUocHint(); }
+}
+
+function revealAllUoc(){
+  if(!uocTarget) return;
+  uocDivs.forEach(d=>{
+    if(d!==uocTarget){ uocRevealed.add(d); document.getElementById('gc'+d).className='gcell revealed'; }
+  });
+  updateUocHint();
+}
+
+function clearUoc(){
+  uocTarget=0; uocRevealed=new Set(); uocDivs=[];
+  document.getElementById('uoc-input').value='';
+  document.getElementById('uoc-sel-display').textContent='Chưa chọn số';
+  document.getElementById('uoc-hint').style.display='none';
+  for(let i=1;i<=100;i++) document.getElementById('gc'+i).className='gcell';
+}
+
+/* ══════ TAB 2: BỘI SỐ ══════ */
+let boiN=3, boiLim=10, boiRevealedSet=new Set();
+
+function buildBoiGrid(){
+  boiN=Math.max(1,Math.min(20,parseInt(document.getElementById('boi-n').value)||3));
+  boiLim=Math.max(3,Math.min(20,parseInt(document.getElementById('boi-lim').value)||10));
+  boiRevealedSet=new Set();
+  const row=document.getElementById('boi-row'); row.innerHTML='';
+  const maxVal=boiN*boiLim;
+  for(let v=0;v<=maxVal;v+=boiN>5?boiN:1){
+    const isBoi=v%boiN===0;
+    const isZero=v===0;
+    const c=document.createElement('div');
+    c.className='bcell'+(isZero?' boi-zero':'');
+    c.id='bcel'+v;
+    c.dataset.v=v; c.dataset.isboi=isBoi?'1':'0';
+    const mult=isBoi?v/boiN:null;
+    c.innerHTML=`<span>${v}</span><span class="mult-tag">${isBoi&&!isZero?mult+'×'+boiN:''}</span>`;
+    if(isBoi&&!isZero) c.onclick=()=>onBoiClick(v);
+    else if(!isBoi) c.onclick=()=>flashNotBoi(v);
+    row.appendChild(c);
+  }
+  document.getElementById('boi-hint').style.display='block';
+  document.getElementById('boi-hint-text').innerHTML=
+    `Bội của <b style="color:var(--green)">${boiN}</b>: nhấn vào ô để tìm — tổng ${boiLim} bội đầu tiên (không kể 0)`;
+}
+
+function onBoiClick(v){
+  if(boiRevealedSet.has(v)) return;
+  boiRevealedSet.add(v);
+  const c=document.getElementById('bcel'+v);
+  c.className='bcell revealed';
+  updateBoiHint();
+}
+function flashNotBoi(v){
+  const c=document.getElementById('bcel'+v);
+  c.style.borderColor='#ef4444'; c.style.color='#f87171';
+  setTimeout(()=>{ c.style.borderColor=''; c.style.color=''; },600);
+}
+function updateBoiHint(){
+  const found=boiLim-([...Array(boiLim)].filter((_,i)=>!boiRevealedSet.has((i+1)*boiN)).length);
+  document.getElementById('boi-hint-text').innerHTML=
+    `Đã tìm được <b style="color:var(--green)">${boiRevealedSet.size}</b> / ${boiLim} bội của <b>${boiN}</b>`;
+}
+function revealOneBoi(){
+  for(let k=1;k<=boiLim;k++){
+    const v=k*boiN;
+    if(!boiRevealedSet.has(v)){ onBoiClick(v); break; }
+  }
+}
+function revealAllBoi(){
+  for(let k=1;k<=boiLim;k++) onBoiClick(k*boiN);
+}
+buildBoiGrid();
+
+/* ══════ TAB 3: PHÂN TÍCH TSNT ══════ */
+let tsntN=60, ladderSteps=[], ladderIdx=0, treeNodes=[], treeIdx=0;
+
+function primeFactors(n){
+  const steps=[]; let rem=n;
+  for(let p=2;p*p<=rem;p++){
+    while(rem%p===0){ steps.push({div:p,quot:rem/p,num:rem}); rem=Math.floor(rem/p); }
+  }
+  if(rem>1) steps.push({div:rem,quot:1,num:rem});
+  return steps;
+}
+
+function factorResult(n){
+  const f=primeFactors(n);
+  const counts={};
+  f.forEach(s=>{ counts[s.div]=(counts[s.div]||0)+1; });
+  return Object.entries(counts).map(([p,e])=>e>1?`${p}<sup>${e}</sup>`:p).join(' × ');
+}
+
+/* ── Cột dọc ── */
+function initLadder(n){
+  ladderSteps=primeFactors(n); ladderIdx=0;
+  const el=document.getElementById('ladder'); el.innerHTML='';
+  const res=document.getElementById('ladder-result'); res.className='ladder-result';
+  // Pre-build all rows hidden
+  let rem=n;
+  ladderSteps.forEach((s,i)=>{
+    const row=document.createElement('div'); row.className='ladder-row'; row.id='lr'+i;
+    row.innerHTML=`<div class="lr-num">${s.num}</div>
+      <div class="lr-bar"></div>
+      <div class="lr-div">${s.div}</div>`;
+    el.appendChild(row);
+    if(i===ladderSteps.length-1){
+      // last row shows quotient=1
+      const last=document.createElement('div'); last.className='ladder-row'; last.id='lr-end';
+      last.innerHTML=`<div class="lr-num">1</div>`;
+      el.appendChild(last);
+    }
+  });
+  if(ladderSteps.length===0){
+    el.innerHTML=`<div style="color:var(--orange);font-size:1.1rem;font-weight:800;">${n} là số nguyên tố!</div>`;
+    res.innerHTML=`${n} = ${n}`; res.classList.add('show');
+  }
+}
+
+function ladderStep(){
+  if(ladderIdx<ladderSteps.length){
+    document.getElementById('lr'+ladderIdx).classList.add('show');
+    ladderIdx++;
+    if(ladderIdx===ladderSteps.length){
+      document.getElementById('lr-end').classList.add('show');
+      const res=document.getElementById('ladder-result');
+      res.innerHTML=`${tsntN} = ${factorResult(tsntN)}`;
+      res.classList.add('show');
+    }
+  }
+}
+function ladderAll(){ while(ladderIdx<=ladderSteps.length) ladderStep(); }
+function ladderReset(){ initLadder(tsntN); }
+
+/* ── Sơ đồ cây ── */
+let treeData=[]; // [{id,parent,value,x,y,isPrime}]
+let treeRevIdx=0;
+
+function buildTreeData(n){
+  let id=0;
+  const nodes=[];
+  function split(val,parentId,depth,xMin,xMax){
+    const x=(xMin+xMax)/2, y=30+depth*70;
+    const nodeId=id++;
+    let p=null;
+    for(let f=2;f*f<=val;f++){ if(val%f===0){p=f;break;} }
+    const isPrime=p===null;
+    nodes.push({id:nodeId,parent:parentId,value:val,x,y,isPrime});
+    if(!isPrime){
+      split(p,   nodeId,depth+1,xMin,(xMin+xMax)/2);
+      split(val/p,nodeId,depth+1,(xMin+xMax)/2,xMax);
+    }
+  }
+  split(n,-1,0,0,340);
+  return nodes;
+}
+
+function drawTree(upTo){
+  const svg=document.getElementById('tree-svg');
+  const maxY=Math.max(...treeData.map(n=>n.y))+50;
+  svg.setAttribute('viewBox',`0 0 340 ${Math.max(maxY,200)}`);
+  svg.innerHTML='';
+  const visible=treeData.slice(0,upTo);
+  // Draw edges first
+  visible.forEach(nd=>{
+    if(nd.parent>=0){
+      const par=treeData[nd.parent];
+      if(par&&visible.includes(par)){
+        const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+        line.setAttribute('x1',par.x); line.setAttribute('y1',par.y+16);
+        line.setAttribute('x2',nd.x);  line.setAttribute('y2',nd.y-16);
+        line.setAttribute('stroke','#475569'); line.setAttribute('stroke-width','2');
+        svg.appendChild(line);
+      }
+    }
+  });
+  // Draw nodes
+  visible.forEach(nd=>{
+    const col=nd.isPrime?'#10b981':'#06b6d4';
+    const fill=nd.isPrime?'rgba(16,185,129,.2)':'rgba(6,182,212,.15)';
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    const circ=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circ.setAttribute('cx',nd.x); circ.setAttribute('cy',nd.y); circ.setAttribute('r','18');
+    circ.setAttribute('fill',fill); circ.setAttribute('stroke',col); circ.setAttribute('stroke-width','2.5');
+    const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    txt.setAttribute('x',nd.x); txt.setAttribute('y',nd.y+5);
+    txt.setAttribute('text-anchor','middle'); txt.setAttribute('font-size','14');
+    txt.setAttribute('font-weight','800'); txt.setAttribute('fill',col);
+    txt.setAttribute('font-family','Segoe UI,sans-serif'); txt.textContent=nd.value;
+    // Prime badge
+    if(nd.isPrime){
+      const badge=document.createElementNS('http://www.w3.org/2000/svg','text');
+      badge.setAttribute('x',nd.x+14); badge.setAttribute('y',nd.y-10);
+      badge.setAttribute('text-anchor','middle'); badge.setAttribute('font-size','9');
+      badge.setAttribute('font-weight','700'); badge.setAttribute('fill','#10b981');
+      badge.setAttribute('font-family','Segoe UI,sans-serif'); badge.textContent='NT';
+      g.appendChild(badge);
+    }
+    g.appendChild(circ); g.appendChild(txt); svg.appendChild(g);
+  });
+  // Result
+  const allPrime=visible.length===treeData.length;
+  const res=document.getElementById('tree-result');
+  res.style.display=allPrime?'block':'none';
+  if(allPrime) res.innerHTML=`${tsntN} = ${factorResult(tsntN)}`;
+}
+
+function treeStep(){ if(treeRevIdx<treeData.length){ treeRevIdx++; drawTree(treeRevIdx); } }
+function treeAll(){ treeRevIdx=treeData.length; drawTree(treeRevIdx); }
+function treeReset(){ treeRevIdx=1; drawTree(1); }
+
+function initTSNT(n){
+  n=Math.max(2,Math.min(1000,Math.round(n)||60));
+  tsntN=n;
+  initLadder(n);
+  treeData=buildTreeData(n);
+  treeRevIdx=1; drawTree(1);
+  document.getElementById('tree-result').style.display='none';
+}
+function setTsnt(n){ document.getElementById('tsnt-n').value=n; initTSNT(n); }
+
+initTSNT(60);
+</script>
+</body>
+</html>

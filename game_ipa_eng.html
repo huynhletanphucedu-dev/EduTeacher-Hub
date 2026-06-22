@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Bảng IPA – Phát Âm Tiếng Anh</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0f172a;color:#e2e8f0;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden}
+header{width:100%;background:#1e293b;padding:.7rem 1rem;text-align:center;border-bottom:1px solid #334155}
+header h1{font-size:1.05rem;font-weight:700;color:#38bdf8;letter-spacing:.04em}
+header h2{font-size:.72rem;color:#94a3b8;margin-top:2px}
+
+/* Tabs */
+.tabs{display:flex;gap:0;width:100%;max-width:440px;background:#1e293b;border-bottom:2px solid #334155}
+.tab{flex:1;padding:.55rem;font-size:.78rem;color:#94a3b8;cursor:pointer;text-align:center;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.tab.active{color:#38bdf8;border-bottom-color:#38bdf8;font-weight:600}
+
+/* ── TAB 1: IPA Board ── */
+.section-label{font-size:.68rem;color:#64748b;padding:.5rem 1rem .25rem;width:100%;max-width:440px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.ipa-grid{display:grid;gap:5px;padding:0 1rem;width:100%;max-width:440px}
+.ipa-grid.vowels{grid-template-columns:repeat(5,1fr)}
+.ipa-grid.consonants{grid-template-columns:repeat(6,1fr)}
+.ipa-grid.dipthongs{grid-template-columns:repeat(5,1fr)}
+
+.ipa-btn{border-radius:10px;border:1.5px solid transparent;padding:.55rem .1rem;cursor:pointer;text-align:center;transition:all .15s;position:relative}
+.ipa-btn:active{transform:scale(.9)}
+.ipa-btn .sym{font-size:1.05rem;font-weight:700;line-height:1;display:block}
+.ipa-btn .ex{font-size:.6rem;color:inherit;opacity:.75;margin-top:1px;display:block}
+
+/* Color by category */
+.ipa-btn.vowel{background:#0c4a6e;border-color:#0369a1;color:#7dd3fc}
+.ipa-btn.vowel:hover,.ipa-btn.vowel.active-play{background:#0369a1;color:#fff}
+.ipa-btn.cons{background:#14532d;border-color:#166534;color:#86efac}
+.ipa-btn.cons:hover,.ipa-btn.cons.active-play{background:#166534;color:#fff}
+.ipa-btn.diph{background:#4a044e;border-color:#86198f;color:#f0abfc}
+.ipa-btn.diph:hover,.ipa-btn.diph.active-play{background:#86198f;color:#fff}
+
+/* Popup tooltip */
+.popup{position:fixed;background:#1e293b;border:1.5px solid #38bdf8;border-radius:14px;padding:.85rem 1.1rem;z-index:100;pointer-events:none;min-width:180px;max-width:240px;box-shadow:0 8px 32px rgba(0,0,0,.5);display:none}
+.pop-sym{font-size:2.2rem;font-weight:700;color:#38bdf8;line-height:1}
+.pop-type{font-size:.68rem;color:#94a3b8;margin-top:2px}
+.pop-words{margin-top:.5rem;display:flex;flex-direction:column;gap:4px}
+.pop-word{font-size:.82rem;color:#e2e8f0;display:flex;align-items:center;gap:6px}
+.pop-word .hl{color:#38bdf8;font-weight:700}
+.pop-close{font-size:.7rem;color:#64748b;margin-top:.5rem;text-align:right}
+
+/* ── TAB 2: Quiz mode ── */
+.quiz-wrap{width:100%;max-width:440px;padding:.5rem 1rem}
+.quiz-stats{display:flex;gap:.8rem;justify-content:center;margin-bottom:.5rem}
+.qstat{background:#1e293b;border-radius:10px;padding:.3rem .8rem;font-size:.78rem;color:#94a3b8;text-align:center}
+.qstat span{display:block;font-size:1rem;font-weight:700;color:#f8fafc}
+.prog-bar{height:5px;background:#1e293b;border-radius:3px;overflow:hidden;margin-bottom:.6rem}
+.prog-fill{height:100%;background:linear-gradient(90deg,#0369a1,#38bdf8);border-radius:3px;transition:width .3s}
+
+.quiz-card{background:#1e293b;border-radius:16px;padding:1.1rem 1rem;margin-bottom:.5rem;text-align:center}
+.quiz-mode-label{font-size:.72rem;color:#94a3b8;margin-bottom:.5rem}
+.quiz-symbol{font-size:3rem;font-weight:700;color:#38bdf8;line-height:1;margin-bottom:.3rem}
+.quiz-question{font-size:.88rem;color:#e2e8f0}
+.quiz-word{font-size:1.1rem;font-weight:700;color:#f8fafc;margin-bottom:.2rem}
+.quiz-ask{font-size:.82rem;color:#94a3b8}
+.btn-listen{background:#0c4a6e;border:1px solid #0369a1;color:#7dd3fc;border-radius:8px;padding:.3rem .9rem;font-size:.75rem;cursor:pointer;margin-top:.4rem}
+
+.quiz-opts{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:.5rem}
+.qopt{background:#1e293b;border:2px solid #334155;border-radius:12px;padding:.8rem .4rem;font-size:1.1rem;font-weight:700;color:#e2e8f0;cursor:pointer;text-align:center;transition:all .15s}
+.qopt:active{transform:scale(.93)}
+.qopt.correct{background:#052e16;border-color:#16a34a;color:#4ade80}
+.qopt.wrong{background:#450a0a;border-color:#dc2626;color:#f87171}
+.qopt:disabled{cursor:default}
+.quiz-fb{border-radius:12px;padding:.65rem 1rem;font-size:.82rem;line-height:1.5;display:none;margin-bottom:.5rem}
+.quiz-fb.ok{background:#052e16;border:1px solid #16a34a;color:#4ade80}
+.quiz-fb.err{background:#450a0a;border:1px solid #dc2626;color:#f87171}
+.btn-next-quiz{width:100%;background:#0369a1;color:#fff;border:none;border-radius:12px;padding:.8rem;font-size:.95rem;font-weight:700;cursor:pointer;display:none}
+
+/* Overlay */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:200}
+.result-card{background:#1e293b;border-radius:18px;padding:2rem;text-align:center;max-width:300px;width:90%}
+.re{font-size:3rem;margin-bottom:.5rem}.rt{font-size:1.3rem;font-weight:700;margin-bottom:.4rem}.rs{font-size:.9rem;color:#94a3b8;margin-bottom:1rem}
+.btn-re{background:#0369a1;color:#fff;border:none;border-radius:10px;padding:.75rem 2rem;font-size:1rem;font-weight:700;cursor:pointer;width:100%}
+</style>
+</head>
+<body>
+<header>
+  <h1>🗣️ BẢNG IPA — PHÁT ÂM TIẾNG ANH</h1>
+  <h2>INTERNATIONAL PHONETIC ALPHABET</h2>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab(0,this)">📋 Bảng âm vị</div>
+  <div class="tab" onclick="switchTab(1,this)">🎯 Quiz phát âm</div>
+</div>
+
+<!-- TAB 0: Board -->
+<div id="tab0">
+  <div class="section-label">🔵 Nguyên âm đơn (Monophthongs)</div>
+  <div class="ipa-grid vowels" id="vowelsGrid"></div>
+  <div class="section-label">🟢 Phụ âm (Consonants)</div>
+  <div class="ipa-grid consonants" id="consGrid"></div>
+  <div class="section-label">🟣 Nguyên âm đôi (Diphthongs)</div>
+  <div class="ipa-grid dipthongs" id="diphGrid"></div>
+  <div style="height:12px"></div>
+</div>
+
+<!-- TAB 1: Quiz -->
+<div id="tab1" style="display:none">
+  <div class="quiz-wrap">
+    <div class="quiz-stats">
+      <div class="qstat"><span id="qNum">1</span>Câu</div>
+      <div class="qstat"><span id="qCorrect">0</span>Đúng</div>
+      <div class="qstat"><span id="qTotal">15</span>Tổng</div>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    <div class="quiz-card">
+      <div class="quiz-mode-label" id="qModeLabel"></div>
+      <div class="quiz-symbol" id="qSymbol"></div>
+      <div class="quiz-word" id="qWord"></div>
+      <div class="quiz-ask" id="qAsk"></div>
+      <button class="btn-listen" onclick="listenCurrent()">🔊 Nghe âm</button>
+    </div>
+    <div class="quiz-opts" id="qOpts"></div>
+    <div class="quiz-fb" id="qFb"></div>
+    <button class="btn-next-quiz" id="btnNextQuiz" onclick="nextQuiz()">Câu tiếp →</button>
+  </div>
+</div>
+
+<!-- Popup -->
+<div class="popup" id="popup">
+  <div class="pop-sym" id="popSym"></div>
+  <div class="pop-type" id="popType"></div>
+  <div class="pop-words" id="popWords"></div>
+  <div class="pop-close">Chạm nơi khác để đóng</div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="result-card">
+    <div class="re" id="re"></div><div class="rt" id="rt"></div><div class="rs" id="rs"></div>
+    <button class="btn-re" onclick="restartQuiz()">Chơi lại</button>
+  </div>
+</div>
+
+<script>
+// IPA data
+const VOWELS = [
+  {sym:'iː',ex:'see',type:'Nguyên âm dài',words:[{w:'see',hl:'ee'},{w:'feel',hl:'ee'},{w:'meet',hl:'ee'}],freq:330},
+  {sym:'ɪ',ex:'sit',type:'Nguyên âm ngắn',words:[{w:'sit',hl:'i'},{w:'big',hl:'i'},{w:'fish',hl:'i'}],freq:300},
+  {sym:'e',ex:'ten',type:'Nguyên âm ngắn',words:[{w:'ten',hl:'e'},{w:'bed',hl:'e'},{w:'red',hl:'e'}],freq:260},
+  {sym:'æ',ex:'cat',type:'Nguyên âm ngắn',words:[{w:'cat',hl:'a'},{w:'bag',hl:'a'},{w:'map',hl:'a'}],freq:240},
+  {sym:'ɑː',ex:'car',type:'Nguyên âm dài',words:[{w:'car',hl:'ar'},{w:'far',hl:'ar'},{w:'park',hl:'ar'}],freq:220},
+  {sym:'ɒ',ex:'hot',type:'Nguyên âm ngắn',words:[{w:'hot',hl:'o'},{w:'dog',hl:'o'},{w:'not',hl:'o'}],freq:200},
+  {sym:'ɔː',ex:'law',type:'Nguyên âm dài',words:[{w:'law',hl:'aw'},{w:'more',hl:'or'},{w:'door',hl:'oo'}],freq:210},
+  {sym:'ʊ',ex:'book',type:'Nguyên âm ngắn',words:[{w:'book',hl:'oo'},{w:'good',hl:'oo'},{w:'full',hl:'u'}],freq:280},
+  {sym:'uː',ex:'food',type:'Nguyên âm dài',words:[{w:'food',hl:'oo'},{w:'moon',hl:'oo'},{w:'blue',hl:'ue'}],freq:295},
+  {sym:'ʌ',ex:'cup',type:'Nguyên âm ngắn',words:[{w:'cup',hl:'u'},{w:'fun',hl:'u'},{w:'run',hl:'u'}],freq:250},
+  {sym:'ɜː',ex:'bird',type:'Nguyên âm dài',words:[{w:'bird',hl:'ir'},{w:'word',hl:'or'},{w:'girl',hl:'ir'}],freq:245},
+  {sym:'ə',ex:'about',type:'Schwa (trung tính)',words:[{w:'about',hl:'a'},{w:'teacher',hl:'er'},{w:'banana',hl:'a'}],freq:255},
+];
+const CONSONANTS = [
+  {sym:'p',ex:'pen',type:'Phụ âm vô thanh',words:[{w:'pen',hl:'p'},{w:'cap',hl:'p'},{w:'map',hl:'p'}],freq:null,noise:true},
+  {sym:'b',ex:'bad',type:'Phụ âm hữu thanh',words:[{w:'bad',hl:'b'},{w:'bag',hl:'b'},{w:'rob',hl:'b'}],freq:120,noise:false},
+  {sym:'t',ex:'ten',type:'Phụ âm vô thanh',words:[{w:'ten',hl:'t'},{w:'cat',hl:'t'},{w:'sit',hl:'t'}],freq:null,noise:true},
+  {sym:'d',ex:'day',type:'Phụ âm hữu thanh',words:[{w:'day',hl:'d'},{w:'dog',hl:'d'},{w:'add',hl:'d'}],freq:150,noise:false},
+  {sym:'k',ex:'cat',type:'Phụ âm vô thanh',words:[{w:'cat',hl:'c'},{w:'key',hl:'k'},{w:'back',hl:'ck'}],freq:null,noise:true},
+  {sym:'g',ex:'get',type:'Phụ âm hữu thanh',words:[{w:'get',hl:'g'},{w:'big',hl:'g'},{w:'dog',hl:'g'}],freq:100,noise:false},
+  {sym:'f',ex:'fat',type:'Phụ âm vô thanh',words:[{w:'fat',hl:'f'},{w:'off',hl:'ff'},{w:'leaf',hl:'f'}],freq:null,noise:true},
+  {sym:'v',ex:'van',type:'Phụ âm hữu thanh',words:[{w:'van',hl:'v'},{w:'very',hl:'v'},{w:'live',hl:'v'}],freq:160,noise:false},
+  {sym:'θ',ex:'thin',type:'Phụ âm vô thanh',words:[{w:'thin',hl:'th'},{w:'three',hl:'th'},{w:'bath',hl:'th'}],freq:null,noise:true},
+  {sym:'ð',ex:'this',type:'Phụ âm hữu thanh',words:[{w:'this',hl:'th'},{w:'that',hl:'th'},{w:'the',hl:'th'}],freq:180,noise:false},
+  {sym:'s',ex:'see',type:'Phụ âm vô thanh',words:[{w:'see',hl:'s'},{w:'bus',hl:'s'},{w:'class',hl:'ss'}],freq:null,noise:true},
+  {sym:'z',ex:'zoo',type:'Phụ âm hữu thanh',words:[{w:'zoo',hl:'z'},{w:'buzz',hl:'zz'},{w:'size',hl:'z'}],freq:200,noise:false},
+  {sym:'ʃ',ex:'she',type:'Phụ âm vô thanh',words:[{w:'she',hl:'sh'},{w:'fish',hl:'sh'},{w:'wish',hl:'sh'}],freq:null,noise:true},
+  {sym:'ʒ',ex:'vision',type:'Phụ âm hữu thanh',words:[{w:'vision',hl:'si'},{w:'treasure',hl:'su'},{w:'measure',hl:'su'}],freq:190,noise:false},
+  {sym:'h',ex:'hot',type:'Phụ âm hơi',words:[{w:'hot',hl:'h'},{w:'he',hl:'h'},{w:'who',hl:'wh'}],freq:null,noise:true},
+  {sym:'tʃ',ex:'chin',type:'Phụ âm kép',words:[{w:'chin',hl:'ch'},{w:'teach',hl:'ch'},{w:'chair',hl:'ch'}],freq:null,noise:true},
+  {sym:'dʒ',ex:'joy',type:'Phụ âm kép',words:[{w:'joy',hl:'j'},{w:'bridge',hl:'dg'},{w:'age',hl:'ge'}],freq:130,noise:false},
+  {sym:'m',ex:'man',type:'Phụ âm mũi',words:[{w:'man',hl:'m'},{w:'home',hl:'m'},{w:'swim',hl:'m'}],freq:140,noise:false},
+  {sym:'n',ex:'now',type:'Phụ âm mũi',words:[{w:'now',hl:'n'},{w:'sun',hl:'n'},{w:'thin',hl:'n'}],freq:170,noise:false},
+  {sym:'ŋ',ex:'sing',type:'Phụ âm mũi',words:[{w:'sing',hl:'ng'},{w:'long',hl:'ng'},{w:'king',hl:'ng'}],freq:110,noise:false},
+  {sym:'l',ex:'leg',type:'Phụ âm bên',words:[{w:'leg',hl:'l'},{w:'ball',hl:'ll'},{w:'feel',hl:'l'}],freq:220,noise:false},
+  {sym:'r',ex:'red',type:'Phụ âm rung',words:[{w:'red',hl:'r'},{w:'run',hl:'r'},{w:'very',hl:'r'}],freq:130,noise:false},
+  {sym:'j',ex:'yes',type:'Bán nguyên âm',words:[{w:'yes',hl:'y'},{w:'you',hl:'y'},{w:'year',hl:'y'}],freq:250,noise:false},
+  {sym:'w',ex:'wet',type:'Bán nguyên âm',words:[{w:'wet',hl:'w'},{w:'way',hl:'w'},{w:'swim',hl:'sw'}],freq:200,noise:false},
+];
+const DIPHTHONGS = [
+  {sym:'eɪ',ex:'day',type:'Nguyên âm đôi',words:[{w:'day',hl:'ay'},{w:'wait',hl:'ai'},{w:'cake',hl:'a_e'}],freq:[260,330]},
+  {sym:'oʊ',ex:'go',type:'Nguyên âm đôi',words:[{w:'go',hl:'o'},{w:'home',hl:'o'},{w:'road',hl:'oa'}],freq:[200,280]},
+  {sym:'aɪ',ex:'my',type:'Nguyên âm đôi',words:[{w:'my',hl:'y'},{w:'five',hl:'i'},{w:'high',hl:'igh'}],freq:[240,330]},
+  {sym:'aʊ',ex:'now',type:'Nguyên âm đôi',words:[{w:'now',hl:'ow'},{w:'house',hl:'ou'},{w:'town',hl:'ow'}],freq:[240,280]},
+  {sym:'ɔɪ',ex:'boy',type:'Nguyên âm đôi',words:[{w:'boy',hl:'oy'},{w:'coin',hl:'oi'},{w:'noise',hl:'oi'}],freq:[210,330]},
+  {sym:'ɪə',ex:'here',type:'Nguyên âm đôi',words:[{w:'here',hl:'ere'},{w:'ear',hl:'ea'},{w:'beer',hl:'ee'}],freq:[300,255]},
+  {sym:'eə',ex:'hair',type:'Nguyên âm đôi',words:[{w:'hair',hl:'ai'},{w:'care',hl:'a'},{w:'bear',hl:'ea'}],freq:[260,255]},
+  {sym:'ʊə',ex:'pure',type:'Nguyên âm đôi',words:[{w:'pure',hl:'u'},{w:'cure',hl:'u'},{w:'sure',hl:'u'}],freq:[280,255]},
+];
+
+const ALL_SOUNDS=[...VOWELS,...CONSONANTS,...DIPHTHONGS];
+const AC=new (window.AudioContext||window.webkitAudioContext)();
+
+// ── Render Board ──
+function buildBoard(){
+  buildGrid('vowelsGrid',VOWELS,'vowel');
+  buildGrid('consGrid',CONSONANTS,'cons');
+  buildGrid('diphGrid',DIPHTHONGS,'diph');
+}
+
+function buildGrid(id,data,cls){
+  const g=document.getElementById(id);
+  data.forEach(item=>{
+    const btn=document.createElement('button');
+    btn.className=`ipa-btn ${cls}`;
+    btn.innerHTML=`<span class="sym">${item.sym}</span><span class="ex">${item.ex}</span>`;
+    btn.onclick=(e)=>{e.stopPropagation();playSound(item);showPopup(item,btn);};
+    g.appendChild(btn);
+  });
+}
+
+function showPopup(item,btn){
+  const pop=document.getElementById('popup');
+  document.getElementById('popSym').textContent=item.sym;
+  document.getElementById('popType').textContent=item.type;
+  const pw=document.getElementById('popWords');pw.innerHTML='';
+  item.words.forEach(w=>{
+    const div=document.createElement('div');div.className='pop-word';
+    const display=w.w.replace(w.hl,`<span class="hl">${w.hl}</span>`);
+    div.innerHTML=`/${item.sym}/ → <span>${display}</span>`;
+    pw.appendChild(div);
+  });
+  // position near button
+  const rect=btn.getBoundingClientRect();
+  const top=Math.min(rect.bottom+6,window.innerHeight-180);
+  const left=Math.max(8,Math.min(rect.left,window.innerWidth-256));
+  pop.style.top=top+'px';pop.style.left=left+'px';
+  pop.style.display='block';
+  // pulse button
+  btn.classList.add('active-play');
+  setTimeout(()=>btn.classList.remove('active-play'),500);
+}
+
+document.addEventListener('click',()=>{document.getElementById('popup').style.display='none';});
+
+// ── Sound ──
+function playSound(item){
+  if(Array.isArray(item.freq)){
+    // diphthong: glide between two freqs
+    const o=AC.createOscillator(),g=AC.createGain();
+    o.type='sine';o.connect(g);g.connect(AC.destination);
+    o.frequency.setValueAtTime(item.freq[0],AC.currentTime);
+    o.frequency.linearRampToValueAtTime(item.freq[1],AC.currentTime+.35);
+    g.gain.setValueAtTime(.28,AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.55);
+    o.start();o.stop(AC.currentTime+.55);
+  } else if(item.noise){
+    // voiceless consonant: noise burst
+    const buf=AC.createBuffer(1,AC.sampleRate*.12,AC.sampleRate);
+    const data=buf.getChannelData(0);
+    for(let i=0;i<data.length;i++)data[i]=(Math.random()*2-1)*.6;
+    const src=AC.createBufferSource();src.buffer=buf;
+    const filt=AC.createBiquadFilter();filt.type='bandpass';
+    filt.frequency.value=item.sym==='s'||item.sym==='ʃ'?4000:2000;filt.Q.value=0.5;
+    const g=AC.createGain();g.gain.setValueAtTime(.3,AC.currentTime);
+    src.connect(filt);filt.connect(g);g.connect(AC.destination);
+    src.start();
+  } else if(item.freq){
+    const o=AC.createOscillator(),g=AC.createGain();
+    o.type='sine';o.frequency.value=item.freq;
+    o.connect(g);g.connect(AC.destination);
+    g.gain.setValueAtTime(.25,AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.45);
+    o.start();o.stop(AC.currentTime+.45);
+  }
+}
+
+// ── Quiz ──
+const QUIZ_TOTAL=15;
+let qQueue=[],qIdx=0,qCorrect=0,qAnswered=false;
+let currentQItem=null;
+
+function switchTab(n,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab0').style.display=n===0?'':'none';
+  document.getElementById('tab1').style.display=n===1?'':'none';
+  if(n===1)restartQuiz();
+}
+
+function restartQuiz(){
+  const pool=[...ALL_SOUNDS];
+  shuffle(pool);qQueue=pool.slice(0,QUIZ_TOTAL);
+  qIdx=0;qCorrect=0;qAnswered=false;
+  document.getElementById('overlay').style.display='none';
+  document.getElementById('qCorrect').textContent=0;
+  nextQuiz();
+}
+
+function nextQuiz(){
+  if(qIdx>=qQueue.length){showFinal();return;}
+  qAnswered=false;
+  document.getElementById('qFb').style.display='none';
+  document.getElementById('btnNextQuiz').style.display='none';
+  currentQItem=qQueue[qIdx];qIdx++;
+  document.getElementById('qNum').textContent=qIdx;
+  document.getElementById('progFill').style.width=((qIdx-1)/QUIZ_TOTAL*100)+'%';
+
+  // Randomly choose quiz mode
+  const qmode=Math.floor(Math.random()*2);
+  if(qmode===0){
+    // Show symbol → pick example word
+    document.getElementById('qModeLabel').textContent='Âm này xuất hiện trong từ nào?';
+    document.getElementById('qSymbol').textContent=currentQItem.sym;
+    document.getElementById('qWord').textContent='';
+    document.getElementById('qAsk').textContent='Chọn từ có chứa âm /'+currentQItem.sym+'/';
+    const correct=currentQItem.words[0].w;
+    const distractors=ALL_SOUNDS.filter(s=>s!==currentQItem).map(s=>s.words[0].w);
+    shuffle(distractors);
+    const opts=[correct,...distractors.slice(0,3)];shuffle(opts);
+    buildQOpts(opts,correct,'word');
+  } else {
+    // Show word → pick symbol
+    document.getElementById('qModeLabel').textContent='Chọn ký hiệu phát âm đúng:';
+    document.getElementById('qSymbol').textContent='';
+    document.getElementById('qWord').textContent=currentQItem.words[0].w;
+    document.getElementById('qAsk').textContent='Từ "'+currentQItem.words[0].w+'" có âm:';
+    const correct=currentQItem.sym;
+    const pool2=ALL_SOUNDS.filter(s=>s!==currentQItem);shuffle(pool2);
+    const opts=[correct,...pool2.slice(0,3).map(s=>s.sym)];shuffle(opts);
+    buildQOpts(opts,correct,'sym');
+  }
+  setTimeout(()=>playSound(currentQItem),300);
+}
+
+function buildQOpts(opts,correct,type){
+  const div=document.getElementById('qOpts');div.innerHTML='';
+  opts.forEach(o=>{
+    const b=document.createElement('button');b.className='qopt';b.textContent=o;
+    b.onclick=()=>pickQuiz(o,correct,b);div.appendChild(b);
+  });
+}
+
+function pickQuiz(choice,correct,btn){
+  if(qAnswered)return;qAnswered=true;
+  document.querySelectorAll('.qopt').forEach(b=>{b.disabled=true;if(b.textContent===correct)b.classList.add('correct');});
+  if(choice===correct){
+    btn.classList.add('correct');qCorrect++;
+    document.getElementById('qCorrect').textContent=qCorrect;
+    playBeep(true);
+    const fb=document.getElementById('qFb');fb.className='quiz-fb ok';fb.style.display='block';
+    fb.innerHTML='✅ Đúng! <strong>/'+currentQItem.sym+'/ — '+currentQItem.type+'</strong>';
+  } else {
+    btn.classList.add('wrong');playBeep(false);
+    const fb=document.getElementById('qFb');fb.className='quiz-fb err';fb.style.display='block';
+    fb.innerHTML='❌ Sai. Đáp án: <strong>'+correct+'</strong> — /'+currentQItem.sym+'/ — '+currentQItem.type;
+  }
+  document.getElementById('btnNextQuiz').style.display='block';
+}
+
+function listenCurrent(){if(currentQItem)playSound(currentQItem);}
+
+function showFinal(){
+  document.getElementById('progFill').style.width='100%';
+  const pct=Math.round(qCorrect/QUIZ_TOTAL*100);
+  let e='😊',t='Hoàn thành!';
+  if(pct>=90){e='🏆';t='Xuất sắc!';}else if(pct>=70){e='🎉';t='Tốt lắm!';}else if(pct<50){e='📚';t='Luyện thêm nhé!';}
+  document.getElementById('re').textContent=e;document.getElementById('rt').textContent=t;
+  document.getElementById('rs').textContent=`${qCorrect}/${QUIZ_TOTAL} câu đúng (${pct}%)`;
+  document.getElementById('overlay').style.display='flex';
+}
+
+function playBeep(win){
+  const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);
+  if(win){o.frequency.setValueAtTime(880,AC.currentTime);o.frequency.setValueAtTime(1047,AC.currentTime+.1);}
+  else o.frequency.setValueAtTime(220,AC.currentTime);
+  g.gain.setValueAtTime(.15,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.35);
+  o.start();o.stop(AC.currentTime+.35);
+}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+
+buildBoard();
+</script>
+</body>
+</html>

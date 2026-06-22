@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Word Scramble - Tiếng Anh</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none}
+body{background:#1a1a2e;color:#eee;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;display:flex;justify-content:center}
+#app{width:100%;max-width:420px;min-height:100vh;display:flex;flex-direction:column;padding:0;position:relative;overflow:hidden}
+
+/* SCREENS */
+.screen{display:none;flex-direction:column;align-items:center;flex:1}
+.screen.active{display:flex}
+
+/* START SCREEN */
+#startScreen{justify-content:center;gap:24px;padding:32px 24px;background:#1a1a2e}
+.logo{font-size:32px;font-weight:800;color:#e94560;letter-spacing:2px;text-align:center}
+.logo span{color:#fff}
+.subtitle{font-size:14px;color:#aaa;text-align:center}
+.diff-title{font-size:16px;color:#ccc;font-weight:600;text-align:center}
+.diff-btns{display:flex;gap:12px;width:100%}
+.diff-btn{flex:1;padding:16px 8px;border:2px solid #333;background:#16213e;border-radius:12px;color:#ccc;font-size:15px;font-weight:600;cursor:pointer;transition:all .2s;min-height:64px}
+.diff-btn:hover,.diff-btn.sel{border-color:#e94560;color:#e94560;background:#1f1040}
+.diff-btn .sub{font-size:11px;color:#888;display:block;margin-top:4px;font-weight:400}
+.diff-btn.sel .sub{color:#e94560aa}
+.start-btn{width:100%;padding:18px;background:#e94560;border:none;border-radius:14px;color:#fff;font-size:18px;font-weight:700;cursor:pointer;min-height:56px;letter-spacing:1px}
+.start-btn:active{transform:scale(.97)}
+
+/* GAME SCREEN */
+#gameScreen{padding:0;background:#1a1a2e;justify-content:flex-start}
+
+/* HEADER */
+#header{width:100%;background:#16213e;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid #0f3460}
+.score-box{display:flex;flex-direction:column;align-items:center}
+.score-label{font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:1px}
+.score-val{font-size:22px;font-weight:800;color:#e94560}
+.lives{display:flex;gap:4px;align-items:center}
+.heart{font-size:20px;transition:all .3s}
+.heart.lost{opacity:.2;filter:grayscale(1)}
+.timer-wrap{position:relative;width:52px;height:52px}
+#timerRing{position:absolute;top:0;left:0;transform:rotate(-90deg)}
+.timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff}
+
+/* PROGRESS */
+#progress{width:100%;padding:6px 16px;background:#16213e}
+.prog-bar{height:4px;background:#0f3460;border-radius:2px}
+.prog-fill{height:100%;background:#e94560;border-radius:2px;transition:width .4s}
+
+/* HINT */
+#hint{width:100%;padding:14px 16px 10px;text-align:center}
+.hint-label{font-size:12px;color:#888;margin-bottom:4px}
+.hint-meaning{font-size:18px;font-weight:600;color:#f0c080}
+
+/* ANSWER ROW */
+#answerSection{width:100%;padding:12px 16px 8px}
+.ans-label{font-size:11px;color:#888;margin-bottom:8px;text-align:center;text-transform:uppercase;letter-spacing:1px}
+#answerRow{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;min-height:50px}
+.ans-slot{width:44px;height:44px;border:2px dashed #0f3460;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;font-family:monospace;color:#fff;background:#16213e;cursor:pointer;transition:all .2s}
+.ans-slot.filled{border-color:#e94560;background:#2a0a1a;cursor:pointer}
+.ans-slot.filled:active{transform:scale(.9)}
+
+/* LETTER TILES */
+#tilesSection{width:100%;padding:8px 16px;flex:1}
+.tiles-label{font-size:11px;color:#888;margin-bottom:10px;text-align:center;text-transform:uppercase;letter-spacing:1px}
+#tilesRow{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.tile{width:52px;height:52px;border-radius:10px;background:#2d1b4e;border:2px solid #6a3a7c;color:#fff;font-size:22px;font-weight:700;font-family:monospace;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s,opacity .2s;position:relative}
+.tile:active{transform:scale(.88)}
+.tile.used{opacity:0;pointer-events:none;transform:translateY(-60px)}
+.tile.shake{animation:shake .4s ease}
+
+/* CONTROLS */
+#controls{width:100%;padding:12px 16px 20px;display:flex;gap:10px}
+#btnErase{flex:1;padding:14px;background:#16213e;border:2px solid #333;border-radius:12px;color:#ccc;font-size:16px;font-weight:600;cursor:pointer;min-height:52px}
+#btnErase:active{background:#1f2a40}
+#btnHint{padding:14px 20px;background:#16213e;border:2px solid #333;border-radius:12px;color:#f0c080;font-size:16px;cursor:pointer;min-height:52px}
+#btnHint:active{background:#1f2a40}
+
+/* ANIMATIONS */
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+@keyframes popIn{0%{transform:scale(0) translateY(-20px);opacity:0}60%{transform:scale(1.15) translateY(0);opacity:1}100%{transform:scale(1) translateY(0);opacity:1}}
+@keyframes confettiFall{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(120vh) rotate(720deg);opacity:0}}
+@keyframes correctPulse{0%,100%{background:#2d1b4e}50%{background:#1a4a2e;border-color:#4aff8c}}
+@keyframes slideUp{0%{transform:translateY(0);opacity:1}100%{transform:translateY(-80px);opacity:0}}
+
+.ans-slot.correct-anim{animation:correctPulse .5s ease 3}
+
+/* CONFETTI */
+.confetti-piece{position:fixed;width:10px;height:10px;border-radius:2px;pointer-events:none;animation:confettiFall linear forwards;z-index:999}
+
+/* OVERLAY */
+#overlay{position:fixed;inset:0;background:#000a;display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .3s}
+#overlay.show{opacity:1;pointer-events:all}
+.overlay-box{background:#16213e;border-radius:20px;padding:32px 28px;width:85%;max-width:340px;text-align:center;border:1px solid #0f3460}
+.overlay-icon{font-size:52px;margin-bottom:12px}
+.overlay-title{font-size:22px;font-weight:800;margin-bottom:8px}
+.overlay-msg{font-size:15px;color:#aaa;margin-bottom:24px;line-height:1.5}
+.overlay-btn{width:100%;padding:16px;background:#e94560;border:none;border-radius:12px;color:#fff;font-size:17px;font-weight:700;cursor:pointer;margin-bottom:10px}
+.overlay-btn.sec{background:#16213e;border:2px solid #333;color:#ccc;margin-bottom:0}
+.overlay-btn:active{transform:scale(.97)}
+
+/* END SCREEN */
+#endScreen{justify-content:center;gap:20px;padding:32px 24px;background:#1a1a2e}
+.end-title{font-size:28px;font-weight:800;color:#e94560;text-align:center}
+.end-sub{font-size:14px;color:#aaa;text-align:center;margin-top:-12px}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+.stat-card{background:#16213e;border-radius:14px;padding:16px;text-align:center;border:1px solid #0f3460}
+.stat-num{font-size:28px;font-weight:800;color:#e94560}
+.stat-lbl{font-size:12px;color:#888;margin-top:4px}
+.replay-btn{width:100%;padding:18px;background:#e94560;border:none;border-radius:14px;color:#fff;font-size:18px;font-weight:700;cursor:pointer;min-height:56px}
+.replay-btn:active{transform:scale(.97)}
+.menu-btn{width:100%;padding:14px;background:#16213e;border:2px solid #333;border-radius:14px;color:#ccc;font-size:16px;cursor:pointer;min-height:52px}
+.menu-btn:active{transform:scale(.97)}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- START SCREEN -->
+<div id="startScreen" class="screen active">
+  <div class="logo">WORD<span>SCRAMBLE</span></div>
+  <div class="subtitle">Xếp chữ cái thành từ tiếng Anh đúng nghĩa</div>
+  <div class="diff-title">Chọn độ khó</div>
+  <div class="diff-btns">
+    <button class="diff-btn sel" data-diff="easy" onclick="selectDiff(this)">
+      Dễ
+      <span class="sub">≤6 chữ cái</span>
+    </button>
+    <button class="diff-btn" data-diff="med" onclick="selectDiff(this)">
+      Trung bình
+      <span class="sub">7–8 chữ cái</span>
+    </button>
+    <button class="diff-btn" data-diff="hard" onclick="selectDiff(this)">
+      Khó
+      <span class="sub">9+ chữ cái</span>
+    </button>
+  </div>
+  <button class="start-btn" onclick="startGame()">BẮT ĐẦU CHƠI ▶</button>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="gameScreen" class="screen">
+  <div id="header">
+    <div class="score-box">
+      <div class="score-label">Điểm</div>
+      <div class="score-val" id="scoreDisp">0</div>
+    </div>
+    <div class="lives" id="livesDisp"></div>
+    <div class="timer-wrap">
+      <svg id="timerRing" width="52" height="52">
+        <circle cx="26" cy="26" r="22" fill="none" stroke="#0f3460" stroke-width="4"/>
+        <circle id="timerArc" cx="26" cy="26" r="22" fill="none" stroke="#e94560" stroke-width="4"
+          stroke-dasharray="138.2" stroke-dashoffset="0" stroke-linecap="round"/>
+      </svg>
+      <div class="timer-num" id="timerNum">30</div>
+    </div>
+  </div>
+
+  <div id="progress">
+    <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+  </div>
+
+  <div id="hint">
+    <div class="hint-label">Nghĩa tiếng Việt</div>
+    <div class="hint-meaning" id="hintText">—</div>
+  </div>
+
+  <div id="answerSection">
+    <div class="ans-label">Câu trả lời của bạn</div>
+    <div id="answerRow"></div>
+  </div>
+
+  <div id="tilesSection">
+    <div class="tiles-label">Các chữ cái — nhấn để chọn</div>
+    <div id="tilesRow"></div>
+  </div>
+
+  <div id="controls">
+    <button id="btnErase" onclick="eraseLast()">⌫ Xóa</button>
+    <button id="btnHint" onclick="showHintOverlay()">💡</button>
+  </div>
+</div>
+
+<!-- END SCREEN -->
+<div id="endScreen" class="screen">
+  <div class="end-title">🎉 Kết thúc!</div>
+  <div class="end-sub" id="endSub">Bạn đã hoàn thành trò chơi</div>
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num" id="endScore">0</div><div class="stat-lbl">Tổng điểm</div></div>
+    <div class="stat-card"><div class="stat-num" id="endWords">0</div><div class="stat-lbl">Từ hoàn thành</div></div>
+    <div class="stat-card"><div class="stat-num" id="endAvgTime">0s</div><div class="stat-lbl">Thời gian TB</div></div>
+    <div class="stat-card"><div class="stat-num" id="endAccuracy">0%</div><div class="stat-lbl">Độ chính xác</div></div>
+  </div>
+  <button class="replay-btn" onclick="replayGame()">🔄 Chơi lại</button>
+  <button class="menu-btn" onclick="showScreen('startScreen')">⬅ Chọn độ khó</button>
+</div>
+
+</div>
+
+<!-- OVERLAY -->
+<div id="overlay">
+  <div class="overlay-box">
+    <div class="overlay-icon" id="ovIcon">✅</div>
+    <div class="overlay-title" id="ovTitle">Đúng rồi!</div>
+    <div class="overlay-msg" id="ovMsg"></div>
+    <button class="overlay-btn" id="ovBtn" onclick="dismissOverlay()">Tiếp theo ➜</button>
+    <button class="overlay-btn sec" id="ovBtn2" style="display:none" onclick="dismissOverlay2()">Quay lại menu</button>
+  </div>
+</div>
+
+<script>
+const WORDS = [
+  {w:'school',v:'trường học'},{w:'teacher',v:'giáo viên'},{w:'student',v:'học sinh'},
+  {w:'book',v:'sách'},{w:'pencil',v:'bút chì'},{w:'classroom',v:'phòng học'},
+  {w:'homework',v:'bài tập về nhà'},{w:'library',v:'thư viện'},{w:'computer',v:'máy tính'},
+  {w:'science',v:'khoa học'},{w:'history',v:'lịch sử'},{w:'geography',v:'địa lý'},
+  {w:'mathematics',v:'toán học'},{w:'english',v:'tiếng anh'},{w:'music',v:'âm nhạc'},
+  {w:'sports',v:'thể thao'},{w:'family',v:'gia đình'},{w:'mother',v:'mẹ'},
+  {w:'father',v:'bố'},{w:'brother',v:'anh/em trai'},{w:'sister',v:'chị/em gái'},
+  {w:'friend',v:'bạn bè'},{w:'hospital',v:'bệnh viện'},{w:'doctor',v:'bác sĩ'},
+  {w:'market',v:'chợ'},{w:'restaurant',v:'nhà hàng'},{w:'airport',v:'sân bay'},
+  {w:'hotel',v:'khách sạn'},{w:'mountain',v:'núi'},{w:'river',v:'sông'},
+  {w:'forest',v:'rừng'},{w:'beach',v:'bãi biển'},{w:'flower',v:'hoa'},
+  {w:'animal',v:'động vật'},{w:'weather',v:'thời tiết'},{w:'season',v:'mùa'},
+  {w:'morning',v:'buổi sáng'},{w:'evening',v:'buổi tối'},{w:'birthday',v:'sinh nhật'},
+  {w:'holiday',v:'ngày lễ'}
+];
+
+const CONFETTI_COLORS=['#e94560','#f0c080','#4aff8c','#60c0ff','#ff60aa','#fff'];
+const TOTAL_WORDS=10;
+const TIME_LIMIT=30;
+const MAX_LIVES=5;
+const CIRC=2*Math.PI*22;
+
+let diff='easy', score=0, lives=MAX_LIVES, wordList=[], wordIdx=0;
+let currentWord='', scrambled=[], answerTiles=[], tileEls=[], wrongTaps=0;
+let timerInterval=null, timeLeft=TIME_LIMIT, wordStartTime=0;
+let timesArr=[], wordsCompleted=0, totalAttempts=0;
+let overlayCallback=null, overlayCallback2=null;
+let hintUsed=false;
+
+function selectDiff(el){
+  document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  diff=el.dataset.diff;
+}
+
+function filterWords(){
+  let filtered;
+  if(diff==='easy') filtered=WORDS.filter(x=>x.w.length<=6);
+  else if(diff==='med') filtered=WORDS.filter(x=>x.w.length>=7&&x.w.length<=8);
+  else filtered=WORDS.filter(x=>x.w.length>=9);
+  if(filtered.length<TOTAL_WORDS){
+    let extra=WORDS.filter(x=>!filtered.includes(x));
+    filtered=[...filtered,...extra.slice(0,TOTAL_WORDS-filtered.length)];
+  }
+  return shuffle([...filtered]).slice(0,TOTAL_WORDS);
+}
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function scrambleWord(w){
+  let arr=w.split('');
+  let tries=0;
+  do{ arr=shuffle(arr); tries++; }
+  while(arr.join('')===w && tries<20);
+  return arr;
+}
+
+function startGame(){
+  score=0; lives=MAX_LIVES; wordIdx=0; wordsCompleted=0; totalAttempts=0;
+  timesArr=[]; wrongTaps=0;
+  wordList=filterWords();
+  showScreen('gameScreen');
+  updateScore(); renderLives();
+  loadWord();
+}
+
+function replayGame(){
+  showScreen('startScreen');
+}
+
+function loadWord(){
+  if(wordIdx>=wordList.length){ endGame(); return; }
+  if(lives<=0){ endGame(); return; }
+  const entry=wordList[wordIdx];
+  currentWord=entry.w.toUpperCase();
+  hintUsed=false;
+  scrambled=scrambleWord(currentWord);
+  answerTiles=[];
+  wrongTaps=0;
+  wordStartTime=Date.now();
+  document.getElementById('hintText').textContent=entry.v;
+  document.getElementById('progFill').style.width=((wordIdx/TOTAL_WORDS)*100)+'%';
+  renderTiles();
+  renderAnswerRow();
+  startTimer();
+}
+
+function renderTiles(){
+  const row=document.getElementById('tilesRow');
+  row.innerHTML='';
+  tileEls=[];
+  scrambled.forEach((letter,i)=>{
+    const t=document.createElement('div');
+    t.className='tile';
+    t.textContent=letter;
+    t.dataset.idx=i;
+    t.onclick=()=>tapTile(i,t);
+    row.appendChild(t);
+    tileEls.push(t);
+  });
+}
+
+function renderAnswerRow(){
+  const row=document.getElementById('answerRow');
+  row.innerHTML='';
+  const len=currentWord.length;
+  for(let i=0;i<len;i++){
+    const s=document.createElement('div');
+    s.className='ans-slot';
+    if(answerTiles[i]!==undefined){
+      s.classList.add('filled');
+      s.textContent=scrambled[answerTiles[i]];
+      const idx=i;
+      s.onclick=()=>returnTile(idx);
+    }
+    row.appendChild(s);
+  }
+}
+
+function tapTile(tileIdx, el){
+  if(el.classList.contains('used')) return;
+  el.classList.add('used');
+  answerTiles.push(tileIdx);
+  renderAnswerRow();
+  checkAnswer();
+}
+
+function returnTile(ansIdx){
+  if(ansIdx>=answerTiles.length) return;
+  const tileIdx=answerTiles[ansIdx];
+  answerTiles.splice(ansIdx,1);
+  tileEls[tileIdx].classList.remove('used');
+  renderAnswerRow();
+}
+
+function eraseLast(){
+  if(answerTiles.length===0) return;
+  const tileIdx=answerTiles[answerTiles.length-1];
+  answerTiles.pop();
+  tileEls[tileIdx].classList.remove('used');
+  renderAnswerRow();
+}
+
+function checkAnswer(){
+  if(answerTiles.length!==currentWord.length) return;
+  totalAttempts++;
+  const guess=answerTiles.map(i=>scrambled[i]).join('');
+  if(guess===currentWord){
+    clearTimer();
+    const elapsed=Math.round((Date.now()-wordStartTime)/1000);
+    timesArr.push(elapsed);
+    wordsCompleted++;
+    const bonus=hintUsed?5:10;
+    score+=bonus;
+    updateScore();
+    highlightCorrect(()=>{
+      launchConfetti();
+      setTimeout(()=>{wordIdx++;loadWord();},900);
+    });
+  } else {
+    wrongTaps++;
+    shakeAnswer();
+    if(wrongTaps>=3){
+      wrongTaps=0;
+      loseLife();
+      if(lives<=0){ clearTimer(); endGame(); return; }
+      resetCurrentWord();
+    }
+  }
+}
+
+function resetCurrentWord(){
+  answerTiles=[];
+  tileEls.forEach(t=>t.classList.remove('used'));
+  renderAnswerRow();
+}
+
+function shakeAnswer(){
+  const row=document.getElementById('answerRow');
+  row.classList.remove('shake');
+  void row.offsetWidth;
+  row.classList.add('shake');
+  setTimeout(()=>row.classList.remove('shake'),500);
+}
+
+function highlightCorrect(cb){
+  const slots=document.getElementById('answerRow').querySelectorAll('.ans-slot');
+  slots.forEach(s=>{s.style.background='#1a4a2e';s.style.borderColor='#4aff8c';s.style.color='#4aff8c'});
+  setTimeout(cb,600);
+}
+
+function loseLife(){
+  lives--;
+  renderLives();
+}
+
+function renderLives(){
+  const d=document.getElementById('livesDisp');
+  d.innerHTML='';
+  for(let i=0;i<MAX_LIVES;i++){
+    const h=document.createElement('span');
+    h.className='heart'+(i>=lives?' lost':'');
+    h.textContent='❤️';
+    d.appendChild(h);
+  }
+}
+
+function updateScore(){
+  document.getElementById('scoreDisp').textContent=score;
+}
+
+function startTimer(){
+  clearTimer();
+  timeLeft=TIME_LIMIT;
+  updateTimerUI();
+  timerInterval=setInterval(()=>{
+    timeLeft--;
+    updateTimerUI();
+    if(timeLeft<=0){
+      clearTimer();
+      loseLife();
+      if(lives<=0){ endGame(); return; }
+      timesArr.push(TIME_LIMIT);
+      wordIdx++;
+      loadWord();
+    }
+  },1000);
+}
+
+function clearTimer(){
+  if(timerInterval) clearInterval(timerInterval);
+  timerInterval=null;
+}
+
+function updateTimerUI(){
+  const pct=timeLeft/TIME_LIMIT;
+  const offset=CIRC*(1-pct);
+  document.getElementById('timerArc').style.strokeDashoffset=offset;
+  document.getElementById('timerNum').textContent=timeLeft;
+  const arc=document.getElementById('timerArc');
+  if(timeLeft<=10) arc.style.stroke='#ff3333';
+  else if(timeLeft<=20) arc.style.stroke='#f0c080';
+  else arc.style.stroke='#e94560';
+}
+
+function showHintOverlay(){
+  hintUsed=true;
+  const letters=currentWord.split('').join(' - ');
+  showOverlay('💡','Gợi ý',`Từ gồm ${currentWord.length} chữ cái: <strong>${letters}</strong><br><small style="color:#aaa">(Điểm bị giảm một nửa)</small>`,
+    'Đã hiểu!',null,false);
+}
+
+function showOverlay(icon,title,msg,btnTxt,cb,showBack){
+  document.getElementById('ovIcon').textContent=icon;
+  document.getElementById('ovTitle').textContent=title;
+  document.getElementById('ovMsg').innerHTML=msg;
+  document.getElementById('ovBtn').textContent=btnTxt;
+  const btn2=document.getElementById('ovBtn2');
+  btn2.style.display=showBack?'block':'none';
+  overlayCallback=cb;
+  document.getElementById('overlay').classList.add('show');
+}
+
+function dismissOverlay(){
+  document.getElementById('overlay').classList.remove('show');
+  if(overlayCallback) overlayCallback();
+  overlayCallback=null;
+}
+
+function dismissOverlay2(){
+  document.getElementById('overlay').classList.remove('show');
+  clearTimer();
+  showScreen('startScreen');
+}
+
+function launchConfetti(){
+  const colors=CONFETTI_COLORS;
+  for(let i=0;i<60;i++){
+    const c=document.createElement('div');
+    c.className='confetti-piece';
+    c.style.left=Math.random()*100+'vw';
+    c.style.top='-20px';
+    c.style.background=colors[Math.floor(Math.random()*colors.length)];
+    c.style.width=(6+Math.random()*10)+'px';
+    c.style.height=(6+Math.random()*10)+'px';
+    c.style.borderRadius=Math.random()>0.5?'50%':'2px';
+    c.style.animationDuration=(0.8+Math.random()*1.5)+'s';
+    c.style.animationDelay=(Math.random()*0.4)+'s';
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(),2500);
+  }
+}
+
+function endGame(){
+  clearTimer();
+  document.getElementById('endScore').textContent=score;
+  document.getElementById('endWords').textContent=wordsCompleted;
+  const avg=timesArr.length?Math.round(timesArr.reduce((a,b)=>a+b,0)/timesArr.length):0;
+  document.getElementById('endAvgTime').textContent=avg+'s';
+  const acc=totalAttempts>0?Math.round((wordsCompleted/totalAttempts)*100):0;
+  document.getElementById('endAccuracy').textContent=acc+'%';
+  const sub=lives<=0?'Bạn đã hết mạng!':'Bạn đã hoàn thành tất cả các từ!';
+  document.getElementById('endSub').textContent=sub;
+  showScreen('endScreen');
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+</script>
+</body>
+</html>

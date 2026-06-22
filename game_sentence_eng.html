@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Sentence Builder – English</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:#0f172a;color:#e2e8f0;font-family:'Segoe UI',sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;overflow-x:hidden}
+header{width:100%;background:#1e293b;padding:.75rem 1rem;text-align:center;border-bottom:1px solid #334155}
+header h1{font-size:1.1rem;font-weight:700;color:#34d399;letter-spacing:.05em}
+header h2{font-size:.75rem;color:#94a3b8;margin-top:2px}
+.stats{display:flex;gap:1rem;justify-content:center;padding:.6rem 1rem;width:100%;max-width:440px}
+.stat{background:#1e293b;border-radius:10px;padding:.35rem .9rem;font-size:.8rem;color:#94a3b8;text-align:center}
+.stat span{display:block;font-size:1.1rem;font-weight:700;color:#f8fafc}
+.prog-wrap{width:100%;max-width:440px;padding:0 1rem .5rem}
+.prog-bar{height:6px;background:#1e293b;border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#059669,#34d399);border-radius:3px;transition:width .3s}
+/* Answer zone */
+.label{font-size:.75rem;color:#64748b;padding:.4rem 1rem 0;width:100%;max-width:440px;text-transform:uppercase;letter-spacing:.05em}
+.answer-zone{min-height:60px;background:#1e293b;border:2px dashed #334155;border-radius:14px;margin:.3rem 1rem;padding:.6rem;display:flex;flex-wrap:wrap;gap:7px;align-items:flex-start;width:calc(100%-2rem);max-width:440px;transition:border-color .2s;width:calc(100% - 2rem)}
+.answer-zone.has-words{border-color:#065f46}
+/* Word bank */
+.word-bank{background:#0f172a;border-radius:14px;margin:.3rem 1rem;padding:.6rem;display:flex;flex-wrap:wrap;gap:7px;width:calc(100% - 2rem);max-width:440px;min-height:54px}
+.word-chip{background:#1e293b;border:1.5px solid #334155;border-radius:20px;padding:.45rem .9rem;font-size:.95rem;color:#e2e8f0;cursor:pointer;transition:all .15s;user-select:none}
+.word-chip:active{transform:scale(.93)}
+.word-chip.placed{opacity:.3;pointer-events:none}
+.word-chip.in-answer{background:#065f46;border-color:#059669;color:#d1fae5}
+.word-chip.in-answer:active{transform:scale(.93)}
+/* Check button */
+.btn-wrap{width:100%;max-width:440px;padding:.5rem 1rem}
+.btn-check{width:100%;background:#059669;color:#fff;border:none;border-radius:12px;padding:.85rem;font-size:1rem;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-check:active{background:#047857}
+/* Feedback */
+.feedback{width:100%;max-width:440px;padding:0 1rem;min-height:42px}
+.fb-box{border-radius:12px;padding:.7rem 1rem;font-size:.9rem;line-height:1.5;display:none}
+.fb-box.correct{background:#052e16;border:1px solid #16a34a;color:#4ade80}
+.fb-box.wrong{background:#450a0a;border:1px solid #dc2626;color:#f87171}
+.btn-next{display:none;width:100%;max-width:440px;background:#0ea5e9;color:#fff;border:none;border-radius:12px;padding:.8rem;font-size:1rem;font-weight:700;cursor:pointer;margin:.5rem 1rem;width:calc(100% - 2rem)}
+/* Difficulty selector */
+.diff-bar{display:flex;gap:8px;justify-content:center;padding:.4rem 1rem;width:100%;max-width:440px}
+.diff-btn{flex:1;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:.35rem;font-size:.75rem;color:#94a3b8;cursor:pointer}
+.diff-btn.active{background:#065f46;border-color:#059669;color:#d1fae5}
+/* Result overlay */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:50}
+.result-card{background:#1e293b;border-radius:18px;padding:2rem;text-align:center;max-width:320px;width:90%}
+.result-emoji{font-size:3rem;margin-bottom:.5rem}
+.result-title{font-size:1.4rem;font-weight:700;margin-bottom:.5rem}
+.result-stat{font-size:.95rem;color:#94a3b8;margin-bottom:1rem}
+.btn-restart{background:#059669;color:#fff;border:none;border-radius:10px;padding:.75rem 2rem;font-size:1rem;font-weight:700;cursor:pointer;width:100%}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔀 SENTENCE BUILDER</h1>
+  <h2>ARRANGE WORDS IN ORDER</h2>
+</header>
+
+<div class="diff-bar">
+  <button class="diff-btn active" onclick="setDiff(0,this)">Dễ (lớp 6)</button>
+  <button class="diff-btn" onclick="setDiff(1,this)">Trung bình (lớp 7)</button>
+  <button class="diff-btn" onclick="setDiff(2,this)">Khó (lớp 8-9)</button>
+</div>
+
+<div class="stats">
+  <div class="stat"><span id="qNum">1</span>Câu</div>
+  <div class="stat"><span id="correct">0</span>Đúng</div>
+  <div class="stat"><span id="total">15</span>Tổng</div>
+</div>
+<div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div></div>
+
+<div class="label">Câu của bạn:</div>
+<div class="answer-zone" id="answerZone"></div>
+
+<div class="label" style="margin-top:.2rem">Các từ:</div>
+<div class="word-bank" id="wordBank"></div>
+
+<div class="feedback"><div class="fb-box" id="fbBox"></div></div>
+<button class="btn-check" id="btnCheck" onclick="checkAnswer()">Kiểm tra ✓</button>
+<button class="btn-next" id="btnNext" onclick="nextQ()">Câu tiếp theo →</button>
+
+<div class="overlay" id="overlay">
+  <div class="result-card">
+    <div class="result-emoji" id="resEmoji"></div>
+    <div class="result-title" id="resTitle"></div>
+    <div class="result-stat" id="resStat"></div>
+    <button class="btn-restart" onclick="restart()">Chơi lại</button>
+  </div>
+</div>
+
+<script>
+const SENTENCES = [
+  // Easy – grade 6
+  { words:['She','goes','to','school','every','day','.'], hint:'Cô ấy đến trường mỗi ngày.', diff:0 },
+  { words:['I','like','playing','football'], hint:'Tôi thích chơi bóng đá.', diff:0 },
+  { words:['His','name','is','Minh','.'], hint:'Tên anh ấy là Minh.', diff:0 },
+  { words:['They','are','my','best','friends','.'], hint:'Họ là những người bạn tốt nhất của tôi.', diff:0 },
+  { words:['How','old','are','you','?'], hint:'Bạn bao nhiêu tuổi?', diff:0 },
+  { words:['We','have','English','on','Monday','.'], hint:'Chúng tôi có tiếng Anh vào thứ Hai.', diff:0 },
+  { words:['There','is','a','cat','on','the','table','.'], hint:'Có một con mèo trên bàn.', diff:0 },
+  // Medium – grade 7
+  { words:['She','has','been','learning','English','for','three','years','.'], hint:'Cô ấy học tiếng Anh được ba năm rồi.', diff:1 },
+  { words:['What','time','does','the','school','start','?'], hint:'Trường bắt đầu lúc mấy giờ?', diff:1 },
+  { words:['He','is','taller','than','his','brother','.'], hint:'Anh ấy cao hơn em trai mình.', diff:1 },
+  { words:['My','mother','often','cooks','dinner','at','six','o\'clock','.'], hint:'Mẹ tôi thường nấu cơm lúc 6 giờ.', diff:1 },
+  { words:['Where','did','you','go','last','summer','?'], hint:'Bạn đã đi đâu hè trước?', diff:1 },
+  { words:['She','enjoys','reading','books','in','her','free','time','.'], hint:'Cô ấy thích đọc sách lúc rảnh.', diff:1 },
+  // Hard – grade 8-9
+  { words:['If','it','rains','tomorrow',',','we','will','stay','at','home','.'], hint:'Nếu trời mưa ngày mai, chúng ta sẽ ở nhà.', diff:2 },
+  { words:['The','homework','was','finished','by','all','the','students','.'], hint:'Bài tập về nhà đã được tất cả học sinh hoàn thành.', diff:2 },
+  { words:['She','told','me','that','she','had','already','left','.'], hint:'Cô ấy nói với tôi rằng cô ấy đã rời đi rồi.', diff:2 },
+  { words:['Not','only','is','he','smart',',','but','he','is','also','hardworking','.'], hint:'Anh ấy không chỉ thông minh mà còn chăm chỉ.', diff:2 },
+  { words:['The','book','that','I','borrowed','from','the','library','was','very','interesting','.'], hint:'Cuốn sách tôi mượn từ thư viện rất thú vị.', diff:2 },
+];
+
+const TOTAL=10;
+let diffLevel=0, queue=[], qIdx=0, correctCount=0;
+let answerArr=[], bankArr=[];
+
+function setDiff(d,btn){
+  diffLevel=d;
+  document.querySelectorAll('.diff-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  restart();
+}
+
+function restart(){
+  const pool=SENTENCES.filter(s=>s.diff===diffLevel);
+  const shuffled=[...pool];
+  for(let i=shuffled.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}
+  queue=shuffled.slice(0,Math.min(TOTAL,shuffled.length));
+  qIdx=0;correctCount=0;
+  document.getElementById('total').textContent=queue.length;
+  document.getElementById('overlay').style.display='none';
+  nextQ();
+}
+
+function nextQ(){
+  if(qIdx>=queue.length){showFinal();return;}
+  document.getElementById('fbBox').style.display='none';
+  document.getElementById('btnNext').style.display='none';
+  document.getElementById('btnCheck').style.display='block';
+  const q=queue[qIdx];qIdx++;
+  document.getElementById('qNum').textContent=qIdx;
+  document.getElementById('progFill').style.width=((qIdx-1)/queue.length*100)+'%';
+  // Shuffle words
+  answerArr=[];
+  bankArr=[...q.words];
+  for(let i=bankArr.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[bankArr[i],bankArr[j]]=[bankArr[j],bankArr[i]];}
+  renderZones(q);
+}
+
+function renderZones(q){
+  const az=document.getElementById('answerZone');
+  const wb=document.getElementById('wordBank');
+  az.innerHTML='';az.classList.remove('has-words');
+  wb.innerHTML='';
+  bankArr.forEach((w,i)=>{
+    const chip=document.createElement('div');
+    chip.className='word-chip';chip.textContent=w;chip.dataset.idx=i;
+    chip.onclick=()=>moveToAnswer(i,chip,q);
+    wb.appendChild(chip);
+  });
+  // render answer slots (empty)
+}
+
+let answerChips=[];
+
+function moveToAnswer(bankIdx,chip,q){
+  chip.classList.add('placed');
+  answerArr.push({word:bankArr[bankIdx],bankIdx});
+  const az=document.getElementById('answerZone');
+  az.classList.add('has-words');
+  const ansChip=document.createElement('div');
+  ansChip.className='word-chip in-answer';
+  ansChip.textContent=bankArr[bankIdx];
+  ansChip.onclick=()=>returnToBank(bankIdx,chip,ansChip);
+  az.appendChild(ansChip);
+}
+
+function returnToBank(bankIdx,origChip,ansChip){
+  answerArr=answerArr.filter(a=>!(a.bankIdx===bankIdx&&a.word===origChip.textContent)||
+    (()=>{
+      // only remove first match
+      let removed=false;
+      answerArr=answerArr.filter(a=>{if(!removed&&a.bankIdx===bankIdx){removed=true;return false;}return true;});
+      return false;
+    })()
+  );
+  // rebuild cleanly
+  ansChip.remove();
+  origChip.classList.remove('placed');
+  // remove from answerArr by finding first entry with this bankIdx
+  let found=false;
+  answerArr=answerArr.filter(a=>{if(!found&&a.bankIdx===bankIdx){found=true;return false;}return true;});
+  const az=document.getElementById('answerZone');
+  if(!az.children.length)az.classList.remove('has-words');
+}
+
+function checkAnswer(){
+  if(!answerArr.length){
+    const fb=document.getElementById('fbBox');
+    fb.className='fb-box wrong';fb.style.display='block';
+    fb.textContent='Hãy chọn ít nhất một từ!';return;
+  }
+  const q=queue[qIdx-1];
+  const userSentence=answerArr.map(a=>a.word).join(' ');
+  const correct=q.words.join(' ');
+  const fb=document.getElementById('fbBox');
+  document.getElementById('btnCheck').style.display='none';
+  document.getElementById('btnNext').style.display='block';
+  // disable all chips
+  document.querySelectorAll('.word-chip').forEach(c=>c.style.pointerEvents='none');
+  if(userSentence===correct){
+    fb.className='fb-box correct';fb.style.display='block';
+    fb.innerHTML='✅ Chính xác!<br><em>'+correct+'</em>';
+    correctCount++;
+    document.getElementById('correct').textContent=correctCount;
+    playSound(true);
+  } else {
+    fb.className='fb-box wrong';fb.style.display='block';
+    fb.innerHTML='❌ Chưa đúng. Câu đúng:<br><em style="color:#fbbf24">'+correct+'</em><br><small style="color:#94a3b8">'+q.hint+'</small>';
+    playSound(false);
+  }
+}
+
+function showFinal(){
+  document.getElementById('progFill').style.width='100%';
+  const pct=Math.round(correctCount/queue.length*100);
+  let emoji='😊',title='Hoàn thành!';
+  if(pct>=90){emoji='🏆';title='Xuất sắc!';}
+  else if(pct>=70){emoji='🎉';title='Tốt lắm!';}
+  else if(pct<50){emoji='📚';title='Cần ôn thêm!';}
+  document.getElementById('resEmoji').textContent=emoji;
+  document.getElementById('resTitle').textContent=title;
+  document.getElementById('resStat').textContent=`${correctCount}/${queue.length} câu đúng (${pct}%)`;
+  document.getElementById('overlay').style.display='flex';
+}
+
+const AC=new (window.AudioContext||window.webkitAudioContext)();
+function playSound(win){
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.connect(g);g.connect(AC.destination);
+  if(win){o.frequency.setValueAtTime(523,AC.currentTime);o.frequency.setValueAtTime(659,AC.currentTime+.1);o.frequency.setValueAtTime(784,AC.currentTime+.2);}
+  else{o.frequency.setValueAtTime(300,AC.currentTime);o.frequency.setValueAtTime(200,AC.currentTime+.15);}
+  g.gain.setValueAtTime(.2,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.5);
+  o.start();o.stop(AC.currentTime+.5);
+}
+
+restart();
+</script>
+</body>
+</html>

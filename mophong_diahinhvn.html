@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Địa Hình Việt Nam – Địa Lí Lớp 8</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0f172a;
+    color: #f1f5f9;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    min-height: 100vh;
+    padding: 0 0 40px;
+  }
+
+  /* HEADER */
+  .header {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-bottom: 2px solid #334155;
+    padding: 28px 24px 20px;
+    text-align: center;
+  }
+  .header h1 {
+    font-size: 2.1rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #f8fafc;
+  }
+  .header p {
+    margin-top: 6px;
+    color: #94a3b8;
+    font-size: 0.97rem;
+  }
+  .badge {
+    display: inline-block;
+    margin-top: 10px;
+    background: #1e40af;
+    color: #bfdbfe;
+    font-size: 0.75rem;
+    padding: 3px 12px;
+    border-radius: 999px;
+    letter-spacing: 0.5px;
+  }
+
+  .main { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+  /* STATS ROW */
+  .stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin: 22px 0 0;
+  }
+  .stat-chip {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 999px;
+    padding: 7px 18px;
+    font-size: 0.88rem;
+    color: #cbd5e1;
+    white-space: nowrap;
+  }
+
+  /* TOOLBAR ROW */
+  .toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin: 18px 0 10px;
+  }
+  .btn-compare {
+    background: #1e293b;
+    border: 1px solid #475569;
+    color: #94a3b8;
+    border-radius: 8px;
+    padding: 8px 18px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-compare:hover, .btn-compare.active {
+    background: #334155;
+    color: #f1f5f9;
+  }
+
+  /* COMPARE TABLE */
+  .compare-table-wrap {
+    display: none;
+    margin-bottom: 18px;
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid #334155;
+  }
+  .compare-table-wrap.open { display: block; }
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  .compare-table th {
+    background: #1e293b;
+    color: #94a3b8;
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid #334155;
+    white-space: nowrap;
+  }
+  .compare-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #1e293b;
+    color: #cbd5e1;
+    vertical-align: middle;
+  }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:nth-child(odd) td { background: #0f172a; }
+  .compare-table tr:nth-child(even) td { background: #111827; }
+  .ct-color-dot {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  /* GRID */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 550px) {
+    .grid { grid-template-columns: 1fr; }
+    .header h1 { font-size: 1.5rem; }
+  }
+
+  /* CARD */
+  .card {
+    background: #1e293b;
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.18s, border-color 0.18s, box-shadow 0.18s;
+    user-select: none;
+  }
+  .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .card.selected {
+    border-color: var(--card-color);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--card-color) 30%, transparent);
+  }
+  .card-header {
+    background: var(--card-color);
+    padding: 14px 16px 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .card-icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .card-title {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #fff;
+    line-height: 1.2;
+  }
+  .card-subtitle {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.75);
+    margin-top: 2px;
+  }
+  .card-body { padding: 14px 16px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 0.77rem;
+    color: #cbd5e1;
+    white-space: nowrap;
+  }
+  .card-hint {
+    margin-top: 10px;
+    font-size: 0.73rem;
+    color: #475569;
+    text-align: right;
+  }
+
+  /* DETAIL PANEL */
+  .detail-panel {
+    background: #1e293b;
+    border-radius: 14px;
+    border-left: 5px solid var(--detail-color, #475569);
+    margin-bottom: 16px;
+    overflow: hidden;
+    animation: fadeIn 0.28s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .detail-placeholder {
+    padding: 40px;
+    text-align: center;
+    color: #475569;
+    font-size: 1rem;
+  }
+  .detail-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+  }
+  @media (max-width: 700px) {
+    .detail-inner { grid-template-columns: 1fr; }
+  }
+  .detail-left, .detail-right {
+    padding: 22px 24px;
+  }
+  .detail-left { border-right: 1px solid #334155; }
+  @media (max-width: 700px) {
+    .detail-left { border-right: none; border-bottom: 1px solid #334155; }
+  }
+  .detail-heading {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #f8fafc;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .detail-heading .dot {
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--detail-color, #475569);
+  }
+  .detail-section { margin-bottom: 16px; }
+  .detail-label {
+    font-size: 0.72rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 5px;
+  }
+  .detail-value {
+    font-size: 0.91rem;
+    color: #cbd5e1;
+    line-height: 1.55;
+  }
+  .detail-value strong { color: #f1f5f9; }
+  .highlights {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .highlight-item {
+    background: #0f172a;
+    border-left: 3px solid var(--detail-color, #475569);
+    border-radius: 0 8px 8px 0;
+    padding: 8px 12px;
+    font-size: 0.87rem;
+    color: #94a3b8;
+  }
+  .province-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 4px;
+  }
+  .province-tag {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 3px 9px;
+    font-size: 0.78rem;
+    color: #94a3b8;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🗺️ Địa Hình Việt Nam</h1>
+  <p>Bấm vào từng vùng để xem địa hình, khí hậu và đặc sản</p>
+  <span class="badge">Địa Lí 8 · Kết nối tri thức với cuộc sống</span>
+</div>
+
+<div class="main">
+
+  <!-- STATS ROW -->
+  <div class="stats-row">
+    <div class="stat-chip">🗺️ 7 vùng địa lý</div>
+    <div class="stat-chip">📏 331,236 km²</div>
+    <div class="stat-chip">🌊 3,260 km bờ biển</div>
+    <div class="stat-chip">🏔️ Fansipan 3,143m</div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <button class="btn-compare" id="btnCompare" onclick="toggleCompare()">📊 So sánh nhanh</button>
+  </div>
+
+  <!-- COMPARE TABLE -->
+  <div class="compare-table-wrap" id="compareTable">
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Vùng</th>
+          <th>Địa hình</th>
+          <th>Khí hậu</th>
+          <th>Đặc sản</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="ct-color-dot" style="background:#7c3aed"></span><strong>Tây Bắc</strong></td>
+          <td>🏔️ Núi cao hiểm trở</td>
+          <td>🌨️ Lạnh, có tuyết</td>
+          <td>☕ Chè, mận, đào</td>
+        </tr>
+        <tr>
+          <td><span class="ct-color-dot" style="background:#2563eb"></span><strong>Đông Bắc</strong></td>
+          <td>⛰️ Đồi núi thấp, karst</td>
+          <td>🌬️ Lạnh, gió mùa</td>
+          <td>🪨 Than đá</td>
+        </tr>
+        <tr>
+          <td><span class="ct-color-dot" style="background:#16a34a"></span><strong>Đồng bằng Sông Hồng</strong></td>
+          <td>🌾 Đồng bằng phù sa</td>
+          <td>🌦️ 4 mùa rõ rệt</td>
+          <td>🌾 Lúa gạo, rau củ</td>
+        </tr>
+        <tr>
+          <td><span class="ct-color-dot" style="background:#d97706"></span><strong>Bắc Trung Bộ</strong></td>
+          <td>🏔️ Dải đất hẹp</td>
+          <td>🌪️ Khắc nghiệt nhất</td>
+          <td>🏛️ Di sản UNESCO</td>
+        </tr>
+        <tr>
+          <td><span class="ct-color-dot" style="background:#0891b2"></span><strong>Nam Trung Bộ</strong></td>
+          <td>🏖️ Bờ biển dài, đẹp</td>
+          <td>☀️ Nắng nhiều, khô</td>
+          <td>🐟 Thủy hải sản</td>
+        </tr>
+        <tr>
+          <td><span class="ct-color-dot" style="background:#b45309"></span><strong>Tây Nguyên</strong></td>
+          <td>🌄 Cao nguyên bazan</td>
+          <td>🌿 Mát mẻ, 2 mùa</td>
+          <td>☕ Cà phê</td>
+        </tr>
+        <tr>
+          <td><span class="ct-color-dot" style="background:#059669"></span><strong>Nam Bộ</strong></td>
+          <td>🌊 Đồng bằng cực thấp</td>
+          <td>🌴 Nóng ẩm quanh năm</td>
+          <td>🍚 Vựa lúa, trái cây</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- REGION GRID -->
+  <div class="grid" id="grid">
+
+    <!-- 1. TÂY BẮC -->
+    <div class="card" style="--card-color:#7c3aed" onclick="selectRegion(0)" id="card-0">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="16,4 24,24 8,24" fill="rgba(255,255,255,0.9)"/>
+            <polygon points="8,10 14,24 2,24" fill="rgba(255,255,255,0.55)"/>
+            <polygon points="24,10 30,24 18,24" fill="rgba(255,255,255,0.55)"/>
+            <polygon points="14,6 17,11 11,11" fill="white"/>
+          </svg>
+        </div>
+        <div>
+          <div class="card-title">Tây Bắc</div>
+          <div class="card-subtitle">Vùng núi cao phía Tây</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="chips">
+          <span class="chip">🏔️ Núi cao</span>
+          <span class="chip">🌨️ Lạnh, có tuyết</span>
+          <span class="chip">☕ Chè, mận</span>
+        </div>
+        <div class="card-hint">Bấm để xem chi tiết →</div>
+      </div>
+    </div>
+
+    <!-- 2. ĐÔNG BẮC -->
+    <div class="card" style="--card-color:#2563eb" onclick="selectRegion(1)" id="card-1">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="10" cy="18" rx="8" ry="6" fill="rgba(255,255,255,0.7)"/>
+            <ellipse cx="22" cy="20" rx="6" ry="5" fill="rgba(255,255,255,0.5)"/>
+            <path d="M2 26 Q8 23 14 26 Q20 29 26 26 Q28 25 30 26" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M2 29 Q8 26 14 29 Q20 32 26 29" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="card-title">Đông Bắc</div>
+          <div class="card-subtitle">Đồi núi &amp; Vịnh Hạ Long</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="chips">
+          <span class="chip">⛰️ Đồi núi thấp</span>
+          <span class="chip">🌬️ Lạnh, gió mùa</span>
+          <span class="chip">🪨 Than đá</span>
+        </div>
+        <div class="card-hint">Bấm để xem chi tiết →</div>
+      </div>
+    </div>
+
+    <!-- 3. ĐỒNG BẰNG SÔNG HỒNG -->
+    <div class="card" style="--card-color:#16a34a" onclick="selectRegion(2)" id="card-2">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="14" width="28" height="3" rx="1.5" fill="rgba(255,255,255,0.9)"/>
+            <rect x="2" y="20" width="28" height="2" rx="1" fill="rgba(255,255,255,0.6)"/>
+            <rect x="2" y="25" width="28" height="2" rx="1" fill="rgba(255,255,255,0.4)"/>
+            <path d="M14 14 Q16 8 18 14" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M16 8 Q20 4 24 8" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="card-title">Đồng bằng Sông Hồng</div>
+          <div class="card-subtitle">Vựa lúa miền Bắc</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="chips">
+          <span class="chip">🌾 Đồng bằng phù sa</span>
+          <span class="chip">🌦️ 4 mùa rõ rệt</span>
+          <span class="chip">🌾 Lúa gạo</span>
+        </div>
+        <div class="card-hint">Bấm để xem chi tiết →</div>
+      </div>
+    </div>
+
+    <!-- 4. BẮC TRUNG BỘ -->
+    <div class="card" style="--card-color:#d97706" onclick="selectRegion(3)" id="card-3">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="13" y="4" width="6" height="24" rx="2" fill="rgba(255,255,255,0.25)"/>
+            <polygon points="6,28 11,10 16,28" fill="rgba(255,255,255,0.85)"/>
+            <path d="M18 14 Q22 12 26 14 Q22 16 18 18 Q22 20 26 22 Q22 24 18 26" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="card-title">Bắc Trung Bộ</div>
+          <div class="card-subtitle">Dải đất hẹp khắc nghiệt</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="chips">
+          <span class="chip">🏔️ Dải đất hẹp</span>
+          <span class="chip">🌪️ Khắc nghiệt nhất</span>
+          <span class="chip">🏛️ Di sản UNESCO</span>
+        </div>
+        <div class="card-hint">Bấm để xem chi tiết →</div>
+      </div>
+    </div>
+
+    <!-- 5. NAM TRUNG BỘ -->
+    <div class="card" style="--card-color:#0891b2" onclick="selectRegion(4)" id="card-4">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="22" cy="10" r="5" fill="rgba(255,255,255,0.9)"/>
+            <line x1="22" y1="3" x2="22" y2="1" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="22" y1="19" x2="22" y2="17" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="15" y1="10" x2="13" y2="10" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="29" y1="10" x2="31" y2="10" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="17" y1="5" x2="15.5" y2="3.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M2 24 Q8 20 14 24 Q20 28 26 24" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <path d="M2 28 Q8 24 14 28 Q20 32 26 28" stroke="rgba(255,255,255,0.55)" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="card-title">Nam Trung Bộ</div>
+          <div class="card-subtitle">Bờ biển dài &amp; resort</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="chips">
+          <span class="chip">🏖️ Bờ biển dài</span>
+          <span class="chip">☀️ Nắng nhiều</span>
+          <span class="chip">🐟 Thủy hải sản</span>
+        </div>
+        <div class="card-hint">Bấm để xem chi tiết →</div>
+      </div>
+    </div>
+
+    <!-- 6. TÂY NGUYÊN -->
+    <div class="card" style="--card-color:#b45309" onclick="selectRegion(5)" id="card-5">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="12" width="20" height="10" rx="1" fill="rgba(255,255,255,0.85)"/>
+            <polygon points="2,28 6,22 26,22 30,28" fill="rgba(255,255,255,0.5)"/>
+            <line x1="6" y1="12" x2="26" y2="12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <rect x="9" y="8" width="14" height="4" rx="1" fill="rgba(255,255,255,0.35)"/>
+          </svg>
+        </div>
+        <div>
+          <div class="card-title">Tây Nguyên</div>
+          <div class="card-subtitle">Cao nguyên bazan đỏ</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="chips">
+          <span class="chip">🌄 Cao nguyên</span>
+          <span class="chip">🌿 Mát mẻ, 2 mùa</span>
+          <span class="chip">☕ Cà phê</span>
+        </div>
+        <div class="card-hint">Bấm để xem chi tiết →</div>
+      </div>
+    </div>
+
+    <!-- 7. NAM BỘ -->
+    <div class="card" style="--card-color:#059669" onclick="selectRegion(6)" id="card-6">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <line x1="16" y1="4" x2="16" y2="14" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            <line x1="16" y1="14" x2="8" y2="22" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <line x1="16" y1="14" x2="24" y2="22" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <line x1="16" y1="14" x2="16" y2="24" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <line x1="8" y1="22" x2="4" y2="28" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="8" y1="22" x2="12" y2="28" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="16" y1="24" x2="14" y2="29" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="16" y1="24" x2="18" y2="29" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="24" y1="22" x2="20" y2="28" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="24" y1="22" x2="28" y2="28" stroke="rgba(255,255,255,0.7)" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="card-title">Nam Bộ</div>
+          <div class="card-subtitle">Đồng bằng sông Cửu Long</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="chips">
+          <span class="chip">🌊 Đồng bằng thấp</span>
+          <span class="chip">🌴 Nóng ẩm quanh năm</span>
+          <span class="chip">🍚 Vựa lúa</span>
+        </div>
+        <div class="card-hint">Bấm để xem chi tiết →</div>
+      </div>
+    </div>
+
+  </div><!-- /grid -->
+
+  <!-- DETAIL PANEL -->
+  <div class="detail-panel" id="detailPanel" style="--detail-color:#475569">
+    <div class="detail-placeholder" id="detailPlaceholder">
+      🗺️ Chọn một vùng ở trên để xem chi tiết địa hình, khí hậu và đặc sản
+    </div>
+    <div class="detail-inner" id="detailInner" style="display:none">
+      <div class="detail-left">
+        <div class="detail-heading"><span class="dot"></span><span id="dTitle"></span></div>
+        <div class="detail-section">
+          <div class="detail-label">🏔️ Địa hình</div>
+          <div class="detail-value" id="dDiahinh"></div>
+        </div>
+        <div class="detail-section">
+          <div class="detail-label">🌡️ Khí hậu</div>
+          <div class="detail-value" id="dKhihau"></div>
+        </div>
+        <div class="detail-section">
+          <div class="detail-label">🌊 Sông chính</div>
+          <div class="detail-value" id="dSong"></div>
+        </div>
+      </div>
+      <div class="detail-right">
+        <div class="detail-section">
+          <div class="detail-label">💼 Kinh tế</div>
+          <div class="detail-value" id="dKinhte"></div>
+        </div>
+        <div class="detail-section">
+          <div class="detail-label">🏙️ Tỉnh thành</div>
+          <div class="province-list" id="dTinh"></div>
+        </div>
+        <div class="detail-section">
+          <div class="detail-label">⭐ Điểm nổi bật</div>
+          <div class="highlights" id="dHighlights"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+const regions = [
+  {
+    name: "Tây Bắc",
+    color: "#7c3aed",
+    diahinh: "Núi cao hiểm trở, nhiều dãy núi song song chạy theo hướng Tây Bắc–Đông Nam. Đỉnh <strong>Fansipan (3143m)</strong> – nóc nhà Đông Dương.",
+    khihau: "Lạnh quanh năm, mùa đông có tuyết ở Sa Pa và Mù Cang Chải. Nhiệt độ từ <strong>−5°C đến 25°C</strong>.",
+    song: "Sông Đà · Sông Mã · Sông Nậm Rốn",
+    kinhte: "Cà phê, chè, mận, đào, du lịch Sa Pa, thủy điện Hòa Bình.",
+    tinh: ["Điện Biên","Sơn La","Lai Châu","Hòa Bình"],
+    highlights: ["Chiến thắng Điện Biên Phủ (1954)","Ruộng bậc thang Mù Cang Chải","Thị trấn Sa Pa mờ sương"]
+  },
+  {
+    name: "Đông Bắc",
+    color: "#2563eb",
+    diahinh: "Đồi núi thấp xen kẽ thung lũng, nhiều hang động karst, <strong>Vịnh Hạ Long</strong> với hàng ngàn đảo đá vôi.",
+    khihau: "Ảnh hưởng gió lạnh từ phương Bắc, mùa đông lạnh <strong>10–15°C</strong>, mùa hè nóng 28–35°C.",
+    song: "Sông Cầu · Sông Lô · Sông Thương · Sông Kỳ Cùng",
+    kinhte: "Than đá Quảng Ninh, cửa khẩu xuất khẩu, du lịch Vịnh Hạ Long.",
+    tinh: ["Hà Giang","Cao Bằng","Lạng Sơn","Bắc Kạn","Thái Nguyên","Quảng Ninh"],
+    highlights: ["Vịnh Hạ Long – Di sản UNESCO","Cột cờ Lũng Cú (điểm cực Bắc)","Hang Pắc Bó"]
+  },
+  {
+    name: "Đồng bằng Sông Hồng",
+    color: "#16a34a",
+    diahinh: "Đồng bằng phù sa màu mỡ do sông Hồng bồi đắp, địa hình bằng phẳng, độ cao thấp <strong>(0–15m)</strong>.",
+    khihau: "4 mùa rõ rệt: Xuân (ẩm), Hạ (nóng <strong>35–40°C</strong>), Thu (mát), Đông (lạnh 10–15°C). Mưa nhiều.",
+    song: "Sông Hồng · Sông Đáy · Sông Thái Bình · Sông Đuống",
+    kinhte: "Lúa gạo, rau củ, công nghiệp, trung tâm kinh tế–chính trị cả nước.",
+    tinh: ["Hà Nội","Hải Phòng","Hải Dương","Hưng Yên","Thái Bình","Nam Định","Ninh Bình","Bắc Ninh","Vĩnh Phúc"],
+    highlights: ["Thủ đô Hà Nội","Cảng Hải Phòng","Mật độ dân số cao nhất cả nước"]
+  },
+  {
+    name: "Bắc Trung Bộ",
+    color: "#d97706",
+    diahinh: "Dải đất hẹp nhất Việt Nam (nơi hẹp nhất chỉ <strong>40km</strong>), dãy Trường Sơn chạy sát biển, nhiều đèo hiểm (Hải Vân, Ngang, Mụ Giạ).",
+    khihau: "<strong>Khắc nghiệt nhất cả nước</strong>: gió Lào khô nóng mùa hè (40–42°C), bão lũ dữ dội mùa thu đông.",
+    song: "Sông Mã · Sông Lam · Sông Gianh · Sông Hương",
+    kinhte: "Đánh bắt cá, trồng lúa, du lịch di sản Cố đô Huế.",
+    tinh: ["Thanh Hóa","Nghệ An","Hà Tĩnh","Quảng Bình","Quảng Trị","Thừa Thiên Huế"],
+    highlights: ["Cố đô Huế – Di sản UNESCO","Phong Nha-Kẻ Bàng – hang động lớn nhất thế giới","Đường Trường Sơn huyền thoại"]
+  },
+  {
+    name: "Nam Trung Bộ",
+    color: "#0891b2",
+    diahinh: "Bờ biển dài và đẹp với nhiều vũng vịnh, bãi cát trắng. Dãy Trường Sơn Nam ở phía Tây. Nhiều đảo ven bờ (Lý Sơn, Côn Đảo).",
+    khihau: "Nắng nhiều, ít mưa hơn Bắc Trung Bộ, khí hậu khô ráo. Nhiệt độ <strong>20–38°C</strong>.",
+    song: "Sông Thu Bồn · Sông Ba · Sông Trà Khúc · Sông Cái",
+    kinhte: "Du lịch biển, đánh bắt thủy hải sản, cảng Đà Nẵng – cảng lớn miền Trung.",
+    tinh: ["Đà Nẵng","Quảng Nam","Quảng Ngãi","Bình Định","Phú Yên","Khánh Hòa","Ninh Thuận","Bình Thuận"],
+    highlights: ["Phố cổ Hội An – Di sản UNESCO","Thánh địa Mỹ Sơn (Chăm Pa)","Đà Nẵng – thành phố đáng sống nhất"]
+  },
+  {
+    name: "Tây Nguyên",
+    color: "#b45309",
+    diahinh: "Cao nguyên bazan màu đỏ màu mỡ, độ cao <strong>500–1500m</strong>, rừng nguyên sinh rộng lớn, nhiều thác nước.",
+    khihau: "Mát mẻ do độ cao, 2 mùa rõ rệt: mưa (tháng 5–10) và khô (tháng 11–4). Nhiệt độ <strong>15–28°C</strong>.",
+    song: "Đầu nguồn sông Mekong · Sông Sê San · Sông Srêpôk · Sông Đồng Nai",
+    kinhte: "Cà phê (50% sản lượng cả nước), cao su, hồ tiêu, điều, thủy điện.",
+    tinh: ["Kon Tum","Gia Lai","Đắk Lắk","Đắk Nông","Lâm Đồng"],
+    highlights: ["Buôn Ma Thuột – thủ phủ cà phê","Đà Lạt – thành phố ngàn hoa","Văn hóa cồng chiêng Tây Nguyên – Di sản UNESCO"]
+  },
+  {
+    name: "Nam Bộ",
+    color: "#059669",
+    diahinh: "Đồng bằng sông Cửu Long rộng lớn, địa hình cực thấp (<strong>0–2m</strong> so với mực nước biển), hệ thống kênh rạch hơn 28.000 km.",
+    khihau: "Nóng ẩm quanh năm, không có mùa đông. Hai mùa: mưa (5–10) và khô (11–4). Nhiệt độ <strong>25–35°C</strong>.",
+    song: "Sông Mekong (Cửu Long) với 9 nhánh đổ ra biển · Sông Đồng Nai · Sông Sài Gòn",
+    kinhte: "Vựa lúa gạo lớn nhất cả nước (50% sản lượng), trái cây nhiệt đới, thủy sản, trung tâm công nghiệp TP.HCM.",
+    tinh: ["TP.HCM","Long An","Tiền Giang","Bến Tre","Trà Vinh","Vĩnh Long","Đồng Tháp","An Giang","Kiên Giang","Cần Thơ","Hậu Giang","Sóc Trăng","Bạc Liêu","Cà Mau","Bình Dương","Đồng Nai","Bà Rịa-Vũng Tàu","Tây Ninh","Bình Phước"],
+    highlights: ["TP.HCM – thành phố lớn nhất Việt Nam","Đồng bằng sông Cửu Long cung cấp 50% sản lượng lúa","Rừng ngập mặn Cà Mau"]
+  }
+];
+
+let selected = -1;
+
+function selectRegion(idx) {
+  if (selected >= 0) {
+    document.getElementById('card-' + selected).classList.remove('selected');
+  }
+  if (selected === idx) {
+    selected = -1;
+    document.getElementById('detailPlaceholder').style.display = '';
+    document.getElementById('detailInner').style.display = 'none';
+    document.getElementById('detailPanel').style.setProperty('--detail-color', '#475569');
+    return;
+  }
+  selected = idx;
+  document.getElementById('card-' + idx).classList.add('selected');
+
+  const r = regions[idx];
+  document.getElementById('detailPanel').style.setProperty('--detail-color', r.color);
+
+  document.getElementById('dTitle').textContent = r.name;
+  document.getElementById('dDiahinh').innerHTML = r.diahinh;
+  document.getElementById('dKhihau').innerHTML = r.khihau;
+  document.getElementById('dSong').innerHTML = r.song;
+  document.getElementById('dKinhte').innerHTML = r.kinhte;
+
+  const tinhEl = document.getElementById('dTinh');
+  tinhEl.innerHTML = '';
+  r.tinh.forEach(function(t) {
+    const span = document.createElement('span');
+    span.className = 'province-tag';
+    span.textContent = t;
+    tinhEl.appendChild(span);
+  });
+
+  const hlEl = document.getElementById('dHighlights');
+  hlEl.innerHTML = '';
+  r.highlights.forEach(function(h) {
+    const div = document.createElement('div');
+    div.className = 'highlight-item';
+    div.textContent = '⭐ ' + h;
+    hlEl.appendChild(div);
+  });
+
+  document.getElementById('detailPlaceholder').style.display = 'none';
+  document.getElementById('detailInner').style.display = 'grid';
+
+  // Re-trigger animation
+  const panel = document.getElementById('detailPanel');
+  panel.style.animation = 'none';
+  panel.offsetHeight;
+  panel.style.animation = '';
+
+  setTimeout(function() {
+    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
+}
+
+function toggleCompare() {
+  const btn = document.getElementById('btnCompare');
+  const table = document.getElementById('compareTable');
+  const isOpen = table.classList.toggle('open');
+  btn.classList.toggle('active', isOpen);
+  btn.textContent = isOpen ? '✖ Đóng so sánh' : '📊 So sánh nhanh';
+}
+</script>
+</body>
+</html>

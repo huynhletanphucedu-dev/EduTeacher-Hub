@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Phân Số – Mô Phỏng</title>
+<style>
+:root{
+  --bg:#0f172a;--card:#1e293b;--border:#334155;
+  --teal:#06b6d4;--purple:#8b5cf6;--orange:#f59e0b;
+  --green:#10b981;--red:#ef4444;--blue:#3b82f6;--text:#e2e8f0;--sub:#94a3b8;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);
+     height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+.header{background:var(--card);border-bottom:1px solid var(--border);
+        padding:11px 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.header h1{font-size:1.15rem;font-weight:800;}
+.back-link{color:var(--sub);text-decoration:none;font-size:.88rem;font-weight:600;
+           padding:5px 12px;border-radius:8px;border:1px solid var(--border);}
+.tab-bar{display:flex;background:var(--card);border-bottom:1px solid var(--border);flex-shrink:0;}
+.mbar-tab{flex:1;padding:12px 6px;border:none;font-size:.95rem;font-weight:800;cursor:pointer;
+          background:transparent;color:var(--sub);border-bottom:3px solid transparent;
+          transition:all .15s;font-family:inherit;}
+.mbar-tab.active{color:var(--teal);border-bottom-color:var(--teal);background:rgba(6,182,212,.05);}
+.instr-bar{background:rgba(6,182,212,.1);border-bottom:1px solid rgba(6,182,212,.2);
+           padding:8px 22px;font-size:.9rem;color:#a5f3fc;text-align:center;flex-shrink:0;font-weight:600;}
+.body-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.stage{flex:1;overflow:auto;padding:14px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;}
+.ctrl-bar{flex-shrink:0;background:var(--card);border-top:1px solid var(--border);
+          padding:11px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;}
+.big-btn{padding:10px 22px;border:none;border-radius:12px;font-size:.95rem;font-weight:800;
+         cursor:pointer;font-family:inherit;transition:all .15s;
+         background:linear-gradient(135deg,#06b6d4,#3b82f6);color:#fff;box-shadow:0 3px 12px rgba(6,182,212,.3);}
+.big-btn:hover{transform:translateY(-1px);}
+.big-btn.sec{background:rgba(255,255,255,.08);box-shadow:none;color:var(--text);border:1.5px solid var(--border);}
+.big-btn.grn{background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 3px 12px rgba(16,185,129,.3);}
+.num-input{width:72px;padding:8px;background:rgba(255,255,255,.07);border:2px solid var(--border);
+           border-radius:11px;color:var(--text);font-size:1.4rem;font-weight:800;text-align:center;
+           font-family:inherit;outline:none;}
+.num-input:focus{border-color:var(--teal);}
+.label-sm{font-size:.82rem;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.4px;}
+.frac-display{display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:2px;}
+.frac-display .fn{font-size:2.6rem;font-weight:900;}
+.frac-display .fl{width:100%;height:3px;background:currentColor;border-radius:2px;}
+.frac-display .fd{font-size:2.6rem;font-weight:900;}
+.mult-btn{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);
+          background:rgba(255,255,255,.06);color:var(--text);font-size:1.2rem;font-weight:800;
+          cursor:pointer;font-family:inherit;transition:all .12s;}
+.mult-btn:hover{border-color:var(--teal);color:var(--teal);}
+.mult-val{font-size:1.4rem;font-weight:900;color:var(--orange);min-width:32px;text-align:center;}
+.info-card{background:var(--card);border:1.5px solid var(--border);border-radius:13px;
+           padding:12px 18px;max-width:780px;width:100%;font-size:.95rem;line-height:1.8;
+           font-weight:600;color:var(--sub);}
+.info-card b{color:var(--text);}
+.info-card .hl{color:var(--orange);font-weight:900;}
+
+/* ── SHAPES CONTAINER ── */
+.shapes-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;align-items:flex-end;}
+.shape-group{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.shape-label{font-size:.75rem;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.4px;}
+.circles-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;}
+.rects-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;}
+.unit-tag{font-size:.8rem;font-weight:800;padding:2px 8px;border-radius:6px;
+          background:rgba(16,185,129,.15);color:#34d399;border:1px solid #10b981;white-space:nowrap;}
+.partial-tag{font-size:.8rem;font-weight:800;padding:2px 8px;border-radius:6px;
+             background:rgba(6,182,212,.15);color:#67e8f9;border:1px solid #06b6d4;white-space:nowrap;}
+
+/* ── FRAC HEADER ── */
+.frac-header{display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center;background:var(--card);
+             border:1.5px solid var(--border);border-radius:14px;padding:14px 24px;max-width:780px;width:100%;}
+.mixed-display{font-size:2rem;font-weight:900;color:var(--orange);}
+.mixed-display .whole{font-size:2.8rem;}
+.eq-card{background:var(--card);border:2px solid var(--border);border-radius:14px;
+         padding:14px 18px;display:flex;flex-direction:column;align-items:center;gap:8px;min-width:160px;}
+.eq-card.active-card{border-color:var(--teal);}
+.eq-arrow-col{display:flex;flex-direction:column;align-items:center;gap:5px;padding-top:20px;}
+</style>
+</head>
+<body>
+<div class="header">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a href="dashboard.html" class="back-link">← Dashboard</a>
+    <h1>🍕 Phân Số</h1>
+  </div>
+  <button style="background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:9px;
+    padding:7px 14px;color:var(--text);cursor:pointer;font-size:.88rem;font-weight:700;font-family:inherit;"
+    onclick="if(!document.fullscreenElement)document.documentElement.requestFullscreen();else document.exitFullscreen()">⛶ Toàn màn hình</button>
+</div>
+<div class="tab-bar">
+  <button class="mbar-tab active" id="tab-bd" onclick="switchTab('bd')">🍕 Biểu Diễn</button>
+  <button class="mbar-tab"        id="tab-eq" onclick="switchTab('eq')">🔄 Phân Số Bằng Nhau</button>
+</div>
+
+<!-- ══ TAB 1: BIỂU DIỄN ══ -->
+<div class="body-wrap" id="wrap-bd">
+  <div class="instr-bar">✋ Kéo thanh hoặc nhấn +/− để thay đổi tử/mẫu — nếu tử &gt; mẫu sẽ hiện dạng hỗn số</div>
+  <div class="stage">
+    <!-- Fraction header -->
+    <div class="frac-header" id="bd-header"></div>
+    <!-- Circle shapes -->
+    <div class="shape-group">
+      <div class="shape-label">Hình tròn</div>
+      <div class="circles-row" id="circles-row"></div>
+    </div>
+    <!-- Rect shapes -->
+    <div class="shape-group">
+      <div class="shape-label">Hình chữ nhật</div>
+      <div class="rects-row" id="rects-row"></div>
+    </div>
+    <div class="info-card" id="bd-info"></div>
+  </div>
+  <div class="ctrl-bar">
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="label-sm" style="min-width:56px;">Tử p</div>
+        <button class="mult-btn" onclick="adjBD('p',-1)">−</button>
+        <input class="num-input" id="bd-p" type="number" min="0" max="30" value="3" oninput="syncBD()"/>
+        <button class="mult-btn" onclick="adjBD('p',+1)">+</button>
+        <input type="range" id="bd-pr" min="0" max="30" value="3" oninput="rangeSync('p')" style="width:130px;accent-color:var(--teal)"/>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="label-sm" style="min-width:56px;">Mẫu q</div>
+        <button class="mult-btn" onclick="adjBD('q',-1)">−</button>
+        <input class="num-input" id="bd-q" type="number" min="1" max="12" value="4" oninput="syncBD()"/>
+        <button class="mult-btn" onclick="adjBD('q',+1)">+</button>
+        <input type="range" id="bd-qr" min="1" max="12" value="4" oninput="rangeSync('q')" style="width:130px;accent-color:var(--purple)"/>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+      <button class="big-btn sec" onclick="setFrac(1,2)"><span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px;vertical-align:middle;"><span style="font-size:.85rem;font-weight:900;">1</span><span style="width:100%;height:2px;background:currentColor;display:block;min-width:.7em;"></span><span style="font-size:.85rem;font-weight:900;">2</span></span></button>
+      <button class="big-btn sec" onclick="setFrac(2,3)"><span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px;vertical-align:middle;"><span style="font-size:.85rem;font-weight:900;">2</span><span style="width:100%;height:2px;background:currentColor;display:block;min-width:.7em;"></span><span style="font-size:.85rem;font-weight:900;">3</span></span></button>
+      <button class="big-btn sec" onclick="setFrac(3,4)"><span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px;vertical-align:middle;"><span style="font-size:.85rem;font-weight:900;">3</span><span style="width:100%;height:2px;background:currentColor;display:block;min-width:.7em;"></span><span style="font-size:.85rem;font-weight:900;">4</span></span></button>
+      <button class="big-btn sec" onclick="setFrac(7,3)"><span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px;vertical-align:middle;"><span style="font-size:.85rem;font-weight:900;">7</span><span style="width:100%;height:2px;background:currentColor;display:block;min-width:.7em;"></span><span style="font-size:.85rem;font-weight:900;">3</span></span></button>
+      <button class="big-btn sec" onclick="setFrac(11,4)"><span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px;vertical-align:middle;"><span style="font-size:.85rem;font-weight:900;">11</span><span style="width:100%;height:2px;background:currentColor;display:block;min-width:.7em;"></span><span style="font-size:.85rem;font-weight:900;">4</span></span></button>
+      <button class="big-btn sec" onclick="setFrac(5,1)"><span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px;vertical-align:middle;"><span style="font-size:.85rem;font-weight:900;">5</span><span style="width:100%;height:2px;background:currentColor;display:block;min-width:.7em;"></span><span style="font-size:.85rem;font-weight:900;">1</span></span></button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB 2: PHÂN SỐ BẰNG NHAU ══ -->
+<div class="body-wrap" id="wrap-eq" style="display:none">
+  <div class="instr-bar">Nhập 2 phân số — quan sát hình chữ nhật để thấy chúng bằng nhau hay không</div>
+  <div class="stage">
+    <div id="eq-visual" style="display:flex;flex-direction:column;gap:18px;align-items:center;width:100%;max-width:700px;"></div>
+    <!-- result: hidden until revealed -->
+    <div id="eq-result" style="display:none;flex-direction:column;align-items:center;gap:10px;width:100%;max-width:700px;">
+      <div id="eq-badge" style="font-size:1.2rem;font-weight:900;padding:8px 26px;border-radius:20px;"></div>
+      <div class="info-card" id="eq-info"></div>
+    </div>
+  </div>
+  <div class="ctrl-bar">
+    <div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;justify-content:center;">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div class="label-sm">Phân số 1</div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input class="num-input" id="eq-p1" type="number" min="0" max="24" value="1" oninput="resetEQResult()"/>
+          <span style="font-size:2rem;font-weight:900;color:var(--sub);">—</span>
+          <input class="num-input" id="eq-q1" type="number" min="1" max="24" value="2" oninput="resetEQResult()"/>
+        </div>
+      </div>
+      <div style="font-size:2rem;font-weight:900;color:var(--sub);">=?</div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+        <div class="label-sm">Phân số 2</div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input class="num-input" id="eq-p2" type="number" min="0" max="24" value="2" oninput="resetEQResult()"/>
+          <span style="font-size:2rem;font-weight:900;color:var(--sub);">—</span>
+          <input class="num-input" id="eq-q2" type="number" min="1" max="24" value="4" oninput="resetEQResult()"/>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-direction:column;align-items:center;">
+      <button class="big-btn" onclick="revealEQ()">👁 Kiểm tra bằng nhân chéo</button>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
+        <button class="big-btn sec" onclick="setEQ2(1,2,2,4)"><span style="display:inline-flex;align-items:center;gap:6px;vertical-align:middle;"><span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px;"><span style="font-size:.85rem;font-weight:900;">1</span><span style="width:100%;height:2px;background:currentColor;display:block;min-width:.8em;"></span><span style="font-size:.85rem;font-weight:900;">2</span></span> và <span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px;"><span style="font-size:.85rem;font-weight:900;">2</span><span style="width:100%;height:2px;background:currentColor;display:block;min-width:.8em;"></span><span style="font-size:.85rem;font-weight:900;">4</span></span></span></button>
+        <button class="big-btn sec" onclick="setEQ2(1,3,2,6)"><span style="display:inline-flex;align-items:center;gap:6px;vertical-align:middle;"><span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px;"><span style="font-size:.85rem;font-weight:900;">1</span><span style="width:100%;height:2px;background:currentColor;display:block;min-width:.8em;"></span><span style="font-size:.85rem;font-weight:900;">3</span></span> và <span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px;"><span style="font-size:.85rem;font-weight:900;">2</span><span style="width:100%;height:2px;background:currentColor;display:block;min-width:.8em;"></span><span style="font-size:.85rem;font-weight:900;">6</span></span></span></button>
+        <button class="big-btn sec" onclick="setEQ2(2,3,4,6)"><span style="display:inline-flex;align-items:center;gap:6px;vertical-align:middle;"><span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px;"><span style="font-size:.85rem;font-weight:900;">2</span><span style="width:100%;height:2px;background:currentColor;display:block;min-width:.8em;"></span><span style="font-size:.85rem;font-weight:900;">3</span></span> và <span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px;"><span style="font-size:.85rem;font-weight:900;">4</span><span style="width:100%;height:2px;background:currentColor;display:block;min-width:.8em;"></span><span style="font-size:.85rem;font-weight:900;">6</span></span></span></button>
+        <button class="big-btn sec" onclick="setEQ2(3,4,6,8)"><span style="display:inline-flex;align-items:center;gap:6px;vertical-align:middle;"><span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px;"><span style="font-size:.85rem;font-weight:900;">3</span><span style="width:100%;height:2px;background:currentColor;display:block;min-width:.8em;"></span><span style="font-size:.85rem;font-weight:900;">4</span></span> và <span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px;"><span style="font-size:.85rem;font-weight:900;">6</span><span style="width:100%;height:2px;background:currentColor;display:block;min-width:.8em;"></span><span style="font-size:.85rem;font-weight:900;">8</span></span></span></button>
+        <button class="big-btn sec" onclick="setEQ2(1,2,3,4)"><span style="display:inline-flex;align-items:center;gap:6px;vertical-align:middle;"><span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px;"><span style="font-size:.85rem;font-weight:900;">1</span><span style="width:100%;height:2px;background:currentColor;display:block;min-width:.8em;"></span><span style="font-size:.85rem;font-weight:900;">2</span></span> và <span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px;"><span style="font-size:.85rem;font-weight:900;">3</span><span style="width:100%;height:2px;background:currentColor;display:block;min-width:.8em;"></span><span style="font-size:.85rem;font-weight:900;">4</span></span></span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(t){
+  ['bd','eq'].forEach(x=>{
+    document.getElementById('tab-'+x).classList.toggle('active',x===t);
+    document.getElementById('wrap-'+x).style.display=x===t?'flex':'none';
+  });
+}
+function gcd(a,b){return b===0?a:gcd(b,a%b);}
+
+const COLORS=['#06b6d4','#8b5cf6','#10b981','#f59e0b','#ef4444','#3b82f6','#ec4899'];
+
+/* ══════════════ TAB 1 ══════════════ */
+let bdP=3, bdQ=4;
+
+function adjBD(f,d){
+  if(f==='p') bdP=Math.max(0,Math.min(30,bdP+d));
+  else bdQ=Math.max(1,Math.min(12,bdQ+d));
+  document.getElementById('bd-'+f).value=f==='p'?bdP:bdQ;
+  document.getElementById('bd-'+f+'r').value=f==='p'?bdP:bdQ;
+  renderBD();
+}
+function syncBD(){
+  bdP=Math.max(0,Math.min(30,+document.getElementById('bd-p').value||0));
+  bdQ=Math.max(1,Math.min(12,+document.getElementById('bd-q').value||1));
+  document.getElementById('bd-pr').value=bdP;
+  document.getElementById('bd-qr').value=bdQ;
+  renderBD();
+}
+function rangeSync(f){
+  if(f==='p'){bdP=+document.getElementById('bd-pr').value; document.getElementById('bd-p').value=bdP;}
+  else{bdQ=+document.getElementById('bd-qr').value; document.getElementById('bd-q').value=bdQ;}
+  renderBD();
+}
+function setFrac(p,q){bdP=p;bdQ=q;document.getElementById('bd-p').value=p;document.getElementById('bd-q').value=q;document.getElementById('bd-pr').value=p;document.getElementById('bd-qr').value=q;renderBD();}
+
+/* Draw a single circle SVG with 'filled' out of 'total' slices */
+function makePieCircle(filled, total, col, size=130, dimmed=false){
+  const ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('width',size); svg.setAttribute('height',size);
+  svg.setAttribute('viewBox','-1 -1 2 2');
+  const alpha = dimmed ? '55' : 'cc';
+  if(total===1){
+    const c=document.createElementNS(ns,'circle');
+    c.setAttribute('r','0.92'); c.setAttribute('cx','0'); c.setAttribute('cy','0');
+    c.setAttribute('fill', filled>=1 ? col+alpha : 'rgba(255,255,255,.06)');
+    c.setAttribute('stroke','#475569'); c.setAttribute('stroke-width','0.05');
+    svg.appendChild(c); return svg;
+  }
+  const TAU=Math.PI*2, start=-Math.PI/2;
+  for(let i=0;i<total;i++){
+    const a1=start+i/total*TAU, a2=start+(i+1)/total*TAU;
+    const x1=Math.cos(a1)*0.92, y1=Math.sin(a1)*0.92;
+    const x2=Math.cos(a2)*0.92, y2=Math.sin(a2)*0.92;
+    const large=1/total>0.5?1:0;
+    const path=document.createElementNS(ns,'path');
+    path.setAttribute('d',`M0,0 L${x1.toFixed(4)},${y1.toFixed(4)} A0.92,0.92,0,${large},1,${x2.toFixed(4)},${y2.toFixed(4)} Z`);
+    path.setAttribute('fill', i<filled ? col+alpha : 'rgba(255,255,255,.06)');
+    path.setAttribute('stroke','#0f172a'); path.setAttribute('stroke-width','0.04');
+    svg.appendChild(path);
+  }
+  const rim=document.createElementNS(ns,'circle');
+  rim.setAttribute('r','0.92'); rim.setAttribute('cx','0'); rim.setAttribute('cy','0');
+  rim.setAttribute('fill','none'); rim.setAttribute('stroke', dimmed?'#334155':'#64748b'); rim.setAttribute('stroke-width','0.05');
+  svg.appendChild(rim);
+  return svg;
+}
+
+/* Draw a single rect SVG with 'filled' out of 'total' cells */
+function makeRectBar(filled, total, col, w=200, h=52, dimmed=false){
+  const ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('width',w); svg.setAttribute('height',h);
+  svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+  const cols=Math.min(total,12);
+  const cw=(w-4)/cols, rh=h-4;
+  const alpha=dimmed?'55':'99';
+  for(let i=0;i<cols;i++){
+    const rect=document.createElementNS(ns,'rect');
+    rect.setAttribute('x',2+i*cw); rect.setAttribute('y',2);
+    rect.setAttribute('width',cw-2); rect.setAttribute('height',rh);
+    rect.setAttribute('rx','5');
+    rect.setAttribute('fill', i<Math.min(filled,cols) ? col+alpha : 'rgba(255,255,255,.06)');
+    rect.setAttribute('stroke', dimmed?'#1e293b':'#334155'); rect.setAttribute('stroke-width','1.5');
+    svg.appendChild(rect);
+    if(total<=12){
+      const t=document.createElementNS(ns,'text');
+      t.setAttribute('x',2+i*cw+cw/2); t.setAttribute('y',h/2+5);
+      t.setAttribute('text-anchor','middle'); t.setAttribute('font-size',Math.min(13,cw*.55));
+      t.setAttribute('font-weight','700'); t.setAttribute('font-family','Segoe UI,sans-serif');
+      t.setAttribute('fill', i<Math.min(filled,cols)?'#fff':'rgba(255,255,255,.25)');
+      t.textContent=i+1; svg.appendChild(t);
+    }
+  }
+  return svg;
+}
+
+function fracTag(p,q,cls){
+  const d=document.createElement('div');
+  d.className=cls;
+  d.style.cssText+='display:inline-flex;align-items:center;gap:3px;';
+  d.innerHTML=`<span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px;">
+    <span style="font-size:.8rem;font-weight:900;">${p}</span>
+    <span style="width:100%;height:2px;background:currentColor;display:block;min-width:.7em;"></span>
+    <span style="font-size:.8rem;font-weight:900;">${q}</span>
+  </span>`;
+  return d;
+}
+function renderBD(){
+  const p=bdP, q=bdQ;
+  const whole=Math.floor(p/q), rem=p%q;
+  const isImproper=p>q, isWhole=rem===0&&p>0;
+  const g=gcd(p||1,q), rp=p/g, rq=q/g;
+
+  /* ── Header ── */
+  const hdr=document.getElementById('bd-header');
+  let hdrHtml=`<div style="text-align:center;">
+    <div class="label-sm" style="margin-bottom:5px;">Phân số</div>
+    <div class="frac-display" style="color:var(--teal);">
+      <span class="fn">${p}</span><div class="fl"></div><span class="fd">${q}</span>
+    </div>
+  </div>`;
+  if(p===0){
+    hdrHtml+=`<div style="font-size:1.5rem;font-weight:900;color:var(--sub);">= 0</div>`;
+  } else if(isImproper){
+    hdrHtml+=`<div style="font-size:2rem;font-weight:900;color:var(--sub);">=</div>`;
+    if(isWhole){
+      hdrHtml+=`<div style="text-align:center;"><div class="label-sm" style="margin-bottom:4px;">Số nguyên</div>
+        <div style="font-size:3.2rem;font-weight:900;color:var(--orange);">${whole}</div></div>`;
+    } else {
+      hdrHtml+=`<div style="text-align:center;"><div class="label-sm" style="margin-bottom:4px;">Hỗn số</div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:3rem;font-weight:900;color:var(--orange);">${whole}</span>
+          <div class="frac-display" style="color:var(--orange);font-size:.8em">
+            <span class="fn" style="font-size:1.8rem">${rem}</span><div class="fl"></div><span class="fd" style="font-size:1.8rem">${q}</span>
+          </div>
+        </div></div>`;
+    }
+  } else {
+    if(g>1) hdrHtml+=`<div style="font-size:1rem;font-weight:800;color:var(--green);">rút gọn → <span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px;vertical-align:middle;"><span style="font-size:1rem;font-weight:900;">${rp}</span><span style="width:100%;height:2px;background:currentColor;display:block;min-width:.8em;"></span><span style="font-size:1rem;font-weight:900;">${rq}</span></span></div>`;
+  }
+  hdr.innerHTML=hdrHtml;
+
+  /* ── Circles ── */
+  const circRow=document.getElementById('circles-row'); circRow.innerHTML='';
+  const col=COLORS[0];
+  if(p===0){
+    const w=document.createElement('div');
+    w.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;';
+    w.appendChild(makePieCircle(0,q,col,120));
+    w.appendChild(fracTag(0,q,'partial-tag')); circRow.appendChild(w);
+  } else if(isImproper){
+    // Show 'whole' full circles + 1 partial if rem>0
+    for(let i=0;i<whole;i++){
+      const w=document.createElement('div');
+      w.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;';
+      w.appendChild(makePieCircle(q,q,col,whole>4?80:110));
+      const l=document.createElement('div'); l.className='unit-tag'; l.textContent='1 đơn vị';
+      w.appendChild(l); circRow.appendChild(w);
+      if(i<whole-1){
+        const plus=document.createElement('div');
+        plus.style.cssText='font-size:1.4rem;font-weight:900;color:var(--sub);padding-bottom:28px;';
+        plus.textContent='+'; circRow.appendChild(plus);
+      }
+    }
+    if(rem>0){
+      const plus=document.createElement('div');
+      plus.style.cssText='font-size:1.4rem;font-weight:900;color:var(--sub);padding-bottom:28px;';
+      plus.textContent='+'; circRow.appendChild(plus);
+      const w=document.createElement('div');
+      w.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;';
+      w.appendChild(makePieCircle(rem,q,COLORS[1],whole>4?80:110));
+      w.appendChild(fracTag(rem,q,'partial-tag')); circRow.appendChild(w);
+    }
+  } else {
+    const w=document.createElement('div');
+    w.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;';
+    w.appendChild(makePieCircle(p,q,col,130));
+    w.appendChild(fracTag(p,q,'partial-tag')); circRow.appendChild(w);
+  }
+
+  /* ── Rects ── */
+  const recRow=document.getElementById('rects-row'); recRow.innerHTML='';
+  const colR=COLORS[0];
+  if(p===0){
+    const w=document.createElement('div');
+    w.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;';
+    w.appendChild(makeRectBar(0,q,colR,200,52));
+    w.appendChild(fracTag(0,q,'partial-tag')); recRow.appendChild(w);
+  } else if(isImproper){
+    const barW=whole>4?120:180;
+    for(let i=0;i<whole;i++){
+      const w=document.createElement('div');
+      w.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;';
+      w.appendChild(makeRectBar(q,q,colR,barW,46));
+      const l=document.createElement('div'); l.className='unit-tag'; l.textContent='1 đơn vị';
+      w.appendChild(l); recRow.appendChild(w);
+      if(i<whole-1||(rem>0)){
+        const plus=document.createElement('div');
+        plus.style.cssText='font-size:1.2rem;font-weight:900;color:var(--sub);padding-bottom:22px;';
+        plus.textContent='+'; recRow.appendChild(plus);
+      }
+    }
+    if(rem>0){
+      const w=document.createElement('div');
+      w.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;';
+      w.appendChild(makeRectBar(rem,q,COLORS[1],whole>4?120:180,46));
+      w.appendChild(fracTag(rem,q,'partial-tag')); recRow.appendChild(w);
+    }
+  } else {
+    const w=document.createElement('div');
+    w.style.cssText='display:flex;flex-direction:column;align-items:center;gap:4px;';
+    w.appendChild(makeRectBar(p,q,colR,Math.max(180,q*26),52));
+    w.appendChild(fracTag(p,q,'partial-tag')); recRow.appendChild(w);
+  }
+
+  /* ── Info ── */
+  let info='';
+  function fi(a,b){return `<span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1;gap:1px;vertical-align:middle;margin:0 2px;"><span style="font-size:.9rem;font-weight:900;">${a}</span><span style="width:100%;height:2px;background:currentColor;display:block;min-width:.6em;"></span><span style="font-size:.9rem;font-weight:900;">${b}</span></span>`;}
+  if(p===0) info=`${fi(0,q)}: tử số = 0 → phân số bằng 0`;
+  else if(p===q) info=`${fi(p,q)} = 1: tử bằng mẫu → bằng 1 đơn vị`;
+  else if(isImproper&&isWhole) info=`${fi(p,q)} = ${whole}: tử chia hết cho mẫu → là số nguyên`;
+  else if(isImproper) info=`${fi(p,q)} là phân số <span class="hl">lớn hơn 1</span> — tử lớn hơn mẫu. Dạng hỗn số: <b>${whole}</b> và ${fi(rem,q)} (${whole} đơn vị và thêm ${fi(rem,q)})`;
+  else info=`${fi(p,q)}: tô <b>${p}</b> phần trong <b>${q}</b> phần bằng nhau`;
+  if(g>1&&p>0&&!isWhole) info+=` &nbsp;·&nbsp; ƯCLN(${p},${q})=${g} → rút gọn: ${fi(rp,rq)}`;
+  document.getElementById('bd-info').innerHTML=info;
+}
+renderBD();
+
+/* ══════════════ TAB 2 ══════════════ */
+function setEQ2(p1,q1,p2,q2){
+  document.getElementById('eq-p1').value=p1; document.getElementById('eq-q1').value=q1;
+  document.getElementById('eq-p2').value=p2; document.getElementById('eq-q2').value=q2;
+  renderEQ();
+}
+function resetEQResult(){
+  document.getElementById('eq-result').style.display='none';
+  renderEQ();
+}
+
+function makeCompareBar(filled, total, col, W=560, H=58){
+  const ns='http://www.w3.org/2000/svg';
+  const svg=document.createElementNS(ns,'svg');
+  svg.setAttribute('width','100%'); svg.setAttribute('height',H);
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svg.style.maxWidth=W+'px';
+  const cw=(W-4)/total, rh=H-4;
+  for(let i=0;i<total;i++){
+    const rx=document.createElementNS(ns,'rect');
+    rx.setAttribute('x',2+i*cw); rx.setAttribute('y',2);
+    rx.setAttribute('width',cw-2); rx.setAttribute('height',rh);
+    rx.setAttribute('rx','6');
+    rx.setAttribute('fill', i<filled ? col+'bb' : 'rgba(255,255,255,.06)');
+    rx.setAttribute('stroke','#334155'); rx.setAttribute('stroke-width','1.5');
+    svg.appendChild(rx);
+    if(total<=16){
+      const t=document.createElementNS(ns,'text');
+      t.setAttribute('x',2+i*cw+cw/2); t.setAttribute('y',H/2+5);
+      t.setAttribute('text-anchor','middle');
+      t.setAttribute('font-size',Math.min(14,cw*0.5));
+      t.setAttribute('font-weight','700'); t.setAttribute('font-family','Segoe UI,sans-serif');
+      t.setAttribute('fill', i<filled?'#fff':'rgba(255,255,255,.2)');
+      t.textContent=i+1; svg.appendChild(t);
+    }
+  }
+  return svg;
+}
+
+function renderEQ(){
+  const p1=Math.max(0,Math.min(24,+document.getElementById('eq-p1').value||0));
+  const q1=Math.max(1,Math.min(24,+document.getElementById('eq-q1').value||1));
+  const p2=Math.max(0,Math.min(24,+document.getElementById('eq-p2').value||0));
+  const q2=Math.max(1,Math.min(24,+document.getElementById('eq-q2').value||1));
+  const col1='#8b5cf6', col2='#06b6d4';
+
+  const vis=document.getElementById('eq-visual'); vis.innerHTML='';
+
+  function mkRow(p,q,col,label){
+    const wrap=document.createElement('div');
+    wrap.style.cssText='display:flex;flex-direction:column;gap:6px;width:100%;';
+    const lrow=document.createElement('div');
+    lrow.style.cssText='display:flex;align-items:center;gap:10px;';
+    const fracEl=document.createElement('div');
+    fracEl.className='frac-display'; fracEl.style.color=col; fracEl.style.minWidth='52px';
+    fracEl.innerHTML=`<span class="fn" style="font-size:1.6rem">${p}</span><div class="fl"></div><span class="fd" style="font-size:1.6rem">${q}</span>`;
+    const lbl=document.createElement('div');
+    lbl.style.cssText=`font-size:.78rem;font-weight:800;color:${col};text-transform:uppercase;letter-spacing:.4px;`;
+    lbl.textContent=label;
+    lrow.appendChild(fracEl); lrow.appendChild(lbl);
+    wrap.appendChild(lrow);
+    wrap.appendChild(makeCompareBar(p,q,col));
+    return wrap;
+  }
+
+  vis.appendChild(mkRow(p1,q1,col1,'Phân số 1'));
+  // middle divider (just spacing)
+  const sep=document.createElement('div');
+  sep.style.cssText='width:100%;height:1px;background:var(--border);';
+  vis.appendChild(sep);
+  vis.appendChild(mkRow(p2,q2,col2,'Phân số 2'));
+
+  // store values for reveal
+  vis.dataset.p1=p1; vis.dataset.q1=q1; vis.dataset.p2=p2; vis.dataset.q2=q2;
+}
+
+function revealEQ(){
+  const vis=document.getElementById('eq-visual');
+  const p1=+vis.dataset.p1, q1=+vis.dataset.q1;
+  const p2=+vis.dataset.p2, q2=+vis.dataset.q2;
+
+  const ad=p1*q2, bc=q1*p2;
+  const equal=ad===bc;
+
+  const badge=document.getElementById('eq-badge');
+  badge.style.cssText=`font-size:1.2rem;font-weight:900;padding:8px 26px;border-radius:20px;white-space:nowrap;
+    background:${equal?'rgba(16,185,129,.15)':'rgba(239,68,68,.15)'};
+    color:${equal?'#34d399':'#f87171'};
+    border:2px solid ${equal?'#10b981':'#ef4444'};`;
+  function fracInline(p,q,col){
+    return `<span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1.1;gap:1px;vertical-align:middle;margin:0 3px;">
+      <span style="font-size:1.1rem;font-weight:900;color:${col};">${p}</span>
+      <span style="width:100%;height:2.5px;background:${col};border-radius:2px;display:block;min-width:.9em;"></span>
+      <span style="font-size:1.1rem;font-weight:900;color:${col};">${q}</span>
+    </span>`;
+  }
+  const eqCol=equal?'#34d399':'#f87171';
+  badge.innerHTML = equal
+    ? `${fracInline(p1,q1,eqCol)} = ${fracInline(p2,q2,eqCol)} &nbsp;✓&nbsp; Bằng nhau`
+    : `${fracInline(p1,q1,eqCol)} ≠ ${fracInline(p2,q2,eqCol)} &nbsp;✗&nbsp; Không bằng nhau`;
+
+  // cross-multiplication explanation
+  function frac(p,q,col='inherit',sz='1.1rem'){
+    return `<span style="display:inline-flex;flex-direction:column;align-items:center;line-height:1.1;gap:1px;vertical-align:middle;margin:0 2px;">
+      <span style="font-size:${sz};font-weight:900;color:${col};">${p}</span>
+      <span style="width:100%;height:2.5px;background:${col};border-radius:2px;display:block;min-width:1em;"></span>
+      <span style="font-size:${sz};font-weight:900;color:${col};">${q}</span>
+    </span>`;
+  }
+  document.getElementById('eq-info').innerHTML=
+    `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+       <b>Kiểm tra nhân chéo:</b>
+     </div>
+     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:1rem;font-weight:700;line-height:2.2;">
+       ${frac(p1,q1,'#8b5cf6')}
+       <span style="color:var(--sub);">=?</span>
+       ${frac(p2,q2,'#06b6d4')}
+       <span style="color:var(--sub);margin-left:12px;">→</span>
+       <span style="color:#8b5cf6;">${p1} × ${q2} = <b>${ad}</b></span>
+       <span style="color:var(--sub);">và</span>
+       <span style="color:#06b6d4;">${q1} × ${p2} = <b>${bc}</b></span>
+     </div>
+     <div style="margin-top:6px;font-size:1rem;font-weight:800;">
+       ${ad} ${equal?'=':'≠'} ${bc}
+       &nbsp;→&nbsp;
+       <span style="color:${equal?'#34d399':'#f87171'}">${equal?'Hai phân số bằng nhau ✓':'Hai phân số không bằng nhau ✗'}</span>
+     </div>
+     <div style="margin-top:6px;font-size:.85rem;color:var(--sub);">
+       Quy tắc: ${frac('a','b','#94a3b8','.85rem')} = ${frac('c','d','#94a3b8','.85rem')}
+       &nbsp;khi và chỉ khi &nbsp;<b style="color:var(--text);">a × d = b × c</b>
+     </div>`;
+
+  document.getElementById('eq-result').style.display='flex';
+}
+renderEQ();
+</script>
+</body>
+</html>

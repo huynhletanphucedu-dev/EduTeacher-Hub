@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Thu gọn Link</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 16px 60px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #f8fafc;
+      letter-spacing: -0.02em;
+    }
+    .header p {
+      margin-top: 6px;
+      font-size: 0.95rem;
+      color: #94a3b8;
+    }
+
+    /* Panel */
+    .panel {
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+      border: 1px solid #334155;
+    }
+
+    /* Input row */
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+    .url-input {
+      flex: 1;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      color: #f1f5f9;
+      font-size: 0.95rem;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+    .url-input::placeholder { color: #475569; }
+    .url-input:focus { border-color: #10b981; }
+
+    .btn-shorten {
+      background: #10b981;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 12px 20px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s, opacity 0.2s;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-shorten:hover:not(:disabled) { background: #059669; }
+    .btn-shorten:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* Spinner */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Error */
+    .error-msg {
+      display: none;
+      margin-top: 12px;
+      background: rgba(239,68,68,0.12);
+      border: 1px solid rgba(239,68,68,0.4);
+      border-radius: 8px;
+      color: #fca5a5;
+      font-size: 0.88rem;
+      padding: 10px 14px;
+    }
+
+    /* Result card */
+    .result-card {
+      display: none;
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+      border: 1px solid #10b981;
+    }
+
+    .label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+
+    .original-url {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      word-break: break-all;
+      margin-bottom: 16px;
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 8px 12px;
+    }
+
+    .short-url-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .short-url-text {
+      flex: 1;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #10b981;
+      word-break: break-all;
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+    .short-url-text a {
+      color: inherit;
+      text-decoration: none;
+    }
+    .short-url-text a:hover { text-decoration: underline; }
+
+    .btn-copy {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #cbd5e1;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 10px 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .btn-copy:hover { border-color: #10b981; color: #10b981; }
+    .btn-copy.copied { color: #10b981; border-color: #10b981; background: rgba(16,185,129,0.08); }
+
+    /* QR */
+    .qr-section { text-align: center; }
+    .qr-box {
+      display: inline-block;
+      background: #fff;
+      border-radius: 10px;
+      padding: 12px;
+      margin: 10px 0;
+    }
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      color: #cbd5e1;
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+      margin-top: 4px;
+    }
+    .btn-download:hover { border-color: #10b981; color: #10b981; }
+
+    /* History */
+    .history-section { display: none; }
+    .section-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #64748b;
+      margin-bottom: 10px;
+    }
+
+    .history-item {
+      background: #0f172a;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+      border: 1px solid #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .history-urls {
+      flex: 1;
+      min-width: 0;
+    }
+    .history-original {
+      font-size: 0.78rem;
+      color: #64748b;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .history-short {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #10b981;
+      margin-top: 2px;
+    }
+    .history-short a { color: inherit; text-decoration: none; }
+    .history-short a:hover { text-decoration: underline; }
+    .btn-copy-sm {
+      background: transparent;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      color: #94a3b8;
+      font-size: 0.78rem;
+      padding: 5px 10px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .btn-copy-sm:hover { border-color: #10b981; color: #10b981; }
+    .btn-copy-sm.copied { color: #10b981; border-color: #10b981; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>🔗 Thu gọn Link</h1>
+    <p>Rút ngắn đường dẫn nhanh chóng, tạo mã QR tiện lợi</p>
+  </div>
+
+  <!-- Input panel -->
+  <div class="panel">
+    <div class="input-row">
+      <input
+        id="urlInput"
+        class="url-input"
+        type="url"
+        placeholder="Dán đường dẫn dài vào đây…"
+        autocomplete="off"
+        spellcheck="false"
+      />
+      <button id="shortenBtn" class="btn-shorten" onclick="shortenUrl()">
+        <span class="spinner" id="spinner"></span>
+        <span id="btnLabel">Thu gọn</span>
+      </button>
+    </div>
+    <div class="error-msg" id="errorMsg"></div>
+  </div>
+
+  <!-- Result card -->
+  <div class="result-card" id="resultCard">
+    <div class="label">Đường dẫn gốc</div>
+    <div class="original-url" id="resultOriginal"></div>
+
+    <div class="label">Đường dẫn rút gọn</div>
+    <div class="short-url-row">
+      <div class="short-url-text" id="resultShort"></div>
+      <button class="btn-copy" id="copyBtn" onclick="copyShortUrl()">Sao chép</button>
+    </div>
+
+    <div class="qr-section">
+      <div class="label">Mã QR</div>
+      <div class="qr-box">
+        <div id="qrcode"></div>
+      </div>
+      <br/>
+      <button class="btn-download" onclick="downloadQR()">⬇ Tải mã QR (PNG)</button>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="history-section panel" id="historySection">
+    <div class="section-title">Lịch sử rút gọn</div>
+    <div id="historyList"></div>
+  </div>
+
+</div>
+
+<script>
+  const history = [];
+  let currentShortUrl = '';
+  let qrInstance = null;
+
+  function isValidUrl(str) {
+    try {
+      const u = new URL(str);
+      return u.protocol === 'http:' || u.protocol === 'https:';
+    } catch { return false; }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  function hideError() {
+    document.getElementById('errorMsg').style.display = 'none';
+  }
+
+  function setLoading(loading) {
+    const btn = document.getElementById('shortenBtn');
+    const spinner = document.getElementById('spinner');
+    const label = document.getElementById('btnLabel');
+    btn.disabled = loading;
+    spinner.style.display = loading ? 'block' : 'none';
+    label.textContent = loading ? 'Đang xử lý…' : 'Thu gọn';
+  }
+
+  async function shortenUrl() {
+    const input = document.getElementById('urlInput');
+    const url = input.value.trim();
+
+    hideError();
+
+    if (!url) {
+      showError('Vui lòng nhập đường dẫn cần rút gọn.');
+      return;
+    }
+    if (!isValidUrl(url)) {
+      showError('Đường dẫn không hợp lệ. Vui lòng nhập URL bắt đầu bằng http:// hoặc https://');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const apiUrl = 'https://tinyurl.com/api-create.php?url=' + encodeURIComponent(url);
+      const response = await fetch(apiUrl);
+      if (!response.ok) throw new Error('Lỗi máy chủ: ' + response.status);
+      const shortUrl = (await response.text()).trim();
+      if (!shortUrl.startsWith('http')) throw new Error('Phản hồi không hợp lệ từ máy chủ.');
+
+      currentShortUrl = shortUrl;
+      showResult(url, shortUrl);
+      addHistory(url, shortUrl);
+    } catch (err) {
+      showError('Không thể rút gọn đường dẫn. ' + (err.message || 'Vui lòng thử lại.'));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function showResult(original, short) {
+    // Original URL
+    document.getElementById('resultOriginal').textContent = original;
+
+    // Short URL
+    document.getElementById('resultShort').innerHTML =
+      `<a href="${short}" target="_blank" rel="noopener">${short}</a>`;
+
+    // Reset copy button
+    const copyBtn = document.getElementById('copyBtn');
+    copyBtn.textContent = 'Sao chép';
+    copyBtn.classList.remove('copied');
+
+    // QR Code
+    const qrEl = document.getElementById('qrcode');
+    qrEl.innerHTML = '';
+    qrInstance = new QRCode(qrEl, {
+      text: short,
+      width: 180,
+      height: 180,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+
+    document.getElementById('resultCard').style.display = 'block';
+    document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function copyShortUrl() {
+    if (!currentShortUrl) return;
+    navigator.clipboard.writeText(currentShortUrl).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = '✓ Đã sao chép!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Sao chép';
+        btn.classList.remove('copied');
+      }, 2000);
+    }).catch(() => {
+      // Fallback
+      const ta = document.createElement('textarea');
+      ta.value = currentShortUrl;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    });
+  }
+
+  function downloadQR() {
+    const canvas = document.querySelector('#qrcode canvas');
+    if (!canvas) return;
+    const link = document.createElement('a');
+    link.download = 'ma-qr.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }
+
+  function addHistory(original, short) {
+    // Remove duplicate if same original exists
+    const idx = history.findIndex(h => h.original === original);
+    if (idx !== -1) history.splice(idx, 1);
+
+    history.unshift({ original, short });
+    if (history.length > 5) history.pop();
+
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const section = document.getElementById('historySection');
+    const list = document.getElementById('historyList');
+
+    if (history.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+
+    section.style.display = 'block';
+    list.innerHTML = history.map((item, i) => `
+      <div class="history-item">
+        <div class="history-urls">
+          <div class="history-original" title="${item.original}">${item.original}</div>
+          <div class="history-short"><a href="${item.short}" target="_blank" rel="noopener">${item.short}</a></div>
+        </div>
+        <button class="btn-copy-sm" id="hcopy${i}" onclick="copyHistoryUrl(${i})">Sao chép</button>
+      </div>
+    `).join('');
+  }
+
+  function copyHistoryUrl(index) {
+    const short = history[index]?.short;
+    if (!short) return;
+    navigator.clipboard.writeText(short).then(() => {
+      const btn = document.getElementById('hcopy' + index);
+      btn.textContent = '✓ Đã sao chép!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Sao chép';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  // Allow Enter key to trigger shorten
+  document.getElementById('urlInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') shortenUrl();
+  });
+</script>
+</body>
+</html>

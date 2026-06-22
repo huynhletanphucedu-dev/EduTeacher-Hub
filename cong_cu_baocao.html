@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Công Cụ Báo Cáo Chủ Nhiệm</title>
+<script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --border: #334155;
+    --accent: #06b6d4;
+    --accent-hover: #0891b2;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --danger: #ef4444;
+    --input-bg: #0f172a;
+    --label: #cbd5e1;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .app-header {
+    background: linear-gradient(135deg, #0c4a6e 0%, #164e63 50%, #0f172a 100%);
+    border-bottom: 2px solid var(--accent);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 24px rgba(6,182,212,0.15);
+  }
+
+  .app-header .logo {
+    width: 44px; height: 44px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .app-header h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+  }
+  .app-header h1 span {
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    margin-top: 2px;
+  }
+
+  /* LAYOUT */
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 28px 20px 80px;
+  }
+
+  /* PANELS */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-bottom: 16px;
+  }
+
+  .panel-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-title .num {
+    background: var(--accent);
+    color: #fff;
+    border-radius: 6px;
+    padding: 1px 8px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  /* FORM GRID */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 20px;
+  }
+  .form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .form-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .form-grid.cols-1 { grid-template-columns: 1fr; }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field.span2 { grid-column: span 2; }
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--label);
+    letter-spacing: 0.02em;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  textarea {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    padding: 9px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+  }
+
+  input:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(6,182,212,0.15);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 82px;
+    line-height: 1.55;
+  }
+
+  input[type="number"] { -moz-appearance: textfield; }
+  input[type="number"]::-webkit-inner-spin-button { opacity: 0.5; }
+
+  /* RADIO GROUP */
+  .radio-group {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    overflow: hidden;
+  }
+
+  .radio-group label {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 12px;
+    cursor: pointer;
+    background: var(--input-bg);
+    color: var(--text-muted);
+    transition: background 0.2s, color 0.2s;
+    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: 0;
+  }
+
+  .radio-group input[type="radio"] { display: none; }
+
+  .radio-group label.active {
+    background: rgba(6,182,212,0.12);
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .radio-group label + label { border-left: 1px solid var(--border); }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 22px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    transition: all 0.18s;
+    white-space: nowrap;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #0f172a;
+  }
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(6,182,212,0.35);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--accent);
+    border: 1.5px solid var(--accent);
+  }
+  .btn-outline:hover { background: rgba(6,182,212,0.1); }
+
+  .btn-ghost {
+    background: rgba(255,255,255,0.07);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.12); color: var(--text); }
+
+  .btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border: 1.5px solid var(--danger);
+  }
+  .btn-danger:hover { background: rgba(239,68,68,0.1); }
+
+  /* ACTION BAR */
+  .action-bar {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 18px 24px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    align-items: center;
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.78);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    max-width: 700px;
+    width: 100%;
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .modal-header h2 { font-size: 16px; font-weight: 700; color: var(--accent); }
+
+  .modal-close {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); font-size: 22px; line-height: 1;
+    padding: 4px;
+    transition: color 0.15s;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  .modal-body {
+    overflow-y: auto;
+    padding: 24px;
+    flex: 1;
+  }
+
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    flex-shrink: 0;
+  }
+
+  /* PREVIEW */
+  .preview-doc {
+    background: #fff;
+    color: #111;
+    padding: 40px 48px;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 13.5px;
+    line-height: 1.75;
+    border-radius: 6px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 28px; right: 28px;
+    background: var(--panel);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    z-index: 2000;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+    pointer-events: none;
+    max-width: 340px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.error { border-color: var(--danger); }
+
+  .hint {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    margin-top: 3px;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 14px 0;
+  }
+
+  .date-range {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .date-range .sep {
+    color: var(--text-muted);
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  .date-range input { flex: 1; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid.cols-3, .form-grid.cols-4 { grid-template-columns: 1fr 1fr; }
+    .field.span2 { grid-column: span 1; }
+    .container { padding: 16px 12px 80px; }
+    .app-header { padding: 14px 16px; }
+    .app-header h1 { font-size: 16px; }
+    .preview-doc { padding: 20px 16px; font-size: 12px; }
+    .panel { padding: 16px; }
+    .action-bar { padding: 14px 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="logo">📋</div>
+  <h1>Công Cụ Báo Cáo Chủ Nhiệm
+    <span>TRƯỜNG THCS LONG THỌ &nbsp;·&nbsp; Hỗ trợ giáo viên chủ nhiệm</span>
+  </h1>
+</header>
+
+<div class="container">
+
+  <!-- THÔNG TIN CƠ BẢN -->
+  <div class="panel">
+    <div class="panel-title">⚙️ Thông tin cơ bản</div>
+    <div class="form-grid">
+      <div class="field">
+        <label for="truong">Trường</label>
+        <input type="text" id="truong" value="THCS Long Thọ">
+      </div>
+      <div class="field">
+        <label for="gvcn">Giáo viên chủ nhiệm</label>
+        <input type="text" id="gvcn" placeholder="Họ và tên GVCN">
+      </div>
+      <div class="field">
+        <label for="lop">Lớp</label>
+        <input type="text" id="lop" placeholder="Ví dụ: 9A1">
+      </div>
+      <div class="field">
+        <label for="namhoc">Năm học</label>
+        <input type="text" id="namhoc" value="2025-2026">
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="form-grid">
+      <div class="field">
+        <label>Loại báo cáo</label>
+        <div class="radio-group" id="radioGroup">
+          <label id="lbl_tuan" class="active" onclick="setLoai('tuan')">
+            <input type="radio" name="loai" value="tuan" checked>
+            <span>📅 Tuần</span>
+          </label>
+          <label id="lbl_thang" onclick="setLoai('thang')">
+            <input type="radio" name="loai" value="thang">
+            <span>🗓️ Tháng</span>
+          </label>
+        </div>
+      </div>
+      <div class="field">
+        <label for="so_thu" id="label_sothu">Tuần thứ</label>
+        <input type="number" id="so_thu" min="1" max="52" placeholder="Số thứ tự">
+      </div>
+      <div class="field span2">
+        <label>Khoảng thời gian</label>
+        <div class="date-range">
+          <input type="date" id="tu_ngay">
+          <span class="sep">→</span>
+          <input type="date" id="den_ngay">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- I. SĨ SỐ -->
+  <div class="panel">
+    <div class="panel-title"><span class="num">I</span> Sĩ số</div>
+    <div class="form-grid cols-4">
+      <div class="field">
+        <label for="tong_hs">Tổng HS</label>
+        <input type="number" id="tong_hs" min="0" placeholder="0">
+      </div>
+      <div class="field">
+        <label for="vang_phep">Vắng có phép</label>
+        <input type="number" id="vang_phep" min="0" value="0">
+      </div>
+      <div class="field">
+        <label for="vang_kphep">Vắng không phép</label>
+        <input type="number" id="vang_kphep" min="0" value="0">
+      </div>
+      <div class="field">
+        <label for="muon">Đi muộn</label>
+        <input type="number" id="muon" min="0" value="0">
+      </div>
+    </div>
+  </div>
+
+  <!-- II. NỀ NẾP -->
+  <div class="panel">
+    <div class="panel-title"><span class="num">II</span> Nề nếp</div>
+    <div class="form-grid cols-1">
+      <div class="field">
+        <label for="nenep_uu">Ưu điểm</label>
+        <textarea id="nenep_uu" rows="3" placeholder="Những điểm tích cực về nề nếp của lớp..."></textarea>
+      </div>
+      <div class="field">
+        <label for="nenep_ton">Tồn tại / Hạn chế</label>
+        <textarea id="nenep_ton" rows="3" placeholder="Những vấn đề nề nếp cần khắc phục..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- III. HỌC TẬP -->
+  <div class="panel">
+    <div class="panel-title"><span class="num">III</span> Học tập</div>
+    <div class="form-grid cols-1">
+      <div class="field">
+        <label for="hoctap_uu">Ưu điểm</label>
+        <textarea id="hoctap_uu" rows="3" placeholder="Thành tích học tập nổi bật, HS tích cực..."></textarea>
+      </div>
+      <div class="field">
+        <label for="hoctap_ton">Tồn tại / Hạn chế</label>
+        <textarea id="hoctap_ton" rows="3" placeholder="Khó khăn, hạn chế trong học tập..."></textarea>
+      </div>
+      <div class="field">
+        <label for="hs_quantam">Học sinh cần quan tâm</label>
+        <textarea id="hs_quantam" rows="3" placeholder="Họ tên – Lý do (mỗi HS một dòng)"></textarea>
+        <span class="hint">Ví dụ: Nguyễn Văn A – Học lực yếu môn Toán, hay nghỉ học</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- IV. PHONG TRÀO -->
+  <div class="panel">
+    <div class="panel-title"><span class="num">IV</span> Hoạt động phong trào</div>
+    <div class="form-grid cols-1">
+      <div class="field">
+        <label for="phong_trao">Nội dung hoạt động</label>
+        <textarea id="phong_trao" rows="4" placeholder="Các hoạt động ngoại khóa, phong trào thi đua, văn nghệ, thể thao..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- V. PHƯƠNG HƯỚNG -->
+  <div class="panel">
+    <div class="panel-title" id="phuong_huong_title"><span class="num">V</span> Phương hướng tuần tới</div>
+    <div class="form-grid cols-1">
+      <div class="field">
+        <label for="phuong_huong">Nội dung</label>
+        <textarea id="phuong_huong" rows="4" placeholder="Kế hoạch, mục tiêu và phương hướng công tác chủ nhiệm cho tuần/tháng tiếp theo..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- KHEN THƯỞNG / KỶ LUẬT -->
+  <div class="panel">
+    <div class="panel-title">
+      🏅 Khen thưởng / Kỷ luật
+      <span style="font-size:11px;font-weight:400;color:var(--text-muted);margin-left:4px;">(không bắt buộc)</span>
+    </div>
+    <div class="form-grid cols-1">
+      <div class="field">
+        <label for="khen_kyluat">Nội dung</label>
+        <textarea id="khen_kyluat" rows="3" placeholder="HS được khen thưởng hoặc bị kỷ luật trong tuần/tháng (nếu có)..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTION BAR -->
+  <div class="action-bar">
+    <button class="btn btn-outline" onclick="xemTruoc()">👁️ Xem trước</button>
+    <button class="btn btn-primary" onclick="xuatWord()">📄 Xuất Word (.docx)</button>
+    <div style="flex:1"></div>
+    <button class="btn btn-danger" onclick="lamMoi()">🗑️ Làm mới</button>
+  </div>
+
+</div>
+
+<!-- MODAL XEM TRƯỚC -->
+<div class="modal-overlay" id="previewModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>👁️ Xem trước báo cáo</h2>
+      <button class="modal-close" onclick="closeModal()" title="Đóng">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="preview-doc" id="previewContent"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Đóng</button>
+      <button class="btn btn-primary" onclick="xuatWord()">📄 Xuất Word</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ────────────────────────────────────────
+// STATE
+// ────────────────────────────────────────
+const SESSION_KEY = 'baocao_cn_v1';
+let currentLoai = 'tuan';
+
+// ────────────────────────────────────────
+// SESSION MEMORY (basic info only)
+// ────────────────────────────────────────
+const BASIC_IDS = ['truong', 'gvcn', 'lop', 'namhoc', 'so_thu', 'tu_ngay', 'den_ngay'];
+
+function saveBasic() {
+  const data = { loai: currentLoai };
+  BASIC_IDS.forEach(id => { data[id] = document.getElementById(id).value; });
+  try { sessionStorage.setItem(SESSION_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function loadBasic() {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    BASIC_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && data[id] !== undefined) el.value = data[id];
+    });
+    if (data.loai) setLoai(data.loai, true);
+  } catch(e) {}
+}
+
+BASIC_IDS.forEach(id => {
+  document.getElementById(id)?.addEventListener('input', saveBasic);
+});
+
+// ────────────────────────────────────────
+// LOAI TOGGLE
+// ────────────────────────────────────────
+function setLoai(val, noSave) {
+  currentLoai = val;
+  document.getElementById('lbl_tuan').classList.toggle('active', val === 'tuan');
+  document.getElementById('lbl_thang').classList.toggle('active', val === 'thang');
+  document.querySelector(`input[name="loai"][value="${val}"]`).checked = true;
+
+  const isTuan = val === 'tuan';
+  document.getElementById('label_sothu').textContent = isTuan ? 'Tuần thứ' : 'Tháng thứ';
+  document.getElementById('so_thu').max = isTuan ? 52 : 12;
+  document.getElementById('so_thu').placeholder = isTuan ? 'Số tuần' : 'Số tháng';
+  document.getElementById('phuong_huong_title').innerHTML =
+    `<span class="num">V</span> Phương hướng ${isTuan ? 'tuần' : 'tháng'} tới`;
+  if (!noSave) saveBasic();
+}
+
+// ────────────────────────────────────────
+// HELPERS
+// ────────────────────────────────────────
+function v(id) { return (document.getElementById(id)?.value || '').trim(); }
+
+function formatDate(s) {
+  if (!s) return '';
+  const [y, m, d] = s.split('-');
+  return `${d}/${m}/${y}`;
+}
+function formatShort(s) {
+  if (!s) return '';
+  const [y, m, d] = s.split('-');
+  return `${d}/${m}`;
+}
+function todayVN() {
+  const n = new Date();
+  return `ngày ${n.getDate()} tháng ${n.getMonth()+1} năm ${n.getFullYear()}`;
+}
+
+function showToast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isErr ? ' error' : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.className = 'toast'; }, 3400);
+}
+
+function closeModal() {
+  document.getElementById('previewModal').classList.remove('open');
+}
+document.getElementById('previewModal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) closeModal();
+});
+
+// ────────────────────────────────────────
+// BUILD TEXT
+// ────────────────────────────────────────
+function getPeriodLabel() {
+  const loaiStr = currentLoai === 'tuan' ? 'Tuần' : 'Tháng';
+  let label = loaiStr;
+  const num = v('so_thu');
+  if (num) label += ` ${num}`;
+  const t = v('tu_ngay'), d = v('den_ngay');
+  if (t && d) label += ` (${formatShort(t)} - ${formatDate(d)})`;
+  else if (t) label += ` (từ ${formatDate(t)})`;
+  return label;
+}
+
+function buildText() {
+  const isTuan = currentLoai === 'tuan';
+  const phuongLabel = isTuan ? 'TUẦN TỚI' : 'THÁNG TỚI';
+  const lop = v('lop') || '...';
+  const gvcn = v('gvcn') || '...';
+  const truong = v('truong') || 'THCS Long Thọ';
+  const namhoc = v('namhoc') || '2025-2026';
+
+  const siso = `Tổng ${v('tong_hs')||'0'} HS. Vắng có phép: ${v('vang_phep')||'0'}, không phép: ${v('vang_kphep')||'0'}, đi muộn: ${v('muon')||'0'}.`;
+
+  const lines = [];
+  lines.push(`TRƯỜNG ${truong.toUpperCase()}`);
+  lines.push('');
+  lines.push('         BÁO CÁO CÔNG TÁC CHỦ NHIỆM');
+  lines.push(`              ${getPeriodLabel()}`);
+  lines.push(`         Lớp: ${lop}  -  GVCN: ${gvcn}`);
+  lines.push(`         Năm học: ${namhoc}`);
+  lines.push('');
+  lines.push('─'.repeat(58));
+  lines.push('');
+  lines.push('I. SĨ SỐ');
+  lines.push(`    ${siso}`);
+  lines.push('');
+  lines.push('II. NỀ NẾP');
+  lines.push(`    - Ưu điểm: ${v('nenep_uu') || '(chưa nhập)'}`);
+  lines.push(`    - Tồn tại: ${v('nenep_ton') || '(chưa nhập)'}`);
+  lines.push('');
+  lines.push('III. HỌC TẬP');
+  lines.push(`    - Ưu điểm: ${v('hoctap_uu') || '(chưa nhập)'}`);
+  lines.push(`    - Tồn tại: ${v('hoctap_ton') || '(chưa nhập)'}`);
+  const qt = v('hs_quantam');
+  if (qt) {
+    lines.push('    - Học sinh cần quan tâm:');
+    qt.split('\n').forEach(l => { if (l.trim()) lines.push(`        • ${l.trim()}`); });
+  }
+  lines.push('');
+  lines.push('IV. HOẠT ĐỘNG PHONG TRÀO');
+  lines.push(`    ${v('phong_trao') || '(chưa nhập)'}`);
+  lines.push('');
+  lines.push(`V. PHƯƠNG HƯỚNG ${phuongLabel}`);
+  lines.push(`    ${v('phuong_huong') || '(chưa nhập)'}`);
+  const kk = v('khen_kyluat');
+  if (kk) {
+    lines.push('');
+    lines.push('VI. KHEN THƯỞNG / KỶ LUẬT');
+    lines.push(`    ${kk}`);
+  }
+  lines.push('');
+  lines.push('─'.repeat(58));
+  lines.push('');
+  lines.push(`                     Long Thọ, ${todayVN()}`);
+  lines.push('                     Giáo viên chủ nhiệm');
+  lines.push('');
+  lines.push('                         (Ký tên)');
+  lines.push('');
+  lines.push('');
+  lines.push(`                     ${gvcn}`);
+
+  return lines.join('\n');
+}
+
+// ────────────────────────────────────────
+// XEM TRƯỚC
+// ────────────────────────────────────────
+function xemTruoc() {
+  document.getElementById('previewContent').textContent = buildText();
+  document.getElementById('previewModal').classList.add('open');
+}
+
+// ────────────────────────────────────────
+// XUẤT WORD
+// ────────────────────────────────────────
+async function xuatWord() {
+  if (typeof docx === 'undefined') {
+    showToast('Thư viện chưa tải xong, vui lòng chờ và thử lại...', true);
+    return;
+  }
+
+  const { Document, Paragraph, TextRun, AlignmentType, Packer } = docx;
+
+  const isTuan = currentLoai === 'tuan';
+  const phuongLabel = isTuan ? 'tuần tới' : 'tháng tới';
+  const truong = v('truong') || 'THCS Long Thọ';
+  const gvcn = v('gvcn') || '';
+  const lop = v('lop') || '';
+  const namhoc = v('namhoc') || '2025-2026';
+
+  // Helper: create a Times New Roman TextRun
+  const TR = (text, opts = {}) => new TextRun({
+    text,
+    font: 'Times New Roman',
+    size: opts.size || 26,
+    bold: opts.bold || false,
+    italics: opts.italics || false,
+  });
+
+  // Helper: paragraph
+  const P = (runs, align, spaceBefore, spaceAfter) => new Paragraph({
+    children: Array.isArray(runs) ? runs : [runs],
+    alignment: align || AlignmentType.LEFT,
+    spacing: { before: spaceBefore || 0, after: spaceAfter !== undefined ? spaceAfter : 100 },
+  });
+
+  const EMPTY = () => P([TR('')], AlignmentType.LEFT, 0, 60);
+
+  const SECTION_TITLE = (num, title) => P(
+    [TR(`${num}. ${title}`, { bold: true })],
+    AlignmentType.LEFT, 180, 80
+  );
+
+  const INDENT = (text, level = 1) => P(
+    [TR('    '.repeat(level) + text)],
+    AlignmentType.LEFT, 0, 80
+  );
+
+  const multilineIndent = (text, level = 1) => {
+    if (!text) return [INDENT('(chưa nhập)', level)];
+    return text.split('\n').map(line => INDENT(line || '', level));
+  };
+
+  const children = [];
+
+  // Institution header
+  children.push(P([TR(`TRƯỜNG ${truong.toUpperCase()}`, { bold: true, size: 24 })], AlignmentType.CENTER, 0, 140));
+
+  // Report title
+  children.push(P([TR('BÁO CÁO CÔNG TÁC CHỦ NHIỆM', { bold: true, size: 30 })], AlignmentType.CENTER, 0, 60));
+  children.push(P([TR(getPeriodLabel(), { italics: true })], AlignmentType.CENTER, 0, 60));
+  children.push(P([TR(`Lớp: ${lop || '...'} - GVCN: ${gvcn || '...'}`)], AlignmentType.CENTER, 0, 60));
+  children.push(P([TR(`Năm học: ${namhoc}`)], AlignmentType.CENTER, 0, 180));
+
+  // I. SĨ SỐ
+  children.push(SECTION_TITLE('I', 'SĨ SỐ'));
+  const siso = `Tổng ${v('tong_hs')||'0'} học sinh. Vắng có phép: ${v('vang_phep')||'0'}, không phép: ${v('vang_kphep')||'0'}, đi muộn: ${v('muon')||'0'}.`;
+  children.push(INDENT(siso));
+
+  // II. NỀ NẾP
+  children.push(SECTION_TITLE('II', 'NỀ NẾP'));
+  children.push(INDENT(`- Ưu điểm: ${v('nenep_uu') || ''}`));
+  children.push(INDENT(`- Tồn tại: ${v('nenep_ton') || ''}`));
+
+  // III. HỌC TẬP
+  children.push(SECTION_TITLE('III', 'HỌC TẬP'));
+  children.push(INDENT(`- Ưu điểm: ${v('hoctap_uu') || ''}`));
+  children.push(INDENT(`- Tồn tại: ${v('hoctap_ton') || ''}`));
+  const qt = v('hs_quantam');
+  if (qt) {
+    children.push(INDENT('- Học sinh cần quan tâm:'));
+    qt.split('\n').forEach(line => {
+      if (line.trim()) children.push(INDENT(`• ${line.trim()}`, 2));
+    });
+  }
+
+  // IV. PHONG TRÀO
+  children.push(SECTION_TITLE('IV', 'HOẠT ĐỘNG PHONG TRÀO'));
+  multilineIndent(v('phong_trao')).forEach(p => children.push(p));
+
+  // V. PHƯƠNG HƯỚNG
+  children.push(SECTION_TITLE('V', `PHƯƠNG HƯỚNG ${phuongLabel.toUpperCase()}`));
+  multilineIndent(v('phuong_huong')).forEach(p => children.push(p));
+
+  // VI. KHEN THƯỞNG (optional)
+  const kk = v('khen_kyluat');
+  if (kk) {
+    children.push(SECTION_TITLE('VI', 'KHEN THƯỞNG / KỶ LUẬT'));
+    multilineIndent(kk).forEach(p => children.push(p));
+  }
+
+  // Signature
+  children.push(EMPTY());
+  children.push(EMPTY());
+  children.push(P([TR(`Long Thọ, ${todayVN()}`)], AlignmentType.RIGHT, 0, 60));
+  children.push(P([TR('Giáo viên chủ nhiệm', { bold: true })], AlignmentType.RIGHT, 0, 200));
+  children.push(P([TR('(Ký, ghi rõ họ tên)', { italics: true, size: 24 })], AlignmentType.RIGHT, 0, 260));
+  children.push(P([TR(gvcn, { bold: true })], AlignmentType.RIGHT, 0, 60));
+
+  try {
+    const doc = new Document({
+      sections: [{
+        properties: {
+          page: {
+            margin: { top: 1134, bottom: 1134, left: 1701, right: 1134 },
+          },
+        },
+        children,
+      }],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    const suffix = v('so_thu') ? `${isTuan ? 'Tuan' : 'Thang'}${v('so_thu')}` : (isTuan ? 'Tuan' : 'Thang');
+    saveAs(blob, `BaoCaoChuNhiem_Lop${lop || 'X'}_${suffix}.docx`);
+    showToast('✅ Xuất file Word thành công!');
+    closeModal();
+  } catch(err) {
+    console.error(err);
+    showToast('❌ Lỗi tạo file: ' + err.message, true);
+  }
+}
+
+// ────────────────────────────────────────
+// LÀM MỚI
+// ────────────────────────────────────────
+function lamMoi() {
+  if (!confirm('Xóa toàn bộ nội dung đã nhập?\n(Thông tin cơ bản — trường, GVCN, lớp — sẽ được giữ lại.)')) return;
+
+  const contentFields = [
+    'vang_phep','vang_kphep','muon',
+    'nenep_uu','nenep_ton',
+    'hoctap_uu','hoctap_ton','hs_quantam',
+    'phong_trao','phuong_huong','khen_kyluat',
+  ];
+  document.getElementById('tong_hs').value = '';
+  contentFields.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = (el.type === 'number') ? '0' : '';
+  });
+  showToast('🔄 Đã làm mới nội dung.');
+}
+
+// ────────────────────────────────────────
+// INIT
+// ────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  loadBasic();
+});
+</script>
+</body>
+</html>

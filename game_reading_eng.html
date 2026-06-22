@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Đọc Hiểu Tương Tác – Tiếng Anh</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:#0f172a;color:#e2e8f0;font-family:'Segoe UI',sans-serif;min-height:100vh;}
+header{background:#1e293b;padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #334155;}
+header h1{font-size:1.1rem;color:#38bdf8;}
+.badge{background:#0ea5e9;color:#fff;border-radius:6px;padding:2px 8px;font-size:.75rem;}
+/* passage selector */
+#selector{padding:16px;}
+#selector h2{color:#94a3b8;font-size:.85rem;margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em;}
+.pass-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:14px;margin-bottom:10px;cursor:pointer;transition:border-color .2s,transform .15s;}
+.pass-card:active{transform:scale(.98);}
+.pass-card:hover{border-color:#38bdf8;}
+.pass-card h3{font-size:1rem;color:#e2e8f0;margin-bottom:4px;}
+.pass-card p{font-size:.8rem;color:#64748b;}
+.pass-meta{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.pass-meta span{font-size:.72rem;padding:2px 8px;border-radius:99px;background:#0f172a;color:#94a3b8;}
+.diff-easy{color:#22c55e!important;border:1px solid #22c55e33;}
+.diff-med{color:#f59e0b!important;border:1px solid #f59e0b33;}
+.diff-hard{color:#ef4444!important;border:1px solid #ef444433;}
+
+/* reading page */
+#readPage{display:none;padding:16px;}
+#readTitle{font-size:1.1rem;color:#38bdf8;margin-bottom:4px;}
+#readMeta{font-size:.78rem;color:#64748b;margin-bottom:14px;}
+.passage-wrap{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:14px;line-height:2;margin-bottom:14px;font-size:.95rem;}
+.tw{cursor:pointer;border-radius:3px;padding:1px 2px;transition:background .15s;}
+.tw:hover{background:#334155;}
+.tw.hl{background:#0ea5e9;color:#fff;border-radius:3px;}
+.tw.vocab{border-bottom:2px dotted #f59e0b;}
+
+/* popup */
+#popup{position:fixed;bottom:0;left:0;right:0;background:#1e293b;border-top:2px solid #0ea5e9;border-radius:16px 16px 0 0;padding:18px;transform:translateY(100%);transition:transform .3s;z-index:100;max-height:60vh;overflow-y:auto;}
+#popup.open{transform:translateY(0);}
+#popWord{font-size:1.3rem;font-weight:700;color:#38bdf8;margin-bottom:4px;}
+#popPron{font-size:.9rem;color:#94a3b8;margin-bottom:8px;}
+#popMeaning{font-size:.95rem;color:#e2e8f0;margin-bottom:8px;}
+#popEx{font-size:.85rem;color:#64748b;font-style:italic;margin-bottom:10px;}
+#popClose{background:#334155;border:none;color:#e2e8f0;border-radius:8px;padding:8px 20px;font-size:.9rem;cursor:pointer;width:100%;}
+.play-btn{background:#0ea5e9;border:none;color:#fff;border-radius:8px;padding:6px 14px;font-size:.82rem;cursor:pointer;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+
+/* tab bar */
+.tab-bar{display:flex;gap:8px;margin-bottom:14px;}
+.tab-btn{flex:1;padding:10px;border:1px solid #334155;background:#1e293b;color:#94a3b8;border-radius:8px;font-size:.85rem;cursor:pointer;transition:all .2s;}
+.tab-btn.active{background:#0ea5e9;color:#fff;border-color:#0ea5e9;}
+
+/* quiz section */
+#quizSection{display:none;}
+.q-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:14px;margin-bottom:12px;}
+.q-card .q-text{font-size:.9rem;color:#e2e8f0;margin-bottom:10px;line-height:1.5;}
+.q-opt{width:100%;padding:10px 12px;border:1px solid #334155;background:#0f172a;color:#e2e8f0;border-radius:8px;text-align:left;font-size:.85rem;cursor:pointer;margin-bottom:6px;transition:all .2s;}
+.q-opt:disabled{opacity:.7;cursor:default;}
+.q-opt.correct{background:#14532d;border-color:#22c55e;color:#bbf7d0;}
+.q-opt.wrong{background:#450a0a;border-color:#ef4444;color:#fca5a5;}
+.q-expl{font-size:.8rem;color:#94a3b8;margin-top:8px;display:none;padding:8px;background:#0f172a;border-radius:6px;line-height:1.5;}
+.q-expl.show{display:block;}
+
+/* vocab list */
+#vocabSection{display:none;}
+.vocab-item{background:#1e293b;border:1px solid #334155;border-radius:10px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.vocab-word{font-size:1rem;font-weight:600;color:#38bdf8;}
+.vocab-pron{font-size:.78rem;color:#64748b;margin-top:2px;}
+.vocab-meaning{font-size:.85rem;color:#e2e8f0;text-align:right;}
+.play-sm{background:#0ea5e9;border:none;color:#fff;border-radius:6px;padding:4px 10px;font-size:.75rem;cursor:pointer;}
+
+/* score */
+#scoreBar{background:#1e293b;border-radius:10px;padding:12px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+#scoreText{font-size:.9rem;color:#94a3b8;}
+#scoreNum{font-size:1.2rem;font-weight:700;color:#38bdf8;}
+.back-btn{background:#334155;border:none;color:#e2e8f0;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:.85rem;}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>📖 Đọc Hiểu Tương Tác</h1>
+  </div>
+  <span class="badge">Mô phỏng</span>
+</header>
+
+<!-- Passage Selector -->
+<div id="selector">
+  <h2>Chọn bài đọc</h2>
+</div>
+
+<!-- Reading Page -->
+<div id="readPage">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+    <button class="back-btn" onclick="goBack()">← Quay lại</button>
+    <div>
+      <div id="readTitle"></div>
+      <div id="readMeta"></div>
+    </div>
+  </div>
+  <div id="scoreBar">
+    <span id="scoreText">Điểm quiz</span>
+    <span id="scoreNum" id="scoreNum">—</span>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="showTab('read')">📖 Đọc</button>
+    <button class="tab-btn" onclick="showTab('vocab')">📚 Từ vựng</button>
+    <button class="tab-btn" onclick="showTab('quiz')">🎯 Quiz</button>
+  </div>
+  <!-- Read tab -->
+  <div id="readSection">
+    <div class="passage-wrap" id="passageWrap"></div>
+    <p style="font-size:.78rem;color:#64748b;text-align:center;">💡 Nhấn vào từ được gạch chân để xem nghĩa và nghe phát âm</p>
+  </div>
+  <!-- Vocab tab -->
+  <div id="vocabSection"></div>
+  <!-- Quiz tab -->
+  <div id="quizSection"></div>
+</div>
+
+<!-- Word popup -->
+<div id="popup">
+  <div id="popWord"></div>
+  <div id="popPron"></div>
+  <button class="play-btn" id="playPopBtn">🔊 Nghe phát âm</button>
+  <div id="popMeaning"></div>
+  <div id="popEx"></div>
+  <button id="popClose" onclick="closePopup()">Đóng ✕</button>
+</div>
+<div id="overlay" style="position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;z-index:99;transition:opacity .3s;" onclick="closePopup()"></div>
+
+<script>
+// ── PASSAGE DATA ──────────────────────────────────────────────────────────────
+const PASSAGES = [
+  {
+    id:0,
+    title:'My School Day',
+    topic:'Cuộc sống hàng ngày',
+    level:'Lớp 6',
+    diff:'easy',
+    words:200,
+    text:`Every morning, I wake up at six o'clock. I wash my face, brush my teeth, and get dressed quickly. My mother prepares breakfast for me. Usually, she makes rice with eggs or bread with butter. After breakfast, I ride my bicycle to school. My school is not very far from my house.
+
+At school, I study many subjects such as Maths, English, Literature, and Science. My favourite subject is English because I love learning new words and talking with my friends. Our English teacher, Ms. Lan, always teaches us interesting lessons with songs and games.
+
+At lunchtime, I eat at the school canteen with my classmates. We often talk about our lessons and share funny stories. In the afternoon, we have more classes until four o'clock. After school, I go home and do my homework. Then I help my mother cook dinner.
+
+In the evening, I read books or watch educational videos on the tablet. I try to learn at least five new English words every day. Before sleeping, I review the vocabulary I learned that day. I think studying English is very important for my future.`,
+    vocab:[
+      {w:'wake up',p:'/weɪk ʌp/',m:'thức dậy',ex:'I wake up at six o\'clock every morning.'},
+      {w:'prepare',p:'/prɪˈpeə/',m:'chuẩn bị',ex:'My mother prepares breakfast for me.'},
+      {w:'subject',p:'/ˈsʌbdʒɪkt/',m:'môn học',ex:'I study many subjects at school.'},
+      {w:'favourite',p:'/ˈfeɪvərɪt/',m:'yêu thích nhất',ex:'My favourite subject is English.'},
+      {w:'interesting',p:'/ˈɪntrəstɪŋ/',m:'thú vị',ex:'She always teaches us interesting lessons.'},
+      {w:'canteen',p:'/kænˈtiːn/',m:'căng-tin, nhà ăn',ex:'I eat at the school canteen.'},
+      {w:'classmate',p:'/ˈklɑːsmeɪt/',m:'bạn cùng lớp',ex:'I talk with my classmates at lunch.'},
+      {w:'educational',p:'/ˌedjuˈkeɪʃənl/',m:'có tính giáo dục',ex:'I watch educational videos on the tablet.'},
+      {w:'vocabulary',p:'/vəˈkæbjələri/',m:'từ vựng',ex:'I review the vocabulary I learned that day.'},
+      {w:'important',p:'/ɪmˈpɔːtnt/',m:'quan trọng',ex:'Studying English is very important.'},
+    ],
+    questions:[
+      {q:'What time does the narrator wake up every morning?',opts:['Five o\'clock','Six o\'clock','Seven o\'clock','Eight o\'clock'],ans:1,expl:'The text says "I wake up at six o\'clock."'},
+      {q:'How does the narrator get to school?',opts:['By bus','On foot','By bicycle','By motorbike'],ans:2,expl:'The text says "I ride my bicycle to school."'},
+      {q:'What is the narrator\'s favourite subject?',opts:['Maths','Literature','Science','English'],ans:3,expl:'The text clearly states "My favourite subject is English."'},
+      {q:'Where does the narrator eat at lunchtime?',opts:['At home','At a restaurant','At the school canteen','In the classroom'],ans:2,expl:'"I eat at the school canteen with my classmates."'},
+      {q:'How many new English words does the narrator try to learn each day?',opts:['Three','Four','Five','Ten'],ans:2,expl:'"I try to learn at least five new English words every day."'},
+    ]
+  },
+  {
+    id:1,
+    title:'Amazing Animals',
+    topic:'Thế giới động vật',
+    level:'Lớp 7',
+    diff:'med',
+    words:220,
+    text:`The animal kingdom is full of incredible creatures. From the tiny ant to the enormous blue whale, animals have adapted to live in almost every environment on Earth. Scientists have discovered over one million species of animals, and there are many more waiting to be found.
+
+Dolphins are among the most intelligent animals in the ocean. They communicate with each other using a system of clicks and whistles. Dolphins live in groups called pods, and they help each other when one member is sick or injured. They can even recognise themselves in mirrors, which shows a high level of self-awareness.
+
+Elephants are the largest land animals and are known for their excellent memory. They can remember water sources and migration routes for many years. When an elephant in the herd dies, the others stand quietly around the body, showing what appears to be grief. Baby elephants are cared for by the entire herd, not just their mothers.
+
+Birds are remarkable for their ability to navigate during migration. Some species travel thousands of kilometres each year between their summer and winter homes. The Arctic tern holds the record for the longest migration, travelling from the Arctic to Antarctica and back each year — a journey of about 70,000 kilometres.
+
+Animals continue to amaze scientists and ordinary people alike. Protecting wildlife and their habitats is essential to maintaining the balance of nature.`,
+    vocab:[
+      {w:'incredible',p:'/ɪnˈkredɪbl/',m:'đáng kinh ngạc',ex:'The animal kingdom is full of incredible creatures.'},
+      {w:'adapt',p:'/əˈdæpt/',m:'thích nghi',ex:'Animals have adapted to live in every environment.'},
+      {w:'species',p:'/ˈspiːʃiːz/',m:'loài (sinh vật)',ex:'Scientists have discovered over one million species.'},
+      {w:'intelligent',p:'/ɪnˈtelɪdʒənt/',m:'thông minh',ex:'Dolphins are among the most intelligent animals.'},
+      {w:'communicate',p:'/kəˈmjuːnɪkeɪt/',m:'giao tiếp',ex:'They communicate using clicks and whistles.'},
+      {w:'self-awareness',p:'/self əˈweənɪs/',m:'tự nhận thức',ex:'Dolphins show a high level of self-awareness.'},
+      {w:'migration',p:'/maɪˈɡreɪʃn/',m:'sự di cư',ex:'Birds are remarkable for their ability to navigate during migration.'},
+      {w:'habitat',p:'/ˈhæbɪtæt/',m:'môi trường sống',ex:'Protecting wildlife and their habitats is essential.'},
+      {w:'grief',p:'/ɡriːf/',m:'nỗi đau buồn',ex:'The elephants show what appears to be grief.'},
+      {w:'remarkable',p:'/rɪˈmɑːkəbl/',m:'đáng chú ý, xuất sắc',ex:'Birds are remarkable for their ability to navigate.'},
+    ],
+    questions:[
+      {q:'How do dolphins communicate with each other?',opts:['By using body language','By making clicks and whistles','By changing colour','By swimming in patterns'],ans:1,expl:'"They communicate with each other using a system of clicks and whistles."'},
+      {q:'What is special about elephants\' memory?',opts:['They can remember faces','They can count numbers','They remember water sources and routes for years','They can learn human language'],ans:2,expl:'"They can remember water sources and migration routes for many years."'},
+      {q:'Which animal holds the record for the longest migration?',opts:['The eagle','The salmon','The monarch butterfly','The Arctic tern'],ans:3,expl:'"The Arctic tern holds the record for the longest migration."'},
+      {q:'How far does the Arctic tern travel each year?',opts:['7,000 km','35,000 km','70,000 km','100,000 km'],ans:2,expl:'"...a journey of about 70,000 kilometres."'},
+      {q:'According to the text, what happens when an elephant in the herd dies?',opts:['The herd moves away quickly','The others stand quietly around the body','Baby elephants are separated from the herd','Scientists come to study'],ans:1,expl:'"The others stand quietly around the body, showing what appears to be grief."'},
+    ]
+  },
+  {
+    id:2,
+    title:'Technology in Our Lives',
+    topic:'Công nghệ',
+    level:'Lớp 8',
+    diff:'hard',
+    words:240,
+    text:`Technology has transformed the way we live, work, and communicate. Over the past two decades, the internet has connected billions of people across the globe, making it possible to share information instantly. Today, smartphones have become essential tools that most people rely on for almost every aspect of daily life.
+
+Social media platforms such as Facebook, Instagram, and TikTok have changed how people interact. People can share photos, videos, and opinions with thousands of followers in seconds. While this has made communication faster and more convenient, it has also raised concerns about privacy, mental health, and the spread of misinformation.
+
+Artificial intelligence, or AI, is one of the most exciting developments in modern technology. AI systems can now perform tasks that were once thought to be exclusively human, such as recognising speech, translating languages, and diagnosing medical conditions. In education, AI tools can personalise learning by adapting to each student's pace and ability.
+
+However, technology also brings challenges. Cybercrime has increased significantly as more people and organisations store sensitive information online. Young people, in particular, need to develop strong digital literacy skills to use technology safely and responsibly.
+
+Looking ahead, technologies such as renewable energy systems, electric vehicles, and smart cities promise to address some of the world's biggest problems. Whether technology ultimately brings more benefits or harms depends on the choices we make and the values we apply to its development.`,
+    vocab:[
+      {w:'transform',p:'/trænsˈfɔːm/',m:'biến đổi, chuyển hóa',ex:'Technology has transformed the way we live.'},
+      {w:'essential',p:'/ɪˈsenʃl/',m:'thiết yếu, cần thiết',ex:'Smartphones have become essential tools.'},
+      {w:'misinformation',p:'/ˌmɪsɪnfəˈmeɪʃn/',m:'thông tin sai lệch',ex:'It raised concerns about the spread of misinformation.'},
+      {w:'artificial intelligence',p:'/ˌɑːtɪˈfɪʃl ɪnˈtelɪdʒəns/',m:'trí tuệ nhân tạo',ex:'Artificial intelligence is one of the most exciting developments.'},
+      {w:'exclusively',p:'/ɪkˈskluːsɪvli/',m:'dành riêng, hoàn toàn',ex:'Tasks once thought to be exclusively human.'},
+      {w:'diagnose',p:'/ˈdaɪəɡnəʊz/',m:'chẩn đoán (bệnh)',ex:'AI can now diagnose medical conditions.'},
+      {w:'personalise',p:'/ˈpɜːsənəlaɪz/',m:'cá nhân hóa',ex:'AI tools can personalise learning.'},
+      {w:'cybercrime',p:'/ˈsaɪbəkraɪm/',m:'tội phạm mạng',ex:'Cybercrime has increased significantly.'},
+      {w:'digital literacy',p:'/ˈdɪdʒɪtl ˈlɪtərəsi/',m:'kỹ năng số, biết dùng công nghệ',ex:'Young people need to develop digital literacy skills.'},
+      {w:'renewable energy',p:'/rɪˈnjuːəbl ˈenədʒi/',m:'năng lượng tái tạo',ex:'Renewable energy systems promise to address big problems.'},
+    ],
+    questions:[
+      {q:'According to the text, what has the internet done over the past two decades?',opts:['Replaced all traditional jobs','Connected billions of people globally','Made books obsolete','Reduced the number of languages'],ans:1,expl:'"The internet has connected billions of people across the globe."'},
+      {q:'What concern does the text raise about social media?',opts:['It is too expensive','It causes traffic jams','It raises concerns about privacy and misinformation','It slows down the internet'],ans:2,expl:'"It has also raised concerns about privacy, mental health, and the spread of misinformation."'},
+      {q:'Which of the following is NOT mentioned as a task AI can perform?',opts:['Recognising speech','Translating languages','Diagnosing medical conditions','Building physical robots'],ans:3,expl:'The text lists speech recognition, translation, and diagnosis. Building robots is not mentioned.'},
+      {q:'What skill does the text say young people need to develop?',opts:['Social media marketing','Digital literacy','Computer programming','Artificial intelligence design'],ans:1,expl:'"Young people need to develop strong digital literacy skills to use technology safely."'},
+      {q:'What does the text suggest about whether technology brings benefits or harms?',opts:['Technology always brings benefits','Technology always causes harm','It depends on our choices and values','Scientists will decide this'],ans:2,expl:'"Whether technology ultimately brings more benefits or harms depends on the choices we make and the values we apply."'},
+    ]
+  }
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────────────
+let currentPassage = null;
+let quizAnswered = [];
+let quizScore = 0;
+let currentPopItem = null;
+let activeTab = 'read';
+
+// ── AUDIO ──────────────────────────────────────────────────────────────────────
+let audioCtx = null;
+function getAudio(){
+  if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended') audioCtx.resume();
+  return audioCtx;
+}
+function speakWord(word){
+  if('speechSynthesis' in window){
+    const u = new SpeechSynthesisUtterance(word);
+    u.lang = 'en-US'; u.rate=0.85;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  } else {
+    // fallback tone
+    const a = getAudio();
+    const o = a.createOscillator();
+    const g = a.createGain();
+    o.connect(g); g.connect(a.destination);
+    o.frequency.value=440; g.gain.setValueAtTime(.3,a.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001,a.currentTime+.4);
+    o.start(); o.stop(a.currentTime+.4);
+  }
+}
+
+// ── BUILD SELECTOR ────────────────────────────────────────────────────────────
+function buildSelector(){
+  const el = document.getElementById('selector');
+  let h = '<h2>Chọn bài đọc</h2>';
+  PASSAGES.forEach(p=>{
+    h+=`<div class="pass-card" onclick="openPassage(${p.id})">
+      <h3>${p.title}</h3>
+      <p>${p.topic} · ~${p.words} từ</p>
+      <div class="pass-meta">
+        <span class="diff-${p.diff}">${p.diff==='easy'?'Dễ':p.diff==='med'?'Trung bình':'Khó'}</span>
+        <span>${p.level}</span>
+        <span>${p.questions.length} câu hỏi</span>
+        <span>${p.vocab.length} từ vựng</span>
+      </div>
+    </div>`;
+  });
+  el.innerHTML = h;
+}
+
+// ── OPEN PASSAGE ──────────────────────────────────────────────────────────────
+function openPassage(id){
+  currentPassage = PASSAGES[id];
+  quizAnswered = new Array(currentPassage.questions.length).fill(null);
+  quizScore = 0;
+  activeTab = 'read';
+  document.getElementById('selector').style.display='none';
+  document.getElementById('readPage').style.display='block';
+  document.getElementById('readTitle').textContent=currentPassage.title;
+  document.getElementById('readMeta').textContent=currentPassage.topic+' · '+currentPassage.level;
+  document.getElementById('scoreNum').textContent='—';
+  buildPassage();
+  buildVocab();
+  buildQuiz();
+  showTab('read');
+}
+
+function goBack(){
+  document.getElementById('selector').style.display='block';
+  document.getElementById('readPage').style.display='none';
+}
+
+// ── BUILD PASSAGE (tokenise + highlight vocab) ─────────────────────────────
+function buildPassage(){
+  const vocabWords = {};
+  currentPassage.vocab.forEach(v=>{
+    v.w.toLowerCase().split(/\s+/).forEach(ww=>vocabWords[ww]=true);
+  });
+  // tokenise preserving punctuation and newlines
+  const raw = currentPassage.text;
+  const paragraphs = raw.split(/\n\n+/);
+  let html='';
+  paragraphs.forEach(para=>{
+    html+='<p style="margin-bottom:12px;">';
+    // split into tokens (words + spaces + punctuation)
+    const tokens = para.split(/(\s+|[,.!?;:'"\-])/);
+    tokens.forEach(tok=>{
+      if(!tok) return;
+      if(/^\s+$/.test(tok)||/^[,.!?;:'"\-]$/.test(tok)){html+=tok;return;}
+      const clean = tok.toLowerCase().replace(/[^a-z'-]/g,'');
+      const isVocab = vocabWords[clean];
+      // find vocab item if multi-word? we just check single words here
+      const vItem = currentPassage.vocab.find(v=>v.w.toLowerCase()===clean);
+      const cls = 'tw'+(isVocab?' vocab':'');
+      html+=`<span class="${cls}" data-w="${tok.replace(/"/g,'&quot;')}" onclick="wordTap(this)">${tok}</span>`;
+    });
+    html+='</p>';
+  });
+  document.getElementById('passageWrap').innerHTML=html;
+}
+
+// ── WORD TAP ──────────────────────────────────────────────────────────────────
+function wordTap(el){
+  // highlight
+  document.querySelectorAll('.tw.hl').forEach(e=>e.classList.remove('hl'));
+  el.classList.add('hl');
+  const word = el.getAttribute('data-w').replace(/[,.!?;:'"\-]/g,'').trim();
+  // find in vocab
+  const vItem = currentPassage.vocab.find(v=>v.w.toLowerCase()===word.toLowerCase());
+  if(vItem) showPopup(vItem,word);
+  else showPopupSimple(word);
+}
+
+function showPopup(item,word){
+  currentPopItem = item;
+  document.getElementById('popWord').textContent=item.w;
+  document.getElementById('popPron').textContent=item.p;
+  document.getElementById('popMeaning').textContent='🇻🇳 '+item.m;
+  document.getElementById('popEx').textContent='Ví dụ: '+item.ex;
+  document.getElementById('playPopBtn').onclick=()=>speakWord(item.w);
+  openPopup();
+}
+
+function showPopupSimple(word){
+  currentPopItem = {w:word};
+  document.getElementById('popWord').textContent=word;
+  document.getElementById('popPron').textContent='';
+  document.getElementById('popMeaning').textContent='(Không có trong danh sách từ vựng)';
+  document.getElementById('popEx').textContent='';
+  document.getElementById('playPopBtn').onclick=()=>speakWord(word);
+  openPopup();
+}
+
+function openPopup(){
+  document.getElementById('popup').classList.add('open');
+  const ov = document.getElementById('overlay');
+  ov.style.opacity='.4'; ov.style.pointerEvents='auto';
+}
+function closePopup(){
+  document.getElementById('popup').classList.remove('open');
+  const ov = document.getElementById('overlay');
+  ov.style.opacity='0'; ov.style.pointerEvents='none';
+  document.querySelectorAll('.tw.hl').forEach(e=>e.classList.remove('hl'));
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function showTab(tab){
+  activeTab=tab;
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>{
+    b.classList.toggle('active',['read','vocab','quiz'][i]===tab);
+  });
+  document.getElementById('readSection').style.display=tab==='read'?'block':'none';
+  document.getElementById('vocabSection').style.display=tab==='vocab'?'block':'none';
+  document.getElementById('quizSection').style.display=tab==='quiz'?'block':'none';
+}
+
+// ── VOCAB LIST ────────────────────────────────────────────────────────────────
+function buildVocab(){
+  let h='';
+  currentPassage.vocab.forEach((v,i)=>{
+    h+=`<div class="vocab-item">
+      <div>
+        <div class="vocab-word">${v.w}</div>
+        <div class="vocab-pron">${v.p}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        <div class="vocab-meaning">${v.m}</div>
+        <button class="play-sm" onclick="speakWord('${v.w.replace(/'/g,"\\'")}')">🔊 Nghe</button>
+      </div>
+    </div>`;
+  });
+  document.getElementById('vocabSection').innerHTML=h;
+}
+
+// ── QUIZ ──────────────────────────────────────────────────────────────────────
+function buildQuiz(){
+  let h='';
+  currentPassage.questions.forEach((q,qi)=>{
+    h+=`<div class="q-card" id="qcard${qi}">
+      <div class="q-text">Câu ${qi+1}: ${q.q}</div>`;
+    q.opts.forEach((opt,oi)=>{
+      h+=`<button class="q-opt" id="qo${qi}_${oi}" onclick="answerQ(${qi},${oi})">${String.fromCharCode(65+oi)}. ${opt}</button>`;
+    });
+    h+=`<div class="q-expl" id="qexpl${qi}">💡 ${q.expl}</div>
+    </div>`;
+  });
+  document.getElementById('quizSection').innerHTML=h;
+}
+
+function answerQ(qi,oi){
+  if(quizAnswered[qi]!==null) return;
+  quizAnswered[qi]=oi;
+  const correct = currentPassage.questions[qi].ans;
+  for(let i=0;i<currentPassage.questions[qi].opts.length;i++){
+    const btn = document.getElementById(`qo${qi}_${i}`);
+    btn.disabled=true;
+    if(i===correct) btn.classList.add('correct');
+    else if(i===oi) btn.classList.add('wrong');
+  }
+  document.getElementById(`qexpl${qi}`).classList.add('show');
+  if(oi===correct) quizScore++;
+  updateScore();
+}
+
+function updateScore(){
+  const answered = quizAnswered.filter(a=>a!==null).length;
+  const total = currentPassage.questions.length;
+  if(answered===total){
+    document.getElementById('scoreNum').textContent=quizScore+'/'+total;
+    document.getElementById('scoreText').textContent='Kết quả';
+  } else {
+    document.getElementById('scoreNum').textContent=quizScore+'/'+(answered||'?');
+    document.getElementById('scoreText').textContent=answered+' đã trả lời';
+  }
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+buildSelector();
+</script>
+</body>
+</html>
