@@ -47,8 +47,8 @@ canvas{display:block;margin:0 auto}
 </head>
 <body>
 <header>
-  <h1>🪢 HANGMAN</h1>
-  <h2>ENGLISH VOCABULARY</h2>
+  <h1>🍦 ĐỐ TỪ TIẾNG ANH</h1>
+  <h2>ĐOÁN SAI LÀ KEM TAN MẤT THÔI!</h2>
 </header>
 <div class="top-bar">
   <div class="score-box">Đúng: <span id="scoreW">0</span> &nbsp;Sai: <span id="scoreL">0</span></div>
@@ -236,33 +236,110 @@ function playSound(win){
   o.start();o.stop(AC.currentTime+.5);
 }
 
-// Draw hangman
+// Draw ice cream melting (replaces hangman - friendly for students!)
 function drawHangman(step){
   ctx.clearRect(0,0,220,170);
-  ctx.strokeStyle='#94a3b8';ctx.lineWidth=3;ctx.lineCap='round';
-  // Gallows
-  ctx.beginPath();ctx.moveTo(20,160);ctx.lineTo(200,160);ctx.stroke(); // base
-  ctx.beginPath();ctx.moveTo(60,160);ctx.lineTo(60,20);ctx.stroke(); // pole
-  ctx.beginPath();ctx.moveTo(60,20);ctx.lineTo(140,20);ctx.stroke(); // top
-  ctx.beginPath();ctx.moveTo(140,20);ctx.lineTo(140,45);ctx.stroke(); // rope
-  if(step<1)return;
-  // Head
-  ctx.beginPath();ctx.arc(140,60,15,0,Math.PI*2);ctx.strokeStyle='#f87171';ctx.stroke();
-  if(step<2)return;
-  // Body
-  ctx.beginPath();ctx.moveTo(140,75);ctx.lineTo(140,115);ctx.stroke();
-  if(step<3)return;
-  // Left arm
-  ctx.beginPath();ctx.moveTo(140,85);ctx.lineTo(115,100);ctx.stroke();
-  if(step<4)return;
-  // Right arm
-  ctx.beginPath();ctx.moveTo(140,85);ctx.lineTo(165,100);ctx.stroke();
-  if(step<5)return;
-  // Left leg
-  ctx.beginPath();ctx.moveTo(140,115);ctx.lineTo(115,140);ctx.stroke();
-  if(step<6)return;
-  // Right leg
-  ctx.beginPath();ctx.moveTo(140,115);ctx.lineTo(165,140);ctx.stroke();
+  const cx=110, lineW=3;
+  ctx.lineCap='round'; ctx.lineJoin='round';
+
+  // Helper: filled circle
+  function circle(x,y,r,fill,stroke){
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+    if(fill){ctx.fillStyle=fill;ctx.fill();}
+    if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lineW;ctx.stroke();}
+  }
+  // Helper: arc path
+  function arc(x,y,r,a0,a1,fill,stroke){
+    ctx.beginPath();ctx.arc(x,y,r,a0,a1);
+    if(fill){ctx.fillStyle=fill;ctx.fill();}
+    if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lineW;ctx.stroke();}
+  }
+
+  // ── CONE (always visible, may crack at step 5) ──
+  function drawCone(cracked){
+    ctx.beginPath();
+    ctx.moveTo(cx-28,130);ctx.lineTo(cx+28,130);ctx.lineTo(cx,168);ctx.closePath();
+    ctx.fillStyle='#d97706';ctx.fill();
+    ctx.strokeStyle='#92400e';ctx.lineWidth=lineW;ctx.stroke();
+    // waffle lines
+    ctx.strokeStyle='#92400e';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(cx-14,140);ctx.lineTo(cx+14,140);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-7,152);ctx.lineTo(cx+7,152);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-1,140);ctx.lineTo(cx+5,162);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx+10,140);ctx.lineTo(cx+3,162);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx-10,140);ctx.lineTo(cx-4,162);ctx.stroke();
+    if(cracked){
+      ctx.strokeStyle='#fff';ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(cx,130);ctx.lineTo(cx-6,148);ctx.lineTo(cx+2,160);ctx.stroke();
+    }
+  }
+
+  // ── SCOOP 1 – bottom (pink strawberry) ──
+  function scoop1(){ circle(cx,118,22,'#fca5a5','#f43f5e'); }
+  // ── SCOOP 2 – middle (choco) ──
+  function scoop2(){ circle(cx,80,20,'#92400e','#78350f'); }
+  // ── SCOOP 3 – top (mint) ──
+  function scoop3(){ circle(cx,46,18,'#6ee7b7','#059669'); }
+
+  // ── CHERRY on top ──
+  function cherry(){
+    circle(cx,26,6,'#dc2626','#991b1b');
+    ctx.strokeStyle='#16a34a';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(cx,20);ctx.bezierCurveTo(cx+10,10,cx+16,16,cx+10,22);ctx.stroke();
+  }
+
+  // ── FACE on top scoop ──
+  function face(happy){
+    // eyes
+    circle(cx-7,42,2.5,'#1e293b',null);
+    circle(cx+7,42,2.5,'#1e293b',null);
+    if(happy){
+      ctx.beginPath();ctx.arc(cx,50,6,0,Math.PI);ctx.strokeStyle='#1e293b';ctx.lineWidth=2;ctx.stroke();
+    } else {
+      // sad mouth
+      ctx.beginPath();ctx.arc(cx,54,6,Math.PI,0);ctx.strokeStyle='#1e293b';ctx.lineWidth=2;ctx.stroke();
+      // tear
+      ctx.fillStyle='#38bdf8';
+      ctx.beginPath();ctx.ellipse(cx+10,50,3,5,0,0,Math.PI*2);ctx.fill();
+    }
+  }
+
+  // ── DRIP drops ──
+  function drip(x,y){
+    ctx.fillStyle='#fca5a5';
+    ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(x+8,y+10,3,0,Math.PI*2);ctx.fill();
+  }
+
+  // ── MELTED PUDDLE ──
+  function puddle(){
+    ctx.fillStyle='rgba(252,165,165,0.5)';
+    ctx.beginPath();ctx.ellipse(cx,162,44,10,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(146,64,14,0.4)';
+    ctx.beginPath();ctx.ellipse(cx+8,164,30,7,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#1e293b';ctx.font='22px serif';
+    ctx.fillText('😢',cx-12,158);
+  }
+
+  // Render based on step (0=full, 6=all melted)
+  if(step===6){
+    puddle();
+    return;
+  }
+
+  drawCone(step>=5);
+
+  if(step<4) scoop1();
+  else if(step===4){ drip(cx-20,130);drip(cx+15,132); }
+
+  if(step<3) scoop2();
+  else if(step===3){ drip(cx-12,105); }
+
+  if(step<2) scoop3();
+
+  if(step<1){ cherry(); face(true); }
+  else if(step===1){ face(false); }  // cherry gone, sad face
+  else if(step===2){ /* scoop3 gone, show drip */ drip(cx-8,62); }
 }
 
 // Init
