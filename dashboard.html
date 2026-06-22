@@ -895,6 +895,35 @@ body.dark .sd-table tr:hover td{background:#162032;}
 .score-val-mini.red { color:#fca5a5; }
 .score-val-mini.green { color:#6ee7b7; }
 
+/* ── GAME TRACKER PANEL ── */
+.gt-tracker-panel{background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:16px;padding:0;margin-bottom:20px;border:1px solid rgba(56,189,248,.25);overflow:hidden;}
+.gt-tracker-header{padding:12px 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;font-weight:800;font-size:.92rem;color:#38bdf8;}
+.gt-tracker-header:hover{background:rgba(56,189,248,.06);}
+.gt-tracker-body{padding:16px 18px 18px;border-top:1px solid rgba(56,189,248,.15);}
+.gt-tracker-row{margin-bottom:12px;}
+.gt-tracker-row label{display:block;font-size:.78rem;font-weight:700;color:#94a3b8;margin-bottom:5px;}
+.gt-tracker-row input{width:100%;padding:.6rem .9rem;border-radius:9px;border:1.5px solid rgba(56,189,248,.25);background:rgba(15,23,42,.8);color:#f8fafc;font-size:.85rem;box-sizing:border-box;}
+.gt-tracker-row input:focus{outline:none;border-color:#38bdf8;}
+.gt-tracker-hint{font-size:.7rem;color:#475569;margin-top:3px;}
+.gt-tracker-actions{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;}
+.gt-btn-save{padding:.55rem 1.2rem;background:#0ea5e9;border:none;border-radius:8px;color:#fff;font-size:.82rem;font-weight:700;cursor:pointer;}
+.gt-btn-save:hover{background:#0284c7;}
+.gt-btn-sheet{padding:.55rem 1.2rem;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.4);border-radius:8px;color:#10b981;font-size:.82rem;font-weight:700;cursor:pointer;}
+.gt-btn-sheet:hover{background:rgba(16,185,129,.25);}
+.gt-link-badge{display:inline-flex;align-items:center;gap:4px;margin-top:8px;padding:5px 10px;border-radius:7px;background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.3);color:#0ea5e9;font-size:.72rem;font-weight:700;cursor:pointer;transition:all .15s;width:100%;justify-content:center;box-sizing:border-box;}
+.gt-link-badge:hover{background:rgba(14,165,233,.25);border-color:#0ea5e9;}
+#gt-link-modal{position:fixed;inset:0;z-index:999998;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;}
+.gt-link-modal-box{background:#1e293b;border-radius:18px;padding:2rem;max-width:520px;width:92%;box-shadow:0 24px 64px rgba(0,0,0,.5);border:1px solid rgba(56,189,248,.2);}
+.gt-link-modal-title{color:#38bdf8;font-size:1.1rem;font-weight:800;margin-bottom:.3rem;}
+.gt-link-modal-sub{color:#64748b;font-size:.8rem;margin-bottom:1rem;}
+.gt-link-url{width:100%;padding:.65rem .9rem;border-radius:9px;border:1.5px solid rgba(56,189,248,.3);background:#0f172a;color:#94a3b8;font-size:.75rem;box-sizing:border-box;word-break:break-all;resize:none;}
+.gt-modal-actions{display:flex;gap:8px;margin-top:12px;}
+.gt-btn-copy{flex:1;padding:.7rem;background:#0ea5e9;border:none;border-radius:9px;color:#fff;font-weight:800;cursor:pointer;font-size:.9rem;}
+.gt-btn-copy:hover{background:#0284c7;}
+.gt-btn-close-modal{padding:.7rem 1.2rem;background:#1e293b;border:1px solid #334155;border-radius:9px;color:#94a3b8;cursor:pointer;font-size:.85rem;}
+.gt-btn-close-modal:hover{border-color:#64748b;}
+.gt-copy-ok{color:#10b981;font-size:.8rem;margin-top:6px;display:none;text-align:center;font-weight:700;}
+
 </style>
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 </head>
@@ -4889,6 +4918,144 @@ function TC_noiseLoop(){
 }
 
 // GT2 init on page show is handled by existing showPage override below
+
+// ── GAME TRACKER – Link Sharing ──
+(function(){
+  function escH(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+  function gtInitPanel(){
+    const page=document.getElementById('tro-choi');
+    if(!page||document.getElementById('gt-tracker-panel')) return;
+    const scriptUrl=localStorage.getItem('gt_script_url')||'';
+    const sessionName=localStorage.getItem('gt_session_name')||'';
+    const sheetUrl=localStorage.getItem('gt_sheet_url')||'';
+    const panel=document.createElement('div');
+    panel.className='gt-tracker-panel';
+    panel.id='gt-tracker-panel';
+    panel.innerHTML=`
+      <div class="gt-tracker-header" onclick="gtTogglePanel()">
+        <span>🔗 Chia Sẻ Game & Theo Dõi Kết Quả Học Sinh</span>
+        <span id="gt-panel-arrow">▼</span>
+      </div>
+      <div class="gt-tracker-body" id="gt-tracker-body" style="display:none;">
+        <div class="gt-tracker-row">
+          <label>📋 Google Apps Script URL</label>
+          <input type="url" id="gt-script-input" placeholder="https://script.google.com/macros/s/…/exec" value="${escH(scriptUrl)}"/>
+          <div class="gt-tracker-hint">Dán Web App URL sau khi deploy Apps Script (chỉ cần làm 1 lần)</div>
+        </div>
+        <div class="gt-tracker-row">
+          <label>🏷️ Tên Phiên / Lớp</label>
+          <input type="text" id="gt-session-input" placeholder="VD: Lớp 6A1 – 22/06/2026" value="${escH(sessionName)}"/>
+          <div class="gt-tracker-hint">Dùng để phân biệt từng lớp trong Google Sheet kết quả</div>
+        </div>
+        <div class="gt-tracker-row">
+          <label>📊 Google Sheet URL (để xem kết quả)</label>
+          <input type="url" id="gt-sheet-input" placeholder="https://docs.google.com/spreadsheets/d/…" value="${escH(sheetUrl)}"/>
+        </div>
+        <div class="gt-tracker-actions">
+          <button onclick="gtSaveSettings()" class="gt-btn-save">💾 Lưu Cài Đặt</button>
+          <button onclick="gtOpenSheet()" class="gt-btn-sheet">📊 Xem Kết Quả</button>
+        </div>
+        <div id="gt-settings-status" style="font-size:.75rem;color:#10b981;margin-top:8px;display:none;"></div>
+      </div>`;
+    const header=page.querySelector('.tool-hub-header');
+    if(header) header.insertAdjacentElement('afterend',panel);
+    gtInjectLinkBtns();
+  }
+
+  window.gtTogglePanel=function(){
+    const b=document.getElementById('gt-tracker-body');
+    const a=document.getElementById('gt-panel-arrow');
+    if(!b) return;
+    const open=b.style.display!=='none';
+    b.style.display=open?'none':'block';
+    if(a) a.textContent=open?'▼':'▲';
+  };
+
+  window.gtSaveSettings=function(){
+    const s=(document.getElementById('gt-script-input')||{}).value||'';
+    const n=(document.getElementById('gt-session-input')||{}).value||'';
+    const h=(document.getElementById('gt-sheet-input')||{}).value||'';
+    localStorage.setItem('gt_script_url',s.trim());
+    localStorage.setItem('gt_session_name',n.trim());
+    localStorage.setItem('gt_sheet_url',h.trim());
+    const st=document.getElementById('gt-settings-status');
+    if(st){st.style.display='block';st.textContent='✅ Đã lưu!';setTimeout(()=>st.style.display='none',2000);}
+  };
+
+  window.gtOpenSheet=function(){
+    const url=localStorage.getItem('gt_sheet_url')||'';
+    if(!url){alert('Chưa nhập Google Sheet URL.\nHãy điền vào ô "Google Sheet URL" và nhấn Lưu Cài Đặt.');return;}
+    window.open(url,'_blank');
+  };
+
+  function gtInjectLinkBtns(){
+    document.querySelectorAll('#tro-choi .tool-card').forEach(function(card){
+      if(card.querySelector('.gt-link-badge')) return;
+      const oc=card.getAttribute('onclick')||'';
+      const m=oc.match(/window\.open\(['"](game_[^'"]+)['"]/);
+      if(!m) return;
+      const gameFile=m[1];
+      const titleEl=card.querySelector('.tool-card-title');
+      const gameName=titleEl?titleEl.textContent.trim():gameFile;
+      const btn=document.createElement('button');
+      btn.className='gt-link-badge';
+      btn.innerHTML='🔗 Tạo Link Chia Sẻ';
+      btn.title='Tạo link cho học sinh chơi và ghi kết quả';
+      btn.addEventListener('click',function(e){
+        e.stopPropagation();
+        window.gtCreateLink(gameFile,gameName);
+      });
+      card.appendChild(btn);
+    });
+  }
+
+  window.gtCreateLink=function(gameFile,gameName){
+    const script=localStorage.getItem('gt_script_url')||'';
+    const session=localStorage.getItem('gt_session_name')||'';
+    if(!script){alert('⚠️ Chưa có Apps Script URL!\nMở bảng "🔗 Chia Sẻ Game" bên trên và điền URL.');return;}
+    if(!session){alert('⚠️ Chưa có Tên Phiên!\nMở bảng cài đặt và điền tên phiên / lớp.');return;}
+    const base=(window.location.origin+window.location.pathname).replace(/[^/]*$/,'');
+    const url=base+gameFile
+      +'?gt_session='+encodeURIComponent(session)
+      +'&gt_script='+encodeURIComponent(script)
+      +'&gt_game='+encodeURIComponent(gameName);
+    gtShowLinkModal(url,gameName,session);
+  };
+
+  window.gtShowLinkModal=function(url,gameName,session){
+    let modal=document.getElementById('gt-link-modal');
+    if(modal) modal.remove();
+    modal=document.createElement('div');
+    modal.id='gt-link-modal';
+    modal.innerHTML=`
+      <div class="gt-link-modal-box">
+        <div class="gt-link-modal-title">🔗 Link Chia Sẻ – ${escH(gameName)}</div>
+        <div class="gt-link-modal-sub">Phiên: <strong style="color:#38bdf8;">${escH(session)}</strong> · Gửi link này cho học sinh</div>
+        <textarea class="gt-link-url" rows="4" readonly id="gt-link-text">${url}</textarea>
+        <div class="gt-modal-actions">
+          <button class="gt-btn-copy" onclick="gtCopyLink()">📋 Sao Chép Link</button>
+          <button class="gt-btn-close-modal" onclick="document.getElementById('gt-link-modal').remove()">Đóng</button>
+        </div>
+        <div class="gt-copy-ok" id="gt-copy-ok">✅ Đã sao chép vào clipboard!</div>
+      </div>`;
+    modal.addEventListener('click',function(e){if(e.target===modal)modal.remove();});
+    document.body.appendChild(modal);
+  };
+
+  window.gtCopyLink=function(){
+    const ta=document.getElementById('gt-link-text');
+    if(!ta) return;
+    function showOk(){const ok=document.getElementById('gt-copy-ok');if(ok){ok.style.display='block';setTimeout(()=>ok.style.display='none',2500);}}
+    navigator.clipboard.writeText(ta.value).then(showOk).catch(function(){ta.select();document.execCommand('copy');showOk();});
+  };
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',gtInitPanel);
+  } else {
+    gtInitPanel();
+  }
+})();
 
 </script>
 
