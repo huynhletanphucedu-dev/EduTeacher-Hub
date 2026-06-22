@@ -4983,5 +4983,16 @@ function TC_noiseLoop(){
     </div>
   </div>
 </div>
+<script>
+// Global footer on all pages
+(function(){
+  var footerHTML = '<div class="page-foot" style="margin-top:40px;padding:16px 0 0;border-top:1px solid var(--border,#e5e7eb);text-align:center;font-size:13px;color:#888;">📚 EduTeacher Hub được phát triển bởi <strong style="color:var(--text,#222);font-weight:800;">ThS. Huỳnh Lê Tấn Phúc</strong> · Trường THCS Long Thọ</div>';
+  document.querySelectorAll('.page').forEach(function(pg){
+    // Skip iframe pages
+    if(pg.querySelector('iframe')) return;
+    if(!pg.querySelector('.page-foot')) pg.insertAdjacentHTML('beforeend', footerHTML);
+  });
+})();
+</script>
 </body>
 </html>
