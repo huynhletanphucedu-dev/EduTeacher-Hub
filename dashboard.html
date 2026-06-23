@@ -4706,6 +4706,50 @@ function sdImportExcel(input){
           mon: meta.mon, lop: meta.lop, khoi: +meta.khoi, namhoc: meta.namhoc||'', history:[],
           hk1:{students:[]}, hk2:{students:[]}
         };
+        // ── Nếu _meta.students rỗng (bug export cũ), đọc điểm từ sheet HK1/HK2 ──
+        if(!meta.students || meta.students.length === 0){
+          const parseHKSheet = (sheetName) => {
+            const sh = wb.Sheets[sheetName];
+            if(!sh) return [];
+            const rows = XLSX.utils.sheet_to_json(sh, {header:1, defval:''});
+            // Tìm dòng header (có "Họ và Tên")
+            let headerIdx = -1;
+            for(let i=0;i<rows.length;i++){
+              if(rows[i].some(c=>String(c).includes('Họ') || String(c).includes('Tên'))){ headerIdx=i; break; }
+            }
+            if(headerIdx < 0) return [];
+            const parsed = [];
+            for(let i=headerIdx+1;i<rows.length;i++){
+              const row = rows[i];
+              const name = String(row[1]||'').trim();
+              if(!name) continue;
+              const thuong = parseFloat(row[2])||0;
+              const txArr = [];
+              for(let j=0;j<nTX;j++){
+                const v = row[3+j];
+                txArr.push(v!==''&&v!==null&&v!==undefined ? parseFloat(v) : null);
+              }
+              const gk = row[3+nTX]!==''&&row[3+nTX]!==null ? parseFloat(row[3+nTX]) : null;
+              const ck = row[4+nTX]!==''&&row[4+nTX]!==null ? parseFloat(row[4+nTX]) : null;
+              parsed.push({name, thuong, tx:txArr, gk, ck});
+            }
+            return parsed;
+          };
+          const hk1Rows = parseHKSheet('HK1');
+          const hk2Rows = parseHKSheet('HK2');
+          const maxLen = Math.max(hk1Rows.length, hk2Rows.length);
+          for(let i=0;i<maxLen;i++){
+            const r1 = hk1Rows[i]||{};
+            const r2 = hk2Rows[i]||{};
+            const name = r1.name || r2.name || '';
+            if(!name) continue;
+            meta.students.push({
+              ten: name, thuong: r1.thuong||0,
+              hk1:{tx: r1.tx||Array(nTX).fill(null), gk:r1.gk??null, ck:r1.ck??null},
+              hk2:{tx: r2.tx||Array(nTX).fill(null), gk:r2.gk??null, ck:r2.ck??null}
+            });
+          }
+        }
         meta.students.forEach(s=>{
           const sid = uid();
           const mkHK = (hkData)=>({
