@@ -1,10 +1,11 @@
 /* EduTeacher Hub – Service Worker (tạo tự động bằng tools/tao_sw.py – không sửa tay)
    • Mở một lần khi có mạng → các trang đã mở dùng được khi mất mạng.
    • Nút “Tải sẵn để dùng offline” → tải toàn bộ công cụ về máy. */
-const VERSION = '1e7bfcf310';
+const VERSION = 'd13193c20a';
 const CACHE = 'eduhub-' + VERSION;
 const CORE = ["./", "index.html", "dashboard.html", "manifest.webmanifest", "eduhub_backup.js", "eduhub_search.js", "eduhub_pwa.js", "icons/icon-192.png"];
 const FILES = [
+"_rieng_tu/EduTeacherHub_saoluu_GV_Phuc_2026-2027.json",
 "bangdiem.html",
 "chianhom.html",
 "chunhiem.html",
@@ -90,6 +91,7 @@ const FILES = [
 "manifest.webmanifest",
 "may_ngau_nhien.html",
 "mophong_camung.html",
+"mophong_chiahet.html",
 "mophong_chuvi_dientich.html",
 "mophong_diahinhvn.html",
 "mophong_ditung.html",
@@ -99,17 +101,23 @@ const FILES = [
 "mophong_goc.html",
 "mophong_grammar_eng.html",
 "mophong_hemattroi.html",
+"mophong_hinhdeu.html",
 "mophong_khucxa.html",
 "mophong_luythua.html",
 "mophong_machien.html",
 "mophong_pH.html",
 "mophong_phanso.html",
 "mophong_phantinhphanso.html",
+"mophong_solama.html",
 "mophong_songam.html",
+"mophong_songuyento.html",
+"mophong_taphop.html",
 "mophong_tenses_eng.html",
 "mophong_thechat.html",
+"mophong_thuasont.html",
 "mophong_trieudai.html",
 "mophong_trucso.html",
+"mophong_ucln_bcnn.html",
 "mophong_uocboi.html",
 "mophong_vminhhoa.html",
 "ochu.html",

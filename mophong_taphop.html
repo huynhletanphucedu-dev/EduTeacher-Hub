@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tập hợp – Phần tử của tập hợp</title>
+<style>
+/* ===== BẢNG MÀU CHUNG ===== */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f172a;--card:#1e293b;--border:#334155;
+  --teal:#06b6d4;--purple:#8b5cf6;--orange:#f59e0b;
+  --green:#10b981;--red:#ef4444;--blue:#3b82f6;--text:#e2e8f0;--sub:#94a3b8;
+}
+html,body{height:100%}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);
+     height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:15px;
+     -webkit-tap-highlight-color:transparent}
+
+/* ===== HEADER ===== */
+.header{background:var(--card);padding:10px 18px;display:flex;align-items:center;
+        justify-content:space-between;border-bottom:1px solid var(--border);flex:none;gap:12px}
+.header-left{display:flex;align-items:center;gap:16px;min-width:0}
+.back-link{color:var(--teal);text-decoration:none;font-size:15px;white-space:nowrap;
+           padding:6px 12px;border-radius:9px;border:1px solid var(--border);transition:.15s}
+.back-link:hover{background:rgba(6,182,212,.12)}
+.header h1{font-size:19px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fs-btn{background:var(--border);color:var(--text);border:none;border-radius:9px;
+        padding:8px 14px;font-size:14px;font-family:inherit;cursor:pointer;white-space:nowrap;transition:.15s}
+.fs-btn:hover{background:#475569}
+
+/* ===== TAB BAR ===== */
+.tab-bar{display:flex;gap:4px;background:var(--card);padding:0 18px;
+         border-bottom:1px solid var(--border);flex:none}
+.mbar-tab{background:none;border:none;border-bottom:3px solid transparent;color:var(--sub);
+          font-size:15.5px;font-family:inherit;padding:11px 18px;cursor:pointer;transition:.15s}
+.mbar-tab:hover{color:var(--text)}
+.mbar-tab.active{color:#fff;border-bottom-color:var(--teal)}
+
+/* ===== THANH HƯỚNG DẪN ===== */
+.instr-bar{background:rgba(6,182,212,.12);color:#a5f3fc;text-align:center;
+           padding:9px 16px;font-size:15px;border-bottom:1px solid var(--border);flex:none}
+
+/* ===== THÂN TRANG ===== */
+.body-wrap{flex:1;display:flex;gap:14px;padding:14px;overflow:hidden;min-height:0}
+.stage-area{flex:1;min-width:0;display:flex}
+.stage{flex:1;background:var(--card);border-radius:22px;overflow:hidden;
+       box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;position:relative;min-width:0}
+.stage svg{width:100%;height:100%;display:block;touch-action:none}
+.hidden{display:none !important}
+
+/* ===== BẢNG ĐIỀU KHIỂN ===== */
+.controls{width:330px;flex:none;background:var(--card);border:1px solid var(--border);
+          border-radius:18px;padding:14px;overflow-y:auto}
+.sec-title{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--sub);
+           font-weight:700;margin:16px 0 8px}
+.sec-title:first-child{margin-top:0}
+
+.formula-box{background:#0f172a;border:1px solid var(--border);border-radius:14px;padding:12px}
+.f-label{font-size:12px;color:var(--sub);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.f-main{font-size:21px;font-weight:700;color:#a5f3fc;word-break:break-word;line-height:1.35}
+.f-sub{font-size:15.5px;color:#c4b5fd;line-height:1.4;word-break:break-word}
+.f-count{font-size:30px;font-weight:800;color:var(--orange);line-height:1.1}
+
+.member-box{margin-top:12px;background:#0f172a;border:1px solid var(--border);
+            border-radius:14px;padding:12px;text-align:center}
+#memberSym{display:block;font-size:28px;font-weight:800;letter-spacing:1px;color:var(--sub)}
+.sym-in{color:var(--green) !important}
+.sym-out{color:var(--orange) !important}
+.member-note{font-size:15px;color:var(--sub);margin-top:6px;line-height:1.45}
+
+.btn{display:block;width:100%;margin-top:9px;background:#0f172a;color:var(--text);
+     border:1.5px solid var(--border);border-radius:11px;padding:11px 14px;
+     font-size:15px;font-family:inherit;cursor:pointer;transition:.15s;text-align:center}
+.btn:hover:not(:disabled){border-color:var(--teal);background:rgba(6,182,212,.1)}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:#062a33;font-weight:700}
+.btn.primary:hover:not(:disabled){background:#22d3ee}
+.btn:disabled{opacity:.5;cursor:default}
+
+.preset-note{margin-top:10px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.4);
+             border-radius:12px;padding:10px 12px;font-size:15px;line-height:1.45;color:#fde68a}
+
+.know-box{margin-top:14px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.35);
+          border-radius:14px;padding:12px}
+.know-title{font-weight:700;color:#c4b5fd;font-size:15px;margin-bottom:6px}
+.know-box ul{list-style:none;font-size:15px;line-height:1.55;color:#cbd5e1}
+.know-box li{padding-left:16px;position:relative;margin-bottom:5px}
+.know-box li::before{content:'•';position:absolute;left:2px;color:var(--purple)}
+
+/* ===== THẺ KÉO THẢ (SVG) ===== */
+.token{transition:transform .3s cubic-bezier(.34,1.25,.64,1);cursor:grab;
+       user-select:none;-webkit-user-select:none;touch-action:none}
+.token.dragging{cursor:grabbing}
+.token.dragging rect{filter:drop-shadow(0 6px 10px rgba(0,0,0,.55))}
+.tok-ok rect{stroke:#10b981 !important;stroke-width:4 !important}
+.tok-bad rect{stroke:#ef4444 !important;stroke-width:4 !important}
+.tok-miss{opacity:.45}
+.tok-miss rect{stroke-dasharray:6 4}
+
+/* ===== TAB THỰC HÀNH ===== */
+.practice-wrap{flex:1;display:flex;flex-direction:column;gap:14px;
+               padding:20px 24px;overflow-y:auto;min-width:0}
+.q-head{font-size:13px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.q-text{font-size:19px;line-height:1.55}
+.q-text b{color:#a5f3fc}
+.q-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:620px){.q-options{grid-template-columns:1fr}}
+.opt-btn{background:#0f172a;border:2px solid var(--border);color:var(--text);border-radius:12px;
+         padding:14px 16px;font-size:16.5px;font-family:inherit;cursor:pointer;text-align:left;
+         transition:.15s;line-height:1.4}
+.opt-btn:hover:not(:disabled){border-color:var(--teal);background:rgba(6,182,212,.08)}
+.opt-btn.correct{border-color:var(--green);background:rgba(16,185,129,.16);color:#a7f3d0}
+.opt-btn.wrong{border-color:var(--red);background:rgba(239,68,68,.16);color:#fecaca}
+.opt-btn:disabled{cursor:default}
+
+.q-input-wrap{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.q-input{background:#0f172a;border:2px solid var(--border);border-radius:12px;color:var(--text);
+         font-size:20px;font-family:inherit;padding:12px 16px;width:220px;outline:none;transition:.15s}
+.q-input:focus{border-color:var(--teal)}
+
+.q-feedback{font-size:16px;line-height:1.5;padding:12px 16px;border-radius:12px;display:none}
+.q-feedback.show{display:block}
+.q-feedback.ok{background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.45);color:#a7f3d0}
+.q-feedback.no{background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.45);color:#fecaca}
+
+.q-svg{width:100%;height:340px;display:block;touch-action:none;flex:none;
+       background:#0b1220;border-radius:16px}
+
+.summary{text-align:center;padding:22px 10px}
+.sum-score{font-size:58px;font-weight:800;color:var(--teal);line-height:1}
+.sum-line{font-size:18px;margin-top:12px;color:#cbd5e1}
+
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;
+          background:#0f172a;border:1px solid var(--border);border-radius:11px;
+          margin-bottom:8px;font-size:15px}
+.stat-row span:last-child{font-size:20px;font-weight:800;color:var(--orange)}
+.progress-dots{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.dot{width:27px;height:27px;border-radius:8px;background:#0f172a;border:1.5px solid var(--border);
+     display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--sub);font-weight:700}
+.dot.cur{border-color:var(--teal);color:#a5f3fc}
+.dot.ok{background:rgba(16,185,129,.25);border-color:var(--green);color:#a7f3d0}
+.dot.no{background:rgba(239,68,68,.25);border-color:var(--red);color:#fecaca}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:900px){
+  .body-wrap{flex-direction:column;padding:10px;gap:10px}
+  .controls{width:100%;max-height:40vh;flex:none}
+  .header h1{font-size:16px}
+  .instr-bar{font-size:13.5px;padding:7px 12px}
+  .practice-wrap{padding:14px}
+  .q-svg{height:280px}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <div class="header-left">
+    <a href="dashboard.html" class="back-link">← Dashboard</a>
+    <h1>🧺 Tập hợp – Phần tử của tập hợp</h1>
+  </div>
+  <button class="fs-btn" id="fsBtn">⛶ Toàn màn hình</button>
+</header>
+
+<!-- ===== TAB BAR ===== -->
+<div class="tab-bar">
+  <button class="mbar-tab active" data-tab="explore">🔭 Khám Phá</button>
+  <button class="mbar-tab" data-tab="practice">🎯 Thực Hành</button>
+</div>
+
+<!-- ===== THANH HƯỚNG DẪN ===== -->
+<div class="instr-bar" id="instrBar">
+  ✋ Kéo thẻ vào hoặc ra khỏi giỏ để thay đổi tập hợp A; nhấn vào một thẻ để xem kí hiệu ∈ hoặc ∉.
+</div>
+
+<!-- ===== THÂN TRANG ===== -->
+<div class="body-wrap">
+
+  <!-- Sân khấu -->
+  <div class="stage-area">
+
+    <!-- Tab Khám Phá -->
+    <div class="stage" id="stageExplore">
+      <svg id="svgExplore" viewBox="0 0 880 640" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+
+    <!-- Tab Thực Hành -->
+    <div class="stage hidden" id="stagePractice">
+      <div class="practice-wrap">
+        <div class="q-head" id="qNum">Câu 1 / 10</div>
+        <div class="q-text" id="qText"></div>
+        <div class="q-body" id="qBody"></div>
+        <div class="q-feedback" id="qFeedback"></div>
+        <div class="q-actions" id="qActions"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bảng điều khiển -->
+  <aside class="controls">
+
+    <!-- Điều khiển Khám Phá -->
+    <div id="ctrlExplore">
+      <div class="sec-title">Tập hợp A</div>
+      <div class="formula-box">
+        <div class="f-label">Cách 1 · Liệt kê phần tử</div>
+        <div class="f-main" id="fList">A = ∅</div>
+
+        <div class="f-label" style="margin-top:12px">Cách 2 · Chỉ ra tính chất đặc trưng</div>
+        <div class="f-sub" id="fProp">—</div>
+
+        <div class="f-label" style="margin-top:12px">Số phần tử</div>
+        <div class="f-count" id="fCount">0</div>
+      </div>
+
+      <div class="member-box">
+        <span id="memberSym">? ∈ / ∉ A</span>
+        <div class="member-note" id="memberNote">Nhấn vào một thẻ để xem kí hiệu ∈ / ∉.</div>
+      </div>
+
+      <div class="sec-title">Điều khiển</div>
+      <button class="btn" id="btnPreset">📌 Ví dụ mẫu</button>
+      <button class="btn" id="btnReset">↺ Làm lại</button>
+      <div class="preset-note hidden" id="presetNote"></div>
+
+      <div class="know-box">
+        <div class="know-title">💡 Em có biết?</div>
+        <ul>
+          <li>Mỗi phần tử chỉ được liệt kê <b>một lần</b>.</li>
+          <li>Thứ tự liệt kê các phần tử là <b>tùy ý</b>.</li>
+          <li>Các phần tử ngăn cách nhau bởi dấu <b>chấm phẩy ";"</b>.</li>
+          <li>Kí hiệu <b>∈</b> đọc là "thuộc", <b>∉</b> đọc là "không thuộc".</li>
+          <li>Tập hợp không có phần tử nào gọi là <b>tập hợp rỗng</b>, kí hiệu <b>∅</b>.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Điều khiển Thực Hành -->
+    <div id="ctrlPractice" class="hidden">
+      <div class="sec-title">Tiến trình</div>
+      <div class="stat-row"><span>Câu hỏi</span><span id="stQ">1/10</span></div>
+      <div class="stat-row"><span>Điểm</span><span id="stScore">0</span></div>
+      <div class="stat-row"><span>Chuỗi đúng</span><span id="stStreak">🔥 0</span></div>
+      <div class="progress-dots" id="stDots"></div>
+
+      <div class="know-box" style="margin-top:16px">
+        <div class="know-title">🎯 Cách tính điểm</div>
+        <ul>
+          <li>Mỗi câu đúng: <b>+1 điểm</b>.</li>
+          <li>Trả lời đúng liên tiếp để tăng chuỗi 🔥.</li>
+          <li>Sai một câu thì chuỗi đúng quay về 0.</li>
+          <li>Cuối lượt xem tổng kết và bấm <b>Chơi lại</b>.</li>
+        </ul>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<script>
+/* =========================================================
+   1. TIỆN ÍCH DÙNG CHUNG
+   ========================================================= */
+const NS = 'http://www.w3.org/2000/svg';
+const $  = id => document.getElementById(id);
+const rnd = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+const pick = a => a[Math.floor(Math.random() * a.length)];
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* =========================================================
+   2. BÀN KÉO THẢ DÙNG CHUNG (SVG + Pointer Events)
+   ========================================================= */
+function createBoard(svg, cfg) {
+  const W = cfg.tokenW || 88;
+  const H = cfg.tokenH || 46;
+  const COLORS = {
+    num:    { fill:'#0b3b48', stroke:'#06b6d4', text:'#a5f3fc' },
+    letter: { fill:'#2e1a57', stroke:'#8b5cf6', text:'#ddd6fe' },
+    animal: { fill:'#4a2c06', stroke:'#f59e0b', text:'#fde68a' }
+  };
+
+  /* --- tạo dữ liệu thẻ + vị trí "nhà" cố định --- */
+  const tokens = cfg.tokens.map((tk, i) => {
+    const col = i % cfg.pool.cols;
+    const row = Math.floor(i / cfg.pool.cols);
+    return {
+      label: tk.label,
+      type: tk.type || 'num',
+      in: false,
+      homeX: cfg.pool.x0 + col * cfg.pool.dx,
+      homeY: cfg.pool.y0 + row * cfg.pool.dy,
+      x: 0, y: 0, g: null
+    };
+  });
+  if (cfg.initIn) tokens.forEach(t => { if (cfg.initIn.includes(t.label)) t.in = true; });
+
+  /* --- vẽ giỏ --- */
+  const basketG = document.createElementNS(NS, 'g');
+  const circle = document.createElementNS(NS, 'circle');
+  circle.setAttribute('cx', cfg.basket.cx);
+  circle.setAttribute('cy', cfg.basket.cy);
+  circle.setAttribute('r', cfg.basket.r);
+  circle.setAttribute('fill', 'rgba(6,182,212,0.08)');
+  circle.setAttribute('stroke', '#06b6d4');
+  circle.setAttribute('stroke-width', '4');
+  circle.setAttribute('stroke-dasharray', '14 10');
+  circle.setAttribute('stroke-linecap', 'round');
+  basketG.appendChild(circle);
+
+  const lbl = document.createElementNS(NS, 'text');
+  lbl.setAttribute('x', cfg.basket.cx);
+  lbl.setAttribute('y', cfg.basket.cy - cfg.basket.r + 42);
+  lbl.setAttribute('text-anchor', 'middle');
+  lbl.setAttribute('font-size', '34');
+  lbl.setAttribute('font-weight', '800');
+  lbl.setAttribute('fill', '#a5f3fc');
+  lbl.setAttribute('opacity', '0.5');
+  lbl.textContent = cfg.basket.label;
+  basketG.appendChild(lbl);
+  svg.appendChild(basketG);
+
+  /* --- lớp chứa thẻ --- */
+  const layer = document.createElementNS(NS, 'g');
+  svg.appendChild(layer);
+
+  tokens.forEach(t => {
+    const g = document.createElementNS(NS, 'g');
+    g.setAttribute('class', 'token');
+    const c = COLORS[t.type] || COLORS.num;
+
+    const r = document.createElementNS(NS, 'rect');
+    r.setAttribute('x', -W / 2);
+    r.setAttribute('y', -H / 2);
+    r.setAttribute('width', W);
+    r.setAttribute('height', H);
+    r.setAttribute('rx', 12);
+    r.setAttribute('fill', c.fill);
+    r.setAttribute('stroke', c.stroke);
+    r.setAttribute('stroke-width', '2.5');
+
+    const tx = document.createElementNS(NS, 'text');
+    tx.setAttribute('x', 0);
+    tx.setAttribute('y', 0);
+    tx.setAttribute('text-anchor', 'middle');
+    tx.setAttribute('dominant-baseline', 'central');
+    tx.setAttribute('font-size', t.type === 'animal' ? '28' : '24');
+    tx.setAttribute('font-weight', '700');
+    tx.setAttribute('fill', c.text);
+    tx.setAttribute('pointer-events', 'none');
+    tx.textContent = t.label;
+
+    g.appendChild(r);
+    g.appendChild(tx);
+    t.g = g;
+    layer.appendChild(g);
+  });
+
+  /* --- hàm đặt vị trí --- */
+  function place(t, x, y, animate) {
+    t.x = x; t.y = y;
+    t.g.style.transition = animate
+      ? 'transform .3s cubic-bezier(.34,1.25,.64,1)'
+      : 'none';
+    t.g.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+  }
+
+  function layout(animate) {
+    const inT  = tokens.filter(t => t.in);
+    const outT = tokens.filter(t => !t.in);
+    const cols = cfg.basketCols || 3;
+    const dx   = cfg.basketDx || 100;
+    const dy   = cfg.basketDy || 50;
+    const rows = Math.max(1, Math.ceil(inT.length / cols));
+
+    inT.forEach((t, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      place(t,
+        cfg.basket.cx + (col - (cols - 1) / 2) * dx,
+        cfg.basket.cy + 16 + (row - (rows - 1) / 2) * dy,
+        animate);
+    });
+    outT.forEach(t => place(t, t.homeX, t.homeY, animate));
+  }
+
+  /* --- kéo thả bằng Pointer Events --- */
+  let drag = null;
+  let locked = false;
+  const pt = new DOMPoint();
+
+  function toSvg(ev) {
+    const m = svg.getScreenCTM();
+    if (!m) return { x: ev.clientX, y: ev.clientY };
+    pt.x = ev.clientX;
+    pt.y = ev.clientY;
+    const p = pt.matrixTransform(m.inverse());
+    return { x: p.x, y: p.y };
+  }
+
+  tokens.forEach(t => {
+    const g = t.g;
+
+    g.addEventListener('pointerdown', ev => {
+      if (locked) return;
+      ev.preventDefault();
+      layer.appendChild(g);              // đưa thẻ lên trên cùng
+      try { g.setPointerCapture(ev.pointerId); } catch (e) {}
+      const p = toSvg(ev);
+      drag = { id: ev.pointerId, sx: p.x, sy: p.y, ox: t.x, oy: t.y, moved: false };
+      g.classList.add('dragging');
+      g.style.transition = 'none';
+    });
+
+    g.addEventListener('pointermove', ev => {
+      if (!drag || drag.id !== ev.pointerId) return;
+      ev.preventDefault();
+      const p = toSvg(ev);
+      const dx = p.x - drag.sx;
+      const dy = p.y - drag.sy;
+      if (Math.hypot(dx, dy) > 5) drag.moved = true;
+      t.x = drag.ox + dx;
+      t.y = drag.oy + dy;
+      g.style.transform = 'translate(' + t.x + 'px,' + t.y + 'px)';
+    });
+
+    function endDrag(ev) {
+      if (!drag || drag.id !== ev.pointerId) return;
+      const moved = drag.moved;
+      g.classList.remove('dragging');
+      try { g.releasePointerCapture(ev.pointerId); } catch (e) {}
+      drag = null;
+
+      if (!moved) {                       // nhấn (tap) → xem ∈ / ∉
+        if (cfg.onTap) cfg.onTap(t);
+        layout(true);
+        return;
+      }
+      const dist = Math.hypot(t.x - cfg.basket.cx, t.y - cfg.basket.cy);
+      t.in = dist < cfg.basket.r * 0.92;
+      layout(true);
+      if (cfg.onChange) cfg.onChange();
+    }
+
+    g.addEventListener('pointerup', endDrag);
+    g.addEventListener('pointercancel', endDrag);
+  });
+
+  layout(false);
+
+  /* --- API trả về --- */
+  return {
+    tokens: tokens,
+    setIn(labels) {
+      tokens.forEach(t => { t.in = labels.includes(t.label); });
+      layout(true);
+    },
+    clear() {
+      tokens.forEach(t => { t.in = false; });
+      layout(false);
+    },
+    lock() { locked = true; },
+    getIn() { return tokens.filter(t => t.in).map(t => t.label); }
+  };
+}
+
+/* =========================================================
+   3. TAB KHÁM PHÁ
+   ========================================================= */
+const TOKENS_EXPLORE = [
+  { label:'0', type:'num' }, { label:'1', type:'num' }, { label:'2', type:'num' },
+  { label:'3', type:'num' }, { label:'4', type:'num' }, { label:'5', type:'num' },
+  { label:'6', type:'num' },
+  { label:'T', type:'letter' }, { label:'O', type:'letter' }, { label:'A', type:'letter' },
+  { label:'N', type:'letter' }, { label:'H', type:'letter' }, { label:'C', type:'letter' },
+  { label:'🐱', type:'animal' }, { label:'🐶', type:'animal' }
+];
+
+let boardA = null;
+
+/* --- sắp xếp phần tử để hiển thị: số → chữ → con vật --- */
+function rankOf(t) { return t.type === 'num' ? 0 : t.type === 'letter' ? 1 : 2; }
+function cmpLabels(a, b) {
+  if (rankOf(a) !== rankOf(b)) return rankOf(a) - rankOf(b);
+  if (a.type === 'num') return Number(a.label) - Number(b.label);
+  if (a.type === 'letter') return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
+  return 0;
+}
+
+/* --- dò tính chất đặc trưng khớp với tập đang có --- */
+function detectProperty(inT) {
+  const n = inT.length;
+  if (n === 0) return null;
+
+  // Trường hợp toàn là số tự nhiên
+  if (inT.every(t => t.type === 'num')) {
+    const nums = inT.map(t => Number(t.label)).sort((a, b) => a - b);
+    const mn = nums[0];
+    const mx = nums[nums.length - 1];
+    const isEven = nums.every(x => x % 2 === 0);
+    const isOdd  = nums.every(x => x % 2 === 1);
+
+    // 0; 1; 2; ...; mx  →  {x ∈ N | x < mx+1}
+    if (mn === 0 && nums.length === mx + 1 && nums.every((x, i) => x === i)) {
+      return 'A = {x ∈ N | x < ' + (mx + 1) + '}';
+    }
+    // 1; 2; ...; mx  →  {x ∈ N* | x < mx+1}
+    if (mn === 1 && nums.length === mx && nums.every((x, i) => x === i + 1)) {
+      return 'A = {x ∈ N* | x < ' + (mx + 1) + '}';
+    }
+    // 0; 2; 4; ...; mx  →  {x ∈ N | x chẵn, x < mx+2}
+    if (isEven && mn === 0 && nums.length === mx / 2 + 1) {
+      return 'A = {x ∈ N | x chẵn, x < ' + (mx + 2) + '}';
+    }
+    // 1; 3; 5; ...; mx  →  {x ∈ N | x lẻ, x < mx+2}
+    if (isOdd && mn === 1 && nums.length === (mx + 1) / 2) {
+      return 'A = {x ∈ N | x lẻ, x < ' + (mx + 2) + '}';
+    }
+    return null;
+  }
+
+  // Trường hợp toàn là chữ cái trong cụm "TOÁN HỌC"
+  if (inT.every(t => t.type === 'letter')) {
+    const s = inT.map(t => t.label).sort().join('');
+    if (s === 'ACHNOT') {
+      return 'A = {x | x là chữ cái trong cụm từ "TOÁN HỌC"}';
+    }
+  }
+  return null;
+}
+
+/* --- cập nhật bảng bên phải --- */
+function updateExplorePanel() {
+  if (!boardA) return;
+  const inT = boardA.tokens.filter(t => t.in).slice().sort(cmpLabels);
+  const labels = inT.map(t => t.label);
+
+  $('fList').textContent = labels.length ? 'A = {' + labels.join('; ') + '}' : 'A = ∅';
+  $('fCount').textContent = labels.length;
+
+  const propEl = $('fProp');
+  if (labels.length === 0) {
+    propEl.textContent = 'A = ∅ (tập hợp không có phần tử nào)';
+    propEl.style.color = '#fbbf24';
+  } else {
+    const p = detectProperty(inT);
+    if (p) {
+      propEl.textContent = p;
+      propEl.style.color = '#c4b5fd';
+    } else {
+      propEl.textContent = '(Chưa khớp tính chất đặc trưng nào)';
+      propEl.style.color = '#94a3b8';
+    }
+  }
+}
+
+/* --- nhấn vào thẻ: hiện ∈ / ∉ --- */
+function onTapToken(t) {
+  const symEl = $('memberSym');
+  const noteEl = $('memberNote');
+  if (t.in) {
+    symEl.textContent = t.label + ' ∈ A';
+    symEl.className = 'sym-in';
+    noteEl.textContent = 'Phần tử ' + t.label + ' nằm trong giỏ nên ' + t.label + ' thuộc tập hợp A.';
+  } else {
+    symEl.textContent = t.label + ' ∉ A';
+    symEl.className = 'sym-out';
+    noteEl.textContent = 'Phần tử ' + t.label + ' không nằm trong giỏ nên ' + t.label + ' không thuộc tập hợp A.';
+  }
+}
+
+/* --- khởi tạo bàn Khám Phá --- */
+boardA = createBoard($('svgExplore'), {
+  basket: { cx: 300, cy: 320, r: 190, label: 'A' },
+  pool:   { x0: 600, y0: 100, dx: 105, dy: 110, cols: 3 },
+  tokenW: 88, tokenH: 46,
+  basketCols: 3, basketDx: 100, basketDy: 50,
+  tokens: TOKENS_EXPLORE,
+  initIn: ['0', '2', '4'],
+  onChange: updateExplorePanel,
+  onTap: onTapToken
+});
+updateExplorePanel();
+
+/* --- Ví dụ mẫu --- */
+const PRESETS = [
+  { desc: 'Tập hợp các chữ cái trong cụm từ "TOÁN HỌC"', labels: ['T','O','A','N','H','C'] },
+  { desc: 'Tập hợp các số tự nhiên nhỏ hơn 5',            labels: ['0','1','2','3','4'] },
+  { desc: 'Tập hợp N* các số tự nhiên khác 0 nhỏ hơn 6',  labels: ['1','2','3','4','5'] }
+];
+let presetIdx = -1;
+
+$('btnPreset').addEventListener('click', () => {
+  presetIdx = (presetIdx + 1) % PRESETS.length;
+  const p = PRESETS[presetIdx];
+  boardA.setIn(p.labels);
+  const note = $('presetNote');
+  note.classList.remove('hidden');
+  note.innerHTML = '📌 <b>Ví dụ mẫu ' + (presetIdx + 1) + '/' + PRESETS.length + ':</b> ' + p.desc;
+  updateExplorePanel();
+});
+
+$('btnReset').addEventListener('click', () => {
+  boardA.clear();
+  $('presetNote').classList.add('hidden');
+  $('memberSym').textContent = '? ∈ / ∉ A';
+  $('memberSym').className = '';
+  $('memberNote').textContent = 'Nhấn vào một thẻ để xem kí hiệu ∈ / ∉.';
+  updateExplorePanel();
+});
+
+/* =========================================================
+   4. TAB THỰC HÀNH – SINH CÂU HỎI NGẪU NHIÊN
+   ========================================================= */
+
+/* --- Câu 1: điền ∈ / ∉ --- */
+function genIn() {
+  const start = rnd(1, 4), step = rnd(1, 3);
+  const arr = [0,1,2,3].map(i => start + i * step);
+  const inSet = Math.random() < 0.5;
+  let target;
+  if (inSet) {
+    target = pick(arr);
+  } else {
+    do { target = rnd(0, 15); } while (arr.includes(target));
+  }
+  const ans = arr.includes(target) ? '∈' : '∉';
+  return {
+    type: 'choice',
+    prompt: 'Cho tập hợp <b>A = {' + arr.join('; ') + '}</b>.<br>Điền kí hiệu thích hợp vào chỗ trống: <b>' + target + ' … A</b>',
+    options: ['∈', '∉'],
+    answer: ans,
+    explain: ans === '∈'
+      ? target + ' có trong danh sách phần tử của A nên ' + target + ' ∈ A (đọc là "' + target + ' thuộc A").'
+      : target + ' không có trong danh sách phần tử của A nên ' + target + ' ∉ A (đọc là "' + target + ' không thuộc A").'
+  };
+}
+
+/* --- Câu 2: đếm số phần tử --- */
+function genCount() {
+  const n = rnd(3, 5), start = rnd(0, 4), step = rnd(1, 3);
+  const arr = Array.from({ length: n }, (_, i) => start + i * step);
+  return {
+    type: 'input',
+    prompt: 'Tập hợp <b>B = {' + arr.join('; ') + '}</b> có bao nhiêu phần tử?',
+    answer: n,
+    explain: 'Đếm các phần tử trong ngoặc nhọn: ' + arr.join('; ') + ' — có tất cả ' + n + ' phần tử.'
+  };
+}
+
+/* --- Câu 3: chọn cách viết đúng --- */
+function genNotation() {
+  const arr = shuffle([0,1,2,3,4,5,6,7,8,9]).slice(0, 3).sort((a, b) => a - b);
+  const correct = 'C = {' + arr.join('; ') + '}';
+  const wrongs = [
+    'C = {' + arr.join(', ') + '}',
+    'C = (' + arr.join('; ') + ')',
+    'C = {' + arr.join('; ') + '; ' + arr[0] + '}'
+  ];
+  return {
+    type: 'choice',
+    prompt: 'Cho tập hợp C gồm ba số <b>' + arr.join('; ') + '</b>.<br>Cách viết nào sau đây <b>ĐÚNG</b>?',
+    options: shuffle([correct].concat(wrongs)),
+    answer: correct,
+    explain: 'Phần tử đặt trong ngoặc nhọn { }, ngăn cách bởi dấu chấm phẩy ";", mỗi phần tử chỉ liệt kê một lần. Vậy ' + correct + ' là đúng.'
+  };
+}
+
+/* --- Câu 4: chọn số thuộc tập hợp cho bằng tính chất --- */
+function genMember() {
+  const k = rnd(4, 8);
+  const correct = rnd(0, k - 1);
+  const wrongs = [];
+  while (wrongs.length < 3) {
+    const v = rnd(k, k + 9);
+    if (v !== correct && !wrongs.includes(v)) wrongs.push(v);
+  }
+  return {
+    type: 'choice',
+    prompt: 'Cho tập hợp <b>A = {x ∈ N | x < ' + k + '}</b>.<br>Trong các số sau, số nào <b>thuộc</b> A?',
+    options: shuffle([String(correct)].concat(wrongs.map(String))),
+    answer: String(correct),
+    explain: 'Các số tự nhiên nhỏ hơn ' + k + ' là 0; 1; 2; …; ' + (k - 1) + '. Vì ' + correct + ' < ' + k + ' nên ' + correct + ' ∈ A.'
+  };
+}
+
+/* --- Câu 5: chọn tính chất đặc trưng --- */
+function genProperty() {
+  const isOdd = Math.random() < 0.5;
+  const arr = isOdd ? [1,3,5,7] : [0,2,4,6];
+  const correct = 'A = {x ∈ N | x ' + (isOdd ? 'lẻ' : 'chẵn') + ', x < 9}';
+  const wrongs = [
+    'A = {x ∈ N | x ' + (isOdd ? 'chẵn' : 'lẻ') + ', x < 9}',
+    'A = {x ∈ N | x < 7}',
+    'A = {x ∈ N* | x chẵn, x < 9}'
+  ];
+  return {
+    type: 'choice',
+    prompt: 'Tập hợp <b>A = {' + arr.join('; ') + '}</b>.<br>Cách viết nào sau đây chỉ ra <b>tính chất đặc trưng</b> của A?',
+    options: shuffle([correct].concat(wrongs)),
+    answer: correct,
+    explain: 'A gồm các số tự nhiên ' + (isOdd ? 'lẻ' : 'chẵn') + ' nhỏ hơn 9, đó chính là ' + arr.join('; ') + '.'
+  };
+}
+
+/* --- Câu 6: nhận ra lỗi sai --- */
+function genError() {
+  const arr = shuffle([1,2,3,4,5,6,7,8,9]).slice(0, 3).sort((a, b) => a - b);
+  const wrongStr = 'E = {' + arr.join(', ') + '}';
+  const correct = 'Dùng dấu phẩy "," để ngăn cách các phần tử';
+  return {
+    type: 'choice',
+    prompt: 'Bạn Lan viết tập hợp như sau: <b>' + wrongStr + '</b>.<br>Cách viết trên <b>sai</b> ở điểm nào?',
+    options: shuffle([
+      correct,
+      'Dùng ngoặc nhọn { } để viết tập hợp',
+      'Liệt kê thiếu phần tử',
+      'Cách viết trên hoàn toàn đúng'
+    ]),
+    answer: correct,
+    explain: 'Đúng ra phải dùng dấu chấm phẩy ";": E = {' + arr.join('; ') + '}. Dấu phẩy dễ gây nhầm lẫn với dấu thập phân.'
+  };
+}
+
+/* --- Câu 7: kéo các số chẵn nhỏ hơn 10 vào giỏ --- */
+function genDrag1() {
+  const pool = [0,1,2,3,4,5,6,7,8,9];
+  const answer = pool.filter(x => x % 2 === 0);
+  return {
+    type: 'drag',
+    prompt: 'Hãy kéo các <b>số tự nhiên chẵn nhỏ hơn 10</b> vào giỏ để tạo tập hợp B.',
+    tokens: shuffle(pool),
+    answer: answer.map(String),
+    explain: 'Các số tự nhiên chẵn nhỏ hơn 10 là 0; 2; 4; 6; 8. Vậy B = {0; 2; 4; 6; 8}.'
+  };
+}
+
+/* --- Câu 8: đếm phần tử theo tính chất --- */
+function genCountProp() {
+  const k = rnd(6, 15);
+  const n = 2 * k;
+  const isEven = Math.random() < 0.5;
+  return {
+    type: 'input',
+    prompt: 'Tập hợp các số tự nhiên <b>' + (isEven ? 'chẵn' : 'lẻ') + '</b> nhỏ hơn <b>' + n + '</b> có bao nhiêu phần tử?',
+    answer: k,
+    explain: isEven
+      ? 'Đó là 0; 2; 4; …; ' + (n - 2) + ', gồm ' + n + ' : 2 = ' + k + ' phần tử.'
+      : 'Đó là 1; 3; 5; …; ' + (n - 1) + ', gồm ' + n + ' : 2 = ' + k + ' phần tử.'
+  };
+}
+
+/* --- Câu 9: kéo các số lớn hơn a và nhỏ hơn b --- */
+function genDrag2() {
+  const a = rnd(1, 4);
+  const b = a + rnd(4, 6);
+  const answer = [];
+  for (let x = a + 1; x < b; x++) answer.push(x);
+  const pool = [];
+  for (let x = Math.max(0, a - 2); x <= b + 2; x++) pool.push(x);
+  return {
+    type: 'drag',
+    prompt: 'Hãy kéo các số tự nhiên <b>lớn hơn ' + a + '</b> và <b>nhỏ hơn ' + b + '</b> vào giỏ để tạo tập hợp D.',
+    tokens: shuffle(pool),
+    answer: answer.map(String),
+    explain: 'Các số tự nhiên lớn hơn ' + a + ' và nhỏ hơn ' + b + ' là ' + answer.join('; ') + '. Vậy D = {' + answer.join('; ') + '}.'
+  };
+}
+
+/* --- Câu 10: đếm phần tử của dãy liên tiếp --- */
+function genMissing() {
+  const a = rnd(1, 9);
+  const b = a + rnd(15, 30);
+  const count = b - a + 1;
+  return {
+    type: 'input',
+    prompt: 'Cho tập hợp <b>A = {' + a + '; ' + (a + 1) + '; ' + (a + 2) + '; …; ' + b + '}</b>.<br>Số phần tử của A là bao nhiêu?',
+    answer: count,
+    explain: 'Số phần tử = ' + b + ' − ' + a + ' + 1 = ' + count + '.'
+  };
+}
+
+/* =========================================================
+   5. ĐIỀU KHIỂN TAB THỰC HÀNH
+   ========================================================= */
+let pq = [], pIdx = 0, pScore = 0, pStreak = 0, pBest = 0;
+let pAnswered = false, pResults = [];
+
+function startPractice() {
+  pq = [genIn(), genCount(), genNotation(), genMember(), genProperty(),
+        genError(), genDrag1(), genCountProp(), genDrag2(), genMissing()];
+  pIdx = 0; pScore = 0; pStreak = 0; pBest = 0;
+  pAnswered = false; pResults = [];
+  renderQuestion();
+}
+
+function updatePracticePanel() {
+  $('stQ').textContent = Math.min(pIdx + 1, 10) + '/10';
+  $('stScore').textContent = pScore;
+  $('stStreak').textContent = '🔥 ' + pStreak;
+
+  const dots = $('stDots');
+  dots.innerHTML = '';
+  for (let i = 0; i < 10; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    if (pResults[i] === true) {
+      d.classList.add('ok'); d.textContent = '✓';
+    } else if (pResults[i] === false) {
+      d.classList.add('no'); d.textContent = '✗';
+    } else {
+      d.textContent = i + 1;
+      if (i === pIdx) d.classList.add('cur');
+    }
+    dots.appendChild(d);
+  }
+}
+
+function feedback(ok, explain) {
+  const fb = $('qFeedback');
+  fb.className = 'q-feedback show ' + (ok ? 'ok' : 'no');
+  fb.innerHTML = (ok ? '✅ <b>Chính xác!</b> ' : '❌ <b>Chưa đúng.</b> ') + explain;
+}
+
+function scoreUpdate(ok) {
+  pResults.push(ok);
+  if (ok) {
+    pScore++;
+    pStreak++;
+    if (pStreak > pBest) pBest = pStreak;
+  } else {
+    pStreak = 0;
+  }
+  updatePracticePanel();
+}
+
+function showNext() {
+  const act = $('qActions');
+  act.innerHTML = '';
+  const b = document.createElement('button');
+  b.className = 'btn primary';
+  if (pIdx < 9) {
+    b.textContent = 'Câu tiếp →';
+    b.addEventListener('click', () => { pIdx++; renderQuestion(); });
+  } else {
+    b.textContent = 'Xem kết quả 🏁';
+    b.addEventListener('click', showSummary);
+  }
+  act.appendChild(b);
+}
+
+/* --- hiển thị câu hỏi --- */
+function renderQuestion() {
+  const q = pq[pIdx];
+  pAnswered = false;
+
+  $('qNum').textContent = 'Câu ' + (pIdx + 1) + ' / 10';
+  $('qText').innerHTML = q.prompt;
+
+  const body = $('qBody');
+  body.innerHTML = '';
+  const fb = $('qFeedback');
+  fb.className = 'q-feedback';
+  fb.innerHTML = '';
+  $('qActions').innerHTML = '';
+  updatePracticePanel();
+
+  /* Dạng 1: chọn đáp án */
+  if (q.type === 'choice') {
+    const wrap = document.createElement('div');
+    wrap.className = 'q-options';
+    q.options.forEach(op => {
+      const b = document.createElement('button');
+      b.className = 'opt-btn';
+      b.textContent = op;
+      b.addEventListener('click', () => answerChoice(q, op, b));
+      wrap.appendChild(b);
+    });
+    body.appendChild(wrap);
+
+  /* Dạng 2: nhập số */
+  } else if (q.type === 'input') {
+    const wrap = document.createElement('div');
+    wrap.className = 'q-input-wrap';
+
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'q-input';
+    inp.inputMode = 'decimal';
+    inp.placeholder = 'Nhập số…';
+    inp.autocomplete = 'off';
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') answerInput(q, inp); });
+
+    const b = document.createElement('button');
+    b.className = 'btn primary';
+    b.style.width = 'auto';
+    b.style.marginTop = '0';
+    b.textContent = 'Trả lời';
+    b.addEventListener('click', () => answerInput(q, inp));
+
+    wrap.appendChild(inp);
+    wrap.appendChild(b);
+    body.appendChild(wrap);
+    setTimeout(() => inp.focus(), 150);
+
+  /* Dạng 3: kéo thả trên hình */
+  } else if (q.type === 'drag') {
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 880 420');
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    svg.setAttribute('class', 'q-svg');
+    body.appendChild(svg);
+
+    q.board = createBoard(svg, {
+      basket: { cx: 230, cy: 210, r: 165, label: 'B' },
+      pool:   { x0: 470, y0: 110, dx: 110, dy: 100, cols: 4 },
+      tokenW: 86, tokenH: 46,
+      basketCols: 3, basketDx: 90, basketDy: 48,
+      tokens: q.tokens.map(l => ({ label: l, type: 'num' }))
+    });
+
+    const b = document.createElement('button');
+    b.className = 'btn primary';
+    b.textContent = '✅ Kiểm tra';
+    b.addEventListener('click', () => answerDrag(q, b));
+    $('qActions').appendChild(b);
+  }
+}
+
+/* --- chấm dạng chọn đáp án --- */
+function answerChoice(q, op, btn) {
+  if (pAnswered) return;
+  pAnswered = true;
+
+  const ok = op === q.answer;
+  Array.prototype.forEach.call($('qBody').querySelectorAll('.opt-btn'), b => {
+    b.disabled = true;
+    if (b.textContent === q.answer) b.classList.add('correct');
+  });
+  if (!ok) btn.classList.add('wrong');
+
+  feedback(ok, q.explain);
+  scoreUpdate(ok);
+  showNext();
+}
+
+/* --- chấm dạng nhập số (chấp nhận cả dấu phẩy và dấu chấm) --- */
+function answerInput(q, inp) {
+  if (pAnswered) return;
+  const raw = String(inp.value).trim().replace(',', '.');
+  if (raw === '' || isNaN(parseFloat(raw))) {
+    inp.style.borderColor = '#ef4444';
+    return;
+  }
+  pAnswered = true;
+  const val = parseFloat(raw);
+  const ok = Math.abs(val - q.answer) < 1e-6;
+
+  inp.disabled = true;
+  inp.style.borderColor = ok ? '#10b981' : '#ef4444';
+
+  feedback(ok, q.explain);
+  scoreUpdate(ok);
+  showNext();
+}
+
+/* --- chấm dạng kéo thả --- */
+function answerDrag(q, btn) {
+  if (pAnswered) return;
+  pAnswered = true;
+  btn.disabled = true;
+  q.board.lock();
+
+  const got = q.board.getIn();
+  const want = q.answer.slice();
+  const ok = got.length === want.length && want.every(l => got.includes(l));
+
+  // tô màu từng thẻ để học sinh thấy rõ đúng/sai
+  q.board.tokens.forEach(t => {
+    const shouldBeIn = want.includes(t.label);
+    if (t.in && shouldBeIn)      t.g.classList.add('tok-ok');
+    else if (t.in && !shouldBeIn) t.g.classList.add('tok-bad');
+    else if (!t.in && shouldBeIn) t.g.classList.add('tok-miss');
+  });
+
+  feedback(ok, q.explain);
+  scoreUpdate(ok);
+  showNext();
+}
+
+/* --- tổng kết --- */
+function showSummary() {
+  $('qNum').textContent = 'KẾT QUẢ';
+  $('qText').innerHTML = '🎉 <b>Hoàn thành 10 câu hỏi!</b>';
+  $('qBody').innerHTML =
+    '<div class="summary">' +
+      '<div class="sum-score">' + pScore + '/10</div>' +
+      '<div class="sum-line">Điểm: <b>' + pScore + '</b> / 10</div>' +
+      '<div class="sum-line">Chuỗi đúng dài nhất: 🔥 <b>' + pBest + '</b></div>' +
+      '<div class="sum-line">' +
+        (pScore >= 9 ? 'Xuất sắc! Em đã nắm rất chắc bài.' :
+         pScore >= 7 ? 'Khá tốt! Hãy xem lại vài chỗ còn nhầm.' :
+         pScore >= 5 ? 'Cần luyện thêm một chút nhé.' :
+                       'Hãy ôn lại phần lí thuyết rồi thử lại nhé.') +
+      '</div>' +
+    '</div>';
+  $('qFeedback').className = 'q-feedback';
+
+  const act = $('qActions');
+  act.innerHTML = '';
+  const b = document.createElement('button');
+  b.className = 'btn primary';
+  b.textContent = '🔄 Chơi lại';
+  b.addEventListener('click', startPractice);
+  act.appendChild(b);
+}
+
+/* =========================================================
+   6. CHUYỂN TAB + TOÀN MÀN HÌNH
+   ========================================================= */
+let practiceStarted = false;
+
+function switchTab(name) {
+  Array.prototype.forEach.call(document.querySelectorAll('.mbar-tab'), b => {
+    b.classList.toggle('active', b.dataset.tab === name);
+  });
+  $('stageExplore').classList.toggle('hidden', name !== 'explore');
+  $('stagePractice').classList.toggle('hidden', name !== 'practice');
+  $('ctrlExplore').classList.toggle('hidden', name !== 'explore');
+  $('ctrlPractice').classList.toggle('hidden', name !== 'practice');
+
+  $('instrBar').textContent = name === 'explore'
+    ? '✋ Kéo thẻ vào hoặc ra khỏi giỏ để thay đổi tập hợp A; nhấn vào một thẻ để xem kí hiệu ∈ hoặc ∉.'
+    : '🎯 Trả lời 10 câu hỏi từ dễ đến khó. Mỗi câu đúng được 1 điểm — giữ chuỗi đúng 🔥 nhé!';
+
+  if (name === 'practice' && !practiceStarted) {
+    practiceStarted = true;
+    startPractice();
+  }
+}
+
+Array.prototype.forEach.call(document.querySelectorAll('.mbar-tab'), b => {
+  b.addEventListener('click', () => switchTab(b.dataset.tab));
+});
+
+/* Nút toàn màn hình */
+$('fsBtn').addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    const el = document.documentElement;
+    const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+    if (req) {
+      const r = req.call(el);
+      if (r && r.catch) r.catch(() => {});
+    }
+  } else {
+    document.exitFullscreen();
+  }
+});
+</script>
+</body>
+</html>

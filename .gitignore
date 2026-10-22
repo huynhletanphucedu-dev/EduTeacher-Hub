@@ -11,3 +11,7 @@ _to_delete/
 # Hồ sơ dự thi (không đưa lên GitHub)
 *.docx
 *.doc
+
+# Dữ liệu học sinh – KHÔNG đưa lên GitHub
+_rieng_tu/
+Claude outputs/

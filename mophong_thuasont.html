@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phân tích một số ra thừa số nguyên tố</title>
+<style>
+/* ===== BẢNG MÀU CHUNG ===== */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f172a;--card:#1e293b;--border:#334155;
+  --teal:#06b6d4;--purple:#8b5cf6;--orange:#f59e0b;
+  --green:#10b981;--red:#ef4444;--blue:#3b82f6;--text:#e2e8f0;--sub:#94a3b8;
+}
+html,body{height:100%}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);
+     height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:15px;
+     -webkit-tap-highlight-color:transparent}
+
+/* ===== HEADER ===== */
+.header{background:var(--card);padding:10px 18px;display:flex;align-items:center;
+        justify-content:space-between;border-bottom:1px solid var(--border);flex:none;gap:12px}
+.header-left{display:flex;align-items:center;gap:16px;min-width:0}
+.back-link{color:var(--teal);text-decoration:none;font-size:15px;white-space:nowrap;
+           padding:6px 12px;border-radius:9px;border:1px solid var(--border);transition:.15s}
+.back-link:hover{background:rgba(6,182,212,.12)}
+.header h1{font-size:19px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fs-btn{background:var(--border);color:var(--text);border:none;border-radius:9px;
+        padding:8px 14px;font-size:14px;font-family:inherit;cursor:pointer;white-space:nowrap;transition:.15s}
+.fs-btn:hover{background:#475569}
+
+/* ===== TAB BAR ===== */
+.tab-bar{display:flex;gap:4px;background:var(--card);padding:0 18px;
+         border-bottom:1px solid var(--border);flex:none}
+.mbar-tab{background:none;border:none;border-bottom:3px solid transparent;color:var(--sub);
+          font-size:15.5px;font-family:inherit;padding:11px 18px;cursor:pointer;transition:.15s}
+.mbar-tab:hover{color:var(--text)}
+.mbar-tab.active{color:#fff;border-bottom-color:var(--teal)}
+
+/* ===== THANH HƯỚNG DẪN ===== */
+.instr-bar{background:rgba(6,182,212,.12);color:#a5f3fc;text-align:center;
+           padding:9px 16px;font-size:15px;border-bottom:1px solid var(--border);flex:none}
+
+/* ===== THÂN TRANG ===== */
+.body-wrap{flex:1;display:flex;gap:14px;padding:14px;overflow:hidden;min-height:0}
+.stage-area{flex:1;min-width:0;display:flex}
+.stage{flex:1;background:var(--card);border-radius:22px;overflow:hidden;
+       box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;position:relative;min-width:0}
+.hidden{display:none !important}
+
+/* Hai khung song song trong tab Khám Phá */
+#stageExplore{display:flex;position:relative}
+.tree-pane{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;padding:4px}
+.col-pane{flex:0 0 34%;min-width:225px;min-height:0;display:flex;flex-direction:column;
+          padding:4px;border-left:1px solid var(--border)}
+
+/* QUAN TRỌNG: cho SVG co giãn đúng trong khung flex */
+.tree-pane svg,.col-pane svg{flex:1;width:100%;min-height:0;display:block;touch-action:none}
+
+/* ===== POPUP TÁCH SỐ ===== */
+.split-pop{position:absolute;z-index:30;background:#0f172a;border:2px solid var(--teal);
+           border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;
+           box-shadow:0 14px 36px rgba(0,0,0,.65);min-width:168px}
+.split-title{font-size:14px;color:#a5f3fc;font-weight:700;text-align:center;line-height:1.35}
+.split-opt{background:rgba(6,182,212,.12);border:1.5px solid var(--teal);color:#e2e8f0;
+           border-radius:10px;padding:10px 14px;font-size:19px;font-family:inherit;font-weight:700;
+           cursor:pointer;transition:.15s;touch-action:manipulation}
+.split-opt:hover{background:rgba(6,182,212,.32)}
+.split-close{position:absolute;top:-11px;right:-11px;width:27px;height:27px;border-radius:50%;
+             background:var(--red);border:none;color:#fff;font-size:13px;cursor:pointer;
+             font-family:inherit;line-height:1;touch-action:manipulation}
+
+/* Hiệu ứng nhấp nháy cho nút có thể tách */
+@keyframes nodePulse{0%,100%{stroke-opacity:1}50%{stroke-opacity:.35}}
+.clickable-node{cursor:pointer}
+.clickable-node rect{animation:nodePulse 2.2s ease-in-out infinite}
+
+/* ===== BẢNG ĐIỀU KHIỂN ===== */
+.controls{width:330px;flex:none;background:var(--card);border:1px solid var(--border);
+          border-radius:18px;padding:14px;overflow-y:auto}
+.sec-title{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--sub);
+           font-weight:700;margin:16px 0 8px}
+.sec-title:first-child{margin-top:0}
+
+.formula-box{background:#0f172a;border:1px solid var(--border);border-radius:14px;padding:12px}
+.f-label{font-size:12px;color:var(--sub);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.f-main{font-size:24px;font-weight:800;color:#fbbf24;word-break:break-word;line-height:1.35}
+.f-sub{font-size:16px;color:#c4b5fd;line-height:1.4;word-break:break-word}
+
+.num-row{display:flex;gap:8px;margin-bottom:10px}
+.num-input{flex:1;background:#0f172a;border:2px solid var(--border);border-radius:11px;
+           color:var(--text);font-size:22px;font-weight:700;font-family:inherit;
+           padding:9px 14px;outline:none;min-width:0;transition:.15s}
+.num-input:focus{border-color:var(--teal)}
+.btn-inline{background:#0f172a;border:2px solid var(--border);border-radius:11px;color:var(--text);
+            font-size:20px;padding:0 16px;cursor:pointer;font-family:inherit;transition:.15s}
+.btn-inline:hover{border-color:var(--teal)}
+
+.preset-chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
+.preset-chip{background:#0f172a;border:1.5px solid var(--border);color:var(--sub);border-radius:9px;
+             padding:7px 12px;font-size:14.5px;font-family:inherit;cursor:pointer;transition:.15s}
+.preset-chip:hover{color:var(--text);border-color:var(--teal)}
+.preset-chip.active{background:rgba(6,182,212,.18);border-color:var(--teal);color:#a5f3fc;font-weight:700}
+
+.btn{display:block;width:100%;margin-top:9px;background:#0f172a;color:var(--text);
+     border:1.5px solid var(--border);border-radius:11px;padding:11px 14px;
+     font-size:15px;font-family:inherit;cursor:pointer;transition:.15s;text-align:center;
+     touch-action:manipulation}
+.btn:hover:not(:disabled){border-color:var(--teal);background:rgba(6,182,212,.1)}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:#062a33;font-weight:700}
+.btn.primary:hover:not(:disabled){background:#22d3ee}
+.btn:disabled{opacity:.55;cursor:default}
+
+.info-box{background:#0f172a;border:1px solid var(--border);border-radius:12px;
+          padding:11px 13px;font-size:15px;line-height:1.5;color:#cbd5e1;margin-top:12px}
+
+.know-box{margin-top:16px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.35);
+          border-radius:14px;padding:12px}
+.know-title{font-weight:700;color:#c4b5fd;font-size:15px;margin-bottom:6px}
+.know-box ul{list-style:none;font-size:14.5px;line-height:1.55;color:#cbd5e1}
+.know-box li{padding-left:16px;position:relative;margin-bottom:5px}
+.know-box li::before{content:'•';position:absolute;left:2px;color:var(--purple)}
+
+/* ===== TAB THỰC HÀNH ===== */
+.practice-wrap{flex:1;display:flex;flex-direction:column;gap:14px;
+               padding:20px 24px;overflow-y:auto;min-width:0}
+.q-head{font-size:13px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.q-text{font-size:19px;line-height:1.55}
+.q-text b{color:#a5f3fc}
+.q-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:620px){.q-options{grid-template-columns:1fr}}
+.opt-btn{background:#0f172a;border:2px solid var(--border);color:var(--text);border-radius:12px;
+         padding:14px 16px;font-size:17px;font-family:inherit;cursor:pointer;text-align:left;
+         transition:.15s;line-height:1.4;touch-action:manipulation}
+.opt-btn:hover:not(:disabled){border-color:var(--teal);background:rgba(6,182,212,.08)}
+.opt-btn.correct{border-color:var(--green);background:rgba(16,185,129,.16);color:#a7f3d0}
+.opt-btn.wrong{border-color:var(--red);background:rgba(239,68,68,.16);color:#fecaca}
+.opt-btn:disabled{cursor:default}
+
+.q-input-wrap{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.q-input{background:#0f172a;border:2px solid var(--border);border-radius:12px;color:var(--text);
+         font-size:20px;font-family:inherit;padding:12px 16px;width:220px;outline:none;transition:.15s}
+.q-input:focus{border-color:var(--teal)}
+
+.sup-row{display:flex;gap:6px}
+.sup-btn{width:42px;height:42px;border-radius:10px;background:#0f172a;border:1.5px solid var(--border);
+         color:var(--text);font-size:19px;font-family:inherit;cursor:pointer;transition:.15s;
+         touch-action:manipulation}
+.sup-btn:hover{border-color:var(--teal);background:rgba(6,182,212,.12)}
+
+/* SVG của câu hỏi thực hành - khai báo rõ ràng, không bị quy tắc khác đè */
+.q-svg{width:100%;height:310px;display:block;background:#0b1220;
+       border-radius:16px;border:1px solid var(--border)}
+
+.q-feedback{font-size:16px;line-height:1.5;padding:12px 16px;border-radius:12px;display:none}
+.q-feedback.show{display:block}
+.q-feedback.ok{background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.45);color:#a7f3d0}
+.q-feedback.no{background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.45);color:#fecaca}
+
+.summary{text-align:center;padding:22px 10px}
+.sum-score{font-size:58px;font-weight:800;color:var(--teal);line-height:1}
+.sum-line{font-size:18px;margin-top:12px;color:#cbd5e1}
+
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;
+          background:#0f172a;border:1px solid var(--border);border-radius:11px;
+          margin-bottom:8px;font-size:15px}
+.stat-row span:last-child{font-size:20px;font-weight:800;color:var(--orange)}
+.progress-dots{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.dot{width:27px;height:27px;border-radius:8px;background:#0f172a;border:1.5px solid var(--border);
+     display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--sub);font-weight:700}
+.dot.cur{border-color:var(--teal);color:#a5f3fc}
+.dot.ok{background:rgba(16,185,129,.25);border-color:var(--green);color:#a7f3d0}
+.dot.no{background:rgba(239,68,68,.25);border-color:var(--red);color:#fecaca}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:900px){
+  .body-wrap{flex-direction:column;padding:10px;gap:10px}
+  .controls{width:100%;max-height:42vh;flex:none}
+  .header h1{font-size:16px}
+  .instr-bar{font-size:13.5px;padding:7px 12px}
+  .practice-wrap{padding:14px}
+  .col-pane{flex:0 0 40%;min-width:150px}
+  .q-svg{height:250px}
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <a href="dashboard.html" class="back-link">← Dashboard</a>
+    <h1>🌳 Phân tích một số ra thừa số nguyên tố</h1>
+  </div>
+  <button class="fs-btn" id="fsBtn">⛶ Toàn màn hình</button>
+</header>
+
+<div class="tab-bar">
+  <button class="mbar-tab active" data-tab="explore">🔭 Khám Phá</button>
+  <button class="mbar-tab" data-tab="practice">🎯 Thực Hành</button>
+</div>
+
+<div class="instr-bar" id="instrBar">
+  ✋ Bấm vào một số chưa phải số nguyên tố trên cây để tách nó thành tích hai số.
+</div>
+
+<div class="body-wrap">
+
+  <div class="stage-area">
+
+    <!-- Tab Khám Phá -->
+    <div class="stage" id="stageExplore">
+      <div class="tree-pane"><svg id="svgTree" viewBox="0 0 620 640" preserveAspectRatio="xMidYMid meet"></svg></div>
+      <div class="col-pane"><svg id="svgColumn" viewBox="0 0 280 640" preserveAspectRatio="xMidYMid meet"></svg></div>
+    </div>
+
+    <!-- Tab Thực Hành -->
+    <div class="stage hidden" id="stagePractice">
+      <div class="practice-wrap">
+        <div class="q-head" id="qNum">Câu 1 / 10</div>
+        <div class="q-text" id="qText"></div>
+        <div class="q-body" id="qBody"></div>
+        <div class="q-feedback" id="qFeedback"></div>
+        <div class="q-actions" id="qActions"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <aside class="controls">
+
+    <!-- Khám Phá -->
+    <div id="ctrlExplore">
+      <div class="sec-title">Số cần phân tích</div>
+      <div class="num-row">
+        <input type="number" id="numInput" class="num-input" min="4" max="1000" value="60">
+        <button class="btn-inline" id="btnRandom" title="Số ngẫu nhiên">🎲</button>
+      </div>
+      <div class="preset-chips" id="presetChips"></div>
+
+      <button class="btn" id="btnExpandAll">🌳 Mở rộng toàn bộ</button>
+      <button class="btn" id="btnResetTree">↺ Làm lại</button>
+
+      <div class="formula-box" style="margin-top:12px">
+        <div class="f-label">Dạng lũy thừa</div>
+        <div class="f-main" id="resExp">—</div>
+        <div class="f-label" style="margin-top:10px">Dạng tích đầy đủ</div>
+        <div class="f-sub" id="resPlain">—</div>
+      </div>
+
+      <div class="info-box" id="treeStatus">—</div>
+
+      <div class="know-box">
+        <div class="know-title">💡 Em có biết?</div>
+        <ul>
+          <li>Phân tích một số tự nhiên lớn hơn 1 ra thừa số nguyên tố là viết số đó dưới dạng tích các thừa số nguyên tố.</li>
+          <li>Dù tách theo cách nào, kết quả cuối cùng vẫn <b>giống nhau</b>.</li>
+          <li>Thừa số nguyên tố thường được viết theo thứ tự <b>tăng dần</b> và gộp thành lũy thừa.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Thực Hành -->
+    <div id="ctrlPractice" class="hidden">
+      <div class="sec-title">Tiến trình</div>
+      <div class="stat-row"><span>Câu hỏi</span><span id="stQ">1/10</span></div>
+      <div class="stat-row"><span>Điểm</span><span id="stScore">0</span></div>
+      <div class="stat-row"><span>Chuỗi đúng</span><span id="stStreak">🔥 0</span></div>
+      <div class="progress-dots" id="stDots"></div>
+
+      <div class="know-box" style="margin-top:16px">
+        <div class="know-title">🎯 Cách tính điểm</div>
+        <ul>
+          <li>Mỗi câu đúng: <b>+1 điểm</b>.</li>
+          <li>Trả lời đúng liên tiếp để tăng chuỗi 🔥.</li>
+          <li>Khi nhập dạng lũy thừa, dùng nút <b>² ³ ⁴</b> hoặc gõ <b>2^2.3.5</b> đều được.</li>
+        </ul>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<script>
+/* =========================================================
+   1. TIỆN ÍCH CHUNG
+   ========================================================= */
+const NS = 'http://www.w3.org/2000/svg';
+const $  = id => document.getElementById(id);
+const rnd = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+const pick = a => a[Math.floor(Math.random() * a.length)];
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function isPrime(n) {
+  if (n < 2) return false;
+  for (let i = 2; i * i <= n; i++) if (n % i === 0) return false;
+  return true;
+}
+function primeFactors(n) {
+  const r = [];
+  let m = n;
+  for (let p = 2; p * p <= m; p++) { while (m % p === 0) { r.push(p); m /= p; } }
+  if (m > 1) r.push(m);
+  return r;
+}
+function factorMap(n) {
+  const map = {};
+  primeFactors(n).forEach(p => { map[p] = (map[p] || 0) + 1; });
+  return map;
+}
+function spf(n) {
+  for (let p = 2; p * p <= n; p++) if (n % p === 0) return p;
+  return n;
+}
+/* Xoá sạch SVG an toàn (không dùng innerHTML) */
+function clearSvg(svg) {
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+}
+const SUP = { '0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹' };
+function supStr(x) { return String(x).split('').map(c => SUP[c]).join(''); }
+function mapToString(map) {
+  return Object.keys(map).map(Number).sort((a, b) => a - b)
+    .filter(p => map[p] > 0)
+    .map(p => map[p] === 1 ? String(p) : p + supStr(map[p]))
+    .join(' · ');
+}
+function formatExp(n) { return mapToString(factorMap(n)); }
+
+/* =========================================================
+   2. TAB KHÁM PHÁ — CÂY THỪA SỐ
+   ========================================================= */
+let treeRoot = null;
+let treeN = 60;
+let chooserEl = null;
+
+function closeChooser() {
+  if (chooserEl) { chooserEl.remove(); chooserEl = null; }
+}
+
+function balancedSplit(m) {
+  let best = null;
+  for (let d = 2; d * d <= m; d++) if (m % d === 0) best = [d, m / d];
+  return best;
+}
+
+/* --- Vẽ cây thừa số --- */
+function renderTree() {
+  const svg = $('svgTree');
+  clearSvg(svg);
+  closeChooser();
+  if (!treeRoot) return;
+
+  let li = 0, maxD = 0;
+  (function walk(nd, d) {
+    nd.depth = d;
+    if (d > maxD) maxD = d;
+    if (!nd.left) { nd.li = li++; }
+    else { walk(nd.left, d + 1); walk(nd.right, d + 1); nd.li = (nd.left.li + nd.right.li) / 2; }
+  })(treeRoot, 0);
+
+  const VBW = 620, VBH = 640;
+  const nw = 52, nh = 34;
+  const padX = 28, topY = 82, botY = 34;
+  const availW = VBW - padX * 2;
+  const availH = VBH - topY - botY;
+  const leafW = li > 1 ? Math.min(96, availW / (li - 1)) : 0;
+  const levelH = Math.min(84, availH / Math.max(1, maxD));
+  const totalW = leafW * (li - 1);
+  const offX = padX + (availW - totalW) / 2;
+
+  // Tiêu đề
+  const title = document.createElementNS(NS, 'text');
+  title.setAttribute('x', VBW / 2); title.setAttribute('y', 42);
+  title.setAttribute('text-anchor', 'middle');
+  title.setAttribute('font-size', '17'); title.setAttribute('font-weight', '700');
+  title.setAttribute('fill', '#a5f3fc');
+  title.textContent = 'Cách 1 · Cây thừa số';
+  svg.appendChild(title);
+
+  // Cạnh nối
+  (function edges(nd) {
+    if (!nd.left) return;
+    const cx = offX + nd.li * leafW, cy = topY + nd.depth * levelH;
+    [nd.left, nd.right].forEach(ch => {
+      const chx = offX + ch.li * leafW, chy = topY + ch.depth * levelH;
+      const l = document.createElementNS(NS, 'line');
+      l.setAttribute('x1', cx); l.setAttribute('y1', cy + nh / 2);
+      l.setAttribute('x2', chx); l.setAttribute('y2', chy - nh / 2);
+      l.setAttribute('stroke', '#475569'); l.setAttribute('stroke-width', '2.5');
+      svg.appendChild(l);
+    });
+    edges(nd.left); edges(nd.right);
+  })(treeRoot);
+
+  // Nút
+  (function nodes(nd) {
+    const cx = offX + nd.li * leafW, cy = topY + nd.depth * levelH;
+    nd._x = cx; nd._y = cy;
+    const prime = isPrime(nd.value);
+    const isLeaf = !nd.left;
+    const clickable = isLeaf && !prime;
+
+    const g = document.createElementNS(NS, 'g');
+    if (clickable) g.classList.add('clickable-node');
+
+    const r = document.createElementNS(NS, 'rect');
+    r.setAttribute('x', cx - nw / 2); r.setAttribute('y', cy - nh / 2);
+    r.setAttribute('width', nw); r.setAttribute('height', nh);
+    r.setAttribute('rx', 9);
+    r.setAttribute('fill', prime ? 'rgba(245,158,11,.22)' : (isLeaf ? 'rgba(6,182,212,.16)' : 'rgba(139,92,246,.16)'));
+    r.setAttribute('stroke', prime ? '#f59e0b' : (isLeaf ? '#06b6d4' : '#8b5cf6'));
+    r.setAttribute('stroke-width', '2.5');
+    g.appendChild(r);
+
+    const t = document.createElementNS(NS, 'text');
+    t.setAttribute('x', cx); t.setAttribute('y', cy);
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('dominant-baseline', 'central');
+    t.setAttribute('font-size', '17');
+    t.setAttribute('font-weight', '700');
+    t.setAttribute('fill', prime ? '#fde68a' : '#e2e8f0');
+    t.setAttribute('pointer-events', 'none');
+    t.textContent = nd.value;
+    g.appendChild(t);
+
+    if (clickable) {
+      g.addEventListener('click', ev => { ev.stopPropagation(); openChooser(nd); });
+    }
+
+    svg.appendChild(g);
+    if (nd.left) { nodes(nd.left); nodes(nd.right); }
+  })(treeRoot);
+}
+
+/* --- Popup chọn cách tách --- */
+function openChooser(node) {
+  closeChooser();
+  const m = node.value;
+  const pairs = [];
+  for (let d = 2; d * d <= m; d++) if (m % d === 0) pairs.push([d, m / d]);
+  if (!pairs.length) return;
+
+  const stage = $('stageExplore');
+  const svg = $('svgTree');
+
+  // Tính vị trí popup theo toạ độ màn hình, có fallback an toàn
+  let left, top;
+  try {
+    const ctm = svg.getScreenCTM();
+    if (ctm) {
+      const pt = svg.createSVGPoint();
+      pt.x = node._x; pt.y = node._y + 26;
+      const sp = pt.matrixTransform(ctm);
+      const sr = stage.getBoundingClientRect();
+      left = sp.x - sr.left;
+      top  = sp.y - sr.top;
+    } else { throw new Error('no CTM'); }
+  } catch (e) {
+    const sr = stage.getBoundingClientRect();
+    left = sr.width / 2;
+    top  = sr.height / 2;
+  }
+
+  const div = document.createElement('div');
+  div.className = 'split-pop';
+  div.addEventListener('click', e => e.stopPropagation());
+
+  const title = document.createElement('div');
+  title.className = 'split-title';
+  title.textContent = 'Tách ' + m + ' thành tích 2 số:';
+  div.appendChild(title);
+
+  pairs.forEach(([a, b]) => {
+    const btn = document.createElement('button');
+    btn.className = 'split-opt';
+    btn.textContent = a + ' × ' + b;
+    btn.addEventListener('click', () => { doSplit(node, a, b); closeChooser(); });
+    div.appendChild(btn);
+  });
+
+  const close = document.createElement('button');
+  close.className = 'split-close';
+  close.textContent = '✕';
+  close.addEventListener('click', e => { e.stopPropagation(); closeChooser(); });
+  div.appendChild(close);
+
+  stage.appendChild(div);
+  chooserEl = div;
+
+  const w = div.offsetWidth, h = div.offsetHeight;
+  const sr = stage.getBoundingClientRect();
+  left = left - w / 2;
+  if (left < 8) left = 8;
+  if (left + w > sr.width - 8) left = sr.width - w - 8;
+  if (top + h > sr.height - 8) top = sr.height - h - 8;
+  if (top < 8) top = 8;
+  div.style.left = left + 'px';
+  div.style.top = top + 'px';
+}
+
+function doSplit(node, a, b) {
+  node.left = { value: a, left: null, right: null };
+  node.right = { value: b, left: null, right: null };
+  renderTree();
+  updateResultPanel();
+}
+
+/* =========================================================
+   3. TAB KHÁM PHÁ — CỘT DỌC
+   ========================================================= */
+function renderColumn() {
+  const svg = $('svgColumn');
+  clearSvg(svg);
+
+  const rows = [];
+  let m = treeN;
+  while (m > 1) {
+    const p = spf(m);
+    rows.push([m, p]);
+    m = m / p;
+  }
+  rows.push([1, null]);
+
+  const W = 280, H = 640, topY = 92;
+  const rowH = Math.min(62, (H - topY - 70) / rows.length);
+  const fs = Math.min(30, rowH * 0.58);
+  const lineX = 118;
+
+  const title = document.createElementNS(NS, 'text');
+  title.setAttribute('x', W / 2); title.setAttribute('y', 42);
+  title.setAttribute('text-anchor', 'middle');
+  title.setAttribute('font-size', '16'); title.setAttribute('font-weight', '700');
+  title.setAttribute('fill', '#a5f3fc');
+  title.textContent = 'Cách 2 · Chia liên tiếp';
+  svg.appendChild(title);
+
+  const startY = topY + Math.max(0, (H - topY - 70 - rows.length * rowH) / 2);
+
+  const line = document.createElementNS(NS, 'line');
+  line.setAttribute('x1', lineX); line.setAttribute('y1', startY - 4);
+  line.setAttribute('x2', lineX); line.setAttribute('y2', startY + rows.length * rowH - 4);
+  line.setAttribute('stroke', '#475569'); line.setAttribute('stroke-width', '2.5');
+  svg.appendChild(line);
+
+  rows.forEach((r, i) => {
+    const y = startY + i * rowH + rowH / 2;
+
+    const t = document.createElementNS(NS, 'text');
+    t.setAttribute('x', lineX - 16); t.setAttribute('y', y);
+    t.setAttribute('text-anchor', 'end');
+    t.setAttribute('dominant-baseline', 'central');
+    t.setAttribute('font-size', fs); t.setAttribute('font-weight', '700');
+    t.setAttribute('fill', '#e2e8f0');
+    t.textContent = r[0];
+    svg.appendChild(t);
+
+    if (r[1]) {
+      const p = document.createElementNS(NS, 'text');
+      p.setAttribute('x', lineX + 18); p.setAttribute('y', y);
+      p.setAttribute('dominant-baseline', 'central');
+      p.setAttribute('font-size', fs); p.setAttribute('font-weight', '700');
+      p.setAttribute('fill', '#06b6d4');
+      p.textContent = r[1];
+      svg.appendChild(p);
+    }
+  });
+}
+
+/* =========================================================
+   4. CẬP NHẬT BẢNG KẾT QUẢ
+   ========================================================= */
+function updateResultPanel() {
+  if (!treeRoot) return;
+
+  const leaves = [];
+  (function walk(nd) {
+    if (!nd.left) leaves.push(nd.value);
+    else { walk(nd.left); walk(nd.right); }
+  })(treeRoot);
+
+  const comps = leaves.filter(v => !isPrime(v));
+  const done = comps.length === 0;
+
+  const status = $('treeStatus');
+  if (done) {
+    status.innerHTML = '✅ <b>Cây hoàn tất!</b> Mọi lá đều là số nguyên tố — kết quả trùng với cách chia liên tiếp.';
+    status.style.color = '#a7f3d0';
+    status.style.borderColor = 'rgba(16,185,129,.5)';
+  } else if (leaves.length === 1) {
+    status.innerHTML = '🌱 Bấm vào ô <b>' + treeN + '</b> trên cây để chọn cách tách nó thành tích hai số.';
+    status.style.color = '#fcd34d';
+    status.style.borderColor = 'var(--border)';
+  } else {
+    status.innerHTML = '🌱 Còn <b>' + comps.length + '</b> số chưa phải số nguyên tố (viền xanh nhấp nháy). Bấm vào số đó để tách tiếp.';
+    status.style.color = '#fcd34d';
+    status.style.borderColor = 'var(--border)';
+  }
+
+  $('resExp').textContent = treeN + ' = ' + formatExp(treeN);
+  $('resPlain').textContent = primeFactors(treeN).join(' · ');
+}
+
+/* =========================================================
+   5. ĐỔI SỐ
+   ========================================================= */
+const EXPLORE_PRESETS = [36, 60, 84, 120, 360, 1000];
+
+function setExploreNumber(n, autoExpand) {
+  n = Math.max(4, Math.min(1000, Math.round(n)));
+  treeN = n;
+  treeRoot = { value: n, left: null, right: null };
+
+  // Tự mở rộng 1 tầng nếu số không phải nguyên tố — để cây "có hình cây" ngay
+  if (autoExpand && !isPrime(n)) {
+    const sp = balancedSplit(n);
+    if (sp) {
+      treeRoot.left  = { value: sp[0], left: null, right: null };
+      treeRoot.right = { value: sp[1], left: null, right: null };
+    }
+  }
+
+  $('numInput').value = n;
+  document.querySelectorAll('.preset-chip').forEach(c => {
+    c.classList.toggle('active', Number(c.dataset.n) === n);
+  });
+  renderTree();
+  renderColumn();
+  updateResultPanel();
+}
+
+(function buildPresetChips() {
+  const wrap = $('presetChips');
+  EXPLORE_PRESETS.forEach(n => {
+    const b = document.createElement('button');
+    b.className = 'preset-chip';
+    b.dataset.n = n;
+    b.textContent = n;
+    b.addEventListener('click', () => setExploreNumber(n, true));
+    wrap.appendChild(b);
+  });
+})();
+
+$('numInput').addEventListener('change', e => {
+  const v = parseInt(e.target.value, 10);
+  setExploreNumber(isNaN(v) ? treeN : v, true);
+});
+$('numInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') e.target.blur();
+});
+$('btnRandom').addEventListener('click', () => {
+  const pool = [];
+  for (let i = 4; i <= 400; i++) if (!isPrime(i)) pool.push(i);
+  setExploreNumber(pick(pool), true);
+});
+$('btnResetTree').addEventListener('click', () => setExploreNumber(treeN, false));
+$('btnExpandAll').addEventListener('click', () => {
+  (function expand(nd) {
+    if (isPrime(nd.value)) return;
+    const sp = balancedSplit(nd.value);
+    if (!sp) return;
+    nd.left  = { value: sp[0], left: null, right: null };
+    nd.right = { value: sp[1], left: null, right: null };
+    expand(nd.left); expand(nd.right);
+  })(treeRoot);
+  renderTree();
+  updateResultPanel();
+});
+
+document.addEventListener('click', () => closeChooser());
+
+/* =========================================================
+   6. THỰC HÀNH — SINH CÂU HỎI
+   ========================================================= */
+const EASY_NUMS = [12, 18, 20, 24, 28, 30, 36, 40, 42, 45, 48, 50];
+const MED_NUMS  = [54, 56, 60, 63, 70, 72, 75, 80, 84, 90, 96, 100, 108];
+const HARD_NUMS = [120, 126, 132, 144, 150, 168, 180, 200, 216, 240, 300, 360, 420, 500, 600, 720, 840, 900, 1000];
+
+function wrongExpressions(n) {
+  const map = factorMap(n);
+  const primes = Object.keys(map).map(Number).sort((a, b) => a - b);
+  const out = [];
+  const clone = () => Object.assign({}, map);
+
+  { const m = clone(); m[primes[0]]++; out.push(mapToString(m)); }
+  { const m = clone(); const p = primes[0]; m[p]--; if (m[p] <= 0) delete m[p]; out.push(mapToString(m)); }
+  if (primes.length >= 2) {
+    const m = clone();
+    const p = primes[0], q = primes[1];
+    m[p]--; m[q]--;
+    if (m[p] <= 0) delete m[p];
+    if (m[q] <= 0) delete m[q];
+    m[p * q] = (m[p * q] || 0) + 1;
+    out.push(mapToString(m));
+  }
+  {
+    const m = clone();
+    const p = primes[0];
+    m[p]--; if (m[p] <= 0) delete m[p];
+    const np = (p === 2) ? 3 : 2;
+    m[np] = (m[np] || 0) + 1;
+    out.push(mapToString(m));
+  }
+  {
+    const m = clone();
+    const p = primes.includes(2) ? 3 : 2;
+    m[p] = (m[p] || 0) + 1;
+    out.push(mapToString(m));
+  }
+  return [...new Set(out)];
+}
+
+function genChooseCorrect(pool) {
+  const n = pick(pool);
+  const correct = formatExp(n);
+  const wrongs = shuffle(wrongExpressions(n).filter(s => s !== correct)).slice(0, 3);
+  const opts = shuffle([correct, ...wrongs]);
+  return {
+    type: 'choice',
+    prompt: 'Phân tích số <b>' + n + '</b> ra thừa số nguyên tố. Kết quả nào sau đây <b>đúng</b>?',
+    options: opts,
+    answer: correct,
+    explain: n + ' = ' + primeFactors(n).join(' · ') + ' = ' + correct + '. Các phương án khác sai vì còn chứa hợp số, sai số mũ hoặc thừa/thiếu thừa số.'
+  };
+}
+
+function makeCompositeError(n) {
+  const f = primeFactors(n);
+  if (f.length < 2) return null;
+  const merged = f[0] * f[1];
+  const rest = f.slice(2);
+  return [merged, ...rest].sort((a, b) => a - b).join(' · ');
+}
+
+function genFindError(pool) {
+  const nums = shuffle(pool).slice(0, 4);
+  const lines = [];
+  for (let i = 0; i < 3; i++) {
+    lines.push({ text: nums[i] + ' = ' + formatExp(nums[i]), ok: true });
+  }
+  let badStr = makeCompositeError(nums[3]);
+  if (!badStr) badStr = wrongExpressions(nums[3])[0];
+  lines.push({ text: nums[3] + ' = ' + badStr, ok: false });
+
+  const mixed = shuffle(lines);
+  return {
+    type: 'choice',
+    prompt: 'Trong các phân tích sau, phân tích nào <b>SAI</b>?',
+    options: mixed.map(l => l.text),
+    answer: lines[3].text,
+    explain: 'Dòng "' + lines[3].text + '" sai vì ' + badStr + ' còn chứa thừa số không phải số nguyên tố. Đáp án đúng phải là ' + nums[3] + ' = ' + formatExp(nums[3]) + '.'
+  };
+}
+
+function buildFactorTree(n) {
+  const root = { value: n, left: null, right: null };
+  (function walk(nd) {
+    if (isPrime(nd.value)) return;
+    const sp = balancedSplit(nd.value);
+    if (!sp) return;
+    nd.left  = { value: sp[0], left: null, right: null };
+    nd.right = { value: sp[1], left: null, right: null };
+    walk(nd.left); walk(nd.right);
+  })(root);
+  return root;
+}
+
+function genTreeFill(pool) {
+  const n = pick(pool);
+  const root = buildFactorTree(n);
+
+  const all = [];
+  (function walk(nd) { all.push(nd); if (nd.left) { walk(nd.left); walk(nd.right); } })(root);
+  const candidates = all.filter(nd => nd !== root);
+  const target = pick(candidates);
+  target.blank = true;
+
+  let parent = null;
+  (function find(nd) {
+    if (nd.left) {
+      if (nd.left === target || nd.right === target) parent = nd;
+      find(nd.left); find(nd.right);
+    }
+  })(root);
+
+  let explain;
+  if (target.left) {
+    explain = 'Ô "?" có hai con là ' + target.left.value + ' và ' + target.right.value +
+              ', nên giá trị là ' + target.left.value + ' × ' + target.right.value + ' = ' + target.value + '.';
+  } else {
+    const sib = parent.left === target ? parent.right : parent.left;
+    explain = 'Ô "?" cùng cha với ' + sib.value + ' (cha là ' + parent.value + '), nên giá trị là ' +
+              parent.value + ' : ' + sib.value + ' = ' + target.value + '.';
+  }
+
+  return {
+    type: 'treefill',
+    tree: root,
+    answer: target.value,
+    prompt: 'Cây thừa số dưới đây còn thiếu một số. Hãy điền số còn thiếu vào ô "?".',
+    explain: explain
+  };
+}
+
+function genInputExp(pool) {
+  const n = pick(pool);
+  return {
+    type: 'exp',
+    n: n,
+    prompt: 'Phân tích số <b>' + n + '</b> ra thừa số nguyên tố và viết kết quả dưới dạng <b>lũy thừa</b> (thừa số tăng dần).',
+    answer: formatExp(n),
+    explain: n + ' = ' + primeFactors(n).join(' · ') + ' = ' + formatExp(n) + '.'
+  };
+}
+
+function genCountFactors() {
+  const n = pick([24, 36, 48, 60, 72, 84, 90, 96, 100, 120, 144, 180, 200, 216, 240, 300, 360, 500, 720, 1000]);
+  const f = primeFactors(n);
+  return {
+    type: 'input',
+    prompt: 'Phân tích số <b>' + n + '</b> ra thừa số nguyên tố. Có tất cả bao nhiêu thừa số nguyên tố (kể cả các thừa số giống nhau)?',
+    answer: f.length,
+    explain: n + ' = ' + f.join(' · ') + ' = ' + formatExp(n) + ' → có tất cả ' + f.length + ' thừa số nguyên tố (kể cả lặp).'
+  };
+}
+
+function genFromExp() {
+  const n = pick([36, 48, 60, 72, 84, 90, 96, 100, 120, 144, 180, 200, 300, 360, 600]);
+  return {
+    type: 'input',
+    prompt: 'Biết <b>n = ' + formatExp(n) + '</b>. Hỏi n bằng bao nhiêu?',
+    answer: n,
+    explain: formatExp(n) + ' = ' + primeFactors(n).join(' · ') + ' = ' + n + '.'
+  };
+}
+
+const PRACTICE_GENS = [
+  () => genChooseCorrect(EASY_NUMS),
+  () => genFindError(EASY_NUMS),
+  () => genTreeFill(EASY_NUMS),
+  () => genInputExp(EASY_NUMS),
+  genCountFactors,
+  () => genChooseCorrect(MED_NUMS),
+  () => genTreeFill(MED_NUMS),
+  () => genInputExp(MED_NUMS),
+  genFromExp,
+  () => genFindError(HARD_NUMS)
+];
+
+/* =========================================================
+   7. ĐIỀU KHIỂN THỰC HÀNH
+   ========================================================= */
+let pq = [], pIdx = 0, pScore = 0, pStreak = 0, pBest = 0;
+let pAnswered = false, pResults = [];
+
+function startPractice() {
+  pq = PRACTICE_GENS.map(g => g());
+  pIdx = 0; pScore = 0; pStreak = 0; pBest = 0;
+  pAnswered = false; pResults = [];
+  renderQuestion();
+}
+
+function updatePracticePanel() {
+  $('stQ').textContent = Math.min(pIdx + 1, 10) + '/10';
+  $('stScore').textContent = pScore;
+  $('stStreak').textContent = '🔥 ' + pStreak;
+
+  const dots = $('stDots');
+  dots.innerHTML = '';
+  for (let i = 0; i < 10; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    if (pResults[i] === true) { d.classList.add('ok'); d.textContent = '✓'; }
+    else if (pResults[i] === false) { d.classList.add('no'); d.textContent = '✗'; }
+    else { d.textContent = i + 1; if (i === pIdx) d.classList.add('cur'); }
+    dots.appendChild(d);
+  }
+}
+
+function feedback(ok, explain) {
+  const fb = $('qFeedback');
+  fb.className = 'q-feedback show ' + (ok ? 'ok' : 'no');
+  fb.innerHTML = (ok ? '✅ <b>Chính xác!</b> ' : '❌ <b>Chưa đúng.</b> ') + explain;
+}
+
+function scoreUpdate(ok) {
+  pResults[pIdx] = ok;
+  if (ok) { pScore++; pStreak++; if (pStreak > pBest) pBest = pStreak; }
+  else { pStreak = 0; }
+  updatePracticePanel();
+}
+
+function showNext() {
+  const act = $('qActions');
+  act.innerHTML = '';
+  const b = document.createElement('button');
+  b.className = 'btn primary';
+  if (pIdx < 9) {
+    b.textContent = 'Câu tiếp →';
+    b.addEventListener('click', () => { pIdx++; renderQuestion(); });
+  } else {
+    b.textContent = 'Xem kết quả 🏁';
+    b.addEventListener('click', showSummary);
+  }
+  act.appendChild(b);
+}
+
+function renderQuestion() {
+  const q = pq[pIdx];
+  pAnswered = false;
+
+  $('qNum').textContent = 'Câu ' + (pIdx + 1) + ' / 10';
+  $('qText').innerHTML = q.prompt;
+
+  const body = $('qBody');
+  body.innerHTML = '';
+  const fb = $('qFeedback');
+  fb.className = 'q-feedback';
+  fb.innerHTML = '';
+  $('qActions').innerHTML = '';
+  updatePracticePanel();
+
+  if (q.type === 'choice') {
+    const wrap = document.createElement('div');
+    wrap.className = 'q-options';
+    q.options.forEach(op => {
+      const b = document.createElement('button');
+      b.className = 'opt-btn';
+      b.textContent = op;
+      b.addEventListener('click', () => answerChoice(q, op, b));
+      wrap.appendChild(b);
+    });
+    body.appendChild(wrap);
+
+  } else if (q.type === 'input') {
+    body.appendChild(buildNumericInput(q));
+
+  } else if (q.type === 'treefill') {
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '0 0 620 380');
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    svg.setAttribute('class', 'q-svg');
+    svg.style.height = '310px';
+    body.appendChild(svg);
+    drawSmallTree(svg, q.tree);
+
+    const wrap = buildNumericInput(q);
+    wrap.style.marginTop = '14px';
+    body.appendChild(wrap);
+
+  } else if (q.type === 'exp') {
+    body.appendChild(buildExpInput(q));
+  }
+}
+
+function buildNumericInput(q) {
+  const wrap = document.createElement('div');
+  wrap.className = 'q-input-wrap';
+
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.className = 'q-input';
+  inp.inputMode = 'numeric';
+  inp.placeholder = 'Nhập số…';
+  inp.autocomplete = 'off';
+
+  const b = document.createElement('button');
+  b.className = 'btn primary';
+  b.style.cssText = 'width:auto;margin-top:0;';
+  b.textContent = 'Trả lời';
+
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') answerInput(q, inp); });
+  b.addEventListener('click', () => answerInput(q, inp));
+
+  wrap.appendChild(inp);
+  wrap.appendChild(b);
+  setTimeout(() => inp.focus(), 150);
+  return wrap;
+}
+
+function buildExpInput(q) {
+  const wrap = document.createElement('div');
+  wrap.className = 'q-input-wrap';
+
+  const inp = document.createElement('input');
+  inp.type = 'text';
+  inp.className = 'q-input';
+  inp.style.width = '270px';
+  inp.placeholder = 'Ví dụ: 2² · 3 · 5';
+  inp.autocomplete = 'off';
+
+  const supRow = document.createElement('div');
+  supRow.className = 'sup-row';
+  ['²', '³', '⁴', '⁵', '·'].forEach(ch => {
+    const sb = document.createElement('button');
+    sb.className = 'sup-btn';
+    sb.type = 'button';
+    sb.textContent = ch;
+    sb.addEventListener('click', () => { inp.value += ch; inp.focus(); });
+    supRow.appendChild(sb);
+  });
+
+  const btn = document.createElement('button');
+  btn.className = 'btn primary';
+  btn.style.cssText = 'width:auto;margin-top:0;';
+  btn.textContent = 'Trả lời';
+
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') answerExp(q, inp, btn); });
+  btn.addEventListener('click', () => answerExp(q, inp, btn));
+
+  wrap.appendChild(inp);
+  wrap.appendChild(supRow);
+  wrap.appendChild(btn);
+  setTimeout(() => inp.focus(), 150);
+  return wrap;
+}
+
+function drawSmallTree(svg, root) {
+  clearSvg(svg);
+
+  let li = 0, maxD = 0;
+  (function walk(nd, d) {
+    nd.depth = d;
+    if (d > maxD) maxD = d;
+    if (!nd.left) { nd.li = li++; }
+    else { walk(nd.left, d + 1); walk(nd.right, d + 1); nd.li = (nd.left.li + nd.right.li) / 2; }
+  })(root, 0);
+
+  const VBW = 620, VBH = 380;
+  const nw = 54, nh = 32;
+  const padX = 26, padY = 26;
+  const availW = VBW - padX * 2;
+  const availH = VBH - padY * 2;
+  const leafW = li > 1 ? Math.min(108, availW / (li - 1)) : 0;
+  const levelH = Math.min(76, availH / Math.max(1, maxD));
+  const totalW = leafW * (li - 1);
+  const offX = padX + (availW - totalW) / 2;
+  const offY = padY;
+
+  (function edges(nd) {
+    const cx = offX + nd.li * leafW, cy = offY + nd.depth * levelH;
+    nd._cx = cx; nd._cy = cy;
+    if (!nd.left) return;
+    [nd.left, nd.right].forEach(ch => {
+      const chx = offX + ch.li * leafW, chy = offY + ch.depth * levelH;
+      const l = document.createElementNS(NS, 'line');
+      l.setAttribute('x1', cx); l.setAttribute('y1', cy + nh / 2);
+      l.setAttribute('x2', chx); l.setAttribute('y2', chy - nh / 2);
+      l.setAttribute('stroke', '#475569'); l.setAttribute('stroke-width', '2.5');
+      svg.appendChild(l);
+    });
+    edges(nd.left); edges(nd.right);
+  })(root);
+
+  (function nodes(nd) {
+    const cx = nd._cx, cy = nd._cy;
+    const blank = !!nd.blank;
+    const prime = isPrime(nd.value);
+
+    const g = document.createElementNS(NS, 'g');
+    const r = document.createElementNS(NS, 'rect');
+    r.setAttribute('x', cx - nw / 2); r.setAttribute('y', cy - nh / 2);
+    r.setAttribute('width', nw); r.setAttribute('height', nh);
+    r.setAttribute('rx', 8);
+    if (blank) {
+      r.setAttribute('fill', 'rgba(245,158,11,.15)');
+      r.setAttribute('stroke', '#f59e0b');
+      r.setAttribute('stroke-width', '2.5');
+      r.setAttribute('stroke-dasharray', '6 4');
+    } else if (prime) {
+      r.setAttribute('fill', 'rgba(245,158,11,.2)');
+      r.setAttribute('stroke', '#f59e0b');
+      r.setAttribute('stroke-width', '2.5');
+    } else {
+      r.setAttribute('fill', 'rgba(6,182,212,.14)');
+      r.setAttribute('stroke', '#06b6d4');
+      r.setAttribute('stroke-width', '2.5');
+    }
+    g.appendChild(r);
+
+    const t = document.createElementNS(NS, 'text');
+    t.setAttribute('x', cx); t.setAttribute('y', cy);
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('dominant-baseline', 'central');
+    t.setAttribute('font-size', '17');
+    t.setAttribute('font-weight', '700');
+    t.setAttribute('fill', blank ? '#fcd34d' : (prime ? '#fde68a' : '#e2e8f0'));
+    t.textContent = blank ? '?' : nd.value;
+    g.appendChild(t);
+
+    svg.appendChild(g);
+    if (nd.left) { nodes(nd.left); nodes(nd.right); }
+  })(root);
+}
+
+function answerChoice(q, op, btn) {
+  if (pAnswered) return;
+  pAnswered = true;
+  const ok = op === q.answer;
+  $('qBody').querySelectorAll('.opt-btn').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === q.answer) b.classList.add('correct');
+  });
+  if (!ok) btn.classList.add('wrong');
+  feedback(ok, q.explain);
+  scoreUpdate(ok);
+  showNext();
+}
+
+function answerInput(q, inp) {
+  if (pAnswered) return;
+  const raw = String(inp.value).trim().replace(',', '.');
+  if (raw === '' || isNaN(parseFloat(raw))) {
+    inp.style.borderColor = '#ef4444';
+    return;
+  }
+  pAnswered = true;
+  const val = parseFloat(raw);
+  const ok = Math.abs(val - q.answer) < 1e-6;
+  inp.disabled = true;
+  inp.style.borderColor = ok ? '#10b981' : '#ef4444';
+  feedback(ok, q.explain);
+  scoreUpdate(ok);
+  showNext();
+}
+
+function parseExp(s) {
+  s = String(s).trim().replace(/\s+/g, '');
+  if (!s) return null;
+  s = s.replace(/⁰/g, '^0').replace(/¹/g, '^1').replace(/²/g, '^2').replace(/³/g, '^3')
+       .replace(/⁴/g, '^4').replace(/⁵/g, '^5').replace(/⁶/g, '^6').replace(/⁷/g, '^7')
+       .replace(/⁸/g, '^8').replace(/⁹/g, '^9');
+  s = s.replace(/[·×.*]/g, '*');
+  const parts = s.split('*');
+  const map = {};
+  for (const p of parts) {
+    if (!p) return null;
+    const m = p.match(/^(\d+)(?:\^(\d+))?$/);
+    if (!m) return null;
+    const b = parseInt(m[1], 10);
+    const e = m[2] ? parseInt(m[2], 10) : 1;
+    if (b < 2 || e < 1) return null;
+    map[b] = (map[b] || 0) + e;
+  }
+  return map;
+}
+function sameMap(a, b) {
+  const ka = Object.keys(a).map(Number).sort((x, y) => x - y);
+  const kb = Object.keys(b).map(Number).sort((x, y) => x - y);
+  if (ka.length !== kb.length) return false;
+  for (let i = 0; i < ka.length; i++) {
+    if (ka[i] !== kb[i]) return false;
+    if (a[ka[i]] !== b[kb[i]]) return false;
+  }
+  return true;
+}
+function answerExp(q, inp, btn) {
+  if (pAnswered) return;
+  const map = parseExp(inp.value);
+  let ok = false;
+  if (map) {
+    const allPrime = Object.keys(map).every(k => isPrime(Number(k)));
+    ok = allPrime && sameMap(map, factorMap(q.n));
+  }
+  pAnswered = true;
+  inp.disabled = true;
+  inp.style.borderColor = ok ? '#10b981' : '#ef4444';
+  if (btn) btn.disabled = true;
+  feedback(ok, q.explain);
+  scoreUpdate(ok);
+  showNext();
+}
+
+function showSummary() {
+  $('qNum').textContent = 'KẾT QUẢ';
+  $('qText').innerHTML = '🎉 <b>Hoàn thành 10 câu hỏi!</b>';
+  $('qBody').innerHTML =
+    '<div class="summary">' +
+      '<div class="sum-score">' + pScore + '/10</div>' +
+      '<div class="sum-line">Chuỗi đúng dài nhất: 🔥 <b>' + pBest + '</b></div>' +
+      '<div class="sum-line">' +
+        (pScore >= 9 ? 'Xuất sắc! Em nắm rất chắc cách phân tích ra thừa số nguyên tố.' :
+         pScore >= 7 ? 'Khá tốt! Hãy xem lại vài chỗ còn nhầm.' :
+         pScore >= 5 ? 'Cần luyện thêm một chút nhé.' :
+                       'Hãy ôn lại lí thuyết rồi thử lại nhé.') +
+      '</div>' +
+    '</div>';
+  $('qFeedback').className = 'q-feedback';
+  $('qActions').innerHTML = '';
+  const b = document.createElement('button');
+  b.className = 'btn primary';
+  b.textContent = '🔄 Chơi lại';
+  b.addEventListener('click', startPractice);
+  $('qActions').appendChild(b);
+}
+
+/* =========================================================
+   8. CHUYỂN TAB + TOÀN MÀN HÌNH
+   ========================================================= */
+let currentTab = 'explore';
+let practiceStarted = false;
+
+function updateInstrBar() {
+  $('instrBar').textContent = currentTab === 'practice'
+    ? '🎯 Trả lời 10 câu hỏi: chọn phân tích đúng, phát hiện lỗi, điền số còn thiếu và nhập dạng lũy thừa.'
+    : '✋ Bấm vào một số chưa phải số nguyên tố trên cây (viền xanh nhấp nháy) để tách nó thành tích hai số.';
+}
+
+function switchTab(name) {
+  currentTab = name;
+  document.querySelectorAll('.mbar-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === name);
+  });
+  $('stageExplore').classList.toggle('hidden', name !== 'explore');
+  $('stagePractice').classList.toggle('hidden', name !== 'practice');
+  $('ctrlExplore').classList.toggle('hidden', name !== 'explore');
+  $('ctrlPractice').classList.toggle('hidden', name !== 'practice');
+  closeChooser();
+  updateInstrBar();
+
+  if (name === 'practice' && !practiceStarted) {
+    practiceStarted = true;
+    startPractice();
+  }
+}
+
+document.querySelectorAll('.mbar-tab').forEach(b => {
+  b.addEventListener('click', () => switchTab(b.dataset.tab));
+});
+
+$('fsBtn').addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    const el = document.documentElement;
+    const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+    if (req) {
+      const r = req.call(el);
+      if (r && r.catch) r.catch(() => {});
+    }
+  } else {
+    document.exitFullscreen();
+  }
+});
+
+/* =========================================================
+   9. KHỞI TẠO — auto mở rộng 1 tầng để cây hiện rõ ngay
+   ========================================================= */
+setExploreNumber(60, true);
+updateInstrBar();
+</script>
+</body>
+</html>

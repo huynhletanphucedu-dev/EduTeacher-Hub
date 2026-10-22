@@ -129,6 +129,7 @@ function render(){
   if(!SETS.length){$('#out').innerHTML='<div class="empty">Chọn ít nhất một sổ điểm, hoặc dán bảng điểm từ Excel để xem thống kê.</div>';return}
   const st=SETS.map(stats),many=SETS.length>4,show=SETS.slice(0,4),sst=st.slice(0,4);
   const all={list:SETS.flatMap(s=>s.list)},A=stats(all);
+  if(!A.n){$('#out').innerHTML=`<div class="empty">Sổ điểm đã chọn chưa có <b>${esc($('#col').selectedOptions[0].textContent)}</b> nào (${A.miss} học sinh). Điểm TB môn chỉ có khi đủ các cột TX, GK và CK — thử chọn cột khác hoặc học kỳ khác.</div>`;return}
   const kpi=(l,v,s)=>`<div class="stat"><span>${l}</span><b>${v}</b>${s?`<span style="text-transform:none">${s}</span>`:''}</div>`;
   const legend=(arr,vars)=>arr.length>1?`<div class="legend">${arr.map((n,i)=>`<span><i style="background:var(${vars[i]})"></i>${esc(n)}</span>`).join('')}</div>`:'';
   const rows=SETS.map((s,j)=>{const S=st[j];return S.n?`<tr><td><b>${esc(s.name)}</b></td><td class="n">${S.n}</td><td class="n">${fmt(S.mean,2)}</td><td class="n">${fmt(S.med)}</td><td class="n">${fmt(S.sd,2)}</td><td class="n">${fmt(S.max)}</td><td class="n">${fmt(S.min)}</td>${S.bands.slice().reverse().map(c=>`<td class="n">${c} <span class="hint">(${fmt(pct(c,S.n))}%)</span></td>`).join('')}<td class="n"><b>${fmt(pct(S.tren5,S.n))}%</b></td><td class="n">${S.duoi35}</td></tr>`:`<tr><td><b>${esc(s.name)}</b></td><td colspan="13" class="hint">Chưa có điểm</td></tr>`}).join('');

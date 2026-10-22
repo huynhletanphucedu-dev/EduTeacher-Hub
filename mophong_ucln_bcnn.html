@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chủ đề 16 – ƯCLN & BCNN 🤝</title>
+    <style>/* Tailwind (đã biên dịch sẵn để chạy offline) */*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width:640px){.container{max-width:640px}}@media (min-width:768px){.container{max-width:768px}}@media (min-width:1024px){.container{max-width:1024px}}@media (min-width:1280px){.container{max-width:1280px}}@media (min-width:1536px){.container{max-width:1536px}}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.top-0{top:0}.top-1\/4{top:25%}.top-3\/4{top:75%}.z-10{z-index:10}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:.25rem}.mb-2{margin-bottom:.5rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.mr-1{margin-right:.25rem}.mr-2{margin-right:.5rem}.mr-4{margin-right:1rem}.mt-1{margin-top:.25rem}.mt-2{margin-top:.5rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.mt-8{margin-top:2rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-1{height:.25rem}.h-32{height:8rem}.min-h-\[120px\]{min-height:120px}.min-h-\[250px\]{min-height:250px}.min-h-\[300px\]{min-height:300px}.min-h-\[40px\]{min-height:40px}.min-h-screen{min-height:100vh}.w-1{width:.25rem}.w-24{width:6rem}.w-48{width:12rem}.w-full{width:100%}.max-w-6xl{max-width:72rem}.flex-1{flex:1 1 0%}.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes bounce{0%,to{transform:translateY(-25%);animation-timing-function:cubic-bezier(.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,.2,1)}}.animate-bounce{animation:bounce 1s infinite}@keyframes pulse{50%{opacity:.5}}.animate-pulse{animation:pulse 2s cubic-bezier(.4,0,.6,1) infinite}.grid-cols-1{grid-template-columns:repeat(1,minmax(0,1fr))}.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-end{align-items:flex-end}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-2{gap:.5rem}.gap-3{gap:.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem*var(--tw-space-y-reverse))}.space-y-6>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem*var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.rounded{border-radius:.25rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:.5rem}.rounded-md{border-radius:.375rem}.rounded-xl{border-radius:.75rem}.border{border-width:1px}.border-2{border-width:2px}.border-b{border-bottom-width:1px}.border-l-4{border-left-width:4px}.border-dashed{border-style:dashed}.border-blue-100{--tw-border-opacity:1;border-color:rgb(219 234 254/var(--tw-border-opacity,1))}.border-blue-200{--tw-border-opacity:1;border-color:rgb(191 219 254/var(--tw-border-opacity,1))}.border-blue-300{--tw-border-opacity:1;border-color:rgb(147 197 253/var(--tw-border-opacity,1))}.border-gray-100{--tw-border-opacity:1;border-color:rgb(243 244 246/var(--tw-border-opacity,1))}.border-gray-200{--tw-border-opacity:1;border-color:rgb(229 231 235/var(--tw-border-opacity,1))}.border-gray-300{--tw-border-opacity:1;border-color:rgb(209 213 219/var(--tw-border-opacity,1))}.border-green-300{--tw-border-opacity:1;border-color:rgb(134 239 172/var(--tw-border-opacity,1))}.border-green-400{--tw-border-opacity:1;border-color:rgb(74 222 128/var(--tw-border-opacity,1))}.border-purple-100{--tw-border-opacity:1;border-color:rgb(243 232 255/var(--tw-border-opacity,1))}.border-purple-500{--tw-border-opacity:1;border-color:rgb(168 85 247/var(--tw-border-opacity,1))}.border-red-200{--tw-border-opacity:1;border-color:rgb(254 202 202/var(--tw-border-opacity,1))}.border-red-300{--tw-border-opacity:1;border-color:rgb(252 165 165/var(--tw-border-opacity,1))}.border-yellow-100{--tw-border-opacity:1;border-color:rgb(254 249 195/var(--tw-border-opacity,1))}.border-yellow-300{--tw-border-opacity:1;border-color:rgb(253 224 71/var(--tw-border-opacity,1))}.bg-blue-200{--tw-bg-opacity:1;background-color:rgb(191 219 254/var(--tw-bg-opacity,1))}.bg-blue-50{--tw-bg-opacity:1;background-color:rgb(239 246 255/var(--tw-bg-opacity,1))}.bg-blue-500{--tw-bg-opacity:1;background-color:rgb(59 130 246/var(--tw-bg-opacity,1))}.bg-blue-600{--tw-bg-opacity:1;background-color:rgb(37 99 235/var(--tw-bg-opacity,1))}.bg-gray-100{--tw-bg-opacity:1;background-color:rgb(243 244 246/var(--tw-bg-opacity,1))}.bg-gray-200{--tw-bg-opacity:1;background-color:rgb(229 231 235/var(--tw-bg-opacity,1))}.bg-gray-50{--tw-bg-opacity:1;background-color:rgb(249 250 251/var(--tw-bg-opacity,1))}.bg-green-100{--tw-bg-opacity:1;background-color:rgb(220 252 231/var(--tw-bg-opacity,1))}.bg-green-50{--tw-bg-opacity:1;background-color:rgb(240 253 244/var(--tw-bg-opacity,1))}.bg-green-600{--tw-bg-opacity:1;background-color:rgb(22 163 74/var(--tw-bg-opacity,1))}.bg-purple-50{--tw-bg-opacity:1;background-color:rgb(250 245 255/var(--tw-bg-opacity,1))}.bg-purple-600{--tw-bg-opacity:1;background-color:rgb(147 51 234/var(--tw-bg-opacity,1))}.bg-red-100{--tw-bg-opacity:1;background-color:rgb(254 226 226/var(--tw-bg-opacity,1))}.bg-red-200{--tw-bg-opacity:1;background-color:rgb(254 202 202/var(--tw-bg-opacity,1))}.bg-red-50{--tw-bg-opacity:1;background-color:rgb(254 242 242/var(--tw-bg-opacity,1))}.bg-red-500{--tw-bg-opacity:1;background-color:rgb(239 68 68/var(--tw-bg-opacity,1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity,1))}.bg-yellow-400{--tw-bg-opacity:1;background-color:rgb(250 204 21/var(--tw-bg-opacity,1))}.bg-yellow-50{--tw-bg-opacity:1;background-color:rgb(254 252 232/var(--tw-bg-opacity,1))}.bg-yellow-500{--tw-bg-opacity:1;background-color:rgb(234 179 8/var(--tw-bg-opacity,1))}.p-1{padding:.25rem}.p-2{padding:.5rem}.p-3{padding:.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.px-8{padding-left:2rem;padding-right:2rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.py-4{padding-top:1rem;padding-bottom:1rem}.pb-12{padding-bottom:3rem}.pb-2{padding-bottom:.5rem}.text-center{text-align:center}.text-2xl{font-size:1.5rem;line-height:2rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.italic{font-style:italic}.text-blue-600{--tw-text-opacity:1;color:rgb(37 99 235/var(--tw-text-opacity,1))}.text-blue-700{--tw-text-opacity:1;color:rgb(29 78 216/var(--tw-text-opacity,1))}.text-blue-800{--tw-text-opacity:1;color:rgb(30 64 175/var(--tw-text-opacity,1))}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175/var(--tw-text-opacity,1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128/var(--tw-text-opacity,1))}.text-gray-600{--tw-text-opacity:1;color:rgb(75 85 99/var(--tw-text-opacity,1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81/var(--tw-text-opacity,1))}.text-gray-800{--tw-text-opacity:1;color:rgb(31 41 55/var(--tw-text-opacity,1))}.text-green-600{--tw-text-opacity:1;color:rgb(22 163 74/var(--tw-text-opacity,1))}.text-green-800{--tw-text-opacity:1;color:rgb(22 101 52/var(--tw-text-opacity,1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38/var(--tw-text-opacity,1))}.text-red-700{--tw-text-opacity:1;color:rgb(185 28 28/var(--tw-text-opacity,1))}.text-red-800{--tw-text-opacity:1;color:rgb(153 27 27/var(--tw-text-opacity,1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.accent-green-500{accent-color:#22c55e}.shadow-inner{--tw-shadow:inset 0 2px 4px 0 rgba(0,0,0,.05);--tw-shadow-colored:inset 0 2px 4px 0 var(--tw-shadow-color)}.shadow-inner,.shadow-lg{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color),0 4px 6px -4px var(--tw-shadow-color)}.shadow-md{--tw-shadow:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color),0 2px 4px -2px var(--tw-shadow-color)}.shadow-md,.shadow-sm{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgba(0,0,0,.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgba(0,0,0,.1),0 8px 10px -6px rgba(0,0,0,.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color),0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.ring-4{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(4px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}.ring-yellow-400{--tw-ring-opacity:1;--tw-ring-color:rgb(250 204 21/var(--tw-ring-opacity,1))}.filter{filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.transition{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,-webkit-backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter;transition-property:color,background-color,border-color,text-decoration-color,fill,stroke,opacity,box-shadow,transform,filter,backdrop-filter,-webkit-backdrop-filter;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.duration-500{transition-duration:.5s}.hover\:scale-105:hover{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:bg-blue-700:hover{--tw-bg-opacity:1;background-color:rgb(29 78 216/var(--tw-bg-opacity,1))}.hover\:bg-green-700:hover{--tw-bg-opacity:1;background-color:rgb(21 128 61/var(--tw-bg-opacity,1))}.hover\:bg-purple-700:hover{--tw-bg-opacity:1;background-color:rgb(126 34 206/var(--tw-bg-opacity,1))}.hover\:bg-yellow-600:hover{--tw-bg-opacity:1;background-color:rgb(202 138 4/var(--tw-bg-opacity,1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}.focus\:ring-blue-400:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(96 165 250/var(--tw-ring-opacity,1))}.focus\:ring-green-400:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(74 222 128/var(--tw-ring-opacity,1))}@media (min-width:768px){.md\:w-1\/2{width:50%}.md\:w-1\/3{width:33.333333%}.md\:w-2\/3{width:66.666667%}.md\:grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.md\:flex-row{flex-direction:row}.md\:text-3xl{font-size:1.875rem;line-height:2.25rem}}</style>
+    <style>
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background-color: #f0fdf4;
+            color: #1f2937;
+        }
+        .tab-btn.active {
+            background-color: #22c55e;
+            color: white;
+            border-color: #22c55e;
+        }
+        .sit-btn.active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Custom Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #2563eb;
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            cursor: pointer;
+            background: #d1d5db;
+            border-radius: 4px;
+        }
+        .timeline-dot {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 0.75rem; font-weight: bold; color: white;
+            position: absolute;
+            top: 50%; transform: translate(-50%, -50%);
+            transition: all 0.5s ease;
+        }
+        .tile-grid {
+            display: grid;
+            border: 2px solid #1e3a8a;
+            background-color: #bfdbfe;
+        }
+        .tile {
+            border: 1px solid rgba(255,255,255,0.5);
+            background-color: #60a5fa;
+            display: flex; justify-content: center; align-items: center;
+            color: white; font-weight: bold; font-size: 0.8rem;
+        }
+        .prime-base { font-weight: bold; padding: 2px 6px; border-radius: 4px; display: inline-block; margin: 0 2px;}
+        .prime-common { background-color: #bbf7d0; color: #166534; }
+        .prime-distinct { background-color: #fef08a; color: #854d0e; }
+    </style>
+</head>
+<body class="min-h-screen pb-12">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3"><a href="dashboard.html" style="color:#0f766e;text-decoration:none;font-weight:700;font-size:15px;padding:6px 12px;border:1px solid #99f6e4;border-radius:9px;background:#f0fdfa;white-space:nowrap">← Dashboard</a><h1 class="text-2xl md:text-3xl font-extrabold text-green-600 flex items-center gap-2">
+                <span>🤝</span> ƯCLN & BCNN
+            </h1></div>
+            <div class="flex bg-gray-100 p-1 rounded-full border border-gray-200">
+                <button onclick="switchTab('khampha')" id="tab-khampha" class="tab-btn active px-6 py-2 rounded-full font-bold transition-colors">Khám Phá</button>
+                <button onclick="switchTab('thuchanh')" id="tab-thuchanh" class="tab-btn px-6 py-2 rounded-full font-bold transition-colors text-gray-600">Thực Hành</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 mt-6">
+
+        <!-- ================= KHÁM PHÁ ================= -->
+        <section id="sec-khampha" class="fade-in block">
+            <div class="bg-white rounded-2xl shadow-xl p-6 mb-8 border border-gray-100">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 text-center">Chọn tình huống thực tế</h2>
+                <div class="flex flex-wrap justify-center gap-3 mb-6">
+                    <button onclick="showSituation(1)" id="btn-sit-1" class="sit-btn active px-5 py-2 rounded-lg border-2 border-blue-100 font-bold transition-colors flex items-center gap-2">🎁 Chia quà (ƯCLN)</button>
+                    <button onclick="showSituation(2)" id="btn-sit-2" class="sit-btn px-5 py-2 rounded-lg border-2 border-gray-200 text-gray-600 font-bold transition-colors flex items-center gap-2">🚌 Xe buýt (BCNN)</button>
+                    <button onclick="showSituation(3)" id="btn-sit-3" class="sit-btn px-5 py-2 rounded-lg border-2 border-gray-200 text-gray-600 font-bold transition-colors flex items-center gap-2">🧱 Lát gạch (ƯCLN)</button>
+                </div>
+
+                <!-- Tình huống 1: Chia quà -->
+                <div id="sit-1" class="situation-content block">
+                    <div class="bg-blue-50 rounded-xl p-6 border border-blue-100">
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div class="w-full md:w-1/3 space-y-4">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700">Số quyển vở (a):</label>
+                                    <input type="number" id="sit1-a" value="24" min="1" class="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-400">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700">Số cây bút (b):</label>
+                                    <input type="number" id="sit1-b" value="16" min="1" class="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-blue-400">
+                                </div>
+                                <button onclick="initSit1()" class="w-full bg-blue-600 text-white font-bold py-2 rounded-lg hover:bg-blue-700">Thiết lập lại</button>
+                            </div>
+                            <div class="w-full md:w-2/3">
+                                <div class="mb-4">
+                                    <label class="block font-bold text-gray-800 mb-2">Kéo để thử chia thành <span id="sit1-parts-val" class="text-blue-600 text-xl">1</span> phần quà:</label>
+                                    <input type="range" id="sit1-slider" min="1" max="16" value="1" oninput="updateSit1()">
+                                </div>
+                                <div id="sit1-result" class="bg-white p-4 rounded-lg shadow-sm border border-gray-200 min-h-[120px]">
+                                    <!-- Result goes here -->
+                                </div>
+                                <div id="sit1-msg" class="mt-4 hidden p-3 bg-green-100 border border-green-300 text-green-800 rounded-lg font-bold text-center animate-bounce">
+                                    🎉 Đây là số phần quà nhiều nhất có thể chia đều! (ƯCLN)
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tình huống 2: Xe buýt -->
+                <div id="sit-2" class="situation-content hidden">
+                    <div class="bg-yellow-50 rounded-xl p-6 border border-yellow-100">
+                        <div class="flex flex-col md:flex-row gap-6 mb-6">
+                            <div class="w-full md:w-1/2 flex gap-4 items-end">
+                                <div class="flex-1">
+                                    <label class="block text-sm font-bold text-red-700">Tuyến A (phút/chuyến):</label>
+                                    <input type="number" id="sit2-a" value="15" min="1" class="w-full mt-1 p-2 border rounded-lg border-red-300">
+                                </div>
+                                <div class="flex-1">
+                                    <label class="block text-sm font-bold text-blue-700">Tuyến B (phút/chuyến):</label>
+                                    <input type="number" id="sit2-b" value="20" min="1" class="w-full mt-1 p-2 border rounded-lg border-blue-300">
+                                </div>
+                            </div>
+                            <div class="w-full md:w-1/2 flex items-end">
+                                <button onclick="runSit2()" class="w-full bg-yellow-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-yellow-600 shadow-md">▶️ Mô phỏng 2 xe cùng xuất phát</button>
+                            </div>
+                        </div>
+                        <div class="relative bg-white p-6 rounded-lg shadow-inner overflow-x-auto min-h-[250px] border border-gray-200">
+                            <div class="text-sm font-bold text-gray-500 mb-2">Thời gian bắt đầu: 6:00</div>
+                            <div id="sit2-timeline" class="relative w-full h-32">
+                                <!-- Timeline will be drawn here -->
+                            </div>
+                            <div id="sit2-result" class="mt-8 text-center text-lg font-bold text-gray-800 min-h-[40px]"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tình huống 3: Lát gạch -->
+                <div id="sit-3" class="situation-content hidden">
+                    <div class="bg-purple-50 rounded-xl p-6 border border-purple-100">
+                         <div class="flex flex-col md:flex-row gap-6">
+                            <div class="w-full md:w-1/3 space-y-4">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700">Chiều dài (a) cm:</label>
+                                    <input type="number" id="sit3-a" value="60" min="1" class="w-full mt-1 p-2 border rounded-lg">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700">Chiều rộng (b) cm:</label>
+                                    <input type="number" id="sit3-b" value="40" min="1" class="w-full mt-1 p-2 border rounded-lg">
+                                </div>
+                                <button onclick="runSit3()" class="w-full bg-purple-600 text-white font-bold py-2 rounded-lg hover:bg-purple-700">Lát gạch</button>
+                                <div id="sit3-info" class="p-3 bg-white rounded shadow-sm text-sm border-l-4 border-purple-500"></div>
+                            </div>
+                            <div class="w-full md:w-2/3 flex justify-center items-center bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 min-h-[300px] overflow-hidden p-4">
+                                <div id="sit3-canvas" class="tile-grid shadow-lg transition-all duration-500"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bảng tính Thừa số nguyên tố -->
+            <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
+                <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">🧮 Bảng phân tích ra thừa số nguyên tố</h2>
+                <div class="flex flex-wrap gap-4 items-end mb-6">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700">Số a:</label>
+                        <input type="number" id="calc-a" value="24" min="1" class="w-24 mt-1 p-2 border rounded-lg text-center">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700">Số b:</label>
+                        <input type="number" id="calc-b" value="36" min="1" class="w-24 mt-1 p-2 border rounded-lg text-center">
+                    </div>
+                    <button onclick="runCalculator()" class="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 shadow-md">Phân tích & Tính</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <div>
+                        <h3 class="font-bold text-gray-600 border-b pb-2 mb-2">Phân tích</h3>
+                        <div id="calc-fact-a" class="text-lg py-1"></div>
+                        <div id="calc-fact-b" class="text-lg py-1"></div>
+                        <div class="mt-4 text-sm text-gray-500">
+                            <span class="prime-common border border-green-300">Màu xanh</span>: Thừa số chung.<br>
+                            <span class="prime-distinct border border-yellow-300">Màu vàng</span>: Thừa số riêng.
+                        </div>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                        <h3 class="font-bold text-gray-600 border-b pb-2 mb-2">Kết quả</h3>
+                        <div class="mb-4">
+                            <div class="font-bold text-blue-700">ƯCLN(a,b):</div>
+                            <div class="text-sm text-gray-600 italic mb-1">Lấy các thừa số <span class="font-bold">chung</span> với số mũ <span class="font-bold">nhỏ nhất</span>.</div>
+                            <div id="calc-gcd" class="text-xl bg-blue-50 inline-block p-2 rounded"></div>
+                        </div>
+                        <div>
+                            <div class="font-bold text-red-700">BCNN(a,b):</div>
+                            <div class="text-sm text-gray-600 italic mb-1">Lấy các thừa số <span class="font-bold">chung & riêng</span> với số mũ <span class="font-bold">lớn nhất</span>.</div>
+                            <div id="calc-lcm" class="text-xl bg-red-50 inline-block p-2 rounded"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= THỰC HÀNH ================= -->
+        <section id="sec-thuchanh" class="hidden fade-in">
+            <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
+                <h2 class="text-2xl font-bold text-center text-gray-800 mb-2">Luyện Tập</h2>
+                <p class="text-center text-gray-500 mb-8">Hãy áp dụng kiến thức để giải quyết 10 bài toán sau nhé!</p>
+                
+                <div id="quiz-container" class="space-y-6">
+                    <!-- Questions will be generated here -->
+                </div>
+                
+                <div class="mt-8 text-center">
+                    <div id="score-display" class="text-2xl font-bold text-green-600 mb-4 hidden"></div>
+                    <button onclick="checkAllAnswers()" class="bg-green-600 text-white font-bold text-lg py-3 px-8 rounded-full hover:bg-green-700 shadow-lg transform transition hover:scale-105">Nộp bài & Kiểm tra</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Thư viện Toán học và Logic UI -->
+    <script>
+        // --- Core Math Functions ---
+        function gcd(a, b) {
+            a = Math.abs(a); b = Math.abs(b);
+            while (b !== 0) {
+                let temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
+        }
+
+        function lcm(a, b) {
+            if (a === 0 || b === 0) return 0;
+            return Math.abs((a * b) / gcd(a, b));
+        }
+
+        function primeFactorize(n) {
+            const factors = {};
+            let d = 2;
+            while (n >= 2) {
+                if (n % d === 0) {
+                    factors[d] = (factors[d] || 0) + 1;
+                    n = n / d;
+                } else {
+                    d++;
+                }
+            }
+            return factors;
+        }
+
+        function formatFactorsHTML(factorsObj, baseClasses = {}) {
+            if (Object.keys(factorsObj).length === 0) return "1";
+            let htmlParts = [];
+            for (let p in factorsObj) {
+                let power = factorsObj[p];
+                let cssClass = baseClasses[p] || "prime-base bg-gray-200 text-gray-800";
+                let part = `<span class="${cssClass}">${p}${power > 1 ? `<sup>${power}</sup>` : ''}</span>`;
+                htmlParts.push(part);
+            }
+            return htmlParts.join(" &times; ");
+        }
+
+        // --- UI Navigation ---
+        function switchTab(tabName) {
+            document.getElementById('sec-khampha').classList.add('hidden');
+            document.getElementById('sec-thuchanh').classList.add('hidden');
+            document.getElementById('tab-khampha').classList.remove('active', 'text-white');
+            document.getElementById('tab-khampha').classList.add('text-gray-600');
+            document.getElementById('tab-thuchanh').classList.remove('active', 'text-white');
+            document.getElementById('tab-thuchanh').classList.add('text-gray-600');
+
+            document.getElementById(`sec-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabName}`).classList.add('active', 'text-white');
+            document.getElementById(`tab-${tabName}`).classList.remove('text-gray-600');
+            
+            if (tabName === 'khampha') initSit1();
+        }
+
+        function showSituation(id) {
+            document.querySelectorAll('.situation-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.sit-btn').forEach(el => {
+                el.classList.remove('active', 'border-blue-100', 'bg-blue-500', 'text-white');
+                el.classList.add('border-gray-200', 'text-gray-600');
+            });
+            
+            document.getElementById(`sit-${id}`).classList.remove('hidden');
+            let btn = document.getElementById(`btn-sit-${id}`);
+            btn.classList.add('active', 'text-white');
+            btn.classList.remove('border-gray-200', 'text-gray-600');
+            btn.style.backgroundColor = id === 1 ? '#3b82f6' : (id === 2 ? '#eab308' : '#a855f7');
+            btn.style.borderColor = btn.style.backgroundColor;
+
+            if (id === 1) initSit1();
+            if (id === 3) runSit3();
+            if (id === 2) runSit2();
+        }
+
+        // --- Situation 1: Chia quà ---
+        let sit1A, sit1B, currentGCD;
+        function initSit1() {
+            sit1A = parseInt(document.getElementById('sit1-a').value) || 24;
+            sit1B = parseInt(document.getElementById('sit1-b').value) || 16;
+            currentGCD = gcd(sit1A, sit1B);
+            
+            let slider = document.getElementById('sit1-slider');
+            slider.max = Math.min(sit1A, sit1B);
+            slider.value = 1;
+            updateSit1();
+        }
+
+        function updateSit1() {
+            let parts = parseInt(document.getElementById('sit1-slider').value);
+            document.getElementById('sit1-parts-val').innerText = parts;
+            
+            let voMoiPhan = Math.floor(sit1A / parts);
+            let voDu = sit1A % parts;
+            let butMoiPhan = Math.floor(sit1B / parts);
+            let butDu = sit1B % parts;
+
+            let resHtml = `
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-blue-50 p-3 rounded border border-blue-200">
+                        <div class="font-bold text-blue-800 mb-1">🎁 1 Phần quà gồm:</div>
+                        <div>📖 ${voMoiPhan} quyển vở</div>
+                        <div>✏️ ${butMoiPhan} cây bút</div>
+                    </div>
+                    <div class="bg-red-50 p-3 rounded border border-red-200">
+                        <div class="font-bold text-red-800 mb-1">⚠️ Còn dư (không chia đều):</div>
+                        <div class="${voDu === 0 ? 'text-gray-400' : 'text-red-600'}">📖 ${voDu} vở</div>
+                        <div class="${butDu === 0 ? 'text-gray-400' : 'text-red-600'}">✏️ ${butDu} bút</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('sit1-result').innerHTML = resHtml;
+
+            let msgEl = document.getElementById('sit1-msg');
+            if (parts === currentGCD) {
+                msgEl.classList.remove('hidden');
+                document.getElementById('sit1-slider').classList.add('accent-green-500');
+            } else {
+                msgEl.classList.add('hidden');
+                document.getElementById('sit1-slider').classList.remove('accent-green-500');
+            }
+        }
+
+        // --- Situation 2: Xe buýt ---
+        function runSit2() {
+            let a = parseInt(document.getElementById('sit2-a').value) || 15;
+            let b = parseInt(document.getElementById('sit2-b').value) || 20;
+            let resLCM = lcm(a, b);
+            let tl = document.getElementById('sit2-timeline');
+            tl.innerHTML = '';
+            
+            // Draw lines
+            let lineA = document.createElement('div');
+            lineA.className = "absolute w-full h-1 bg-red-200 top-1/4 rounded";
+            let lineB = document.createElement('div');
+            lineB.className = "absolute w-full h-1 bg-blue-200 top-3/4 rounded";
+            tl.appendChild(lineA); tl.appendChild(lineB);
+
+            let maxTimeToDraw = resLCM * 1.2; 
+            
+            // Draw ticks for A
+            for (let t = a; t <= resLCM; t += a) {
+                let leftPct = (t / maxTimeToDraw) * 90;
+                let dot = document.createElement('div');
+                dot.className = `timeline-dot bg-red-500 ${t === resLCM ? 'z-10 ring-4 ring-yellow-400' : ''}`;
+                dot.style.left = `${leftPct}%`;
+                dot.style.top = '25%';
+                dot.innerHTML = t;
+                tl.appendChild(dot);
+            }
+            // Draw ticks for B
+            for (let t = b; t <= resLCM; t += b) {
+                let leftPct = (t / maxTimeToDraw) * 90;
+                let dot = document.createElement('div');
+                dot.className = `timeline-dot bg-blue-500 ${t === resLCM ? 'z-10 ring-4 ring-yellow-400' : ''}`;
+                dot.style.left = `${leftPct}%`;
+                dot.style.top = '75%';
+                dot.innerHTML = t;
+                tl.appendChild(dot);
+            }
+
+            // Connecting line at LCM
+            let connLeft = (resLCM / maxTimeToDraw) * 90;
+            let conn = document.createElement('div');
+            conn.className = "absolute w-1 bg-yellow-400 animate-pulse";
+            conn.style.left = `calc(${connLeft}% - 2px)`;
+            conn.style.top = '25%';
+            conn.style.height = '50%';
+            tl.appendChild(conn);
+
+            // Time calculation
+            let hours = Math.floor(resLCM / 60);
+            let mins = resLCM % 60;
+            let newH = 6 + hours;
+            let newM = mins < 10 ? '0' + mins : mins;
+
+            document.getElementById('sit2-result').innerHTML = `
+                BCNN(${a}, ${b}) = <span class="text-blue-600 text-2xl">${resLCM}</span> phút.<br>
+                Hai xe lại xuất phát cùng lúc vào lúc <span class="text-red-600 text-2xl">${newH}:${newM}</span>.
+            `;
+        }
+
+        // --- Situation 3: Lát gạch ---
+        function runSit3() {
+            let a = parseInt(document.getElementById('sit3-a').value) || 60;
+            let b = parseInt(document.getElementById('sit3-b').value) || 40;
+            let g = gcd(a, b);
+            
+            let cols = a / g;
+            let rows = b / g;
+            let total = cols * rows;
+            if (total > 600) { document.getElementById('sit3-info').innerHTML = `ƯCLN(${a}, ${b}) = <b>${g} cm</b> → cần ${cols} × ${rows} = <b>${total} viên</b>. Quá nhiều viên để vẽ, em hãy chọn kích thước khác nhé!`; document.getElementById('sit3-canvas').innerHTML=''; return; }
+
+            let info = `Cạnh viên gạch vuông lớn nhất = ƯCLN(${a}, ${b}) = <b>${g} cm</b>.<br>Cần dùng: ${a/g} × ${b/g} = <b>${total} viên</b> gạch.`;
+            document.getElementById('sit3-info').innerHTML = info;
+
+            let canvas = document.getElementById('sit3-canvas');
+            canvas.innerHTML = '';
+            
+            // Calculate size to fit container proportionally
+            let maxWidth = 400; let maxHeight = 300;
+            let scale = Math.min(maxWidth / a, maxHeight / b);
+            let renderW = a * scale;
+            let renderH = b * scale;
+
+            canvas.style.width = `${renderW}px`;
+            canvas.style.height = `${renderH}px`;
+            canvas.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            canvas.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
+            for(let i=0; i<total; i++) {
+                let div = document.createElement('div');
+                div.className = 'tile';
+                div.innerText = g;
+                // Add staggered animation
+                div.style.opacity = 0;
+                div.style.animation = `fadeIn 0.3s ease forwards ${i * 0.05}s`;
+                canvas.appendChild(div);
+            }
+        }
+
+        // --- Bảng tính ---
+        function runCalculator() {
+            let a = parseInt(document.getElementById('calc-a').value) || 24;
+            let b = parseInt(document.getElementById('calc-b').value) || 36;
+            
+            let factA = primeFactorize(a);
+            let factB = primeFactorize(b);
+            
+            let allPrimes = new Set([...Object.keys(factA), ...Object.keys(factB)]);
+            let commonPrimes = Object.keys(factA).filter(p => Object.keys(factB).includes(p));
+            
+            let classesA = {}; let classesB = {};
+            
+            allPrimes.forEach(p => {
+                if (commonPrimes.includes(p)) {
+                    classesA[p] = "prime-base prime-common";
+                    classesB[p] = "prime-base prime-common";
+                } else {
+                    if(factA[p]) classesA[p] = "prime-base prime-distinct";
+                    if(factB[p]) classesB[p] = "prime-base prime-distinct";
+                }
+            });
+
+            document.getElementById('calc-fact-a').innerHTML = `<b>${a}</b> = ${formatFactorsHTML(factA, classesA)}`;
+            document.getElementById('calc-fact-b').innerHTML = `<b>${b}</b> = ${formatFactorsHTML(factB, classesB)}`;
+
+            // Build GCD/LCM formulas visually
+            let gcdParts = []; let gcdVal = 1;
+            let lcmParts = []; let lcmVal = 1;
+
+            allPrimes.forEach(p => {
+                let numP = parseInt(p);
+                let pA = factA[p] || 0;
+                let pB = factB[p] || 0;
+                
+                if (pA > 0 && pB > 0) {
+                    let minP = Math.min(pA, pB);
+                    gcdParts.push(`<span class="prime-base prime-common">${p}${minP>1 ? `<sup>${minP}</sup>` : ''}</span>`);
+                    gcdVal *= Math.pow(numP, minP);
+                }
+                
+                let maxP = Math.max(pA, pB);
+                let bgClass = (pA > 0 && pB > 0) ? "prime-common" : "prime-distinct";
+                lcmParts.push(`<span class="prime-base ${bgClass}">${p}${maxP>1 ? `<sup>${maxP}</sup>` : ''}</span>`);
+                lcmVal *= Math.pow(numP, maxP);
+            });
+
+            document.getElementById('calc-gcd').innerHTML = gcdParts.length > 0 ? `${gcdParts.join(" &times; ")} = <b>${gcdVal}</b>` : "1 (Hai số nguyên tố cùng nhau)";
+            document.getElementById('calc-lcm').innerHTML = `${lcmParts.join(" &times; ")} = <b>${lcmVal}</b>`;
+        }
+
+        // --- Dữ liệu Thực hành ---
+        const quizData = [
+            { id: 1, type: 'calc', text: "Tìm ƯCLN của 18 và 24.", ans: 6, explanation: "18 = 2.3², 24 = 2³.3. ƯCLN = 2.3 = 6" },
+            { id: 2, type: 'calc', text: "Tìm BCNN của 12 và 15.", ans: 60, explanation: "12 = 2².3, 15 = 3.5. BCNN = 2².3.5 = 60" },
+            { id: 3, type: 'calc', text: "Tìm ƯCLN của 15 và 28.", ans: 1, explanation: "15 và 28 không có thừa số nguyên tố chung. Chúng là 2 số nguyên tố cùng nhau." },
+            { id: 4, type: 'word', text: "Lớp 6A có 24 nam và 18 nữ. Thầy giáo muốn chia đều số nam và số nữ vào các tổ. Hỏi có thể chia được nhiều nhất bao nhiêu tổ?", choiceAns: 'ucln', ans: 6, explanation: "Chia nhiều nhất nên tìm ƯCLN(24, 18) = 6 tổ." },
+            { id: 5, type: 'word', text: "An cứ 4 ngày lại trực nhật 1 lần, Bình cứ 6 ngày lại trực nhật 1 lần. Hôm nay cả 2 cùng trực. Hỏi ít nhất bao nhiêu ngày nữa hai bạn lại cùng trực nhật?", choiceAns: 'bcnn', ans: 12, explanation: "Tìm thời gian ít nhất lặp lại chu kỳ nên dùng BCNN(4, 6) = 12 ngày." },
+            { id: 6, type: 'frac', text: "Để rút gọn phân số 45/60 về phân số tối giản, ta cần chia cả tử và mẫu cho một số. Số đó là bao nhiêu?", ans: 15, explanation: "Số đó chính là ƯCLN(45, 60) = 15. Phân số tối giản là 3/4." },
+            { id: 7, type: 'calc', text: "Tìm BCNN(8, 9, 10).", ans: 360, explanation: "8=2³, 9=3², 10=2.5. BCNN = 2³.3².5 = 360" },
+            { id: 8, type: 'word', text: "Một số sách nếu xếp thành từng bó 10 quyển, 12 quyển, hoặc 15 quyển đều vừa đủ bó. Tính số sách đó, biết số sách trong khoảng từ 100 đến 150 quyển.", choiceAns: 'bcnn', ans: 120, explanation: "Số sách là bội chung của 10,12,15. BCNN(10,12,15) = 60. Bội của 60 trong khoảng 100-150 là 120." },
+            { id: 9, type: 'calc', text: "Tìm ƯCLN(60, 90, 135).", ans: 15, explanation: "60=2².3.5; 90=2.3².5; 135=3³.5. ƯCLN = 3.5 = 15" },
+            { id: 10, type: 'word', text: "Người ta muốn cắt một tấm bìa hình chữ nhật kích thước 75cm x 105cm thành các mảnh hình vuông nhỏ bằng nhau sao cho tấm bìa được cắt hết, không thừa mảnh nào. Tính độ dài cạnh hình vuông lớn nhất có thể (đơn vị cm).", choiceAns: 'ucln', ans: 15, explanation: "Cạnh hình vuông lớn nhất chính là ƯCLN(75, 105) = 15 cm." }
+        ];
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            let html = '';
+            quizData.forEach((q, index) => {
+                let choiceHtml = '';
+                if (q.type === 'word') {
+                    choiceHtml = `
+                        <div class="mb-2 text-sm text-gray-700">
+                            <span class="font-bold mr-2">Bước 1: Chọn phép tính:</span>
+                            <label class="mr-4 inline-flex items-center"><input type="radio" name="q${q.id}_choice" value="ucln" class="mr-1"> ƯCLN</label>
+                            <label class="inline-flex items-center"><input type="radio" name="q${q.id}_choice" value="bcnn" class="mr-1"> BCNN</label>
+                        </div>
+                    `;
+                }
+                
+                html += `
+                    <div class="p-5 bg-gray-50 rounded-xl border border-gray-200 quiz-item shadow-sm" id="q-block-${q.id}">
+                        <div class="font-bold text-gray-800 mb-2">Câu ${index + 1}: ${q.text}</div>
+                        ${choiceHtml}
+                        <div class="flex items-center gap-3">
+                            <input type="number" id="q${q.id}_ans" placeholder="Nhập kết quả số..." class="p-2 border rounded-md w-48 focus:outline-none focus:ring-2 focus:ring-green-400">
+                        </div>
+                        <div id="q${q.id}_feedback" class="mt-2 text-sm hidden p-2 rounded"></div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function checkAllAnswers() {
+            let score = 0;
+            quizData.forEach(q => {
+                let block = document.getElementById(`q-block-${q.id}`);
+                let inputAns = parseInt(document.getElementById(`q${q.id}_ans`).value);
+                let feedbackEl = document.getElementById(`q${q.id}_feedback`);
+                let isCorrect = true;
+
+                if (q.type === 'word') {
+                    let choice = document.querySelector(`input[name="q${q.id}_choice"]:checked`);
+                    if (!choice || choice.value !== q.choiceAns) {
+                        isCorrect = false;
+                    }
+                }
+
+                if (inputAns !== q.ans || isNaN(inputAns)) {
+                    isCorrect = false;
+                }
+
+                feedbackEl.classList.remove('hidden');
+                if (isCorrect) {
+                    score++;
+                    block.classList.remove('border-gray-200', 'border-red-300');
+                    block.classList.add('border-green-400', 'bg-green-50');
+                    feedbackEl.innerHTML = `✅ <b>Chính xác!</b> ${q.explanation}`;
+                    feedbackEl.className = "mt-2 text-sm p-2 rounded bg-green-100 text-green-800 block";
+                } else {
+                    block.classList.remove('border-gray-200', 'border-green-400', 'bg-green-50');
+                    block.classList.add('border-red-300', 'bg-red-50');
+                    feedbackEl.innerHTML = `❌ <b>Chưa đúng.</b> ${q.explanation}`;
+                    feedbackEl.className = "mt-2 text-sm p-2 rounded bg-red-100 text-red-800 block";
+                }
+            });
+
+            let scoreDiv = document.getElementById('score-display');
+            scoreDiv.classList.remove('hidden');
+            scoreDiv.innerHTML = `Điểm của bạn: ${score} / ${quizData.length}`;
+            window.scrollTo({ top: scoreDiv.offsetTop - 100, behavior: 'smooth' });
+        }
+
+        // --- Initialization ---
+        window.onload = function() {
+            initSit1();
+            runCalculator();
+            renderQuiz();
+        };
+    </script>
+</body>
+</html>

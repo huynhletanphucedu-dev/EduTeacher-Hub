@@ -1,0 +1,1585 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🔍 Dấu hiệu chia hết cho 2, 5, 3, 9</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --teal: #06b6d4;
+      --purple: #8b5cf6;
+      --orange: #f59e0b;
+      --green: #10b981;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --text: #e2e8f0;
+      --sub: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* 1. HEADER */
+    .header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .back-link {
+      color: var(--teal);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      transition: 0.2s;
+    }
+    .back-link:hover {
+      background: rgba(6, 182, 212, 0.25);
+    }
+    .header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .fs-btn {
+      background: #0f172a;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 7px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+    .fs-btn:hover {
+      border-color: var(--teal);
+      color: var(--teal);
+    }
+
+    /* 2. TAB BAR */
+    .tab-bar {
+      background: var(--card);
+      display: flex;
+      padding: 0 20px;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .mbar-tab {
+      background: transparent;
+      color: var(--sub);
+      border: none;
+      padding: 11px 20px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: 0.2s;
+    }
+    .mbar-tab:hover {
+      color: var(--text);
+    }
+    .mbar-tab.active {
+      color: var(--teal);
+      border-bottom-color: var(--teal);
+    }
+
+    /* 3. INSTRUCTION BAR */
+    .instr-bar {
+      background: rgba(6, 182, 212, 0.14);
+      color: #a5f3fc;
+      text-align: center;
+      padding: 8px 16px;
+      font-size: 16px;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(6, 182, 212, 0.25);
+      flex-shrink: 0;
+    }
+
+    /* 4. BODY WRAP */
+    .body-wrap {
+      flex: 1;
+      display: flex;
+      padding: 14px;
+      gap: 14px;
+      overflow: hidden;
+    }
+
+    .stage-area {
+      flex: 1;
+      background: #0b1120;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .stage-svg {
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+      display: block;
+    }
+
+    .controls {
+      width: 330px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    .sec-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--sub);
+      margin-bottom: 5px;
+    }
+
+    .ctrl-box {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .num-input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .num-input {
+      flex: 1;
+      background: #1e293b;
+      border: 2px solid var(--teal);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 22px;
+      font-weight: 800;
+      padding: 8px 10px;
+      text-align: center;
+      letter-spacing: 2px;
+      outline: none;
+    }
+    .num-input:focus {
+      border-color: var(--orange);
+    }
+
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+    .btn {
+      background: #1e293b;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+      text-align: center;
+    }
+    .btn:hover {
+      border-color: var(--teal);
+      background: rgba(6, 182, 212, 0.15);
+    }
+    .btn.active-filter {
+      border-width: 2px;
+      font-weight: 800;
+    }
+    .btn-f2.active-filter { background: rgba(6, 182, 212, 0.22); border-color: var(--teal); color: #67e8f9; }
+    .btn-f5.active-filter { background: rgba(245, 158, 11, 0.22); border-color: var(--orange); color: #fcd34d; }
+    .btn-f3.active-filter { background: rgba(139, 92, 246, 0.22); border-color: var(--purple); color: #ddd6fe; }
+    .btn-f9.active-filter { background: rgba(16, 185, 129, 0.22); border-color: var(--green); color: #6ee7b7; }
+
+    .btn-primary {
+      background: var(--teal);
+      color: #0f172a;
+      border-color: var(--teal);
+      font-weight: 700;
+    }
+    .btn-primary:hover {
+      background: #22d3ee;
+    }
+    .btn-reset {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+    .btn-reset:hover {
+      background: rgba(239, 68, 68, 0.3);
+    }
+
+    .note-box {
+      background: rgba(245, 158, 11, 0.12);
+      border-left: 4px solid var(--orange);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 15px;
+      line-height: 1.45;
+      color: #fde68a;
+    }
+
+    /* PRACTICE STYLES */
+    .hidden {
+      display: none !important;
+    }
+
+    .practice-stage {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
+      overflow-y: auto;
+    }
+
+    .q-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-shrink: 0;
+    }
+    .q-badge {
+      background: rgba(139, 92, 246, 0.2);
+      color: #c4b5fd;
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .q-level {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--orange);
+    }
+
+    .q-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      text-align: center;
+    }
+
+    .q-text {
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.4;
+      color: var(--text);
+      max-width: 740px;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 640px;
+    }
+    .opt-btn {
+      background: #0f172a;
+      border: 2px solid var(--border);
+      color: var(--text);
+      padding: 13px 16px;
+      border-radius: 12px;
+      font-size: 19px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .opt-btn:hover:not(:disabled) {
+      border-color: var(--teal);
+      background: rgba(6, 182, 212, 0.12);
+    }
+    .opt-btn.selected {
+      border-color: var(--orange);
+      background: rgba(245, 158, 11, 0.2);
+      color: #fde68a;
+    }
+    .opt-btn.correct {
+      border-color: var(--green);
+      background: rgba(16, 185, 129, 0.2);
+      color: #6ee7b7;
+    }
+    .opt-btn.wrong {
+      border-color: var(--red);
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+    }
+
+    .star-display {
+      background: #0b1120;
+      border: 2px solid var(--purple);
+      border-radius: 16px;
+      padding: 14px 28px;
+      font-size: 38px;
+      font-weight: 800;
+      letter-spacing: 6px;
+      color: var(--text);
+    }
+    .star-char {
+      color: var(--orange);
+      text-decoration: underline;
+    }
+
+    .ans-input-wrap {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .ans-input {
+      background: #0f172a;
+      border: 2px solid var(--teal);
+      color: var(--text);
+      font-size: 28px;
+      font-weight: 800;
+      padding: 8px 16px;
+      border-radius: 12px;
+      width: 140px;
+      text-align: center;
+      outline: none;
+    }
+
+    .feedback-box {
+      margin-top: 6px;
+      padding: 11px 16px;
+      border-radius: 12px;
+      font-size: 15.5px;
+      font-weight: 600;
+      line-height: 1.45;
+      display: none;
+      max-width: 740px;
+      width: 100%;
+    }
+    .feedback-box.ok {
+      display: block;
+      background: rgba(16, 185, 129, 0.18);
+      border: 1px solid var(--green);
+      color: #a7f3d0;
+    }
+    .feedback-box.err {
+      display: block;
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid var(--red);
+      color: #fecaca;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 16px;
+    }
+    .stat-val {
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    @media (max-width: 900px) {
+      body {
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+      }
+      .body-wrap {
+        flex-direction: column;
+        overflow: visible;
+      }
+      .stage-area {
+        min-height: 500px;
+      }
+      .controls {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <a href="dashboard.html" class="back-link">← Dashboard</a>
+      <h1>🔍 Dấu hiệu chia hết cho 2, 5, 3, 9</h1>
+    </div>
+    <button class="fs-btn" onclick="toggleFullScreen()">⛶ Toàn màn hình</button>
+  </header>
+
+  <!-- 2. TAB BAR -->
+  <nav class="tab-bar">
+    <button class="mbar-tab active" id="tabExploreBtn" onclick="switchTab('explore')">🔭 Khám Phá</button>
+    <button class="mbar-tab" id="tabPracticeBtn" onclick="switchTab('practice')">🎯 Thực Hành</button>
+  </nav>
+
+  <!-- 3. INSTRUCTION BAR -->
+  <div class="instr-bar" id="instrBar">
+    ✋ Nhập hoặc quay số tự nhiên (tới 9 chữ số) để đưa vào "Máy lọc số", hoặc bật bộ lọc trên bảng 1–100 để khám phá quy luật!
+  </div>
+
+  <!-- 4. BODY WRAP -->
+  <main class="body-wrap">
+    <!-- SÂN KHẤU CHÍNH -->
+    <section class="stage-area">
+      <!-- KHÁM PHÁ SVG -->
+      <svg id="exploreSvg" class="stage-svg" viewBox="0 0 860 550" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
+            <feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000" flood-opacity="0.45"/>
+          </filter>
+        </defs>
+
+        <!-- ================= TRÁI: MÁY LỌC SỐ (x: 12, y: 12, w: 430, h: 526) ================= -->
+        <g transform="translate(12, 12)">
+          <rect x="0" y="0" width="430" height="526" rx="16" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+          <text x="215" y="25" fill="#94a3b8" font-size="14" font-weight="700" text-anchor="middle" letter-spacing="0.8">
+            ⚙️ MÁY LỌC SỐ TỰ NHIÊN (TỐI ĐA 9 CHỮ SỐ)
+          </text>
+
+          <!-- Phễu đầu vào hiển thị các chữ số (phóng to chữ số tận cùng) -->
+          <rect x="16" y="36" width="398" height="84" rx="14" fill="#0f172a" stroke="#06b6d4" stroke-width="2" filter="url(#cardShadow)"/>
+          <text x="30" y="54" fill="#94a3b8" font-size="12.5" font-weight="700">SỐ ĐẦU VÀO N:</text>
+          <text x="398" y="54" fill="#f59e0b" font-size="12.5" font-weight="700" text-anchor="end">★ Chữ số tận cùng được phóng to</text>
+          <g id="machineDigitsGroup" transform="translate(215, 92)"></g>
+
+          <!-- Đường ống dẫn xuống 4 cửa lọc -->
+          <path d="M 215 120 L 215 136 M 65 136 L 365 136 M 65 136 L 65 148 M 165 136 L 165 148 M 265 136 L 265 148 M 365 136 L 365 148"
+                stroke="#475569" stroke-width="3" fill="none" stroke-linecap="round"/>
+
+          <!-- 4 CỬA LỌC: ÷2, ÷5, ÷3, ÷9 -->
+          <g id="gatesContainer" transform="translate(15, 148)"></g>
+
+          <!-- KHUNG PHÂN TÍCH CHI TIẾT (TẬN CÙNG vs TỔNG CHỮ SỐ) -->
+          <!-- Hộp 1: Xét chữ số tận cùng (cho ÷2 và ÷5) -->
+          <g transform="translate(16, 286)">
+            <rect x="0" y="0" width="398" height="106" rx="12" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+            <rect x="0" y="0" width="398" height="28" rx="12" fill="rgba(56, 189, 248, 0.15)"/>
+            <text x="14" y="19" fill="#7dd3fc" font-size="13.5" font-weight="800">1. XÉT CHỮ SỐ TẬN CÙNG (DẤU HIỆU CHIA HẾT CHO 2 VÀ 5)</text>
+
+            <!-- Huy hiệu chữ số tận cùng phóng to -->
+            <rect x="16" y="36" width="60" height="60" rx="12" fill="rgba(245, 158, 11, 0.18)" stroke="#f59e0b" stroke-width="2.5"/>
+            <text id="lastDigitBigText" x="46" y="79" fill="#fbbf24" font-size="36" font-weight="800" text-anchor="middle">4</text>
+
+            <text id="div2ExplainSvg" x="90" y="58" fill="#e2e8f0" font-size="15" font-weight="700">• Chia hết cho 2</text>
+            <text id="div5ExplainSvg" x="90" y="86" fill="#e2e8f0" font-size="15" font-weight="700">• Không chia hết cho 5</text>
+          </g>
+
+          <!-- Hộp 2: Xét tổng các chữ số (cho ÷3 và ÷9) -->
+          <g transform="translate(16, 404)">
+            <rect x="0" y="0" width="398" height="108" rx="12" fill="#0f172a" stroke="#a78bfa" stroke-width="1.5"/>
+            <rect x="0" y="0" width="398" height="28" rx="12" fill="rgba(167, 139, 250, 0.15)"/>
+            <text x="14" y="19" fill="#ddd6fe" font-size="13.5" font-weight="800">2. XÉT TỔNG CÁC CHỮ SỐ (DẤU HIỆU CHIA HẾT CHO 3 VÀ 9)</text>
+
+            <text id="sumExpressionSvg" x="16" y="52" fill="#fde047" font-size="16" font-weight="800">Tổng S = 7 + 2 + 5 + 4 = 18</text>
+            <text id="div3ExplainSvg" x="16" y="76" fill="#e2e8f0" font-size="15" font-weight="700">• Vì 18 ⋮ 3 nên 7 254 ⋮ 3</text>
+            <text id="div9ExplainSvg" x="16" y="99" fill="#e2e8f0" font-size="15" font-weight="700">• Vì 18 ⋮ 9 nên 7 254 ⋮ 9</text>
+          </g>
+        </g>
+
+        <!-- ================= PHẢI: BẢNG 1–100 (x: 454, y: 12, w: 394, h: 526) ================= -->
+        <g transform="translate(454, 12)">
+          <rect x="0" y="0" width="394" height="526" rx="16" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+          <text x="197" y="25" fill="#94a3b8" font-size="14" font-weight="700" text-anchor="middle" letter-spacing="0.8">
+            🔢 BẢNG SỐ 1 – 100 (CHẠM VÀO Ô ĐỂ ĐƯA VÀO MÁY LỌC)
+          </text>
+
+          <!-- Lưới 10x10 (kích thước mỗi ô 36x38) -->
+          <g id="grid100Group" transform="translate(14, 36)"></g>
+
+          <!-- Khung kết luận quy luật bảng 1-100 -->
+          <rect x="14" y="428" width="366" height="86" rx="10" fill="#0f172a" stroke="#334155"/>
+          <text id="gridRuleTitle" x="26" y="449" fill="#38bdf8" font-size="14" font-weight="800">
+            Đang tô màu: Chia hết cho 2 (50 số)
+          </text>
+          <text id="gridRuleDesc1" x="26" y="472" fill="#e2e8f0" font-size="13.5" font-weight="600">
+            • Quy luật: Nằm ở các cột có chữ số tận cùng là 0, 2, 4, 6, 8.
+          </text>
+          <text id="gridRuleDesc2" x="26" y="494" fill="#fde68a" font-size="13.5" font-weight="600">
+            • Mẹo: Bật cùng lúc ÷2 và ÷5 để thấy cột tận cùng là 0!
+          </text>
+        </g>
+      </svg>
+
+      <!-- THỰC HÀNH AREA -->
+      <div id="practiceStage" class="practice-stage hidden">
+        <div class="q-header">
+          <span class="q-badge" id="qProgressBadge">Câu 1 / 10</span>
+          <span class="q-level" id="qLevelText">🌱 Mức độ: Nhận biết</span>
+        </div>
+
+        <div class="q-card" id="qCard">
+          <div class="q-text" id="qText">Đang tải câu hỏi...</div>
+          <div id="qInteractiveZone" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:12px;"></div>
+          <div id="feedbackBox" class="feedback-box"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BẢNG ĐIỀU KHIỂN BÊN PHẢI (330px) -->
+    <aside class="controls">
+      <!-- ĐIỀU KHIỂN KHÁM PHÁ -->
+      <div id="exploreControls" style="display:flex; flex-direction:column; gap:11px;">
+        <div>
+          <div class="sec-title">1. Nhập số vào Máy lọc (Tối đa 9 chữ số)</div>
+          <div class="ctrl-box">
+            <div class="num-input-row">
+              <input type="text" id="machineInput" class="num-input" value="7254" maxlength="9" oninput="onMachineInput(this.value)">
+              <button class="btn btn-primary" onclick="spinRandomNumber()" title="Quay số ngẫu nhiên">🎲 Quay</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="sec-title">2. Tô màu quy luật trên Bảng 1–100</div>
+          <div class="ctrl-box">
+            <div style="font-size:13px; color:var(--sub); margin-bottom:7px;">Có thể bật đồng thời nhiều nút để tìm giao:</div>
+            <div class="btn-grid">
+              <button class="btn btn-f2 active-filter" id="btnFilter2" onclick="toggleGridFilter(2)">Tô số ⋮ 2</button>
+              <button class="btn btn-f5" id="btnFilter5" onclick="toggleGridFilter(5)">Tô số ⋮ 5</button>
+              <button class="btn btn-f3" id="btnFilter3" onclick="toggleGridFilter(3)">Tô số ⋮ 3</button>
+              <button class="btn btn-f9" id="btnFilter9" onclick="toggleGridFilter(9)">Tô số ⋮ 9</button>
+            </div>
+            <button class="btn" style="width:100%; margin-top:7px;" onclick="setBoth2And5()">⚡ Bật đồng thời ⋮ 2 và ⋮ 5 (Tận cùng 0)</button>
+          </div>
+        </div>
+
+        <div>
+          <div class="sec-title">3. Ví dụ mẫu đặc biệt</div>
+          <div class="btn-grid">
+            <button class="btn" onclick="setSampleNumber(12, [3])">Số 12 (⋮3, ∤9)</button>
+            <button class="btn" onclick="setSampleNumber(1350, [2,5,3,9])">1 350 (Qua cả 4)</button>
+            <button class="btn" onclick="setSampleNumber(2025, [5,9])">2 025 (⋮5 và ⋮9)</button>
+            <button class="btn" onclick="setSampleNumber(987654321, [9])">987 654 321</button>
+          </div>
+          <button class="btn btn-reset" style="width:100%; margin-top:7px;" onclick="resetExplore()">↺ Làm lại mặc định</button>
+        </div>
+
+        <div class="note-box">
+          <strong>💡 Nhận xét SGK:</strong><br>
+          • Số có chữ số tận cùng là <strong>0</strong> thì vừa chia hết cho 2, vừa chia hết cho 5.<br>
+          • Số chia hết cho 9 thì <strong>luôn chia hết cho 3</strong>, nhưng số chia hết cho 3 <strong>chưa chắc</strong> đã chia hết cho 9 (ví dụ: <strong>12 ⋮ 3</strong> nhưng <strong>12 ∤ 9</strong>).
+        </div>
+      </div>
+
+      <!-- ĐIỀU KHIỂN THỰC HÀNH -->
+      <div id="practiceControls" class="hidden" style="display:flex; flex-direction:column; gap:12px;">
+        <div class="sec-title">Bảng điểm Luyện tập</div>
+        <div class="ctrl-box">
+          <div class="stat-row">
+            <span>Điểm số:</span>
+            <span class="stat-val" style="color:var(--green)" id="scoreVal">0</span>
+          </div>
+          <div class="stat-row">
+            <span>Chuỗi đúng liên tiếp:</span>
+            <span class="stat-val" style="color:var(--orange)" id="streakVal">0 🔥</span>
+          </div>
+          <div class="stat-row" style="border-bottom:none;">
+            <span>Tiến độ:</span>
+            <span style="font-size:20px; font-weight:700;" id="doneCountVal">0 / 10</span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="nextQBtn" style="padding:12px; font-size:16px;" onclick="nextQuestion()" disabled>Câu tiếp theo →</button>
+        <button class="btn btn-reset" onclick="initPractice()">↺ Chơi lại từ đầu</button>
+
+        <div class="note-box">
+          <strong>🎯 Tóm tắt kiến thức:</strong><br>
+          • <strong>⋮ 2</strong>: Tận cùng là 0; 2; 4; 6; 8.<br>
+          • <strong>⋮ 5</strong>: Tận cùng là 0 hoặc 5.<br>
+          • <strong>⋮ 3</strong>: Tổng các chữ số chia hết cho 3.<br>
+          • <strong>⋮ 9</strong>: Tổng các chữ số chia hết cho 9.
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    /* ==========================================================
+       1. TRẠNG THÁI & HÀM TIỆN ÍCH CHUNG
+       ========================================================== */
+    let currentMachineNum = 7254;
+    let activeFilters = new Set([2]); // Các bộ lọc đang bật trên bảng 1-100
+
+    function formatVNNumber(n) {
+      return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    }
+
+    function getDigitsArray(n) {
+      return n.toString().split('').map(c => parseInt(c, 10));
+    }
+
+    function sumDigits(n) {
+      return getDigitsArray(n).reduce((acc, d) => acc + d, 0);
+    }
+
+    /* ==========================================================
+       2. MÁY LỌC SỐ TỰ NHIÊN (TỐI ĐA 9 CHỮ SỐ)
+       ========================================================== */
+    function onMachineInput(raw) {
+      const cleaned = raw.replace(/\D/g, '').slice(0, 9);
+      const num = cleaned === '' ? 0 : parseInt(cleaned, 10);
+      currentMachineNum = num;
+      renderMachine(num);
+      renderGrid100();
+    }
+
+    function spinRandomNumber() {
+      const lengths = [3, 4, 5, 6, 7, 8, 9];
+      const len = lengths[Math.floor(Math.random() * lengths.length)];
+      const min = Math.pow(10, len - 1);
+      const max = Math.pow(10, len) - 1;
+      const rnd = Math.floor(Math.random() * (max - min + 1)) + min;
+      document.getElementById('machineInput').value = rnd;
+      currentMachineNum = rnd;
+      renderMachine(rnd);
+      renderGrid100();
+    }
+
+    function setSampleNumber(num, filters) {
+      document.getElementById('machineInput').value = num;
+      currentMachineNum = num;
+      if (filters) {
+        activeFilters = new Set(filters);
+        syncFilterButtons();
+      }
+      renderMachine(num);
+      renderGrid100();
+    }
+
+    function resetExplore() {
+      setSampleNumber(7254, [2]);
+    }
+
+    function renderMachine(n) {
+      const str = n.toString();
+      const digits = getDigitsArray(n);
+      const lastDigit = digits[digits.length - 1];
+      const totalSum = sumDigits(n);
+
+      // 1. Vẽ dãy chữ số đầu vào (phóng to & tô màu cam chữ số tận cùng)
+      const dGroup = document.getElementById('machineDigitsGroup');
+      dGroup.innerHTML = '';
+
+      const boxW = str.length > 7 ? 36 : 40;
+      const gap = 5;
+      const totalW = str.length * boxW + (str.length - 1) * gap;
+      let startX = -totalW / 2;
+
+      digits.forEach((d, idx) => {
+        const isLast = idx === digits.length - 1;
+        const w = isLast ? boxW + 8 : boxW;
+        const h = isLast ? 48 : 40;
+        const y = isLast ? -32 : -26;
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', startX);
+        rect.setAttribute('y', y);
+        rect.setAttribute('width', w);
+        rect.setAttribute('height', h);
+        rect.setAttribute('rx', '8');
+        rect.setAttribute('fill', isLast ? 'rgba(245, 158, 11, 0.22)' : '#1e293b');
+        rect.setAttribute('stroke', isLast ? '#f59e0b' : '#475569');
+        rect.setAttribute('stroke-width', isLast ? '2.5' : '1.5');
+        dGroup.appendChild(rect);
+
+        const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        txt.setAttribute('x', startX + w / 2);
+        txt.setAttribute('y', isLast ? 2 : -1);
+        txt.setAttribute('text-anchor', 'middle');
+        txt.setAttribute('fill', isLast ? '#fbbf24' : '#e2e8f0');
+        txt.setAttribute('font-size', isLast ? '28' : '22');
+        txt.setAttribute('font-weight', '800');
+        txt.textContent = d;
+        dGroup.appendChild(txt);
+
+        startX += w + gap;
+      });
+
+      // 2. Vẽ 4 Cửa lọc: ÷2, ÷5, ÷3, ÷9
+      const gatesContainer = document.getElementById('gatesContainer');
+      gatesContainer.innerHTML = '';
+      const divisors = [
+        { d: 2, label: 'CỬA ÷ 2', pass: n % 2 === 0, hint: `Tận cùng: ${lastDigit}` },
+        { d: 5, label: 'CỬA ÷ 5', pass: n % 5 === 0, hint: `Tận cùng: ${lastDigit}` },
+        { d: 3, label: 'CỬA ÷ 3', pass: n % 3 === 0, hint: `Tổng S = ${totalSum}` },
+        { d: 9, label: 'CỬA ÷ 9', pass: n % 9 === 0, hint: `Tổng S = ${totalSum}` }
+      ];
+
+      divisors.forEach((gate, idx) => {
+        const gx = idx * 100;
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('transform', `translate(${gx}, 0)`);
+
+        const strokeCol = gate.pass ? '#10b981' : '#ef4444';
+        const bgCol = gate.pass ? 'rgba(16, 185, 129, 0.16)' : 'rgba(239, 68, 68, 0.15)';
+
+        const box = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        box.setAttribute('x', 4);
+        box.setAttribute('y', 0);
+        box.setAttribute('width', 92);
+        box.setAttribute('height', 122);
+        box.setAttribute('rx', '12');
+        box.setAttribute('fill', bgCol);
+        box.setAttribute('stroke', strokeCol);
+        box.setAttribute('stroke-width', '2.5');
+        g.appendChild(box);
+
+        const title = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        title.setAttribute('x', 50);
+        title.setAttribute('y', 24);
+        title.setAttribute('text-anchor', 'middle');
+        title.setAttribute('fill', '#e2e8f0');
+        title.setAttribute('font-size', '15');
+        title.setAttribute('font-weight', '800');
+        title.textContent = gate.label;
+        g.appendChild(title);
+
+        // Đèn trạng thái
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', 50);
+        circle.setAttribute('cy', 58);
+        circle.setAttribute('r', 19);
+        circle.setAttribute('fill', gate.pass ? '#10b981' : '#ef4444');
+        g.appendChild(circle);
+
+        const icon = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        icon.setAttribute('x', 50);
+        icon.setAttribute('y', 65);
+        icon.setAttribute('text-anchor', 'middle');
+        icon.setAttribute('fill', '#0f172a');
+        icon.setAttribute('font-size', '21');
+        icon.setAttribute('font-weight', '900');
+        icon.textContent = gate.pass ? '✓' : '✕';
+        g.appendChild(icon);
+
+        const sub1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        sub1.setAttribute('x', 50);
+        sub1.setAttribute('y', 95);
+        sub1.setAttribute('text-anchor', 'middle');
+        sub1.setAttribute('fill', gate.pass ? '#6ee7b7' : '#fca5a5');
+        sub1.setAttribute('font-size', '13');
+        sub1.setAttribute('font-weight', '800');
+        sub1.textContent = gate.pass ? `N ⋮ ${gate.d}` : `N ∤ ${gate.d}`;
+        g.appendChild(sub1);
+
+        const sub2 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        sub2.setAttribute('x', 50);
+        sub2.setAttribute('y', 113);
+        sub2.setAttribute('text-anchor', 'middle');
+        sub2.setAttribute('fill', '#cbd5e1');
+        sub2.setAttribute('font-size', '12');
+        sub2.setAttribute('font-weight', '600');
+        sub2.textContent = gate.hint;
+        g.appendChild(sub2);
+
+        gatesContainer.appendChild(g);
+      });
+
+      // 3. Cập nhật hộp giải thích Chữ số tận cùng (÷2, ÷5)
+      document.getElementById('lastDigitBigText').textContent = lastDigit;
+      const pass2 = n % 2 === 0;
+      const pass5 = n % 5 === 0;
+      const el2 = document.getElementById('div2ExplainSvg');
+      const el5 = document.getElementById('div5ExplainSvg');
+
+      el2.textContent = pass2
+        ? `• Tận cùng là ${lastDigit} (chẵn) ⇒ ${formatVNNumber(n)} ⋮ 2`
+        : `• Tận cùng là ${lastDigit} (lẻ) ⇒ ${formatVNNumber(n)} ∤ 2`;
+      el2.setAttribute('fill', pass2 ? '#6ee7b7' : '#fca5a5');
+
+      el5.textContent = pass5
+        ? `• Tận cùng là ${lastDigit} (0 hoặc 5) ⇒ ${formatVNNumber(n)} ⋮ 5`
+        : `• Tận cùng là ${lastDigit} (khác 0; 5) ⇒ ${formatVNNumber(n)} ∤ 5`;
+      el5.setAttribute('fill', pass5 ? '#6ee7b7' : '#fca5a5');
+
+      // 4. Cập nhật hộp giải thích Tổng các chữ số (÷3, ÷9)
+      const sumExpr = digits.join(' + ');
+      document.getElementById('sumExpressionSvg').textContent =
+        `Tổng chữ số: S = ${sumExpr} = ${totalSum}`;
+
+      const pass3 = totalSum % 3 === 0;
+      const pass9 = totalSum % 9 === 0;
+      const el3 = document.getElementById('div3ExplainSvg');
+      const el9 = document.getElementById('div9ExplainSvg');
+
+      el3.textContent = pass3
+        ? `• Vì ${totalSum} ⋮ 3 nên ${formatVNNumber(n)} ⋮ 3`
+        : `• Vì ${totalSum} ∤ 3 nên ${formatVNNumber(n)} ∤ 3`;
+      el3.setAttribute('fill', pass3 ? '#6ee7b7' : '#fca5a5');
+
+      el9.textContent = pass9
+        ? `• Vì ${totalSum} ⋮ 9 nên ${formatVNNumber(n)} ⋮ 9`
+        : `• Vì ${totalSum} ∤ 9 nên ${formatVNNumber(n)} ∤ 9`;
+      el9.setAttribute('fill', pass9 ? '#6ee7b7' : '#fca5a5');
+    }
+
+    /* ==========================================================
+       3. BẢNG 1–100 (LƯỚI 10×10) & TÔ MÀU QUY LUẬT
+       ========================================================== */
+    function toggleGridFilter(d) {
+      if (activeFilters.has(d)) {
+        activeFilters.delete(d);
+      } else {
+        activeFilters.add(d);
+      }
+      syncFilterButtons();
+      renderGrid100();
+    }
+
+    function setBoth2And5() {
+      activeFilters = new Set([2, 5]);
+      syncFilterButtons();
+      renderGrid100();
+    }
+
+    function syncFilterButtons() {
+      [2, 5, 3, 9].forEach(d => {
+        const btn = document.getElementById(`btnFilter${d}`);
+        if (btn) btn.classList.toggle('active-filter', activeFilters.has(d));
+      });
+    }
+
+    function checkGridMatch(val) {
+      if (activeFilters.size === 0) return false;
+      for (const d of activeFilters) {
+        if (val % d !== 0) return false;
+      }
+      return true;
+    }
+
+    function getFilterColor() {
+      if (activeFilters.has(2) && activeFilters.has(5) && activeFilters.size === 2) {
+        return { bg: 'rgba(16, 185, 129, 0.35)', border: '#10b981', text: '#a7f3d0' };
+      }
+      if (activeFilters.size > 1) {
+        return { bg: 'rgba(236, 72, 153, 0.32)', border: '#f472b6', text: '#fbcfe8' };
+      }
+      if (activeFilters.has(2)) return { bg: 'rgba(6, 182, 212, 0.28)', border: '#06b6d4', text: '#a5f3fc' };
+      if (activeFilters.has(5)) return { bg: 'rgba(245, 158, 11, 0.28)', border: '#f59e0b', text: '#fde68a' };
+      if (activeFilters.has(3)) return { bg: 'rgba(139, 92, 246, 0.28)', border: '#8b5cf6', text: '#ddd6fe' };
+      if (activeFilters.has(9)) return { bg: 'rgba(16, 185, 129, 0.28)', border: '#10b981', text: '#a7f3d0' };
+      return { bg: '#0f172a', border: '#334155', text: '#94a3b8' };
+    }
+
+    function renderGrid100() {
+      const g = document.getElementById('grid100Group');
+      g.innerHTML = '';
+      const cellW = 36.6;
+      const cellH = 38.2;
+      const theme = getFilterColor();
+      let matchCount = 0;
+
+      for (let i = 1; i <= 100; i++) {
+        const row = Math.floor((i - 1) / 10);
+        const col = (i - 1) % 10;
+        const x = col * cellW;
+        const y = row * cellH;
+        const matched = checkGridMatch(i);
+        if (matched) matchCount++;
+
+        const isSelected = i === currentMachineNum;
+
+        const cellG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        cellG.style.cursor = 'pointer';
+        cellG.addEventListener('pointerdown', () => {
+          document.getElementById('machineInput').value = i;
+          currentMachineNum = i;
+          renderMachine(i);
+          renderGrid100();
+        });
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', x + 1.5);
+        rect.setAttribute('y', y + 1.5);
+        rect.setAttribute('width', cellW - 3);
+        rect.setAttribute('height', cellH - 3);
+        rect.setAttribute('rx', '6');
+        rect.setAttribute('fill', matched ? theme.bg : '#0f172a');
+        rect.setAttribute('stroke', isSelected ? '#fde047' : (matched ? theme.border : '#1e293b'));
+        rect.setAttribute('stroke-width', isSelected ? '2.5' : (matched ? '1.8' : '1'));
+        cellG.appendChild(rect);
+
+        const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        txt.setAttribute('x', x + cellW / 2);
+        txt.setAttribute('y', y + cellH / 2 + 5);
+        txt.setAttribute('text-anchor', 'middle');
+        txt.setAttribute('fill', isSelected ? '#fde047' : (matched ? theme.text : '#64748b'));
+        txt.setAttribute('font-size', matched || isSelected ? '14' : '13');
+        txt.setAttribute('font-weight', matched || isSelected ? '800' : '600');
+        txt.textContent = i;
+        cellG.appendChild(txt);
+
+        g.appendChild(cellG);
+      }
+
+      // Cập nhật mô tả quy luật dưới bảng
+      const arr = Array.from(activeFilters).sort((a, b) => a - b);
+      const tTitle = document.getElementById('gridRuleTitle');
+      const tDesc1 = document.getElementById('gridRuleDesc1');
+      const tDesc2 = document.getElementById('gridRuleDesc2');
+
+      if (arr.length === 0) {
+        tTitle.textContent = 'Chưa chọn bộ lọc nào (0 số được tô)';
+        tDesc1.textContent = '• Hãy bấm các nút "Tô số ⋮ 2 / 5 / 3 / 9" ở bảng bên phải.';
+        tDesc2.textContent = '• Chạm vào bất kỳ số nào trên bảng để đưa vào Máy lọc số!';
+      } else if (arr.length === 1) {
+        const d = arr[0];
+        tTitle.textContent = `Đang tô màu: Các số chia hết cho ${d} (${matchCount} số)`;
+        if (d === 2) {
+          tDesc1.textContent = '• Quy luật: Tạo thành 5 cột dọc có chữ số tận cùng là 0, 2, 4, 6, 8.';
+          tDesc2.textContent = '• Tất cả các số chẵn đều chia hết cho 2.';
+        } else if (d === 5) {
+          tDesc1.textContent = '• Quy luật: Tạo thành 2 cột dọc có chữ số tận cùng là 5 và 0.';
+          tDesc2.textContent = '• Cột 5 và cột 10 (tận cùng 0) thẳng hàng dọc.';
+        } else if (d === 3) {
+          tDesc1.textContent = '• Quy luật: Xếp theo các đường chéo từ phải sang trái trên bảng.';
+          tDesc2.textContent = '• Tổng các chữ số của mỗi số này đều chia hết cho 3.';
+        } else if (d === 9) {
+          tDesc1.textContent = '• Quy luật: Tạo thành đường chéo gồm 9, 18, 27, 36, 45, 54, 63, 72, 81, 90, 99.';
+          tDesc2.textContent = '• Nhận xét: Mọi số trên đường chéo ⋮ 9 đều nằm trong tập hợp các số ⋮ 3!';
+        }
+      } else if (arr.length === 2 && activeFilters.has(2) && activeFilters.has(5)) {
+        tTitle.textContent = `Giao của (⋮ 2) và (⋮ 5): Có ${matchCount} số (10, 20, ..., 100)`;
+        tDesc1.textContent = '• Quy luật: Chỉ còn lại duy nhất cột ngoài cùng bên phải (tận cùng là 0)!';
+        tDesc2.textContent = '• Kết luận: Số vừa chia hết cho 2 vừa chia hết cho 5 có chữ số tận cùng là 0.';
+      } else {
+        tTitle.textContent = `Đang bật đồng thời: chia hết cho ${arr.join(', ')} (${matchCount} số)`;
+        tDesc1.textContent = `• Chỉ những số vượt qua tất cả các điều kiện (${arr.map(x => '⋮' + x).join(' và ')}) mới sáng màu.`;
+        tDesc2.textContent = activeFilters.has(3) && activeFilters.has(9)
+          ? '• Vì số ⋮ 9 luôn ⋮ 3 nên giao của (⋮ 3 và ⋮ 9) chính là tập các số ⋮ 9!'
+          : '• Chạm vào các ô sáng màu để xem Máy lọc phân tích chi tiết.';
+      }
+    }
+
+    /* ==========================================================
+       4. TAB THỰC HÀNH (10 CÂU HỎI ĐA DẠNG: MCQ, ĐIỀN SAO *, ĐÚNG/SAI, KÉO THẢ)
+       ========================================================== */
+    let questions = [];
+    let currentQIdx = 0;
+    let score = 0;
+    let streak = 0;
+    let answeredCurrent = false;
+
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function buildQuestions() {
+      const list = [];
+
+      // Câu 1 (Nhận biết): Chọn số chia hết cho 2
+      const even1 = randInt(120, 480) * 2;
+      const odds1 = [even1 + 1, even1 + 35, even1 - 17];
+      list.push({
+        level: '🌱 Mức độ: Nhận biết',
+        type: 'mcq',
+        text: 'Trong các số tự nhiên dưới đây, số nào chia hết cho 2?',
+        options: shuffle([formatVNNumber(even1), ...odds1.map(formatVNNumber)]),
+        answer: formatVNNumber(even1),
+        explain: `Số ${formatVNNumber(even1)} có chữ số tận cùng là ${even1 % 10} (số chẵn) nên chia hết cho 2.`
+      });
+
+      // Câu 2 (Nhận biết): Chọn số vừa chia hết cho 2 vừa chia hết cho 5
+      const ten2 = randInt(15, 95) * 10;
+      const w2_1 = ten2 + 5; // chỉ chia hết cho 5
+      const w2_2 = ten2 + 4; // chỉ chia hết cho 2
+      const w2_3 = ten2 + 7; // không chia hết
+      list.push({
+        level: '🌱 Mức độ: Nhận biết',
+        type: 'mcq',
+        text: 'Số nào dưới đây vừa chia hết cho 2, vừa chia hết cho 5?',
+        options: shuffle([formatVNNumber(ten2), formatVNNumber(w2_1), formatVNNumber(w2_2), formatVNNumber(w2_3)]),
+        answer: formatVNNumber(ten2),
+        explain: `Số vừa chia hết cho 2 vừa chia hết cho 5 phải có chữ số tận cùng là 0. Vậy đáp án đúng là ${formatVNNumber(ten2)}.`
+      });
+
+      // Câu 3 (Nhận biết): Chọn số chia hết cho 9 bằng tổng chữ số
+      const m9 = randInt(14, 98) * 9;
+      const w3_1 = m9 + 3; // chia hết cho 3 nhưng không chia hết cho 9
+      const w3_2 = m9 + 2;
+      const w3_3 = m9 + 5;
+      list.push({
+        level: '🌱 Mức độ: Nhận biết',
+        type: 'mcq',
+        text: 'Dựa vào tổng các chữ số, hãy cho biết số nào sau đây chia hết cho 9?',
+        options: shuffle([formatVNNumber(m9), formatVNNumber(w3_1), formatVNNumber(w3_2), formatVNNumber(w3_3)]),
+        answer: formatVNNumber(m9),
+        explain: `Số ${formatVNNumber(m9)} có tổng các chữ số là ${ getDigitsArray(m9).join(' + ') } = ${sumDigits(m9)} ⋮ 9 nên ${formatVNNumber(m9)} ⋮ 9.`
+      });
+
+      // Câu 4 (Thông hiểu): Điền chữ số vào dấu * ở giữa để chia hết cho 9 (ví dụ 4*6)
+      const dFirst4 = randInt(2, 8);
+      const dLast4 = [0, 2, 4, 6, 8][randInt(0, 4)];
+      const valid4 = [];
+      for (let d = 0; d <= 9; d++) {
+        if ((dFirst4 + d + dLast4) % 9 === 0) valid4.push(d.toString());
+      }
+      list.push({
+        level: '⚡ Mức độ: Thông hiểu',
+        type: 'star_input',
+        patternHTML: `${dFirst4}<span class="star-char">*</span>${dLast4}`,
+        text: `Thay dấu * bằng một chữ số thích hợp để số tự nhiên 3 chữ số dưới đây chia hết cho cả 2 và 9:`,
+        validAnswers: valid4,
+        explain: `Số ${dFirst4}*${dLast4} đã có tận cùng là ${dLast4} nên luôn chia hết cho 2. Để chia hết cho 9 thì (${dFirst4} + * + ${dLast4}) = (${dFirst4 + dLast4} + *) phải chia hết cho 9 ⇒ * ∈ {${valid4.join('; ')}}.`
+      });
+
+      // Câu 5 (Thông hiểu): Điền chữ số vào dấu * để chia hết cho 3 (chấp nhận mọi đáp án đúng)
+      const a5 = randInt(1, 7), b5 = randInt(1, 8);
+      const valid5 = [];
+      for (let d = 0; d <= 9; d++) {
+        if ((a5 + b5 + d) % 3 === 0) valid5.push(d.toString());
+      }
+      list.push({
+        level: '⚡ Mức độ: Thông hiểu',
+        type: 'star_input',
+        patternHTML: `${a5}<span class="star-char">*</span>${b5}`,
+        text: `Điền một chữ số bất kỳ vào dấu * để số ${a5}*${b5} chia hết cho 3 (chấp nhận mọi đáp án đúng):`,
+        validAnswers: valid5,
+        explain: `Để ${a5}*${b5} ⋮ 3 thì tổng chữ số (${a5} + * + ${b5}) = (${a5 + b5} + *) ⋮ 3. Các chữ số thỏa mãn là: * ∈ {${valid5.join('; ')}}.`
+      });
+
+      // Câu 6 (Thông hiểu): Chọn khẳng định Đúng / Sai về quan hệ giữa ⋮3 và ⋮9
+      const statements6 = [
+        { s: 'Mọi số tự nhiên có chữ số tận cùng là 3 đều chia hết cho 3.', ans: 'Sai', exp: 'Sai! Ví dụ số 13 hoặc 23 có tận cùng là 3 nhưng không chia hết cho 3 (phải xét tổng các chữ số).' },
+        { s: 'Một số chia hết cho 9 thì luôn chia hết cho 3.', ans: 'Đúng', exp: 'Đúng! Vì 9 ⋮ 3 nên mọi số có tổng các chữ số chia hết cho 9 thì cũng chia hết cho 3.' },
+        { s: 'Một số chia hết cho 3 thì luôn chia hết cho 9.', ans: 'Sai', exp: 'Sai! Ví dụ số 12 hoặc 15 chia hết cho 3 nhưng không chia hết cho 9.' }
+      ];
+      const pick6 = statements6[randInt(0, statements6.length - 1)];
+      list.push({
+        level: '⚡ Mức độ: Thông hiểu',
+        type: 'mcq',
+        text: `Khẳng định sau đây là Đúng hay Sai?\n"${pick6.s}"`,
+        options: ['Đúng', 'Sai'],
+        answer: pick6.ans,
+        explain: pick6.exp
+      });
+
+      // Câu 7 (Thông hiểu): Tìm số chia hết cho 3 nhưng KHÔNG chia hết cho 9
+      const k7 = randInt(4, 30) * 3;
+      const good7 = (k7 % 9 === 0) ? k7 + 3 : k7;
+      const mult9_a = randInt(3, 11) * 9;
+      const non3_a = good7 + 1;
+      const non3_b = good7 + 2;
+      list.push({
+        level: '⚡ Mức độ: Thông hiểu',
+        type: 'mcq',
+        text: 'Số nào dưới đây chia hết cho 3 nhưng KHÔNG chia hết cho 9?',
+        options: shuffle([good7.toString(), mult9_a.toString(), non3_a.toString(), non3_b.toString()]),
+        answer: good7.toString(),
+        explain: `Số ${good7} có tổng các chữ số là ${sumDigits(good7)}. Vì ${sumDigits(good7)} ⋮ 3 nhưng ${sumDigits(good7)} ∤ 9 nên ${good7} chia hết cho 3 mà không chia hết cho 9.`
+      });
+
+      // Câu 8 (Vận dụng): Điền chữ số tận cùng * để chia hết cho cả 2 và 3 (ví dụ 52*)
+      const p8 = randInt(11, 89);
+      const d8_1 = Math.floor(p8 / 10), d8_2 = p8 % 10;
+      const valid8 = [];
+      for (let d = 0; d <= 9; d++) {
+        if (d % 2 === 0 && (d8_1 + d8_2 + d) % 3 === 0) valid8.push(d.toString());
+      }
+      list.push({
+        level: '🔥 Mức độ: Vận dụng',
+        type: 'star_input',
+        patternHTML: `${d8_1}${d8_2}<span class="star-char">*</span>`,
+        text: `Thay dấu * ở hàng đơn vị bằng một chữ số thích hợp để số ${p8}* chia hết cho cả 2 và 3:`,
+        validAnswers: valid8,
+        explain: `Vì ${p8}* ⋮ 2 nên * ∈ {0; 2; 4; 6; 8}. Mặt khác (${d8_1} + ${d8_2} + *) = (${d8_1 + d8_2} + *) ⋮ 3 nên * ∈ {${valid8.join('; ')}}.`
+      });
+
+      // Câu 9 (Vận dụng): Xét tính chia hết của một tổng hoặc hiệu mà không cần tính kết quả
+      const m9_a = randInt(2, 9) * 90;
+      const m9_b = randInt(1, 9) * 180; // ⋮ 2, 5, 9 → tổng lẻ (vì + 45) nên ∤ 2
+      list.push({
+        level: '🔥 Mức độ: Vận dụng',
+        type: 'mcq',
+        text: `Không thực hiện phép tính, hãy cho biết tổng A = ${m9_a} + ${m9_b} + 45 chia hết cho những số nào dưới đây?`,
+        options: shuffle([
+          'Chia hết cho cả 3, 5 và 9',
+          'Chỉ chia hết cho 5, không chia hết cho 9',
+          'Chỉ chia hết cho 3, không chia hết cho 9',
+          'Chia hết cho cả 2, 5 và 9'
+        ]),
+        answer: 'Chia hết cho cả 3, 5 và 9',
+        explain: `Cả 3 số hạng ${m9_a}, ${m9_b} và 45 đều có tận cùng là 0 hoặc 5 (nên tổng chia hết cho 5) và đều có tổng chữ số chia hết cho 9 (nên chia hết cho cả 3 và 9). Tuy nhiên 45 lẻ nên tổng không chia hết cho 2.`
+      });
+
+      // Câu 10 (Vận dụng): Kéo thả 4 thẻ số vào đúng 4 hộp đặc trưng trên SVG
+      const cardA = randInt(2, 9) * 20 + 4; // chỉ ⋮ 2 (đảm bảo không ⋮ 3, 5)
+      const fixCard2 = (cardA % 3 === 0) ? cardA + 2 : cardA;
+      const card5 = [25, 35, 55, 65, 85, 95][randInt(0, 5)]; // chỉ ⋮ 5
+      const card3Not9 = [15, 21, 33, 39, 51, 57][randInt(0, 5)]; // ⋮ 3 nhưng lẻ hoặc không ⋮ 9 -> chọn số chỉ ⋮ 3: 21, 33, 39, 51, 57
+      const pure3 = [21, 33, 39, 51, 57][randInt(0, 4)];
+      const cardAll = [90, 180, 270, 360, 450][randInt(0, 4)]; // ⋮ 2, 5, 3, 9
+
+      list.push({
+        level: '🔥 Mức độ: Vận dụng cao',
+        type: 'drag4boxes',
+        text: 'Kéo mỗi thẻ số ở hàng trên thả vào đúng hộp tính chất tương ứng ở bên dưới:',
+        items: shuffle([
+          { val: fixCard2, targetBox: 0, label: `${fixCard2}` },
+          { val: card5,    targetBox: 1, label: `${card5}` },
+          { val: pure3,    targetBox: 2, label: `${pure3}` },
+          { val: cardAll,  targetBox: 3, label: `${cardAll}` }
+        ]),
+        boxes: [
+          { id: 0, title: 'Chỉ ⋮ 2', sub: '(Chẵn, ∤ 3, ∤ 5)' },
+          { id: 1, title: 'Chỉ ⋮ 5', sub: '(Tận cùng 5, ∤ 3)' },
+          { id: 2, title: '⋮ 3 nhưng ∤ 9', sub: '(Số lẻ ⋮ 3)' },
+          { id: 3, title: '⋮ cả 2, 5, 3, 9', sub: '(Tận cùng 0, ⋮ 9)' }
+        ],
+        explain: `Phân loại đúng: ${fixCard2} (chỉ ⋮ 2); ${card5} (chỉ ⋮ 5); ${pure3} (⋮ 3 nhưng ∤ 9); ${cardAll} (tận cùng là 0 và tổng chữ số bằng 9 nên ⋮ cả 2, 5, 3, 9).`
+      });
+
+      return list;
+    }
+
+    function initPractice() {
+      questions = buildQuestions();
+      currentQIdx = 0;
+      score = 0;
+      streak = 0;
+      updatePracticeStats();
+      renderQuestion();
+    }
+
+    function updatePracticeStats() {
+      document.getElementById('scoreVal').textContent = score;
+      document.getElementById('streakVal').textContent = `${streak} 🔥`;
+      document.getElementById('doneCountVal').textContent = `${currentQIdx} / 10`;
+    }
+
+    function renderQuestion() {
+      answeredCurrent = false;
+      document.getElementById('nextQBtn').disabled = true;
+      const fb = document.getElementById('feedbackBox');
+      fb.className = 'feedback-box';
+      fb.innerHTML = '';
+
+      if (currentQIdx >= questions.length) {
+        renderSummary();
+        return;
+      }
+
+      const q = questions[currentQIdx];
+      document.getElementById('qProgressBadge').textContent = `Câu ${currentQIdx + 1} / 10`;
+      document.getElementById('qLevelText').textContent = q.level;
+      document.getElementById('qText').textContent = q.text;
+
+      const zone = document.getElementById('qInteractiveZone');
+      zone.innerHTML = '';
+
+      if (q.type === 'mcq') {
+        const grid = document.createElement('div');
+        grid.className = 'options-grid';
+        q.options.forEach(opt => {
+          const btn = document.createElement('button');
+          btn.className = 'opt-btn';
+          btn.textContent = opt;
+          btn.onclick = () => checkMCQAnswer(btn, opt, q);
+          grid.appendChild(btn);
+        });
+        zone.appendChild(grid);
+      } else if (q.type === 'star_input') {
+        const starBox = document.createElement('div');
+        starBox.className = 'star-display';
+        starBox.innerHTML = q.patternHTML;
+        zone.appendChild(starBox);
+
+        const wrap = document.createElement('div');
+        wrap.className = 'ans-input-wrap';
+
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.maxLength = 1;
+        inp.className = 'ans-input';
+        inp.id = 'starDigitInput';
+        inp.placeholder = '* = ?';
+        inp.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && !answeredCurrent) checkStarAnswer(q);
+        });
+
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-primary';
+        btn.style.padding = '12px 22px';
+        btn.style.fontSize = '18px';
+        btn.textContent = 'Kiểm tra';
+        btn.onclick = () => checkStarAnswer(q);
+
+        wrap.appendChild(inp);
+        wrap.appendChild(btn);
+        zone.appendChild(wrap);
+        setTimeout(() => inp.focus(), 50);
+      } else if (q.type === 'drag4boxes') {
+        renderDrag4Boxes(zone, q);
+      }
+    }
+
+    function checkMCQAnswer(btnClicked, chosen, q) {
+      if (answeredCurrent) return;
+      answeredCurrent = true;
+      const allBtns = document.querySelectorAll('.opt-btn');
+      allBtns.forEach(b => {
+        b.disabled = true;
+        if (b.textContent === q.answer) b.classList.add('correct');
+      });
+      const isOk = chosen === q.answer;
+      if (!isOk) btnClicked.classList.add('wrong');
+      finalizeAnswer(isOk, q.explain);
+    }
+
+    function checkStarAnswer(q) {
+      if (answeredCurrent) return;
+      const inp = document.getElementById('starDigitInput');
+      if (!inp) return;
+      const val = inp.value.trim();
+      if (val === '' || !/^\d$/.test(val)) return;
+
+      answeredCurrent = true;
+      inp.disabled = true;
+      const isOk = q.validAnswers.includes(val);
+      finalizeAnswer(isOk, q.explain);
+    }
+
+    /* ==========================================================
+       5. KÉO THẢ 4 SỐ VÀO 4 HỘP TRÊN SVG (CÂU 10)
+       ========================================================== */
+    function renderDrag4Boxes(zone, q) {
+      const svgNS = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(svgNS, 'svg');
+      svg.setAttribute('viewBox', '0 0 680 250');
+      svg.style.width = '100%';
+      svg.style.maxWidth = '680px';
+      svg.style.height = '240px';
+      svg.style.touchAction = 'none';
+      svg.style.background = '#0b1120';
+      svg.style.borderRadius = '16px';
+      svg.style.border = '1px solid #334155';
+
+      const boxCoords = [
+        { x: 16,  y: 115, w: 150, h: 115 },
+        { x: 182, y: 115, w: 150, h: 115 },
+        { x: 348, y: 115, w: 150, h: 115 },
+        { x: 514, y: 115, w: 150, h: 115 }
+      ];
+
+      // Vẽ 4 hộp đích
+      q.boxes.forEach((b, idx) => {
+        const bc = boxCoords[idx];
+        const gBox = document.createElementNS(svgNS, 'g');
+
+        const r = document.createElementNS(svgNS, 'rect');
+        r.setAttribute('x', bc.x);
+        r.setAttribute('y', bc.y);
+        r.setAttribute('width', bc.w);
+        r.setAttribute('height', bc.h);
+        r.setAttribute('rx', '12');
+        r.setAttribute('fill', '#1e293b');
+        r.setAttribute('stroke', '#06b6d4');
+        r.setAttribute('stroke-width', '2');
+        r.setAttribute('stroke-dasharray', '5,4');
+        gBox.appendChild(r);
+
+        const t1 = document.createElementNS(svgNS, 'text');
+        t1.setAttribute('x', bc.x + bc.w / 2);
+        t1.setAttribute('y', bc.y + 26);
+        t1.setAttribute('text-anchor', 'middle');
+        t1.setAttribute('fill', '#38bdf8');
+        t1.setAttribute('font-size', '15');
+        t1.setAttribute('font-weight', '800');
+        t1.textContent = b.title;
+        gBox.appendChild(t1);
+
+        const t2 = document.createElementNS(svgNS, 'text');
+        t2.setAttribute('x', bc.x + bc.w / 2);
+        t2.setAttribute('y', bc.y + 45);
+        t2.setAttribute('text-anchor', 'middle');
+        t2.setAttribute('fill', '#94a3b8');
+        t2.setAttribute('font-size', '12');
+        t2.setAttribute('font-weight', '600');
+        t2.textContent = b.sub;
+        gBox.appendChild(t2);
+
+        svg.appendChild(gBox);
+      });
+
+      // Trạng thái vị trí của 4 thẻ kéo thả
+      const cardsState = q.items.map((item, idx) => ({
+        ...item,
+        homeX: 60 + idx * 160,
+        homeY: 42,
+        x: 60 + idx * 160,
+        y: 42,
+        placedBox: null,
+        el: null
+      }));
+
+      let draggingCard = null;
+      let offset = { x: 0, y: 0 };
+
+      cardsState.forEach((c) => {
+        const gCard = document.createElementNS(svgNS, 'g');
+        gCard.style.cursor = 'grab';
+        c.el = gCard;
+
+        const r = document.createElementNS(svgNS, 'rect');
+        r.setAttribute('x', -52);
+        r.setAttribute('y', -24);
+        r.setAttribute('width', 104);
+        r.setAttribute('height', 48);
+        r.setAttribute('rx', '10');
+        r.setAttribute('fill', '#0f172a');
+        r.setAttribute('stroke', '#f59e0b');
+        r.setAttribute('stroke-width', '2.5');
+        gCard.appendChild(r);
+
+        const txt = document.createElementNS(svgNS, 'text');
+        txt.setAttribute('x', 0);
+        txt.setAttribute('y', 8);
+        txt.setAttribute('text-anchor', 'middle');
+        txt.setAttribute('fill', '#fde68a');
+        txt.setAttribute('font-size', '22');
+        txt.setAttribute('font-weight', '800');
+        txt.textContent = c.label;
+        gCard.appendChild(txt);
+
+        updateCardTransform(c);
+
+        gCard.addEventListener('pointerdown', (e) => {
+          if (answeredCurrent) return;
+          draggingCard = c;
+          gCard.style.cursor = 'grabbing';
+          svg.appendChild(gCard); // Đưa lên trên cùng
+          const pt = getSvgPoint(svg, e);
+          offset.x = pt.x - c.x;
+          offset.y = pt.y - c.y;
+          svg.setPointerCapture(e.pointerId);
+        });
+
+        svg.appendChild(gCard);
+      });
+
+      svg.addEventListener('pointermove', (e) => {
+        if (!draggingCard) return;
+        const pt = getSvgPoint(svg, e);
+        draggingCard.x = Math.max(55, Math.min(625, pt.x - offset.x));
+        draggingCard.y = Math.max(30, Math.min(220, pt.y - offset.y));
+        updateCardTransform(draggingCard);
+      });
+
+      svg.addEventListener('pointerup', (e) => {
+        if (!draggingCard) return;
+        draggingCard.el.style.cursor = 'grab';
+        svg.releasePointerCapture(e.pointerId);
+
+        // Kiểm tra rơi vào hộp nào
+        let hitBoxIdx = null;
+        boxCoords.forEach((bc, bIdx) => {
+          if (
+            draggingCard.x >= bc.x &&
+            draggingCard.x <= bc.x + bc.w &&
+            draggingCard.y >= bc.y &&
+            draggingCard.y <= bc.y + bc.h
+          ) {
+            hitBoxIdx = bIdx;
+          }
+        });
+
+        if (hitBoxIdx !== null) {
+          // Nếu hộp đó đã có thẻ khác thì đẩy thẻ cũ về vị trí ban đầu
+          cardsState.forEach(other => {
+            if (other !== draggingCard && other.placedBox === hitBoxIdx) {
+              other.placedBox = null;
+              other.x = other.homeX;
+              other.y = other.homeY;
+              updateCardTransform(other);
+            }
+          });
+          draggingCard.placedBox = hitBoxIdx;
+          draggingCard.x = boxCoords[hitBoxIdx].x + boxCoords[hitBoxIdx].w / 2;
+          draggingCard.y = boxCoords[hitBoxIdx].y + 82;
+        } else {
+          draggingCard.placedBox = null;
+          draggingCard.x = draggingCard.homeX;
+          draggingCard.y = draggingCard.homeY;
+        }
+
+        updateCardTransform(draggingCard);
+        draggingCard = null;
+      });
+
+      zone.appendChild(svg);
+
+      const checkBtn = document.createElement('button');
+      checkBtn.className = 'btn btn-primary';
+      checkBtn.style.padding = '10px 24px';
+      checkBtn.style.fontSize = '17px';
+      checkBtn.textContent = '✓ Kiểm tra kết quả xếp hộp';
+      checkBtn.onclick = () => {
+        if (answeredCurrent) return;
+        const allPlaced = cardsState.every(c => c.placedBox !== null);
+        if (!allPlaced) {
+          const fb = document.getElementById('feedbackBox');
+          fb.className = 'feedback-box err';
+          fb.innerHTML = '⚠️ Em hãy kéo đủ cả 4 thẻ số vào 4 hộp trước khi bấm Kiểm tra nhé!';
+          return;
+        }
+        answeredCurrent = true;
+        checkBtn.disabled = true;
+        const isOk = cardsState.every(c => c.placedBox === c.targetBox);
+        finalizeAnswer(isOk, q.explain);
+      };
+      zone.appendChild(checkBtn);
+    }
+
+    function getSvgPoint(svg, e) {
+      const pt = svg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      return pt.matrixTransform(svg.getScreenCTM().inverse());
+    }
+
+    function updateCardTransform(c) {
+      c.el.setAttribute('transform', `translate(${c.x}, ${c.y})`);
+    }
+
+    function finalizeAnswer(isOk, explainText) {
+      const fb = document.getElementById('feedbackBox');
+      if (isOk) {
+        score += 10;
+        streak += 1;
+        fb.className = 'feedback-box ok';
+        fb.innerHTML = `✅ <strong>Chính xác! (+10 điểm)</strong><br>${explainText}`;
+      } else {
+        streak = 0;
+        fb.className = 'feedback-box err';
+        fb.innerHTML = `❌ <strong>Chưa đúng!</strong><br>${explainText}`;
+      }
+      document.getElementById('doneCountVal').textContent = `${currentQIdx + 1} / 10`;
+      document.getElementById('scoreVal').textContent = score;
+      document.getElementById('streakVal').textContent = `${streak} 🔥`;
+      document.getElementById('nextQBtn').disabled = false;
+    }
+
+    function nextQuestion() {
+      currentQIdx++;
+      renderQuestion();
+    }
+
+    function renderSummary() {
+      document.getElementById('qProgressBadge').textContent = 'Hoàn thành 10 / 10';
+      document.getElementById('qLevelText').textContent = '🏆 Tổng kết lượt chơi';
+      document.getElementById('nextQBtn').disabled = true;
+
+      let msg = 'Xuất sắc! Em đã nắm rất chắc các dấu hiệu chia hết cho 2, 5, 3, 9!';
+      if (score < 60) msg = 'Em hãy ôn lại cách xét chữ số tận cùng (cho 2 và 5) và xét tổng các chữ số (cho 3 và 9) nhé!';
+      else if (score < 90) msg = 'Rất tốt! Hãy thử sức thêm một lượt nữa để chinh phục 100 điểm tối đa nhé!';
+
+      document.getElementById('qText').textContent = '🎉 Chúc mừng em đã hoàn thành 10 câu hỏi Thực Hành!';
+      document.getElementById('qInteractiveZone').innerHTML = `
+        <div style="font-size:48px; font-weight:800; color:var(--teal);">${score} / 100 điểm</div>
+        <p style="font-size:18px; color:var(--sub); max-width:540px;">${msg}</p>
+        <button class="btn btn-primary" style="padding:12px 28px; font-size:18px;" onclick="initPractice()">🔄 Chơi lại với bộ số mới</button>
+      `;
+    }
+
+    /* ==========================================================
+       6. CHUYỂN TAB & TOÀN MÀN HÌNH
+       ========================================================== */
+    function switchTab(tab) {
+      const isExplore = tab === 'explore';
+      document.getElementById('tabExploreBtn').classList.toggle('active', isExplore);
+      document.getElementById('tabPracticeBtn').classList.toggle('active', !isExplore);
+
+      document.getElementById('exploreSvg').classList.toggle('hidden', !isExplore);
+      document.getElementById('exploreControls').classList.toggle('hidden', !isExplore);
+
+      document.getElementById('practiceStage').classList.toggle('hidden', isExplore);
+      document.getElementById('practiceControls').classList.toggle('hidden', isExplore);
+
+      document.getElementById('instrBar').textContent = isExplore
+        ? '✋ Nhập hoặc quay số tự nhiên (tới 9 chữ số) để đưa vào "Máy lọc số", hoặc bật bộ lọc trên bảng 1–100 để khám phá quy luật!'
+        : '🎯 Vận dụng dấu hiệu chia hết cho 2, 5, 3, 9 để giải quyết 10 thử thách từ Nhận biết đến Vận dụng!';
+
+      if (!isExplore && questions.length === 0) {
+        initPractice();
+      }
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    // Khởi tạo lần đầu
+    renderMachine(7254);
+    renderGrid100();
+  </script>
+</body>
+</html>

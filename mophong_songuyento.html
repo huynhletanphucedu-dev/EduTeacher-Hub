@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Số nguyên tố – Sàng Eratosthenes</title>
+<style>
+/* ===== BẢNG MÀU CHUNG ===== */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f172a;--card:#1e293b;--border:#334155;
+  --teal:#06b6d4;--purple:#8b5cf6;--orange:#f59e0b;
+  --green:#10b981;--red:#ef4444;--blue:#3b82f6;--text:#e2e8f0;--sub:#94a3b8;
+}
+html,body{height:100%}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);
+     height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:15px;
+     -webkit-tap-highlight-color:transparent}
+
+/* ===== HEADER ===== */
+.header{background:var(--card);padding:10px 18px;display:flex;align-items:center;
+        justify-content:space-between;border-bottom:1px solid var(--border);flex:none;gap:12px}
+.header-left{display:flex;align-items:center;gap:16px;min-width:0}
+.back-link{color:var(--teal);text-decoration:none;font-size:15px;white-space:nowrap;
+           padding:6px 12px;border-radius:9px;border:1px solid var(--border);transition:.15s}
+.back-link:hover{background:rgba(6,182,212,.12)}
+.header h1{font-size:19px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fs-btn{background:var(--border);color:var(--text);border:none;border-radius:9px;
+        padding:8px 14px;font-size:14px;font-family:inherit;cursor:pointer;white-space:nowrap;transition:.15s}
+.fs-btn:hover{background:#475569}
+
+/* ===== TAB BAR ===== */
+.tab-bar{display:flex;gap:4px;background:var(--card);padding:0 18px;
+         border-bottom:1px solid var(--border);flex:none}
+.mbar-tab{background:none;border:none;border-bottom:3px solid transparent;color:var(--sub);
+          font-size:15.5px;font-family:inherit;padding:11px 18px;cursor:pointer;transition:.15s}
+.mbar-tab:hover{color:var(--text)}
+.mbar-tab.active{color:#fff;border-bottom-color:var(--teal)}
+
+/* ===== THANH HƯỚNG DẪN ===== */
+.instr-bar{background:rgba(6,182,212,.12);color:#a5f3fc;text-align:center;
+           padding:9px 16px;font-size:15px;border-bottom:1px solid var(--border);flex:none}
+
+/* ===== THÂN TRANG ===== */
+.body-wrap{flex:1;display:flex;gap:14px;padding:14px;overflow:hidden;min-height:0}
+.stage-area{flex:1;min-width:0;display:flex}
+.stage{flex:1;background:var(--card);border-radius:22px;overflow:hidden;
+       box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;position:relative;min-width:0}
+.stage svg{width:100%;height:100%;display:block;touch-action:none}
+.hidden{display:none !important}
+
+/* ===== BẢNG ĐIỀU KHIỂN ===== */
+.controls{width:330px;flex:none;background:var(--card);border:1px solid var(--border);
+          border-radius:18px;padding:14px;overflow-y:auto}
+.sec-title{font-size:12px;letter-spacing:1.2px;text-transform:uppercase;color:var(--sub);
+           font-weight:700;margin:16px 0 8px}
+.sec-title:first-child{margin-top:0}
+
+.mode-toggle{display:flex;gap:6px;margin-bottom:12px}
+.mode-btn{flex:1;background:#0f172a;color:var(--sub);border:1.5px solid var(--border);
+          border-radius:10px;padding:9px 6px;font-size:14px;font-family:inherit;
+          cursor:pointer;transition:.15s}
+.mode-btn:hover{color:var(--text)}
+.mode-btn.active{background:rgba(6,182,212,.15);border-color:var(--teal);
+                 color:#a5f3fc;font-weight:700}
+
+.formula-box{background:#0f172a;border:1px solid var(--border);border-radius:14px;padding:12px}
+.f-label{font-size:12px;color:var(--sub);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px}
+.f-main{font-size:21px;font-weight:700;color:#a5f3fc;word-break:break-word;line-height:1.35}
+.f-sub{font-size:15.5px;color:#c4b5fd;line-height:1.4;word-break:break-word}
+.f-count{font-size:30px;font-weight:800;color:var(--orange);line-height:1.1}
+
+.btn{display:block;width:100%;margin-top:9px;background:#0f172a;color:var(--text);
+     border:1.5px solid var(--border);border-radius:11px;padding:11px 14px;
+     font-size:15px;font-family:inherit;cursor:pointer;transition:.15s;text-align:center}
+.btn:hover:not(:disabled){border-color:var(--teal);background:rgba(6,182,212,.1)}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:#062a33;font-weight:700}
+.btn.primary:hover:not(:disabled){background:#22d3ee}
+.btn:disabled{opacity:.55;cursor:default}
+
+.info-box{background:#0f172a;border:1px solid var(--border);border-radius:12px;
+          padding:11px 13px;font-size:14.5px;line-height:1.5;color:#cbd5e1;margin-top:10px}
+
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:13.5px;color:#cbd5e1}
+.legend > div{display:flex;align-items:center;gap:6px}
+.leg-dot{display:inline-block;width:12px;height:12px;border-radius:3px;flex:none}
+
+.slider-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.slider-row input[type=range]{flex:1;accent-color:var(--teal);height:24px}
+.slider-val{font-size:28px;font-weight:800;color:var(--orange);min-width:44px;text-align:right}
+
+.know-box{margin-top:16px;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.35);
+          border-radius:14px;padding:12px}
+.know-title{font-weight:700;color:#c4b5fd;font-size:15px;margin-bottom:6px}
+.know-box ul{list-style:none;font-size:14.5px;line-height:1.55;color:#cbd5e1}
+.know-box li{padding-left:16px;position:relative;margin-bottom:5px}
+.know-box li::before{content:'•';position:absolute;left:2px;color:var(--purple)}
+
+/* ===== TAB THỰC HÀNH ===== */
+.practice-wrap{flex:1;display:flex;flex-direction:column;gap:14px;
+               padding:20px 24px;overflow-y:auto;min-width:0}
+.q-head{font-size:13px;color:var(--sub);text-transform:uppercase;letter-spacing:1px;font-weight:700}
+.q-text{font-size:19px;line-height:1.55}
+.q-text b{color:#a5f3fc}
+.q-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:620px){.q-options{grid-template-columns:1fr}}
+.opt-btn{background:#0f172a;border:2px solid var(--border);color:var(--text);border-radius:12px;
+         padding:14px 16px;font-size:16.5px;font-family:inherit;cursor:pointer;text-align:left;
+         transition:.15s;line-height:1.4;touch-action:manipulation}
+.opt-btn:hover:not(:disabled){border-color:var(--teal);background:rgba(6,182,212,.08)}
+.opt-btn.correct{border-color:var(--green);background:rgba(16,185,129,.16);color:#a7f3d0}
+.opt-btn.wrong{border-color:var(--red);background:rgba(239,68,68,.16);color:#fecaca}
+.opt-btn:disabled{cursor:default}
+
+.q-input-wrap{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.q-input{background:#0f172a;border:2px solid var(--border);border-radius:12px;color:var(--text);
+         font-size:20px;font-family:inherit;padding:12px 16px;width:220px;outline:none;transition:.15s}
+.q-input:focus{border-color:var(--teal)}
+
+.q-feedback{font-size:16px;line-height:1.5;padding:12px 16px;border-radius:12px;display:none}
+.q-feedback.show{display:block}
+.q-feedback.ok{background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.45);color:#a7f3d0}
+.q-feedback.no{background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.45);color:#fecaca}
+
+.summary{text-align:center;padding:22px 10px}
+.sum-score{font-size:58px;font-weight:800;color:var(--teal);line-height:1}
+.sum-line{font-size:18px;margin-top:12px;color:#cbd5e1}
+
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;
+          background:#0f172a;border:1px solid var(--border);border-radius:11px;
+          margin-bottom:8px;font-size:15px}
+.stat-row span:last-child{font-size:20px;font-weight:800;color:var(--orange)}
+.progress-dots{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.dot{width:27px;height:27px;border-radius:8px;background:#0f172a;border:1.5px solid var(--border);
+     display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--sub);font-weight:700}
+.dot.cur{border-color:var(--teal);color:#a5f3fc}
+.dot.ok{background:rgba(16,185,129,.25);border-color:var(--green);color:#a7f3d0}
+.dot.no{background:rgba(239,68,68,.25);border-color:var(--red);color:#fecaca}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:900px){
+  .body-wrap{flex-direction:column;padding:10px;gap:10px}
+  .controls{width:100%;max-height:42vh;flex:none}
+  .header h1{font-size:16px}
+  .instr-bar{font-size:13.5px;padding:7px 12px}
+  .practice-wrap{padding:14px}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header class="header">
+  <div class="header-left">
+    <a href="dashboard.html" class="back-link">← Dashboard</a>
+    <h1>💎 Số nguyên tố – Sàng Eratosthenes</h1>
+  </div>
+  <button class="fs-btn" id="fsBtn">⛶ Toàn màn hình</button>
+</header>
+
+<!-- ===== TAB BAR ===== -->
+<div class="tab-bar">
+  <button class="mbar-tab active" data-tab="explore">🔭 Khám Phá</button>
+  <button class="mbar-tab" data-tab="practice">🎯 Thực Hành</button>
+</div>
+
+<!-- ===== THANH HƯỚNG DẪN ===== -->
+<div class="instr-bar" id="instrBar">
+  ✋ Bấm "▶ Sàng từng bước" để lần lượt gạch các hợp số — các số còn lại là số nguyên tố.
+</div>
+
+<!-- ===== THÂN TRANG ===== -->
+<div class="body-wrap">
+
+  <div class="stage-area">
+
+    <!-- Sân khấu: bảng 1–100 -->
+    <div class="stage" id="stageSieve">
+      <svg id="svgSieve" viewBox="0 0 880 640" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+
+    <!-- Sân khấu: mô hình hình chữ nhật -->
+    <div class="stage hidden" id="stageRect">
+      <svg id="svgRect" viewBox="0 0 880 640" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+
+    <!-- Sân khấu: thực hành -->
+    <div class="stage hidden" id="stagePractice">
+      <div class="practice-wrap">
+        <div class="q-head" id="qNum">Câu 1 / 10</div>
+        <div class="q-text" id="qText"></div>
+        <div class="q-body" id="qBody"></div>
+        <div class="q-feedback" id="qFeedback"></div>
+        <div class="q-actions" id="qActions"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== BẢNG ĐIỀU KHIỂN ===== -->
+  <aside class="controls">
+
+    <!-- Khám Phá -->
+    <div id="ctrlExplore">
+      <div class="sec-title">Chế độ xem</div>
+      <div class="mode-toggle">
+        <button class="mode-btn active" data-mode="sieve">🔢 Bảng 1–100</button>
+        <button class="mode-btn" data-mode="rect">🔲 Hình chữ nhật</button>
+      </div>
+
+      <!-- Sàng -->
+      <div id="sievePanel">
+        <div class="sec-title">Sàng Eratosthenes</div>
+        <button class="btn primary" id="btnSieve">▶ Sàng từng bước</button>
+        <button class="btn" id="btnSieveReset">↺ Sàng lại</button>
+        <div class="info-box" id="sieveStepInfo">Bấm ▶ Sàng từng bước để bắt đầu.</div>
+        <div class="formula-box" style="margin-top:10px">
+          <div class="f-label">Số nguyên tố tìm được</div>
+          <div class="f-count"><span id="primeCount">0</span> / 25</div>
+        </div>
+        <div class="legend">
+          <div><span class="leg-dot" style="background:#3b82f6"></span>Bội của 2</div>
+          <div><span class="leg-dot" style="background:#8b5cf6"></span>Bội của 3</div>
+          <div><span class="leg-dot" style="background:#f59e0b"></span>Bội của 5</div>
+          <div><span class="leg-dot" style="background:#ec4899"></span>Bội của 7</div>
+          <div><span class="leg-dot" style="background:#fbbf24"></span>Số nguyên tố</div>
+        </div>
+      </div>
+
+      <!-- Hình chữ nhật -->
+      <div id="rectPanel" class="hidden">
+        <div class="sec-title">Chọn số n</div>
+        <div class="slider-row">
+          <input type="range" id="rectSlider" min="2" max="36" value="12">
+          <span class="slider-val" id="rectVal">12</span>
+        </div>
+        <div class="formula-box">
+          <div class="f-label">Số ước của n</div>
+          <div class="f-count" id="rectDivCount">6</div>
+          <div class="f-sub" id="rectDivList" style="margin-top:6px">1; 2; 3; 4; 6; 12</div>
+        </div>
+        <div class="info-box" id="rectConclusion">12 là hợp số vì có nhiều hơn 2 ước.</div>
+      </div>
+
+      <div class="know-box">
+        <div class="know-title">💡 Em có biết?</div>
+        <ul>
+          <li>Số nguyên tố là số tự nhiên lớn hơn 1, chỉ có 2 ước là 1 và chính nó.</li>
+          <li>Hợp số là số tự nhiên lớn hơn 1, có nhiều hơn 2 ước.</li>
+          <li>Số 0 và số 1 <b>không phải</b> số nguyên tố, cũng <b>không phải</b> hợp số.</li>
+          <li>2 là số nguyên tố <b>chẵn duy nhất</b>.</li>
+          <li>Có 25 số nguyên tố nhỏ hơn 100.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Thực Hành -->
+    <div id="ctrlPractice" class="hidden">
+      <div class="sec-title">Tiến trình</div>
+      <div class="stat-row"><span>Câu hỏi</span><span id="stQ">1/10</span></div>
+      <div class="stat-row"><span>Điểm</span><span id="stScore">0</span></div>
+      <div class="stat-row"><span>Chuỗi đúng</span><span id="stStreak">🔥 0</span></div>
+      <div class="progress-dots" id="stDots"></div>
+
+      <div class="know-box" style="margin-top:16px">
+        <div class="know-title">🎯 Cách tính điểm</div>
+        <ul>
+          <li>Mỗi câu đúng: <b>+1 điểm</b>.</li>
+          <li>Trả lời đúng liên tiếp để tăng chuỗi 🔥.</li>
+          <li>Câu 10 là trò "bắn bóng" — bấm trúng hết số nguyên tố trong 30 giây.</li>
+        </ul>
+      </div>
+    </div>
+
+  </aside>
+</div>
+
+<script>
+/* =========================================================
+   1. TIỆN ÍCH DÙNG CHUNG
+   ========================================================= */
+const NS = 'http://www.w3.org/2000/svg';
+const $  = id => document.getElementById(id);
+const rnd = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
+const pick = a => a[Math.floor(Math.random() * a.length)];
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function isPrime(n) {
+  if (n < 2) return false;
+  for (let i = 2; i * i <= n; i++) if (n % i === 0) return false;
+  return true;
+}
+function divisors(n) {
+  const d = [];
+  for (let i = 1; i <= n; i++) if (n % i === 0) d.push(i);
+  return d;
+}
+
+/* =========================================================
+   2. SÀNG ERATOSTHENES – BẢNG SỐ 1..100
+   ========================================================= */
+const CELL = 55, GX = 165, GY = 45;
+const sieveCells = [];
+let sieveStep = 0;
+
+function buildSieveGrid() {
+  const svg = $('svgSieve');
+  svg.innerHTML = '';
+  sieveCells.length = 0;
+
+  for (let i = 0; i < 100; i++) {
+    const n = i + 1;
+    const row = Math.floor(i / 10), col = i % 10;
+    const x = GX + col * CELL, y = GY + row * CELL;
+
+    const g = document.createElementNS(NS, 'g');
+
+    const rect = document.createElementNS(NS, 'rect');
+    rect.setAttribute('x', x + 3);
+    rect.setAttribute('y', y + 3);
+    rect.setAttribute('width', CELL - 6);
+    rect.setAttribute('height', CELL - 6);
+    rect.setAttribute('rx', 8);
+    rect.setAttribute('fill', '#0f172a');
+    rect.setAttribute('stroke', '#334155');
+    rect.setAttribute('stroke-width', '1.5');
+    rect.style.transition = 'fill .3s, stroke .3s';
+
+    const text = document.createElementNS(NS, 'text');
+    text.setAttribute('x', x + CELL / 2);
+    text.setAttribute('y', y + CELL / 2);
+    text.setAttribute('text-anchor', 'middle');
+    text.setAttribute('dominant-baseline', 'central');
+    text.setAttribute('font-size', '22');
+    text.setAttribute('font-weight', '700');
+    text.setAttribute('fill', '#e2e8f0');
+    text.textContent = n;
+
+    // Hai đường chéo để "gạch bỏ"
+    const cross1 = document.createElementNS(NS, 'line');
+    cross1.setAttribute('x1', x + 10); cross1.setAttribute('y1', y + 10);
+    cross1.setAttribute('x2', x + CELL - 10); cross1.setAttribute('y2', y + CELL - 10);
+    cross1.setAttribute('stroke', '#64748b');
+    cross1.setAttribute('stroke-width', '3');
+    cross1.setAttribute('stroke-linecap', 'round');
+    cross1.setAttribute('opacity', '0');
+    cross1.style.transition = 'opacity .25s';
+
+    const cross2 = document.createElementNS(NS, 'line');
+    cross2.setAttribute('x1', x + CELL - 10); cross2.setAttribute('y1', y + 10);
+    cross2.setAttribute('x2', x + 10); cross2.setAttribute('y2', y + CELL - 10);
+    cross2.setAttribute('stroke', '#64748b');
+    cross2.setAttribute('stroke-width', '3');
+    cross2.setAttribute('stroke-linecap', 'round');
+    cross2.setAttribute('opacity', '0');
+    cross2.style.transition = 'opacity .25s';
+
+    g.appendChild(rect);
+    g.appendChild(text);
+    g.appendChild(cross1);
+    g.appendChild(cross2);
+    svg.appendChild(g);
+
+    sieveCells.push({ n, rect, text, cross: [cross1, cross2], state: 'normal' });
+  }
+
+  // Chú thích
+  const legend = document.createElementNS(NS, 'text');
+  legend.setAttribute('x', 440);
+  legend.setAttribute('y', 628);
+  legend.setAttribute('text-anchor', 'middle');
+  legend.setAttribute('font-size', '15');
+  legend.setAttribute('fill', '#94a3b8');
+  legend.textContent = 'Bảng số từ 1 đến 100';
+  svg.appendChild(legend);
+}
+
+function crossOut(n, color) {
+  const c = sieveCells[n - 1];
+  if (!c || c.state === 'crossed' || c.state === 'circled') return;
+  c.state = 'crossed';
+  c.cross.forEach(l => {
+    l.setAttribute('stroke', color);
+    l.setAttribute('opacity', '0.7');
+  });
+  c.text.setAttribute('opacity', '0.38');
+}
+
+function circlePrime(n, color) {
+  const c = sieveCells[n - 1];
+  if (!c) return;
+  c.state = 'circled';
+  c.rect.setAttribute('stroke', color);
+  c.rect.setAttribute('stroke-width', '3.5');
+}
+
+function markAsPrime(n) {
+  const c = sieveCells[n - 1];
+  if (!c) return;
+  c.state = 'prime';
+  c.rect.setAttribute('fill', 'rgba(251,191,36,0.22)');
+  c.rect.setAttribute('stroke', '#fbbf24');
+  c.rect.setAttribute('stroke-width', '2.5');
+  c.text.setAttribute('fill', '#fde68a');
+  c.text.setAttribute('font-weight', '800');
+  c.text.setAttribute('opacity', '1');
+}
+
+const SIEVE_STEPS = [
+  'Bấm ▶ Sàng từng bước để bắt đầu.',
+  'Bước 1: Số 1 không phải số nguyên tố → gạch bỏ số 1.',
+  'Bước 2: 2 là số nguyên tố → khoanh 2, gạch các bội của 2 (4; 6; 8; …).',
+  'Bước 3: 3 là số nguyên tố → khoanh 3, gạch các bội của 3 (9; 15; …).',
+  'Bước 4: 5 là số nguyên tố → khoanh 5, gạch các bội của 5 (25; 35; …).',
+  'Bước 5: 7 là số nguyên tố → khoanh 7, gạch các bội của 7 (49; 77; 91).',
+  '✅ Hoàn tất! Các số còn lại (tô vàng) là số nguyên tố. Có 25 số nguyên tố nhỏ hơn 100.'
+];
+
+function doSieveStep() {
+  if (sieveStep >= 6) return;
+  sieveStep++;
+
+  if (sieveStep === 1) {
+    crossOut(1, '#64748b');
+  } else if (sieveStep >= 2 && sieveStep <= 5) {
+    const primes = [2, 3, 5, 7];
+    const colors = { 2: '#3b82f6', 3: '#8b5cf6', 5: '#f59e0b', 7: '#ec4899' };
+    const p = primes[sieveStep - 2];
+    circlePrime(p, colors[p]);
+    for (let m = p * 2; m <= 100; m += p) {
+      crossOut(m, colors[p]);
+    }
+  } else if (sieveStep === 6) {
+    for (let n = 2; n <= 100; n++) {
+      if (sieveCells[n - 1].state !== 'crossed') {
+        markAsPrime(n);
+      }
+    }
+  }
+  updateSieveUI();
+}
+
+function resetSieve() {
+  sieveStep = 0;
+  sieveCells.forEach(c => {
+    c.state = 'normal';
+    c.rect.setAttribute('fill', '#0f172a');
+    c.rect.setAttribute('stroke', '#334155');
+    c.rect.setAttribute('stroke-width', '1.5');
+    c.text.setAttribute('fill', '#e2e8f0');
+    c.text.setAttribute('opacity', '1');
+    c.text.setAttribute('font-weight', '700');
+    c.cross.forEach(l => l.setAttribute('opacity', '0'));
+  });
+  updateSieveUI();
+}
+
+function updateSieveUI() {
+  $('sieveStepInfo').innerHTML = SIEVE_STEPS[sieveStep];
+  const count = sieveCells.filter(c => c.state === 'prime').length;
+  $('primeCount').textContent = count;
+  $('btnSieve').disabled = sieveStep >= 6;
+  $('btnSieve').textContent = sieveStep >= 6 ? '✓ Đã sàng xong' : '▶ Sàng từng bước';
+}
+
+/* =========================================================
+   3. MÔ HÌNH HÌNH CHỮ NHẬT
+   ========================================================= */
+let rectN = 12;
+
+function drawRectModel(n) {
+  const svg = $('svgRect');
+  svg.innerHTML = '';
+
+  const isP = isPrime(n);
+
+  // Tiêu đề
+  const title = document.createElementNS(NS, 'text');
+  title.setAttribute('x', 440);
+  title.setAttribute('y', 38);
+  title.setAttribute('text-anchor', 'middle');
+  title.setAttribute('font-size', '26');
+  title.setAttribute('font-weight', '800');
+  title.setAttribute('fill', isP ? '#fbbf24' : '#a5f3fc');
+  title.textContent = 'n = ' + n + (isP ? ' — SỐ NGUYÊN TỐ' : ' — HỢP SỐ');
+  svg.appendChild(title);
+
+  // Các ước d ≤ √n
+  const divs = [];
+  for (let d = 1; d * d <= n; d++) {
+    if (n % d === 0) divs.push(d);
+  }
+
+  const arrangements = divs.map(d => ({ rows: d, cols: n / d }));
+
+  // Kích thước ô vuông: đủ nhỏ để xếp 1×n vừa khung
+  const sq = Math.max(8, Math.min(28, Math.floor(740 / n)));
+
+  // Tính tổng chiều cao
+  let totalH = 0;
+  arrangements.forEach(a => { totalH += a.rows * sq + 45; });
+
+  const startY = Math.max(80, (640 - totalH) / 2);
+  let y = startY;
+
+  arrangements.forEach(a => {
+    const w = a.cols * sq;
+    const x0 = (880 - w) / 2;
+
+    // Nhãn
+    const lbl = document.createElementNS(NS, 'text');
+    lbl.setAttribute('x', 440);
+    lbl.setAttribute('y', y - 10);
+    lbl.setAttribute('text-anchor', 'middle');
+    lbl.setAttribute('font-size', '17');
+    lbl.setAttribute('fill', '#94a3b8');
+    lbl.setAttribute('font-weight', '600');
+    lbl.textContent = a.rows + ' hàng × ' + a.cols + ' cột';
+    svg.appendChild(lbl);
+
+    // Các ô vuông
+    for (let r = 0; r < a.rows; r++) {
+      for (let c = 0; c < a.cols; c++) {
+        const el = document.createElementNS(NS, 'rect');
+        el.setAttribute('x', x0 + c * sq + 1);
+        el.setAttribute('y', y + r * sq + 1);
+        el.setAttribute('width', sq - 2);
+        el.setAttribute('height', sq - 2);
+        el.setAttribute('rx', Math.min(4, sq / 5));
+        el.setAttribute('fill', isP ? '#4a2c06' : '#0b3b48');
+        el.setAttribute('stroke', isP ? '#f59e0b' : '#06b6d4');
+        el.setAttribute('stroke-width', '1.5');
+        svg.appendChild(el);
+      }
+    }
+
+    y += a.rows * sq + 45;
+  });
+
+  // Cập nhật bảng điều khiển
+  const divCount = divs.length * 2 - (Number.isInteger(Math.sqrt(n)) ? 1 : 0);
+  const allDivs = divisors(n);
+  $('rectDivCount').textContent = divCount;
+  $('rectDivList').textContent = allDivs.join('; ');
+  $('rectConclusion').innerHTML = isP
+    ? '<b>' + n + '</b> là số nguyên tố vì chỉ có đúng 2 ước là 1 và ' + n + '.'
+    : '<b>' + n + '</b> là hợp số vì có nhiều hơn 2 ước (' + divCount + ' ước).';
+}
+
+/* =========================================================
+   4. THỰC HÀNH – SINH CÂU HỎI NGẪU NHIÊN
+   ========================================================= */
+
+function genChoosePrime() {
+  const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23];
+  const composites = [4, 6, 8, 9, 10, 12, 14, 15, 16, 18, 20, 21, 22, 24, 25];
+  const p = pick(primes);
+  const cs = shuffle(composites).slice(0, 3);
+  const opts = shuffle([p, ...cs]);
+  return {
+    type: 'choice',
+    prompt: 'Trong các số sau, số nào là <b>số nguyên tố</b>?',
+    options: opts.map(String),
+    answer: String(p),
+    explain: p + ' là số nguyên tố vì chỉ có 2 ước là 1 và ' + p + '. Các số còn lại đều có nhiều hơn 2 ước nên là hợp số.'
+  };
+}
+
+function genTrueFalse1() {
+  const statements = [
+    { text: 'Số 1 là số nguyên tố.', ans: false, exp: 'Số 1 không phải số nguyên tố vì số nguyên tố phải lớn hơn 1.' },
+    { text: 'Số 0 là hợp số.', ans: false, exp: 'Số 0 không phải hợp số vì hợp số phải lớn hơn 1.' },
+    { text: 'Số 2 là số nguyên tố.', ans: true, exp: '2 chỉ có 2 ước là 1 và 2 nên 2 là số nguyên tố.' },
+    { text: 'Số 4 là số nguyên tố.', ans: false, exp: '4 có 3 ước là 1; 2; 4 nên 4 là hợp số.' },
+    { text: 'Số 0 và số 1 không phải số nguyên tố, cũng không phải hợp số.', ans: true, exp: 'Đúng vậy. Số nguyên tố và hợp số đều phải lớn hơn 1.' }
+  ];
+  const s = pick(statements);
+  return {
+    type: 'choice',
+    prompt: 'Đúng hay sai?<br><b>' + s.text + '</b>',
+    options: ['Đúng', 'Sai'],
+    answer: s.ans ? 'Đúng' : 'Sai',
+    explain: s.exp
+  };
+}
+
+function genChooseComposite() {
+  const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29];
+  const composites = [4, 6, 8, 9, 10, 12, 14, 15, 16, 18, 20, 21, 22, 24, 25, 26, 27, 28, 30];
+  const c = pick(composites);
+  const ps = shuffle(primes).slice(0, 3);
+  const opts = shuffle([c, ...ps]);
+  return {
+    type: 'choice',
+    prompt: 'Trong các số sau, số nào là <b>hợp số</b>?',
+    options: opts.map(String),
+    answer: String(c),
+    explain: c + ' là hợp số vì có nhiều hơn 2 ước (gồm ' + divisors(c).join('; ') + '). Các số còn lại là số nguyên tố.'
+  };
+}
+
+function genTrueFalseEven() {
+  const statements = [
+    { text: '2 là số nguyên tố chẵn duy nhất.', ans: true, exp: 'Đúng. Mọi số chẵn lớn hơn 2 đều chia hết cho 2 nên là hợp số.' },
+    { text: 'Có nhiều số nguyên tố chẵn.', ans: false, exp: 'Sai. Chỉ có duy nhất số 2 là số nguyên tố chẵn.' },
+    { text: 'Mọi số nguyên tố đều là số lẻ.', ans: false, exp: 'Sai. Số 2 là số nguyên tố nhưng là số chẵn.' },
+    { text: 'Mọi số nguyên tố lớn hơn 2 đều là số lẻ.', ans: true, exp: 'Đúng. Nếu là số chẵn lớn hơn 2 thì chia hết cho 2, không thể là số nguyên tố.' }
+  ];
+  const s = pick(statements);
+  return {
+    type: 'choice',
+    prompt: 'Đúng hay sai?<br><b>' + s.text + '</b>',
+    options: ['Đúng', 'Sai'],
+    answer: s.ans ? 'Đúng' : 'Sai',
+    explain: s.exp
+  };
+}
+
+function genCountDivisors() {
+  const composites = [4, 6, 8, 9, 10, 12, 14, 15, 16, 18, 20, 21, 22, 24, 25, 26, 27, 28, 30];
+  const n = pick(composites);
+  const d = divisors(n);
+  return {
+    type: 'input',
+    prompt: 'Số <b>' + n + '</b> có bao nhiêu ước? (Nhập số)',
+    answer: d.length,
+    explain: 'Các ước của ' + n + ' là ' + d.join('; ') + ' → có tất cả ' + d.length + ' ước. Vì ' + d.length + ' > 2 nên ' + n + ' là hợp số.'
+  };
+}
+
+function genListDivisors() {
+  const n = rnd(10, 40);
+  const d = divisors(n);
+  const isP = d.length === 2;
+  return {
+    type: 'choice',
+    prompt: 'Số <b>' + n + '</b> có các ước là ' + d.join('; ') + '.<br>Vậy ' + n + ' là:',
+    options: ['Số nguyên tố', 'Hợp số'],
+    answer: isP ? 'Số nguyên tố' : 'Hợp số',
+    explain: isP
+      ? n + ' chỉ có đúng 2 ước là 1 và ' + n + ' → ' + n + ' là số nguyên tố.'
+      : n + ' có ' + d.length + ' ước (nhiều hơn 2) → ' + n + ' là hợp số.'
+  };
+}
+
+function genTrueFalseOdd() {
+  const statements = [
+    { text: 'Mọi số lẻ đều là số nguyên tố.', ans: false, exp: 'Sai. Ví dụ 9 là số lẻ nhưng 9 = 3 × 3 nên là hợp số.' },
+    { text: 'Số 9 là số nguyên tố.', ans: false, exp: 'Sai. 9 có 3 ước là 1; 3; 9 nên 9 là hợp số.' },
+    { text: 'Số 15 là hợp số.', ans: true, exp: 'Đúng. 15 có 4 ước là 1; 3; 5; 15.' },
+    { text: 'Một số tự nhiên lớn hơn 1 không phải số nguyên tố thì là hợp số.', ans: true, exp: 'Đúng. Mọi số tự nhiên lớn hơn 1 hoặc là số nguyên tố, hoặc là hợp số.' }
+  ];
+  const s = pick(statements);
+  return {
+    type: 'choice',
+    prompt: 'Đúng hay sai?<br><b>' + s.text + '</b>',
+    options: ['Đúng', 'Sai'],
+    answer: s.ans ? 'Đúng' : 'Sai',
+    explain: s.exp
+  };
+}
+
+function genChoosePrimeHard() {
+  const primes = [23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
+  const composites = [21, 22, 24, 25, 26, 27, 28, 30, 32, 33, 34, 35, 36, 38, 39, 40, 42, 44, 45, 46, 48, 49, 50, 51];
+  const p = pick(primes);
+  const cs = shuffle(composites).slice(0, 3);
+  const opts = shuffle([p, ...cs]);
+  return {
+    type: 'choice',
+    prompt: 'Trong các số sau, số nào là <b>số nguyên tố</b>?',
+    options: opts.map(String),
+    answer: String(p),
+    explain: p + ' là số nguyên tố (chỉ có 2 ước: 1 và ' + p + '). Các số còn lại đều là hợp số.'
+  };
+}
+
+function genTrueFalseBig() {
+  const statements = [
+    { text: 'Số 91 là số nguyên tố.', ans: false, exp: 'Sai. 91 = 7 × 13 nên 91 là hợp số.' },
+    { text: 'Số 97 là số nguyên tố.', ans: true, exp: 'Đúng. 97 chỉ có 2 ước là 1 và 97.' },
+    { text: 'Số 51 là số nguyên tố.', ans: false, exp: 'Sai. 51 = 3 × 17 nên 51 là hợp số.' },
+    { text: 'Số 87 là hợp số.', ans: true, exp: 'Đúng. 87 = 3 × 29 nên 87 là hợp số.' }
+  ];
+  const s = pick(statements);
+  return {
+    type: 'choice',
+    prompt: 'Đúng hay sai?<br><b>' + s.text + '</b>',
+    options: ['Đúng', 'Sai'],
+    answer: s.ans ? 'Đúng' : 'Sai',
+    explain: s.exp
+  };
+}
+
+function genBallGame() {
+  const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47];
+  const composites = [4, 6, 8, 9, 10, 12, 14, 15, 16, 18, 20, 21, 22, 24, 25, 26, 27, 28, 30, 32, 33, 34, 35, 36];
+  const chosenP = shuffle(primes).slice(0, 6);
+  const chosenC = shuffle(composites).slice(0, 14);
+  const all = shuffle([...chosenP, ...chosenC]);
+  return {
+    type: 'ballgame',
+    prompt: '🎮 <b>Bắn bóng!</b> Bấm nhanh tất cả các <b>số nguyên tố</b> trong 30 giây. Mỗi số đúng +1 điểm, sai −1 điểm.',
+    balls: all.map(v => ({ value: v, isPrime: isPrime(v) })),
+    totalPrimes: 6,
+    time: 30
+  };
+}
+
+const PRACTICE_GENS = [
+  genChoosePrime,
+  genTrueFalse1,
+  genChooseComposite,
+  genTrueFalseEven,
+  genCountDivisors,
+  genListDivisors,
+  genTrueFalseOdd,
+  genChoosePrimeHard,
+  genTrueFalseBig,
+  genBallGame
+];
+
+/* =========================================================
+   5. ĐIỀU KHIỂN TAB THỰC HÀNH
+   ========================================================= */
+let pq = [], pIdx = 0, pScore = 0, pStreak = 0, pBest = 0;
+let pAnswered = false, pResults = [];
+
+function startPractice() {
+  pq = PRACTICE_GENS.map(g => g());
+  pIdx = 0; pScore = 0; pStreak = 0; pBest = 0;
+  pAnswered = false; pResults = [];
+  renderQuestion();
+}
+
+function updatePracticePanel() {
+  $('stQ').textContent = Math.min(pIdx + 1, 10) + '/10';
+  $('stScore').textContent = pScore;
+  $('stStreak').textContent = '🔥 ' + pStreak;
+
+  const dots = $('stDots');
+  dots.innerHTML = '';
+  for (let i = 0; i < 10; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    if (pResults[i] === true) { d.classList.add('ok'); d.textContent = '✓'; }
+    else if (pResults[i] === false) { d.classList.add('no'); d.textContent = '✗'; }
+    else { d.textContent = i + 1; if (i === pIdx) d.classList.add('cur'); }
+    dots.appendChild(d);
+  }
+}
+
+function feedback(ok, explain) {
+  const fb = $('qFeedback');
+  fb.className = 'q-feedback show ' + (ok ? 'ok' : 'no');
+  fb.innerHTML = (ok ? '✅ <b>Chính xác!</b> ' : '❌ <b>Chưa đúng.</b> ') + explain;
+}
+
+function scoreUpdate(ok) {
+  pResults[pIdx] = ok;
+  if (ok) {
+    pScore++;
+    pStreak++;
+    if (pStreak > pBest) pBest = pStreak;
+  } else {
+    pStreak = 0;
+  }
+  updatePracticePanel();
+}
+
+function showNext() {
+  const act = $('qActions');
+  act.innerHTML = '';
+  const b = document.createElement('button');
+  b.className = 'btn primary';
+  if (pIdx < 9) {
+    b.textContent = 'Câu tiếp →';
+    b.addEventListener('click', () => { pIdx++; renderQuestion(); });
+  } else {
+    b.textContent = 'Xem kết quả 🏁';
+    b.addEventListener('click', showSummary);
+  }
+  act.appendChild(b);
+}
+
+function renderQuestion() {
+  const q = pq[pIdx];
+  pAnswered = false;
+
+  $('qNum').textContent = 'Câu ' + (pIdx + 1) + ' / 10';
+  $('qText').innerHTML = q.prompt;
+
+  const body = $('qBody');
+  body.innerHTML = '';
+  const fb = $('qFeedback');
+  fb.className = 'q-feedback';
+  fb.innerHTML = '';
+  $('qActions').innerHTML = '';
+  updatePracticePanel();
+
+  if (q.type === 'choice') {
+    const wrap = document.createElement('div');
+    wrap.className = 'q-options';
+    q.options.forEach(op => {
+      const b = document.createElement('button');
+      b.className = 'opt-btn';
+      b.textContent = op;
+      b.addEventListener('click', () => answerChoice(q, op, b));
+      wrap.appendChild(b);
+    });
+    body.appendChild(wrap);
+
+  } else if (q.type === 'input') {
+    const wrap = document.createElement('div');
+    wrap.className = 'q-input-wrap';
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'q-input';
+    inp.inputMode = 'numeric';
+    inp.placeholder = 'Nhập số…';
+    inp.autocomplete = 'off';
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') answerInput(q, inp); });
+    const b = document.createElement('button');
+    b.className = 'btn primary';
+    b.style.cssText = 'width:auto;margin-top:0;';
+    b.textContent = 'Trả lời';
+    b.addEventListener('click', () => answerInput(q, inp));
+    wrap.appendChild(inp);
+    wrap.appendChild(b);
+    body.appendChild(wrap);
+    setTimeout(() => inp.focus(), 150);
+
+  } else if (q.type === 'ballgame') {
+    renderBallGame(q);
+  }
+}
+
+function answerChoice(q, op, btn) {
+  if (pAnswered) return;
+  pAnswered = true;
+  const ok = op === q.answer;
+  $('qBody').querySelectorAll('.opt-btn').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === q.answer) b.classList.add('correct');
+  });
+  if (!ok) btn.classList.add('wrong');
+  feedback(ok, q.explain);
+  scoreUpdate(ok);
+  showNext();
+}
+
+function answerInput(q, inp) {
+  if (pAnswered) return;
+  const raw = String(inp.value).trim().replace(',', '.');
+  if (raw === '' || isNaN(parseFloat(raw))) {
+    inp.style.borderColor = '#ef4444';
+    return;
+  }
+  pAnswered = true;
+  const val = parseFloat(raw);
+  const ok = Math.abs(val - q.answer) < 1e-6;
+  inp.disabled = true;
+  inp.style.borderColor = ok ? '#10b981' : '#ef4444';
+  feedback(ok, q.explain);
+  scoreUpdate(ok);
+  showNext();
+}
+
+/* =========================================================
+   6. TRÒ CHƠI "BẮN BÓNG"
+   ========================================================= */
+function renderBallGame(q) {
+  const container = $('qBody');
+  container.innerHTML = '';
+
+  let score = 0, hits = 0;
+  let timeLeft = q.time;
+  let gameOver = false;
+  let timerId = null;
+  const clicked = new Array(q.balls.length).fill(false);
+
+  // HUD
+  const hud = document.createElement('div');
+  hud.style.cssText = 'display:flex;justify-content:space-between;margin-bottom:12px;font-size:19px;font-weight:800;flex-wrap:wrap;gap:8px;';
+  hud.innerHTML = '<span id="bgTimer" style="color:#f59e0b;">⏱ 30s</span>' +
+                  '<span id="bgScore" style="color:#06b6d4;">🎯 0 / ' + q.totalPrimes + ' (Điểm: 0)</span>';
+  container.appendChild(hud);
+
+  // Lưới bóng
+  const grid = document.createElement('div');
+  grid.style.cssText = 'display:grid;grid-template-columns:repeat(5,1fr);gap:10px;max-width:620px;margin:0 auto;';
+  container.appendChild(grid);
+
+  const btns = [];
+  q.balls.forEach((b, i) => {
+    const btn = document.createElement('button');
+    btn.textContent = b.value;
+    btn.style.cssText = 'aspect-ratio:1;border-radius:50%;font-size:24px;font-weight:800;' +
+      'font-family:inherit;background:#1e293b;color:#e2e8f0;border:3px solid #06b6d4;' +
+      'cursor:pointer;transition:transform .12s, background .15s, border-color .15s;' +
+      'touch-action:manipulation;padding:0;line-height:1;';
+    btn.addEventListener('click', () => {
+      if (gameOver || clicked[i]) return;
+      clicked[i] = true;
+      btn.disabled = true;
+
+      if (b.isPrime) {
+        hits++; score++;
+        btn.style.background = 'rgba(16,185,129,0.4)';
+        btn.style.borderColor = '#10b981';
+        btn.style.color = '#a7f3d0';
+        btn.style.transform = 'scale(1.15)';
+        setTimeout(() => { btn.style.transform = 'scale(1)'; }, 150);
+        updateHUD();
+        if (hits === q.totalPrimes) endGame(true);
+      } else {
+        score = Math.max(0, score - 1);
+        btn.style.background = 'rgba(239,68,68,0.35)';
+        btn.style.borderColor = '#ef4444';
+        btn.style.color = '#fecaca';
+        btn.style.transform = 'translateX(6px)';
+        setTimeout(() => { btn.style.transform = 'translateX(-6px)'; }, 70);
+        setTimeout(() => { btn.style.transform = 'translateX(0)'; }, 140);
+        updateHUD();
+      }
+    });
+    grid.appendChild(btn);
+    btns.push(btn);
+  });
+
+  function updateHUD() {
+    const el = document.getElementById('bgScore');
+    if (el) el.textContent = '🎯 ' + hits + ' / ' + q.totalPrimes + ' (Điểm: ' + score + ')';
+  }
+
+  timerId = setInterval(() => {
+    timeLeft--;
+    const el = document.getElementById('bgTimer');
+    if (el) el.textContent = '⏱ ' + timeLeft + 's';
+    if (timeLeft <= 0) endGame(false);
+  }, 1000);
+
+  function endGame(allHit) {
+    if (gameOver) return;
+    gameOver = true;
+    clearInterval(timerId);
+
+    // Vô hiệu hoá các nút còn lại và tô viền vàng cho số nguyên tố chưa bấm
+    q.balls.forEach((b, i) => {
+      btns[i].disabled = true;
+      if (b.isPrime && !clicked[i]) {
+        btns[i].style.borderColor = '#fbbf24';
+        btns[i].style.boxShadow = '0 0 14px #fbbf24';
+        btns[i].style.color = '#fde68a';
+      }
+    });
+
+    const fb = $('qFeedback');
+    fb.className = 'q-feedback show ' + (allHit ? 'ok' : 'no');
+    fb.innerHTML = allHit
+      ? '🎉 <b>Xuất sắc!</b> Bạn đã bắn trúng cả ' + q.totalPrimes + ' số nguyên tố!'
+      : '⏰ Hết giờ! Bạn bắn trúng ' + hits + '/' + q.totalPrimes + ' số nguyên tố. Các số nguyên tố chưa bấm được viền vàng.';
+
+    pAnswered = true;
+    scoreUpdate(allHit);
+    showNext();
+  }
+}
+
+/* =========================================================
+   7. TỔNG KẾT
+   ========================================================= */
+function showSummary() {
+  $('qNum').textContent = 'KẾT QUẢ';
+  $('qText').innerHTML = '🎉 <b>Hoàn thành 10 câu hỏi!</b>';
+  $('qBody').innerHTML =
+    '<div class="summary">' +
+      '<div class="sum-score">' + pScore + '/10</div>' +
+      '<div class="sum-line">Chuỗi đúng dài nhất: 🔥 <b>' + pBest + '</b></div>' +
+      '<div class="sum-line">' +
+        (pScore >= 9 ? 'Xuất sắc! Em nắm rất chắc bài.' :
+         pScore >= 7 ? 'Khá tốt! Hãy xem lại vài chỗ còn nhầm.' :
+         pScore >= 5 ? 'Cần luyện thêm một chút nhé.' :
+                       'Hãy ôn lại lí thuyết rồi thử lại nhé.') +
+      '</div>' +
+    '</div>';
+  $('qFeedback').className = 'q-feedback';
+  $('qActions').innerHTML = '';
+  const b = document.createElement('button');
+  b.className = 'btn primary';
+  b.textContent = '🔄 Chơi lại';
+  b.addEventListener('click', startPractice);
+  $('qActions').appendChild(b);
+}
+
+/* =========================================================
+   8. CHUYỂN TAB, CHẾ ĐỘ VÀ TOÀN MÀN HÌNH
+   ========================================================= */
+let currentTab = 'explore';
+let exploreMode = 'sieve';
+let practiceStarted = false;
+
+function updateInstrBar() {
+  const bar = $('instrBar');
+  if (currentTab === 'practice') {
+    bar.textContent = '🎯 Trả lời 10 câu hỏi: chọn số nguyên tố, đúng/sai, liệt kê ước và chơi "bắn bóng" trong 30 giây!';
+  } else if (exploreMode === 'sieve') {
+    bar.textContent = '✋ Bấm "▶ Sàng từng bước" để lần lượt gạch các hợp số — các số còn lại là số nguyên tố.';
+  } else {
+    bar.textContent = '✋ Chọn số n rồi quan sát các cách xếp n ô vuông thành hình chữ nhật.';
+  }
+}
+
+function switchTab(name) {
+  currentTab = name;
+  document.querySelectorAll('.mbar-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === name);
+  });
+
+  $('stageSieve').classList.toggle('hidden', !(name === 'explore' && exploreMode === 'sieve'));
+  $('stageRect').classList.toggle('hidden', !(name === 'explore' && exploreMode === 'rect'));
+  $('stagePractice').classList.toggle('hidden', name !== 'practice');
+
+  $('ctrlExplore').classList.toggle('hidden', name !== 'explore');
+  $('ctrlPractice').classList.toggle('hidden', name !== 'practice');
+
+  updateInstrBar();
+
+  if (name === 'practice' && !practiceStarted) {
+    practiceStarted = true;
+    startPractice();
+  }
+}
+
+function switchExploreMode(mode) {
+  exploreMode = mode;
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.mode === mode);
+  });
+  $('sievePanel').classList.toggle('hidden', mode !== 'sieve');
+  $('rectPanel').classList.toggle('hidden', mode !== 'rect');
+  $('stageSieve').classList.toggle('hidden', mode !== 'sieve');
+  $('stageRect').classList.toggle('hidden', mode !== 'rect');
+  updateInstrBar();
+}
+
+/* Gắn sự kiện */
+document.querySelectorAll('.mbar-tab').forEach(b => {
+  b.addEventListener('click', () => switchTab(b.dataset.tab));
+});
+document.querySelectorAll('.mode-btn').forEach(b => {
+  b.addEventListener('click', () => switchExploreMode(b.dataset.mode));
+});
+
+$('btnSieve').addEventListener('click', doSieveStep);
+$('btnSieveReset').addEventListener('click', resetSieve);
+
+$('rectSlider').addEventListener('input', e => {
+  rectN = Number(e.target.value);
+  $('rectVal').textContent = rectN;
+  drawRectModel(rectN);
+});
+
+$('fsBtn').addEventListener('click', () => {
+  if (!document.fullscreenElement) {
+    const el = document.documentElement;
+    const req = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+    if (req) {
+      const r = req.call(el);
+      if (r && r.catch) r.catch(() => {});
+    }
+  } else {
+    document.exitFullscreen();
+  }
+});
+
+/* =========================================================
+   9. KHỞI TẠO
+   ========================================================= */
+buildSieveGrid();
+updateSieveUI();
+drawRectModel(rectN);
+updateInstrBar();
+</script>
+</body>
+</html>

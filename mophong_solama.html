@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🏛️ Ghi số tự nhiên – Số La Mã</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --teal: #06b6d4;
+      --purple: #8b5cf6;
+      --orange: #f59e0b;
+      --green: #10b981;
+      --red: #ef4444;
+      --blue: #3b82f6;
+      --text: #e2e8f0;
+      --sub: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* 1. HEADER */
+    .header {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .back-link {
+      color: var(--teal);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      transition: 0.2s;
+    }
+    .back-link:hover {
+      background: rgba(6, 182, 212, 0.25);
+    }
+    .header h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .fs-btn {
+      background: #0f172a;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 7px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      transition: 0.2s;
+    }
+    .fs-btn:hover {
+      border-color: var(--teal);
+      color: var(--teal);
+    }
+
+    /* 2. TAB BAR */
+    .tab-bar {
+      background: var(--card);
+      display: flex;
+      padding: 0 20px;
+      gap: 8px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .mbar-tab {
+      background: transparent;
+      color: var(--sub);
+      border: none;
+      padding: 11px 20px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: 0.2s;
+    }
+    .mbar-tab:hover {
+      color: var(--text);
+    }
+    .mbar-tab.active {
+      color: var(--teal);
+      border-bottom-color: var(--teal);
+    }
+
+    /* 3. INSTRUCTION BAR */
+    .instr-bar {
+      background: rgba(6, 182, 212, 0.14);
+      color: #a5f3fc;
+      text-align: center;
+      padding: 8px 16px;
+      font-size: 16px;
+      font-weight: 600;
+      border-bottom: 1px solid rgba(6, 182, 212, 0.25);
+      flex-shrink: 0;
+    }
+
+    /* 4. BODY WRAP */
+    .body-wrap {
+      flex: 1;
+      display: flex;
+      padding: 14px;
+      gap: 14px;
+      overflow: hidden;
+    }
+
+    .stage-area {
+      flex: 1;
+      background: #0b1120;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .stage-svg {
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+      display: block;
+    }
+
+    .controls {
+      width: 330px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      overflow-y: auto;
+      flex-shrink: 0;
+    }
+
+    .sec-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--sub);
+      margin-bottom: 4px;
+    }
+
+    .ctrl-box {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .big-num {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--teal);
+    }
+    .big-roman {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--orange);
+      font-family: 'Times New Roman', Georgia, serif;
+      letter-spacing: 1px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--teal);
+      height: 8px;
+      cursor: pointer;
+    }
+
+    .dec-input {
+      width: 100%;
+      background: #1e293b;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 20px;
+      font-weight: 700;
+      padding: 8px 12px;
+      text-align: center;
+      letter-spacing: 2px;
+      outline: none;
+    }
+    .dec-input:focus {
+      border-color: var(--purple);
+    }
+
+    .btn-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .btn {
+      background: #1e293b;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 9px 10px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.15s;
+      text-align: center;
+    }
+    .btn:hover {
+      border-color: var(--teal);
+      background: rgba(6, 182, 212, 0.15);
+    }
+    .btn-primary {
+      background: var(--teal);
+      color: #0f172a;
+      border-color: var(--teal);
+      font-weight: 700;
+    }
+    .btn-primary:hover {
+      background: #22d3ee;
+    }
+    .btn-reset {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.35);
+    }
+    .btn-reset:hover {
+      background: rgba(239, 68, 68, 0.3);
+    }
+
+    .rule-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .rule-pill {
+      background: #1e293b;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 6px 2px;
+      text-align: center;
+    }
+    .rule-pill .r-sym {
+      font-family: 'Times New Roman', serif;
+      font-size: 17px;
+      font-weight: 800;
+      display: block;
+    }
+    .rule-pill .r-val {
+      font-size: 13px;
+      color: var(--sub);
+      font-weight: 600;
+    }
+
+    .note-box {
+      background: rgba(245, 158, 11, 0.12);
+      border-left: 4px solid var(--orange);
+      border-radius: 8px;
+      padding: 10px 12px;
+      font-size: 15px;
+      line-height: 1.45;
+      color: #fde68a;
+    }
+
+    /* PRACTICE STYLES */
+    .hidden {
+      display: none !important;
+    }
+
+    .practice-stage {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      justify-content: space-between;
+      overflow-y: auto;
+    }
+
+    .q-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .q-badge {
+      background: rgba(139, 92, 246, 0.2);
+      color: #c4b5fd;
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .q-level {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--orange);
+    }
+
+    .q-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 18px;
+      text-align: center;
+    }
+
+    .q-text {
+      font-size: 21px;
+      font-weight: 700;
+      line-height: 1.4;
+      color: var(--text);
+      max-width: 720px;
+    }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 620px;
+    }
+    .opt-btn {
+      background: #0f172a;
+      border: 2px solid var(--border);
+      color: var(--text);
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 20px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .opt-btn:hover:not(:disabled) {
+      border-color: var(--teal);
+      background: rgba(6, 182, 212, 0.12);
+    }
+    .opt-btn.correct {
+      border-color: var(--green);
+      background: rgba(16, 185, 129, 0.2);
+      color: #6ee7b7;
+    }
+    .opt-btn.wrong {
+      border-color: var(--red);
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+    }
+
+    .ans-input-wrap {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .ans-input {
+      background: #0f172a;
+      border: 2px solid var(--teal);
+      color: var(--text);
+      font-size: 26px;
+      font-weight: 800;
+      padding: 10px 18px;
+      border-radius: 12px;
+      width: 240px;
+      text-align: center;
+      outline: none;
+    }
+
+    /* Matchstick Builder */
+    .match-tray {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      justify-content: center;
+      min-height: 110px;
+      background: #0b1120;
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      padding: 14px 24px;
+      min-width: 340px;
+      flex-wrap: wrap;
+    }
+    .match-piece {
+      background: #1e293b;
+      border: 2px solid var(--orange);
+      border-radius: 12px;
+      padding: 6px 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: 0.15s;
+    }
+    .match-piece:hover {
+      transform: translateY(-3px);
+      background: rgba(245, 158, 11, 0.15);
+    }
+    .match-Controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .feedback-box {
+      margin-top: 12px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.45;
+      display: none;
+    }
+    .feedback-box.ok {
+      display: block;
+      background: rgba(16, 185, 129, 0.18);
+      border: 1px solid var(--green);
+      color: #a7f3d0;
+    }
+    .feedback-box.err {
+      display: block;
+      background: rgba(239, 68, 68, 0.18);
+      border: 1px solid var(--red);
+      color: #fecaca;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 16px;
+    }
+    .stat-val {
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    @media (max-width: 900px) {
+      body {
+        height: auto;
+        min-height: 100vh;
+        overflow-y: auto;
+      }
+      .body-wrap {
+        flex-direction: column;
+        overflow: visible;
+      }
+      .stage-area {
+        min-height: 460px;
+      }
+      .controls {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <a href="dashboard.html" class="back-link">← Dashboard</a>
+      <h1>🏛️ Ghi số tự nhiên – Số La Mã</h1>
+    </div>
+    <button class="fs-btn" id="fsBtn" onclick="toggleFullScreen()">⛶ Toàn màn hình</button>
+  </header>
+
+  <!-- 2. TAB BAR -->
+  <nav class="tab-bar">
+    <button class="mbar-tab active" id="tabExploreBtn" onclick="switchTab('explore')">🔭 Khám Phá</button>
+    <button class="mbar-tab" id="tabPracticeBtn" onclick="switchTab('practice')">🎯 Thực Hành</button>
+  </nav>
+
+  <!-- 3. INSTRUCTION BAR -->
+  <div class="instr-bar" id="instrBar">
+    ✋ Kéo kim giờ trên mặt đồng hồ La Mã, trượt thanh chọn số (1–30) hoặc nhập số tự nhiên để khám phá cấu tạo thập phân!
+  </div>
+
+  <!-- 4. BODY WRAP -->
+  <main class="body-wrap">
+    <!-- STAGE AREA -->
+    <section class="stage-area">
+      <!-- KHÁM PHÁ SVG -->
+      <svg id="exploreSvg" class="stage-svg" viewBox="0 0 840 540" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <radialGradient id="clockFaceGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#1e293b"/>
+            <stop offset="85%" stop-color="#0f172a"/>
+            <stop offset="100%" stop-color="#334155"/>
+          </radialGradient>
+          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.5"/>
+          </filter>
+        </defs>
+
+        <!-- KHUNG 1: ĐỒNG HỒ LA MÃ (TRÁI TRÊN) -->
+        <g transform="translate(15, 15)">
+          <rect x="0" y="0" width="335" height="275" rx="16" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+          <text x="167" y="26" fill="#94a3b8" font-size="14" font-weight="700" text-anchor="middle" letter-spacing="0.8">ĐỒNG HỒ MẶT SỐ LA MÃ (KÉO KIM GIỜ)</text>
+
+          <!-- Mặt đồng hồ -->
+          <g id="clockGroup" transform="translate(167, 145)">
+            <circle cx="0" cy="0" r="102" fill="url(#clockFaceGrad)" stroke="#f59e0b" stroke-width="4" filter="url(#glow)"/>
+            <circle cx="0" cy="0" r="95" fill="none" stroke="#475569" stroke-width="1" stroke-dasharray="3,4"/>
+
+            <!-- Vạch & Số La Mã sẽ được render bằng JS -->
+            <g id="clockNumbers"></g>
+
+            <!-- Kim phút cố định chỉ 12 -->
+            <line x1="0" y1="12" x2="0" y2="-72" stroke="#64748b" stroke-width="3.5" stroke-linecap="round"/>
+
+            <!-- Kim giờ tương tác -->
+            <g id="hourHand" style="cursor: grab;">
+              <line x1="0" y1="14" x2="0" y2="-54" stroke="#06b6d4" stroke-width="7" stroke-linecap="round"/>
+              <circle cx="0" cy="-54" r="13" fill="rgba(6, 182, 212, 0.25)" stroke="#06b6d4" stroke-width="2"/>
+            </g>
+
+            <!-- Tâm đồng hồ -->
+            <circle cx="0" cy="0" r="7" fill="#f59e0b"/>
+            <circle cx="0" cy="0" r="3" fill="#0f172a"/>
+          </g>
+
+          <!-- Nhãn giờ hiện tại -->
+          <rect x="62" y="248" width="210" height="22" rx="6" fill="#0f172a"/>
+          <text id="clockReadout" x="167" y="264" fill="#a5f3fc" font-size="15" font-weight="700" text-anchor="middle">Đang chỉ: III giờ (3 giờ)</text>
+        </g>
+
+        <!-- KHUNG 2: PHÂN TÍCH SỐ LA MÃ 1 - 30 (PHẢI TRÊN) -->
+        <g transform="translate(365, 15)">
+          <rect x="0" y="0" width="460" height="275" rx="16" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+          <text x="230" y="26" fill="#94a3b8" font-size="14" font-weight="700" text-anchor="middle" letter-spacing="0.8">PHÂN TÍCH CẤU TẠO SỐ LA MÃ (1 – 30)</text>
+
+          <!-- Hộp hiển thị chính -->
+          <rect x="20" y="40" width="420" height="90" rx="14" fill="#0f172a" stroke="#334155"/>
+          <text id="mainArabicSvg" x="105" y="98" fill="#06b6d4" font-size="44" font-weight="800" text-anchor="middle">14</text>
+          <text x="195" y="96" fill="#64748b" font-size="32" font-weight="700" text-anchor="middle">⟷</text>
+          <text id="mainRomanSvg" x="315" y="98" fill="#f59e0b" font-size="46" font-weight="800" font-family="'Times New Roman', serif" text-anchor="middle" letter-spacing="2">XIV</text>
+
+          <!-- Các thẻ màu phân tích thành phần -->
+          <text x="24" y="154" fill="#cbd5e1" font-size="15" font-weight="600">Tách thành các nhóm cơ bản:</text>
+          <g id="romanBlocksGroup" transform="translate(20, 165)"></g>
+
+          <!-- Giải thích công thức cộng -->
+          <rect x="20" y="232" width="420" height="32" rx="8" fill="rgba(6, 182, 212, 0.1)" stroke="rgba(6, 182, 212, 0.3)"/>
+          <text id="romanFormulaSvg" x="230" y="253" fill="#e2e8f0" font-size="16" font-weight="700" text-anchor="middle">XIV = X + IV = 10 + 4 = 14</text>
+        </g>
+
+        <!-- KHUNG 3: HỆ THẬP PHÂN (DƯỚI) -->
+        <g transform="translate(15, 305)">
+          <rect x="0" y="0" width="810" height="220" rx="16" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+          <text x="405" y="26" fill="#94a3b8" font-size="14" font-weight="700" text-anchor="middle" letter-spacing="0.8">GHI SỐ TỰ NHIÊN TRONG HỆ THẬP PHÂN (TỐI ĐA 6 CHỮ SỐ)</text>
+
+          <!-- Bảng hàng -->
+          <g id="decimalTableGroup" transform="translate(20, 38)"></g>
+
+          <!-- Biểu thức tách thành tổng theo hàng -->
+          <rect x="20" y="128" width="770" height="38" rx="10" fill="#0f172a" stroke="#334155"/>
+          <text id="decimalSumText" x="405" y="153" fill="#a5f3fc" font-size="17" font-weight="700" text-anchor="middle">
+            3 205 = 3 × 1 000 + 2 × 100 + 0 × 10 + 5
+          </text>
+
+          <!-- Phân biệt "Chữ số hàng trăm" và "Số trăm" -->
+          <g transform="translate(20, 174)">
+            <rect x="0" y="0" width="375" height="36" rx="8" fill="rgba(139, 92, 246, 0.15)" stroke="#8b5cf6"/>
+            <text id="digitHundredText" x="187" y="23" fill="#ddd6fe" font-size="15.5" font-weight="700" text-anchor="middle">
+              • Chữ số hàng trăm: 2 | Chữ số hàng chục: 0
+            </text>
+
+            <rect x="395" y="0" width="375" height="36" rx="8" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981"/>
+            <text id="countHundredText" x="582" y="23" fill="#a7f3d0" font-size="15.5" font-weight="700" text-anchor="middle">
+              • Số trăm: 32 trăm | Số chục: 320 chục
+            </text>
+          </g>
+        </g>
+      </svg>
+
+      <!-- THỰC HÀNH AREA -->
+      <div id="practiceStage" class="practice-stage hidden">
+        <div class="q-header">
+          <span class="q-badge" id="qProgressBadge">Câu 1 / 10</span>
+          <span class="q-level" id="qLevelText">🌱 Mức độ: Nhận biết</span>
+        </div>
+
+        <div class="q-card" id="qCard">
+          <div class="q-text" id="qText">Đang tải câu hỏi...</div>
+          <div id="qInteractiveZone" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:14px;"></div>
+          <div id="feedbackBox" class="feedback-box"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTROLS PANEL (330px) -->
+    <aside class="controls">
+      <!-- PANEL KHÁM PHÁ -->
+      <div id="exploreControls" style="display:flex; flex-direction:column; gap:12px;">
+        <div>
+          <div class="sec-title">1. Chọn số La Mã (1 – 30)</div>
+          <div class="ctrl-box">
+            <div class="slider-row">
+              <span class="big-num" id="ctrlArabic">14</span>
+              <span style="color:var(--sub); font-size:15px; font-weight:600;">Số La Mã:</span>
+              <span class="big-roman" id="ctrlRoman">XIV</span>
+            </div>
+            <input type="range" id="romanSlider" min="1" max="30" value="14" oninput="onSliderChange(this.value)">
+          </div>
+        </div>
+
+        <div>
+          <div class="sec-title">Bảng chữ số & Nhóm cơ bản</div>
+          <div class="rule-grid">
+            <div class="rule-pill"><span class="r-sym" style="color:#38bdf8">I</span><span class="r-val">1</span></div>
+            <div class="rule-pill"><span class="r-sym" style="color:#a78bfa">V</span><span class="r-val">5</span></div>
+            <div class="rule-pill"><span class="r-sym" style="color:#f59e0b">X</span><span class="r-val">10</span></div>
+            <div class="rule-pill"><span class="r-sym" style="color:#34d399">IV</span><span class="r-val">4</span></div>
+            <div class="rule-pill"><span class="r-sym" style="color:#fb7185">IX</span><span class="r-val">9</span></div>
+          </div>
+        </div>
+
+        <div>
+          <div class="sec-title">2. Khám phá Hệ thập phân</div>
+          <div class="ctrl-box">
+            <label style="font-size:14px; color:var(--sub); display:block; margin-bottom:6px;">Nhập số tự nhiên (1 đến 999 999):</label>
+            <input type="text" id="decimalInput" class="dec-input" value="3205" maxlength="7" oninput="onDecimalInput(this.value)">
+          </div>
+        </div>
+
+        <div>
+          <div class="sec-title">Ví dụ mẫu đặc biệt</div>
+          <div class="btn-grid">
+            <button class="btn" onclick="setPreset(4, 2026)">Số IV (4)</button>
+            <button class="btn" onclick="setPreset(9, 10508)">Số IX (9)</button>
+            <button class="btn" onclick="setPreset(19, 45090)">Số XIX (19)</button>
+            <button class="btn" onclick="setPreset(29, 608302)">Số XXIX (29)</button>
+          </div>
+          <button class="btn btn-reset" style="width:100%; margin-top:8px;" onclick="resetExplore()">↺ Làm lại mặc định</button>
+        </div>
+
+        <div class="note-box">
+          <strong>💡 Nhận xét SGK:</strong><br>
+          • Trong phạm vi lớp 6, chỉ dùng <strong>I, V, X</strong> để ghi các số La Mã từ 1 đến 30; mỗi chữ số <strong>I, X</strong> không viết liền nhau quá 3 lần.<br>
+          • Hệ thập phân: Cứ 10 đơn vị ở một hàng thì làm thành 1 đơn vị ở hàng liền trước nó.
+        </div>
+      </div>
+
+      <!-- PANEL THỰC HÀNH -->
+      <div id="practiceControls" class="hidden" style="display:flex; flex-direction:column; gap:12px;">
+        <div class="sec-title">Bảng điểm Luyện tập</div>
+        <div class="ctrl-box">
+          <div class="stat-row">
+            <span>Điểm số:</span>
+            <span class="stat-val" style="color:var(--green)" id="scoreVal">0</span>
+          </div>
+          <div class="stat-row">
+            <span>Chuỗi đúng liên tiếp:</span>
+            <span class="stat-val" style="color:var(--orange)" id="streakVal">0 🔥</span>
+          </div>
+          <div class="stat-row" style="border-bottom:none;">
+            <span>Số câu đã làm:</span>
+            <span style="font-size:20px; font-weight:700;" id="doneCountVal">0 / 10</span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="nextQBtn" style="padding:12px; font-size:16px;" onclick="nextQuestion()" disabled>Câu tiếp theo →</button>
+        <button class="btn btn-reset" onclick="initPractice()">↺ Chơi lại từ đầu</button>
+
+        <div class="note-box">
+          <strong>🎯 Mẹo làm bài:</strong><br>
+          • Nhớ quy tắc trừ: <strong>IV = 4</strong>, <strong>IX = 9</strong> (không viết IIII hay VIIII).<br>
+          • <strong>Chữ số hàng trăm</strong> chỉ là 1 chữ số (từ 0 đến 9) đứng ở hàng trăm.<br>
+          • <strong>Số trăm</strong> là toàn bộ phần nguyên khi chia số đó cho 100 (bỏ 2 chữ số tận cùng).
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script>
+    /* ==========================================================
+       1. DỮ LIỆU & HÀM CHUYỂN ĐỔI SỐ LA MÃ (1 - 30)
+       ========================================================== */
+    const ROMAN_TOKENS = [
+      { val: 10, sym: 'X', color: '#f59e0b', desc: '10' },
+      { val: 9,  sym: 'IX', color: '#fb7185', desc: '10 - 1 = 9' },
+      { val: 5,  sym: 'V', color: '#a78bfa', desc: '5' },
+      { val: 4,  sym: 'IV', color: '#34d399', desc: '5 - 1 = 4' },
+      { val: 1,  sym: 'I', color: '#38bdf8', desc: '1' }
+    ];
+
+    let currentRomanNum = 14;
+    let currentClockHour = 3;
+    let currentDecNum = 3205;
+
+    // Chuyển số tự nhiên (1..30) thành mảng các nhóm cơ bản (X, IX, V, IV, I)
+    function decomposeRoman(n) {
+      let rem = n;
+      const parts = [];
+      for (const tk of ROMAN_TOKENS) {
+        while (rem >= tk.val) {
+          parts.push(tk);
+          rem -= tk.val;
+        }
+      }
+      return parts;
+    }
+
+    function toRoman(n) {
+      return decomposeRoman(n).map(p => p.sym).join('');
+    }
+
+    function formatVNNumber(n) {
+      return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    }
+
+    /* ==========================================================
+       2. KHỞI TẠO & TƯƠNG TÁC MẶT ĐỒNG HỒ LA MÃ
+       ========================================================== */
+    const clockNumbersGroup = document.getElementById('clockNumbers');
+    const hourHand = document.getElementById('hourHand');
+    const exploreSvg = document.getElementById('exploreSvg');
+
+    function renderClockFace() {
+      clockNumbersGroup.innerHTML = '';
+      for (let h = 1; h <= 12; h++) {
+        const angleDeg = h * 30 - 90;
+        const angleRad = (angleDeg * Math.PI) / 180;
+
+        // Vạch chia giờ
+        const x1 = Math.cos(angleRad) * 88;
+        const y1 = Math.sin(angleRad) * 88;
+        const x2 = Math.cos(angleRad) * 96;
+        const y2 = Math.sin(angleRad) * 96;
+
+        const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        tick.setAttribute('x1', x1);
+        tick.setAttribute('y1', y1);
+        tick.setAttribute('x2', x2);
+        tick.setAttribute('y2', y2);
+        tick.setAttribute('stroke', '#94a3b8');
+        tick.setAttribute('stroke-width', '2.5');
+        clockNumbersGroup.appendChild(tick);
+
+        // Chữ số La Mã
+        const rx = Math.cos(angleRad) * 72;
+        const ry = Math.sin(angleRad) * 72 + 5;
+        const txt = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        txt.setAttribute('x', rx);
+        txt.setAttribute('y', ry);
+        txt.setAttribute('text-anchor', 'middle');
+        txt.setAttribute('font-family', "'Times New Roman', Georgia, serif");
+        txt.setAttribute('font-size', h === currentClockHour ? '18' : '15');
+        txt.setAttribute('font-weight', '800');
+        txt.setAttribute('fill', h === currentClockHour ? '#f59e0b' : '#e2e8f0');
+        txt.style.cursor = 'pointer';
+        txt.textContent = toRoman(h);
+        txt.addEventListener('pointerdown', (e) => {
+          e.stopPropagation();
+          setClockHour(h, true);
+        });
+        clockNumbersGroup.appendChild(txt);
+      }
+    }
+
+    function setClockHour(h, syncSlider = false) {
+      currentClockHour = h;
+      const deg = h * 30;
+      hourHand.setAttribute('transform', `rotate(${deg})`);
+      document.getElementById('clockReadout').textContent =
+        `Đang chỉ: ${toRoman(h)} giờ (${h} giờ)`;
+      renderClockFace();
+
+      if (syncSlider) {
+        document.getElementById('romanSlider').value = h;
+        updateRomanDisplay(h);
+      }
+    }
+
+    // Kéo thả kim giờ bằng Pointer Events
+    let isDraggingClock = false;
+
+    hourHand.addEventListener('pointerdown', (e) => {
+      isDraggingClock = true;
+      hourHand.style.cursor = 'grabbing';
+      exploreSvg.setPointerCapture(e.pointerId);
+    });
+
+    exploreSvg.addEventListener('pointermove', (e) => {
+      if (!isDraggingClock) return;
+      const pt = exploreSvg.createSVGPoint();
+      pt.x = e.clientX;
+      pt.y = e.clientY;
+      const svgP = pt.matrixTransform(exploreSvg.getScreenCTM().inverse());
+
+      // Tâm đồng hồ nằm ở (15 + 167, 15 + 145) = (182, 160)
+      const dx = svgP.x - 182;
+      const dy = svgP.y - 160;
+      let angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI + 90;
+      if (angleDeg < 0) angleDeg += 360;
+
+      let hour = Math.round(angleDeg / 30);
+      if (hour === 0) hour = 12;
+      if (hour !== currentClockHour) {
+        setClockHour(hour, true);
+      }
+    });
+
+    exploreSvg.addEventListener('pointerup', (e) => {
+      if (isDraggingClock) {
+        isDraggingClock = false;
+        hourHand.style.cursor = 'grab';
+        exploreSvg.releasePointerCapture(e.pointerId);
+      }
+    });
+
+    /* ==========================================================
+       3. CẬP NHẬT PHÂN TÍCH SỐ LA MÃ (1 - 30)
+       ========================================================== */
+    function onSliderChange(val) {
+      const n = parseInt(val, 10);
+      updateRomanDisplay(n);
+      if (n >= 1 && n <= 12) {
+        setClockHour(n, false);
+      }
+    }
+
+    function updateRomanDisplay(n) {
+      currentRomanNum = n;
+      const romanStr = toRoman(n);
+      const parts = decomposeRoman(n);
+
+      document.getElementById('ctrlArabic').textContent = n;
+      document.getElementById('ctrlRoman').textContent = romanStr;
+      document.getElementById('mainArabicSvg').textContent = n;
+      document.getElementById('mainRomanSvg').textContent = romanStr;
+
+      // Vẽ các khối màu trong SVG
+      const group = document.getElementById('romanBlocksGroup');
+      group.innerHTML = '';
+      const count = parts.length;
+      const boxW = Math.min(82, Math.floor((420 - (count - 1) * 10) / count));
+      const totalW = count * boxW + (count - 1) * 10;
+      let startX = (420 - totalW) / 2;
+
+      parts.forEach((p, idx) => {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('transform', `translate(${startX + idx * (boxW + 10)}, 0)`);
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('width', boxW);
+        rect.setAttribute('height', 56);
+        rect.setAttribute('rx', '10');
+        rect.setAttribute('fill', '#0f172a');
+        rect.setAttribute('stroke', p.color);
+        rect.setAttribute('stroke-width', '2.5');
+        g.appendChild(rect);
+
+        const tSym = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        tSym.setAttribute('x', boxW / 2);
+        tSym.setAttribute('y', 27);
+        tSym.setAttribute('text-anchor', 'middle');
+        tSym.setAttribute('fill', p.color);
+        tSym.setAttribute('font-family', "'Times New Roman', serif");
+        tSym.setAttribute('font-size', '22');
+        tSym.setAttribute('font-weight', '800');
+        tSym.textContent = p.sym;
+        g.appendChild(tSym);
+
+        const tVal = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        tVal.setAttribute('x', boxW / 2);
+        tVal.setAttribute('y', 47);
+        tVal.setAttribute('text-anchor', 'middle');
+        tVal.setAttribute('fill', '#cbd5e1');
+        tVal.setAttribute('font-size', '14');
+        tVal.setAttribute('font-weight', '700');
+        tVal.textContent = `(${p.val})`;
+        g.appendChild(tVal);
+
+        group.appendChild(g);
+      });
+
+      // Công thức giải thích
+      if (parts.length === 1) {
+        document.getElementById('romanFormulaSvg').textContent =
+          `${romanStr} = ${parts[0].desc}`;
+      } else {
+        const symJoin = parts.map(p => p.sym).join(' + ');
+        const valJoin = parts.map(p => p.val).join(' + ');
+        document.getElementById('romanFormulaSvg').textContent =
+          `${romanStr} = ${symJoin} = ${valJoin} = ${n}`;
+      }
+    }
+
+    /* ==========================================================
+       4. CẬP NHẬT KHUNG HỆ THẬP PHÂN (TỐI ĐA 6 CHỮ SỐ)
+       ========================================================== */
+    const PLACE_NAMES = [
+      'Trăm nghìn', 'Chục nghìn', 'Nghìn', 'Trăm', 'Chục', 'Đơn vị'
+    ];
+    const PLACE_VALUES = [100000, 10000, 1000, 100, 10, 1];
+
+    function onDecimalInput(raw) {
+      const cleaned = raw.replace(/\D/g, '').slice(0, 6);
+      const num = cleaned === '' ? 0 : parseInt(cleaned, 10);
+      currentDecNum = num;
+      updateDecimalDisplay(num);
+    }
+
+    function updateDecimalDisplay(num) {
+      const tableGroup = document.getElementById('decimalTableGroup');
+      tableGroup.innerHTML = '';
+
+      const str6 = num.toString().padStart(6, '0');
+      const firstNonZeroIdx = num === 0 ? 5 : str6.split('').findIndex(c => c !== '0');
+      const colW = 770 / 6;
+
+      for (let i = 0; i < 6; i++) {
+        const x = i * colW;
+        const isActive = i >= firstNonZeroIdx;
+        const digit = parseInt(str6[i], 10);
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', x + 2);
+        rect.setAttribute('y', 0);
+        rect.setAttribute('width', colW - 4);
+        rect.setAttribute('height', 80);
+        rect.setAttribute('rx', '10');
+        rect.setAttribute('fill', isActive ? '#0f172a' : 'rgba(15, 23, 42, 0.4)');
+        rect.setAttribute('stroke', i === 3 ? '#8b5cf6' : (isActive ? '#334155' : '#1e293b'));
+        rect.setAttribute('stroke-width', i === 3 ? '2' : '1.5');
+        tableGroup.appendChild(rect);
+
+        const tHeader = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        tHeader.setAttribute('x', x + colW / 2);
+        tHeader.setAttribute('y', 22);
+        tHeader.setAttribute('text-anchor', 'middle');
+        tHeader.setAttribute('fill', i === 3 ? '#c4b5fd' : '#94a3b8');
+        tHeader.setAttribute('font-size', '13.5');
+        tHeader.setAttribute('font-weight', '700');
+        tHeader.textContent = PLACE_NAMES[i];
+        tableGroup.appendChild(tHeader);
+
+        const tDigit = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        tDigit.setAttribute('x', x + colW / 2);
+        tDigit.setAttribute('y', 64);
+        tDigit.setAttribute('text-anchor', 'middle');
+        tDigit.setAttribute('fill', isActive ? (i === 3 ? '#a78bfa' : '#38bdf8') : '#334155');
+        tDigit.setAttribute('font-size', '32');
+        tDigit.setAttribute('font-weight', '800');
+        tDigit.textContent = isActive ? digit : '–';
+        tableGroup.appendChild(tDigit);
+      }
+
+      // Biểu thức tách tổng theo hàng
+      if (num === 0) {
+        document.getElementById('decimalSumText').textContent = '0 = 0';
+      } else {
+        const terms = [];
+        for (let i = firstNonZeroIdx; i < 6; i++) {
+          const d = parseInt(str6[i], 10);
+          const pv = PLACE_VALUES[i];
+          if (pv === 1) {
+            terms.push(`${d}`);
+          } else {
+            terms.push(`${d} × ${formatVNNumber(pv)}`);
+          }
+        }
+        document.getElementById('decimalSumText').textContent =
+          `${formatVNNumber(num)} = ${terms.join(' + ')}`;
+      }
+
+      // Phân biệt chữ số hàng trăm / chục và số trăm / số chục
+      const digitHundred = Math.floor(num / 100) % 10;
+      const digitTen = Math.floor(num / 10) % 10;
+      const countHundred = Math.floor(num / 100);
+      const countTen = Math.floor(num / 10);
+
+      document.getElementById('digitHundredText').textContent =
+        `• Chữ số hàng trăm: ${digitHundred} | Chữ số hàng chục: ${digitTen}`;
+      document.getElementById('countHundredText').textContent =
+        `• Số trăm: ${formatVNNumber(countHundred)} trăm | Số chục: ${formatVNNumber(countTen)} chục`;
+    }
+
+    function setPreset(romanVal, decVal) {
+      document.getElementById('romanSlider').value = romanVal;
+      onSliderChange(romanVal);
+      document.getElementById('decimalInput').value = decVal;
+      onDecimalInput(decVal.toString());
+    }
+
+    function resetExplore() {
+      setClockHour(3, false);
+      setPreset(14, 3205);
+    }
+
+    /* ==========================================================
+       5. TAB THỰC HÀNH (10 CÂU NGẪU NHIÊN, TĂNG DẦN ĐỘ KHÓ)
+       ========================================================== */
+    let questions = [];
+    let currentQIdx = 0;
+    let score = 0;
+    let streak = 0;
+    let answeredCurrent = false;
+    let matchBuilt = [];
+
+    function randInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function generateWrongRoman(n) {
+      const correct = toRoman(n);
+      const set = new Set();
+      // Tạo các phương án nhiễu hợp lý
+      if (n === 4) set.add('IIII');
+      if (n === 9) set.add('VIIII');
+      if (n === 14) { set.add('XIIII'); set.add('IXV'); }
+      if (n === 19) { set.add('XVIIII'); set.add('IXX'); }
+      if (n === 24) { set.add('XXIIII'); set.add('XIVX'); }
+      if (n === 29) { set.add('XXVIIII'); set.add('XIXX'); }
+
+      while (set.size < 3) {
+        const delta = shuffle([-2, -1, 1, 2, 5])[0];
+        const cand = Math.max(1, Math.min(30, n + delta));
+        if (cand !== n) set.add(toRoman(cand));
+        set.add(correct + 'I');
+      }
+      return Array.from(set).filter(x => x !== correct).slice(0, 3);
+    }
+
+    function buildQuestionList() {
+      const qList = [];
+
+      // Câu 1 (Nhận biết): Đọc số La Mã nhỏ (1-12)
+      const n1 = randInt(2, 12);
+      const opts1 = shuffle([n1, ...shuffle([1,2,3,4,5,6,7,8,9,10,11,12].filter(x => x !== n1)).slice(0, 3)]);
+      qList.push({
+        level: '🌱 Mức độ: Nhận biết',
+        type: 'mcq',
+        text: `Kim giờ đồng hồ đang chỉ vào số La Mã "${toRoman(n1)}". Hỏi lúc đó là mấy giờ?`,
+        options: opts1.map(x => `${x} giờ`),
+        answer: `${n1} giờ`,
+        explain: `Ta có ${toRoman(n1)} = ${decomposeRoman(n1).map(p => p.val).join(' + ')} = ${n1}. Vậy đồng hồ chỉ ${n1} giờ.`
+      });
+
+      // Câu 2 (Nhận biết): Quy tắc không viết quá 3 lần (4, 9, 14, 19, 24, 29)
+      const specialNums = [4, 9, 14, 19, 24, 29];
+      const n2 = specialNums[randInt(0, specialNums.length - 1)];
+      const wrong2 = generateWrongRoman(n2);
+      qList.push({
+        level: '🌱 Mức độ: Nhận biết',
+        type: 'mcq',
+        text: `Cách viết số La Mã nào sau đây biểu diễn đúng số ${n2}?`,
+        options: shuffle([toRoman(n2), ...wrong2]),
+        answer: toRoman(n2),
+        explain: `Theo quy tắc ghi số La Mã, không được viết một chữ số quá 3 lần liên tiếp. Do đó ${n2} được viết là ${toRoman(n2)}.`
+      });
+
+      // Câu 3 (Nhận biết): Tìm chữ số hàng trăm hoặc hàng chục
+      const n3 = randInt(1205, 98760);
+      const askHundred3 = Math.random() < 0.5;
+      const ans3 = askHundred3 ? (Math.floor(n3 / 100) % 10) : (Math.floor(n3 / 10) % 10);
+      qList.push({
+        level: '🌱 Mức độ: Nhận biết',
+        type: 'input',
+        text: `Trong số tự nhiên ${formatVNNumber(n3)}, chữ số hàng ${askHundred3 ? 'trăm' : 'chục'} là chữ số nào?`,
+        placeholder: 'Nhập 1 chữ số...',
+        answer: ans3.toString(),
+        explain: `Trong số ${formatVNNumber(n3)}, chữ số đứng ở vị trí hàng ${askHundred3 ? 'trăm' : 'chục'} là ${ans3}.`
+      });
+
+      // Câu 4 (Thông hiểu): Xếp que diêm ảo tạo số La Mã (11 - 28)
+      const n4 = randInt(11, 28);
+      qList.push({
+        level: '⚡ Mức độ: Thông hiểu',
+        type: 'matchstick',
+        targetNum: n4,
+        text: `Hãy bấm chọn các cụm que diêm (I, V, X) theo đúng thứ tự từ trái sang phải để xếp thành số La Mã biểu diễn số ${n4}:`,
+        answer: toRoman(n4),
+        explain: `Số ${n4} tách thành ${decomposeRoman(n4).map(p => p.val).join(' + ')}, ghép bởi các chữ số La Mã thành ${toRoman(n4)}.`
+      });
+
+      // Câu 5 (Thông hiểu): Đổi số La Mã (13-30) sang số tự nhiên (nhập số)
+      let n5 = randInt(13, 30);
+      if (n5 === n4) n5 = n5 < 30 ? n5 + 1 : 13;
+      qList.push({
+        level: '⚡ Mức độ: Thông hiểu',
+        type: 'input',
+        text: `Số La Mã "${toRoman(n5)}" biểu diễn số tự nhiên nào?`,
+        placeholder: 'Nhập số tự nhiên...',
+        answer: n5.toString(),
+        explain: `Ta phân tích: ${toRoman(n5)} = ${decomposeRoman(n5).map(p => `${p.sym} (${p.val})`).join(' + ')} = ${n5}.`
+      });
+
+      // Câu 6 (Thông hiểu): Đổi số tự nhiên (15-30) sang số La Mã (nhập chữ)
+      let n6 = randInt(15, 30);
+      if (n6 === n5) n6 = n6 > 15 ? n6 - 1 : 27;
+      qList.push({
+        level: '⚡ Mức độ: Thông hiểu',
+        type: 'input',
+        text: `Hãy viết số ${n6} bằng chữ số La Mã (gõ chữ I, V, X):`,
+        placeholder: 'Ví dụ: XXIV',
+        answer: toRoman(n6),
+        explain: `${n6} = ${decomposeRoman(n6).map(p => p.val).join(' + ')} nên viết bằng số La Mã là ${toRoman(n6)}.`
+      });
+
+      // Câu 7 (Thông hiểu): Tách tổng theo hàng trong hệ thập phân
+      const a7 = randInt(2, 9), b7 = randInt(1, 9), c7 = randInt(1, 9);
+      const n7 = a7 * 10000 + b7 * 100 + c7;
+      qList.push({
+        level: '⚡ Mức độ: Thông hiểu',
+        type: 'input',
+        text: `Tìm số tự nhiên có cấu tạo thập phân gồm: ${a7} × 10 000 + ${b7} × 100 + ${c7}`,
+        placeholder: 'Nhập số tự nhiên...',
+        answer: n7.toString(),
+        explain: `Ta có ${a7} × 10 000 + ${b7} × 100 + ${c7} = ${formatVNNumber(a7 * 10000)} + ${b7 * 100} + ${c7} = ${formatVNNumber(n7)} (chú ý các hàng nghìn và hàng chục bằng 0).`
+      });
+
+      // Câu 8 (Vận dụng): Phân biệt "Số trăm" / "Số chục" với "Chữ số hàng trăm"
+      const n8 = randInt(1250, 48950);
+      const askSoTram = Math.random() < 0.5;
+      const ans8 = askSoTram ? Math.floor(n8 / 100) : Math.floor(n8 / 10);
+      qList.push({
+        level: '🔥 Mức độ: Vận dụng',
+        type: 'input',
+        text: `Số tự nhiên ${formatVNNumber(n8)} có tất cả bao nhiêu ${askSoTram ? 'trăm (số trăm)' : 'chục (số chục)'}?`,
+        placeholder: 'Nhập kết quả...',
+        answer: ans8.toString(),
+        explain: `Cần phân biệt "chữ số hàng ${askSoTram ? 'trăm' : 'chục'}" và "số ${askSoTram ? 'trăm' : 'chục'}". Số ${formatVNNumber(n8)} có số ${askSoTram ? 'trăm' : 'chục'} là ${formatVNNumber(ans8)}.`
+      });
+
+      // Câu 9 (Vận dụng): Xếp que diêm tạo số liền sau hoặc kết quả phép tính La Mã
+      const base9 = randInt(12, 23);
+      const add9 = randInt(3, 6);
+      const target9 = base9 + add9;
+      qList.push({
+        level: '🔥 Mức độ: Vận dụng',
+        type: 'matchstick',
+        targetNum: target9,
+        text: `Hãy xếp các cụm que diêm để biểu diễn kết quả của phép cộng: ${toRoman(base9)} + ${toRoman(add9)}`,
+        answer: toRoman(target9),
+        explain: `Ta có ${toRoman(base9)} = ${base9} và ${toRoman(add9)} = ${add9}. Tổng là ${base9} + ${add9} = ${target9}, viết bằng số La Mã là ${toRoman(target9)}.`
+      });
+
+      // Câu 10 (Vận dụng): Nhận diện cách viết SAI quy tắc số La Mã
+      const wrongPool = [
+        { bad: 'IIII', fix: 'IV', val: 4 },
+        { bad: 'VIIII', fix: 'IX', val: 9 },
+        { bad: 'VV', fix: 'X', val: 10 },
+        { bad: 'XIIII', fix: 'XIV', val: 14 },
+        { bad: 'IC', fix: 'XCIX', val: 99 }
+      ];
+      const pickWrong = wrongPool[randInt(0, 3)];
+      const goodSamples = shuffle(['XIV', 'XIX', 'XXIV', 'XXIX', 'XXVIII', 'XVII']).slice(0, 3);
+      qList.push({
+        level: '🔥 Mức độ: Vận dụng',
+        type: 'mcq',
+        text: `Trong các cách viết dưới đây, cách viết nào SAI quy tắc ghi số La Mã?`,
+        options: shuffle([pickWrong.bad, ...goodSamples]),
+        answer: pickWrong.bad,
+        explain: `Cách viết "${pickWrong.bad}" là SAI quy tắc (không viết I quá 3 lần liên tiếp hoặc lặp lại V). Để biểu diễn ${pickWrong.val}, ta phải viết là "${pickWrong.fix}".`
+      });
+
+      return qList;
+    }
+
+    function initPractice() {
+      questions = buildQuestionList();
+      currentQIdx = 0;
+      score = 0;
+      streak = 0;
+      updatePracticeStats();
+      renderQuestion();
+    }
+
+    function updatePracticeStats() {
+      document.getElementById('scoreVal').textContent = score;
+      document.getElementById('streakVal').textContent = `${streak} 🔥`;
+      document.getElementById('doneCountVal').textContent = `${currentQIdx} / 10`;
+    }
+
+    function renderQuestion() {
+      answeredCurrent = false;
+      document.getElementById('nextQBtn').disabled = true;
+      const fb = document.getElementById('feedbackBox');
+      fb.className = 'feedback-box';
+      fb.innerHTML = '';
+
+      if (currentQIdx >= questions.length) {
+        renderSummary();
+        return;
+      }
+
+      const q = questions[currentQIdx];
+      document.getElementById('qProgressBadge').textContent = `Câu ${currentQIdx + 1} / 10`;
+      document.getElementById('qLevelText').textContent = q.level;
+      document.getElementById('qText').textContent = q.text;
+
+      const zone = document.getElementById('qInteractiveZone');
+      zone.innerHTML = '';
+
+      if (q.type === 'mcq') {
+        const grid = document.createElement('div');
+        grid.className = 'options-grid';
+        q.options.forEach(opt => {
+          const btn = document.createElement('button');
+          btn.className = 'opt-btn';
+          btn.textContent = opt;
+          btn.onclick = () => checkMCQAnswer(btn, opt, q);
+          grid.appendChild(btn);
+        });
+        zone.appendChild(grid);
+      } else if (q.type === 'input') {
+        const wrap = document.createElement('div');
+        wrap.className = 'ans-input-wrap';
+
+        const inp = document.createElement('input');
+        inp.type = 'text';
+        inp.className = 'ans-input';
+        inp.id = 'userAnsInput';
+        inp.placeholder = q.placeholder || 'Nhập đáp án...';
+        inp.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' && !answeredCurrent) checkInputAnswer(q);
+        });
+
+        const subBtn = document.createElement('button');
+        subBtn.className = 'btn btn-primary';
+        subBtn.style.padding = '12px 22px';
+        subBtn.style.fontSize = '18px';
+        subBtn.textContent = 'Kiểm tra';
+        subBtn.onclick = () => checkInputAnswer(q);
+
+        wrap.appendChild(inp);
+        wrap.appendChild(subBtn);
+        zone.appendChild(wrap);
+        setTimeout(() => inp.focus(), 50);
+      } else if (q.type === 'matchstick') {
+        matchBuilt = [];
+        const tray = document.createElement('div');
+        tray.className = 'match-tray';
+        tray.id = 'matchTray';
+        zone.appendChild(tray);
+
+        const ctrl = document.createElement('div');
+        ctrl.className = 'match-Controls';
+        ['I', 'V', 'X'].forEach(sym => {
+          const b = document.createElement('div');
+          b.className = 'match-piece';
+          b.innerHTML = getMatchstickSVG(sym, 44) + `<span style="font-weight:800; color:var(--orange); margin-top:4px;">+ Thêm ${sym}</span>`;
+          b.onclick = () => {
+            if (answeredCurrent || matchBuilt.length >= 9) return;
+            matchBuilt.push(sym);
+            renderMatchTray();
+          };
+          ctrl.appendChild(b);
+        });
+
+        const backBtn = document.createElement('button');
+        backBtn.className = 'btn';
+        backBtn.textContent = '⌫ Xóa 1 chữ';
+        backBtn.onclick = () => {
+          if (answeredCurrent) return;
+          matchBuilt.pop();
+          renderMatchTray();
+        };
+
+        const checkBtn = document.createElement('button');
+        checkBtn.className = 'btn btn-primary';
+        checkBtn.style.padding = '10px 20px';
+        checkBtn.textContent = '✓ Kiểm tra que diêm';
+        checkBtn.onclick = () => checkMatchstickAnswer(q);
+
+        ctrl.appendChild(backBtn);
+        ctrl.appendChild(checkBtn);
+        zone.appendChild(ctrl);
+        renderMatchTray();
+      }
+    }
+
+    function getMatchstickSVG(sym, h = 64) {
+      if (sym === 'I') {
+        return `<svg width="24" height="${h}" viewBox="0 0 24 64">
+          <line x1="12" y1="12" x2="12" y2="56" stroke="#fde047" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="12" cy="10" r="4.5" fill="#ef4444"/>
+        </svg>`;
+      }
+      if (sym === 'V') {
+        return `<svg width="42" height="${h}" viewBox="0 0 42 64">
+          <line x1="8" y1="12" x2="21" y2="56" stroke="#fde047" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="8" cy="10" r="4.5" fill="#ef4444"/>
+          <line x1="34" y1="12" x2="21" y2="56" stroke="#fde047" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="34" cy="10" r="4.5" fill="#ef4444"/>
+        </svg>`;
+      }
+      return `<svg width="42" height="${h}" viewBox="0 0 42 64">
+        <line x1="8" y1="12" x2="34" y2="56" stroke="#fde047" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="8" cy="10" r="4.5" fill="#ef4444"/>
+        <line x1="34" y1="12" x2="8" y2="56" stroke="#fde047" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="34" cy="10" r="4.5" fill="#ef4444"/>
+      </svg>`;
+    }
+
+    function renderMatchTray() {
+      const tray = document.getElementById('matchTray');
+      if (!tray) return;
+      if (matchBuilt.length === 0) {
+        tray.innerHTML = `<span style="color:var(--sub); font-size:16px;">Khay đang trống – Hãy bấm chọn cụm que diêm I, V, X bên dưới!</span>`;
+        return;
+      }
+      tray.innerHTML = matchBuilt.map(sym => getMatchstickSVG(sym, 72)).join('');
+    }
+
+    function checkMCQAnswer(btnClicked, chosen, q) {
+      if (answeredCurrent) return;
+      answeredCurrent = true;
+      const allBtns = document.querySelectorAll('.opt-btn');
+      allBtns.forEach(b => {
+        b.disabled = true;
+        if (b.textContent === q.answer) b.classList.add('correct');
+      });
+
+      const isOk = chosen === q.answer;
+      if (!isOk) btnClicked.classList.add('wrong');
+      finalizeAnswer(isOk, q.explain);
+    }
+
+    function checkInputAnswer(q) {
+      if (answeredCurrent) return;
+      const inp = document.getElementById('userAnsInput');
+      if (!inp) return;
+      const raw = inp.value.trim().toUpperCase().replace(/\s+/g, '').replace(',', '.');
+      if (!raw) return;
+
+      answeredCurrent = true;
+      inp.disabled = true;
+      const expected = q.answer.toUpperCase().replace(/\s+/g, '');
+      const isOk = raw === expected;
+      finalizeAnswer(isOk, q.explain);
+    }
+
+    function checkMatchstickAnswer(q) {
+      if (answeredCurrent || matchBuilt.length === 0) return;
+      answeredCurrent = true;
+      const userRoman = matchBuilt.join('');
+      const isOk = userRoman === q.answer;
+      finalizeAnswer(isOk, `Bạn đã xếp: <strong>${userRoman}</strong>. ${q.explain}`);
+    }
+
+    function finalizeAnswer(isOk, explainText) {
+      const fb = document.getElementById('feedbackBox');
+      if (isOk) {
+        score += 10;
+        streak += 1;
+        fb.className = 'feedback-box ok';
+        fb.innerHTML = `✅ <strong>Chính xác! (+10 điểm)</strong><br>${explainText}`;
+      } else {
+        streak = 0;
+        fb.className = 'feedback-box err';
+        fb.innerHTML = `❌ <strong>Chưa đúng!</strong><br>${explainText}`;
+      }
+      document.getElementById('doneCountVal').textContent = `${currentQIdx + 1} / 10`;
+      document.getElementById('scoreVal').textContent = score;
+      document.getElementById('streakVal').textContent = `${streak} 🔥`;
+      document.getElementById('nextQBtn').disabled = false;
+    }
+
+    function nextQuestion() {
+      currentQIdx++;
+      renderQuestion();
+    }
+
+    function renderSummary() {
+      document.getElementById('qProgressBadge').textContent = 'Hoàn thành 10 / 10';
+      document.getElementById('qLevelText').textContent = '🏆 Tổng kết lượt chơi';
+      document.getElementById('nextQBtn').disabled = true;
+
+      let msg = 'Em đã nắm rất vững cách ghi số tự nhiên và số La Mã!';
+      if (score < 60) msg = 'Em hãy ôn lại bảng chữ số La Mã (I, V, X, IV, IX) và cách phân biệt "số trăm" với "chữ số hàng trăm" nhé!';
+      else if (score < 90) msg = 'Kết quả khá tốt! Cố gắng đạt tối đa 100 điểm ở lượt sau nhé!';
+
+      document.getElementById('qText').textContent = `🎉 Chúc mừng em đã hoàn thành bài luyện tập!`;
+      document.getElementById('qInteractiveZone').innerHTML = `
+        <div style="font-size:48px; font-weight:800; color:var(--teal);">${score} / 100 điểm</div>
+        <p style="font-size:18px; color:var(--sub); max-width:520px;">${msg}</p>
+        <button class="btn btn-primary" style="padding:12px 28px; font-size:18px;" onclick="initPractice()">🔄 Chơi lại bộ câu hỏi mới</button>
+      `;
+    }
+
+    /* ==========================================================
+       6. CHUYỂN TAB & TOÀN MÀN HÌNH
+       ========================================================== */
+    function switchTab(tab) {
+      const isExplore = tab === 'explore';
+      document.getElementById('tabExploreBtn').classList.toggle('active', isExplore);
+      document.getElementById('tabPracticeBtn').classList.toggle('active', !isExplore);
+
+      document.getElementById('exploreSvg').classList.toggle('hidden', !isExplore);
+      document.getElementById('exploreControls').classList.toggle('hidden', !isExplore);
+
+      document.getElementById('practiceStage').classList.toggle('hidden', isExplore);
+      document.getElementById('practiceControls').classList.toggle('hidden', isExplore);
+
+      document.getElementById('instrBar').textContent = isExplore
+        ? '✋ Kéo kim giờ trên mặt đồng hồ La Mã, trượt thanh chọn số (1–30) hoặc nhập số tự nhiên để khám phá cấu tạo thập phân!'
+        : '🎯 Hoàn thành 10 câu hỏi trắc nghiệm, điền số và xếp que diêm La Mã để rèn luyện kỹ năng!';
+
+      if (!isExplore && questions.length === 0) {
+        initPractice();
+      }
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    // Khởi chạy ban đầu
+    setClockHour(3, false);
+    updateRomanDisplay(14);
+    updateDecimalDisplay(3205);
+  </script>
+</body>
+</html>
