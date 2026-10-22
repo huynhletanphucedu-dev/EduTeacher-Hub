@@ -1,0 +1,16 @@
+{
+  "name": "EduTeacher Hub – Trợ lý giáo viên",
+  "short_name": "EduTeacher Hub",
+  "description": "Bộ công cụ hỗ trợ giáo viên: sổ điểm, chủ nhiệm, mô phỏng, trò chơi học tập, công cụ PDF… Dữ liệu lưu trên máy, dùng được khi mất mạng.",
+  "lang": "vi",
+  "start_url": "dashboard.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#3b7de9",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

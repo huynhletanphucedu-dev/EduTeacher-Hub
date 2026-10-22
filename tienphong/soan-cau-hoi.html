@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quản Lý Game Toán 6 – EduTeacher Hub</title>
+<style>
+:root{--bg:#f1f5f9;--card:#fff;--card2:#f8fafc;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;--blue:#3b7de9;--orange:#ea7a1f;--shadow:0 4px 20px rgba(15,23,42,.07)}
+body.dark{--bg:#0f172a;--card:#1e293b;--card2:#162032;--text:#e2e8f0;--muted:#94a3b8;--border:#334155}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:14px 24px;background:var(--card);border-bottom:1px solid var(--border)}
+.top h1{font-size:1.15rem}.top a{color:var(--blue);text-decoration:none;font-weight:600;font-size:.85rem}
+.wrap{max-width:1100px;margin:0 auto;padding:18px;display:flex;flex-direction:column;gap:16px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tab{padding:9px 16px;border-radius:10px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-weight:600}
+.tab.on{background:var(--orange);border-color:var(--orange);color:#fff}
+.panel{display:none;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:var(--shadow)}
+.panel.on{display:block}
+h2{font-size:1.1rem;margin-bottom:6px}
+.hint{color:var(--muted);font-size:.84rem;line-height:1.55}
+textarea{width:100%;min-height:220px;border:1px solid var(--border);background:var(--card2);border-radius:10px;padding:10px 12px;line-height:1.55;font-size:.88rem;resize:vertical;outline:none;margin-top:10px}
+textarea:focus{border-color:var(--orange)}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center}
+.btn{border:none;border-radius:9px;padding:10px 16px;font-weight:700;cursor:pointer;background:var(--orange);color:#fff}
+.btn.l{background:var(--card2);color:var(--text);border:1px solid var(--border);font-weight:600}
+.msg{margin-top:10px;padding:9px 12px;border-radius:9px;display:none}
+.msg.ok{display:block;background:rgba(16,185,129,.12);color:#047857}.msg.err{display:block;background:rgba(239,68,68,.12);color:#b91c1c}
+table{width:100%;border-collapse:collapse;margin-top:12px;font-size:.84rem}
+th,td{border-bottom:1px solid var(--border);padding:7px 8px;text-align:left;vertical-align:top}
+th{font-size:.72rem;text-transform:uppercase;color:var(--muted)}
+td.ok{color:#047857;font-weight:600}td.no{color:#b91c1c}
+.bad{background:rgba(239,68,68,.08)}
+.ch{margin-top:14px}.ch b{display:block;margin-bottom:6px;font-size:.9rem}
+.ls{display:flex;flex-wrap:wrap;gap:6px}
+.ls label{display:flex;gap:6px;align-items:center;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--card2);cursor:pointer;font-size:.82rem}
+.ls label small{color:var(--muted)}
+.bar{height:8px;background:var(--border);border-radius:6px;overflow:hidden;min-width:80px}.bar i{display:block;height:100%;background:#ef4444}
+code{background:var(--card2);border:1px solid var(--border);border-radius:5px;padding:1px 5px;font-size:.82rem}
+</style>
+</head>
+<body>
+<div class="top"><h1>🐱 Quản lý Game Toán 6 (Tiên phong AI)</h1><a href="../dashboard.html">← Về trang chính</a></div>
+<div class="wrap">
+  <div class="tabs"><button class="tab on" data-p="soan">📝 Câu hỏi của thầy/cô</button><button class="tab" data-p="bai">📚 Chọn bài hiển thị</button><button class="tab" data-p="tk">📊 Câu học sinh hay sai</button></div>
+
+  <section class="panel on" id="p-soan">
+    <h2>📝 Soạn câu hỏi trắc nghiệm riêng</h2>
+    <p class="hint">Mỗi dòng 1 câu theo thứ tự: <code>Câu hỏi | Đáp án đúng | Đáp án sai 1 | Đáp án sai 2 | Đáp án sai 3 | Giải thích (không bắt buộc)</code>.<br>
+    Có thể <b>dán thẳng từ Excel</b> (mỗi cột một ý). Cần ít nhất 1 đáp án sai. Sau khi lưu, trong mỗi trò chơi sẽ có mục <b>“📝 Câu hỏi của thầy/cô”</b> để học sinh chọn.</p>
+    <textarea id="q" placeholder="2³ bằng bao nhiêu? | 8 | 6 | 9 | 5 | 2³ = 2·2·2 = 8&#10;Số nào là số nguyên tố? | 13 | 15 | 21 | 27"></textarea>
+    <div class="row">
+      <button class="btn" id="save">💾 Lưu câu hỏi</button>
+      <button class="btn l" id="sample">✨ Câu mẫu</button>
+      <button class="btn l" id="export">⬇️ Xuất file</button>
+      <button class="btn l" id="import">⬆️ Nhập file</button><input type="file" id="file" accept=".json,.txt,.csv" hidden>
+      <span class="hint" id="cnt"></span>
+    </div>
+    <div class="msg" id="m1"></div>
+    <table id="prev"></table>
+  </section>
+
+  <section class="panel" id="p-bai">
+    <h2>📚 Chọn các bài hiển thị trong trò chơi</h2>
+    <p class="hint">Ngân hàng có sẵn câu hỏi theo từng bài Toán 6 – Kết nối tri thức. Bỏ chọn những bài lớp chưa học để học sinh không thấy. Không chọn bài nào = hiện tất cả.</p>
+    <div class="row"><button class="btn l" id="all">Chọn tất cả</button><button class="btn l" id="none">Bỏ chọn tất cả</button><button class="btn" id="save2">💾 Lưu</button></div>
+    <div class="msg" id="m2"></div>
+    <div id="chs"></div>
+  </section>
+
+  <section class="panel" id="p-tk">
+    <h2>📊 Những câu học sinh hay chọn sai</h2>
+    <p class="hint">Thống kê trên <b>máy này</b> (máy chiếu / máy phòng tin mà học sinh chơi). Dùng để biết phần kiến thức nào cần dạy lại.</p>
+    <div class="row"><button class="btn l" id="clr">🗑️ Xóa thống kê</button></div>
+    <table id="tk"></table>
+  </section>
+</div>
+<script type="module">
+import { SUBJECTS } from "./js/lessons.js";
+import { BANK_T6 } from "./js/bank-toan6.js";
+try{if(localStorage.getItem('etv1_theme')==='dark')document.body.classList.add('dark')}catch(e){}
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const get=(k,d)=>{try{const v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}};
+const set=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+const msg=(id,t,h)=>{const m=$(id);m.className='msg '+t;m.innerHTML=h;setTimeout(()=>m.className='msg',4000)};
+$$('.tab').forEach(t=>t.onclick=()=>{$$('.tab').forEach(x=>x.classList.toggle('on',x===t));$$('.panel').forEach(p=>p.classList.toggle('on',p.id==='p-'+t.dataset.p));if(t.dataset.p==='tk')renderTK()});
+
+/* ---- câu hỏi tự soạn ---- */
+function parse(txt){
+  return txt.split('\n').map(l=>l.trim()).filter(Boolean).map((l,i)=>{
+    const p=l.split(/\t|\s*\|\s*/).map(s=>s.trim());
+    const q=p[0],a=p[1],w=p.slice(2,5).filter(Boolean),g=p[5]||'';
+    return {line:i+1,q,a,w,g,ok:!!(q&&a&&w.length)};
+  });
+}
+const toText=list=>list.map(x=>[x.q,x.a,...x.w,x.g||''].join(' | ').replace(/\s\|\s$/,'')).join('\n');
+function preview(){
+  const rows=parse($('#q').value),ok=rows.filter(r=>r.ok).length;
+  $('#cnt').textContent=rows.length?`${ok} câu hợp lệ${rows.length>ok?` · ${rows.length-ok} dòng thiếu thông tin`:''}`:'';
+  $('#prev').innerHTML=rows.length?'<tr><th>#</th><th>Câu hỏi</th><th>Đáp án đúng</th><th>Đáp án sai</th><th>Giải thích</th></tr>'+rows.map(r=>`<tr class="${r.ok?'':'bad'}"><td>${r.line}</td><td>${esc(r.q)}</td><td class="ok">${esc(r.a)}</td><td class="no">${r.w.map(esc).join('<br>')||'⚠️ thiếu'}</td><td>${esc(r.g)}</td></tr>`).join(''):'';
+}
+$('#q').value=toText(get('tp_custom_q',[]));preview();
+$('#q').addEventListener('input',preview);
+$('#save').onclick=()=>{const list=parse($('#q').value).filter(r=>r.ok).map(({q,a,w,g})=>({q,a,w,g}));set('tp_custom_q',list);msg('#m1','ok',`✅ Đã lưu <b>${list.length}</b> câu hỏi. Mở trò chơi bất kỳ → chọn “📝 Câu hỏi của thầy/cô”.`)};
+$('#sample').onclick=()=>{$('#q').value=($('#q').value.trim()?$('#q').value.trim()+'\n':'')+'2³ bằng bao nhiêu? | 8 | 6 | 9 | 5 | 2³ = 2·2·2 = 8\nSố nào là số nguyên tố? | 13 | 15 | 21 | 27 | 13 chỉ có hai ước là 1 và 13\nƯCLN(8, 12) = ? | 4 | 2 | 24 | 96\nPhân số nào bằng 1/2? | 3/6 | 2/3 | 1/3 | 2/5';preview()};
+$('#export').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(parse($('#q').value).filter(r=>r.ok).map(({q,a,w,g})=>({q,a,w,g})),null,1)],{type:'application/json'}));a.download='cau_hoi_game_toan6.json';a.click()};
+$('#import').onclick=()=>$('#file').click();
+$('#file').onchange=async e=>{const f=e.target.files[0];if(!f)return;const t=await f.text();try{const j=JSON.parse(t);$('#q').value=toText(j)}catch(_){$('#q').value=t.replace(/,(?=(?:[^"]*"[^"]*")*[^"]*$)/g,' | ').replace(/"/g,'')}preview();e.target.value=''};
+
+/* ---- chọn bài ---- */
+const LS=SUBJECTS[0].bai;
+function renderBai(){
+  const on=new Set(get('tp_mo_bai',[]));const groups={};
+  LS.forEach(l=>{(groups[l.chuong]=groups[l.chuong]||[]).push(l)});
+  $('#chs').innerHTML=Object.entries(groups).map(([c,ls])=>`<div class="ch"><b>${esc(c)}</b><div class="ls">${ls.map(l=>`<label><input type="checkbox" value="${l.bai}" ${on.has(l.bai)?'checked':''} ${(BANK_T6[l.bai]||[]).length?'':'disabled'}>${esc(l.ten)} <small>(${(BANK_T6[l.bai]||[]).length} câu)</small></label>`).join('')}</div></div>`).join('');
+}
+renderBai();
+$('#all').onclick=()=>$$('#chs input:not(:disabled)').forEach(c=>c.checked=true);
+$('#none').onclick=()=>$$('#chs input').forEach(c=>c.checked=false);
+$('#save2').onclick=()=>{const v=$$('#chs input:checked').map(c=>+c.value);set('tp_mo_bai',v);msg('#m2','ok',v.length?`✅ Học sinh sẽ thấy <b>${v.length}</b> bài.`:'✅ Đã lưu: hiện tất cả các bài.')};
+
+/* ---- thống kê ---- */
+function renderTK(){
+  const st=Object.values(get('tp_stats',{})).filter(e=>e.sai>0).sort((a,b)=>b.sai-a.sai).slice(0,40);
+  const name=b=>b===0?'Câu GV':(LS.find(l=>l.bai===b)||{}).ten||'';
+  $('#tk').innerHTML=st.length?'<tr><th>Câu hỏi</th><th>Bài</th><th>Sai</th><th>Tự sửa đúng</th><th>Đúng ngay</th><th>Tỉ lệ sai</th></tr>'+st.map(e=>{const tot=e.sai+e.dung,r=tot?Math.round(e.sai/tot*100):0;return`<tr><td>${esc(e.q)}</td><td>${esc(name(e.bai))}</td><td class="no">${e.sai}</td><td>${e.sua||0}</td><td class="ok">${e.dung}</td><td><div class="bar"><i style="width:${r}%"></i></div>${r}%</td></tr>`}).join(''):'<tr><td class="hint">Chưa có dữ liệu. Thống kê sẽ có sau khi học sinh chơi trên máy này.</td></tr>';
+}
+$('#clr').onclick=()=>{if(confirm('Xóa toàn bộ thống kê câu sai trên máy này?')){localStorage.removeItem('tp_stats');renderTK()}};
+</script>
+</body>
+</html>

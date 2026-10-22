@@ -5,3 +5,9 @@ build/
 .env.local
 .vscode/
 .DS_Store
+_to_delete/
+*.tmp.*
+
+# Hồ sơ dự thi (không đưa lên GitHub)
+*.docx
+*.doc

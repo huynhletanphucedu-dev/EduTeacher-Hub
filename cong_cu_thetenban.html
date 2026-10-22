@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Thẻ Tên Để Bàn – EduTeacher Hub</title>
+<style>
+@font-face{font-family:'BVP';src:url('lib/BeVietnamPro-Regular.ttf') format('truetype');font-weight:400}
+@font-face{font-family:'BVP';src:url('lib/BeVietnamPro-Bold.ttf') format('truetype');font-weight:700}
+:root{--bg:#f1f5f9;--card:#fff;--card2:#f8fafc;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;--blue:#3b7de9;--shadow:0 4px 20px rgba(15,23,42,.07)}
+body.dark{--bg:#0f172a;--card:#1e293b;--card2:#162032;--text:#e2e8f0;--muted:#94a3b8;--border:#334155}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:14px 24px;background:var(--card);border-bottom:1px solid var(--border)}
+.top h1{font-size:1.15rem}.top a{color:var(--blue);text-decoration:none;font-weight:600;font-size:.85rem}
+.wrap{display:flex;gap:18px;padding:18px;max-width:1500px;margin:0 auto;align-items:flex-start}
+.ctl{width:380px;flex-shrink:0;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:14px;position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+.sec{display:flex;flex-direction:column;gap:6px}
+.sec>label:not(.ck),.lb{font-size:.76rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+textarea,input[type=text],select{border:1px solid var(--border);background:var(--card2);border-radius:8px;padding:8px 10px;outline:none;width:100%}
+textarea:focus,input:focus,select:focus{border-color:var(--blue)}
+textarea{resize:vertical;min-height:140px;line-height:1.5;font-size:.88rem}
+.hint{font-size:.76rem;color:var(--muted);line-height:1.5}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{padding:6px 10px;border-radius:20px;border:1px solid var(--border);background:var(--card2);cursor:pointer;font-size:.8rem}
+.chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.sw{width:26px;height:26px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--border);cursor:pointer}
+.sw.on{box-shadow:0 0 0 2px var(--text)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ck{display:flex;align-items:center;gap:8px;font-size:.86rem;cursor:pointer}
+.btn{border:none;border-radius:9px;padding:11px 16px;font-weight:700;cursor:pointer;background:var(--blue);color:#fff;font-size:.95rem}
+.btn.l{background:var(--card2);color:var(--text);border:1px solid var(--border);font-size:.82rem;padding:7px 11px;font-weight:600}
+.logo-box{display:flex;align-items:center;gap:10px}
+.logo-box img{height:44px;max-width:80px;object-fit:contain;background:#fff;border:1px solid var(--border);border-radius:6px}
+.prev{flex:1;min-width:0}
+.prev-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+.prev-bar b{font-size:.95rem}
+#pages{display:flex;flex-direction:column;gap:18px;align-items:center;zoom:.5}
+.count{color:var(--muted);font-size:.85rem}
+
+/* ═══ trang in ═══ */
+.sheet{background:#fff;color:#111;box-shadow:0 6px 24px rgba(0,0,0,.18);position:relative;overflow:hidden;display:grid;font-family:'BVP','Segoe UI',Arial,sans-serif}
+.sheet.land{width:297mm;height:210mm}
+.sheet.port{width:210mm;height:297mm}
+.tent{position:relative;display:grid;grid-template-rows:1fr 1fr}
+.face{position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;--c:#1d4ed8}
+.face.flip{transform:rotate(180deg)}
+.fold{position:absolute;left:0;right:0;top:50%;border-top:.3mm dashed #9ca3af;z-index:3}
+.fold span{position:absolute;right:4mm;top:-3mm;font-size:7pt;color:#9ca3af;background:#fff;padding:0 2mm;font-family:Arial}
+.cut{outline:.2mm dashed #cbd5e1}
+.in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6% 7%;gap:2.5%}
+.ev{font-weight:700;color:var(--c);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.nm{font-weight:700;white-space:nowrap;line-height:1.15;max-width:100%;color:#111}
+.ro{color:#374151;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.un{color:#6b7280;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.lg{object-fit:contain}
+/* kiểu 1: thanh ngang */
+.st-bar .face::before,.st-bar .face::after{content:'';position:absolute;left:0;right:0;height:7%;background:var(--c)}
+.st-bar .face::before{top:0}.st-bar .face::after{bottom:0;height:3%;opacity:.55}
+.st-bar .in{padding-top:9%}
+/* kiểu 2: khung viền */
+.st-frame .face::before{content:'';position:absolute;inset:5%;border:1.2mm double var(--c);border-radius:2mm}
+.st-frame .nm{color:var(--c)}
+.st-frame .in{padding:8% 10%}
+/* kiểu 3: dải bên trái + logo */
+.st-side .face::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4%;background:var(--c)}
+.st-side .in{padding-left:10%}
+.st-side .nm{color:var(--c)}
+/* kiểu 4: tối giản */
+.st-min .nm{color:#111}.st-min .ev{color:#555}
+.st-min .line{width:30%;height:.5mm;background:var(--c);margin:1.5% 0}
+/* kiểu 5: sang trọng */
+.st-lux .face{background:linear-gradient(135deg,var(--c) 0%,color-mix(in srgb,var(--c) 70%,#000) 100%)}
+.st-lux .face::before{content:'';position:absolute;inset:4%;border:.5mm solid rgba(255,215,130,.85);border-radius:1.5mm}
+.st-lux .nm{color:#fff}.st-lux .ev{color:#fcd34d}.st-lux .ro{color:#fde68a}.st-lux .un{color:rgba(255,255,255,.8)}
+.st-lux .lg{background:#fff;border-radius:50%;padding:1%}
+.flatcell{position:relative;overflow:hidden;display:flex}
+.flatcell .face{flex:1}
+
+@media print{
+  body{background:#fff}
+  .top,.ctl,.prev-bar{display:none!important}
+  .wrap{display:block;padding:0;margin:0;max-width:none}
+  #pages{zoom:1!important;gap:0;display:block}
+  .sheet{box-shadow:none;page-break-after:always;break-after:page}
+  .sheet:last-child{page-break-after:auto;break-after:auto}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+@media(max-width:900px){.wrap{flex-direction:column}.ctl{width:100%;position:static;max-height:none}#pages{zoom:.3}}
+</style>
+<style id="page-style">@page{size:A4 landscape;margin:0}</style>
+</head>
+<body>
+<div class="top">
+  <h1>🪧 Thẻ Tên Để Bàn</h1>
+  <a href="dashboard.html">← Về trang chính</a>
+</div>
+<div class="wrap">
+  <aside class="ctl">
+    <div class="sec">
+      <label>1. Danh sách (mỗi dòng 1 người)</label>
+      <textarea id="names" placeholder="Họ tên | Chức vụ | Đơn vị&#10;Nguyễn Văn An | Hiệu trưởng | THCS Long Thọ&#10;Trần Thị Bình | Tổ trưởng Toán – Tin"></textarea>
+      <div class="hint">Có thể <b>dán trực tiếp từ Excel</b> (cột Họ tên – Chức vụ – Đơn vị), hoặc ngăn cách bằng dấu <b>|</b>. Chỉ cần họ tên cũng được.</div>
+      <div class="chips">
+        <span class="chip" id="from-cn">📋 Lấy DS học sinh lớp CN</span>
+        <span class="chip" id="from-ph">👪 Thẻ họp phụ huynh</span>
+        <span class="chip" id="sample">✨ Dữ liệu mẫu</span>
+        <span class="chip" id="clear">🗑️ Xóa</span>
+      </div>
+    </div>
+    <div class="sec">
+      <label>2. Dòng tiêu đề sự kiện (tùy chọn)</label>
+      <input type="text" id="event" placeholder="VD: HỘI NGHỊ VIÊN CHỨC NĂM HỌC 2026 – 2027">
+      <input type="text" id="role-def" placeholder="Chức vụ chung nếu danh sách không có (VD: Đại biểu)">
+    </div>
+    <div class="sec">
+      <label>3. Khổ thẻ</label>
+      <select id="format">
+        <option value="tent1">Lớn – 1 thẻ / tờ A4, gập đôi (bàn đại biểu)</option>
+        <option value="tent2" selected>Vừa – 2 thẻ / tờ A4, gập đôi (hội nghị, họp PH)</option>
+        <option value="tent3">Nhỏ – 4 thẻ / tờ A4, gập đôi (bàn học sinh)</option>
+        <option value="flat8">Thẻ dán bàn – 8 thẻ / tờ A4 (không gập)</option>
+      </select>
+      <label class="ck"><input type="checkbox" id="both" checked> In tên cả 2 mặt (ngồi đối diện cũng đọc được)</label>
+      <label class="ck"><input type="checkbox" id="foldline" checked> Hiện đường gập / đường cắt</label>
+    </div>
+    <div class="sec">
+      <label>4. Mẫu trình bày</label>
+      <div class="chips" id="styles">
+        <span class="chip on" data-s="bar">Thanh ngang</span><span class="chip" data-s="frame">Khung viền</span><span class="chip" data-s="side">Dải bên</span><span class="chip" data-s="min">Tối giản</span><span class="chip" data-s="lux">Sang trọng</span>
+      </div>
+      <div class="chips" id="colors" style="align-items:center">
+        <span class="sw on" data-c="#1d4ed8" style="background:#1d4ed8"></span><span class="sw" data-c="#b91c1c" style="background:#b91c1c"></span><span class="sw" data-c="#047857" style="background:#047857"></span><span class="sw" data-c="#7c3aed" style="background:#7c3aed"></span><span class="sw" data-c="#c2410c" style="background:#c2410c"></span><span class="sw" data-c="#0f766e" style="background:#0f766e"></span><span class="sw" data-c="#111827" style="background:#111827"></span>
+        <input type="color" id="color" value="#1d4ed8" title="Màu tùy chọn" style="width:34px;height:28px;border:none;background:none;cursor:pointer">
+      </div>
+      <div class="two">
+        <label class="ck"><input type="checkbox" id="upper" checked> Tên IN HOA</label>
+        <label class="ck"><input type="checkbox" id="showunit" checked> Hiện đơn vị</label>
+      </div>
+    </div>
+    <div class="sec">
+      <label>5. Logo trường (tùy chọn)</label>
+      <div class="logo-box"><img id="logo-img" alt="" hidden><button class="btn l" id="logo-btn">🖼️ Chọn logo</button><button class="btn l" id="logo-del" hidden>Bỏ logo</button><input type="file" id="logo-file" accept="image/*" hidden></div>
+    </div>
+    <button class="btn" id="print">🖨️ In / Lưu PDF</button>
+    <div class="hint">💡 Trong hộp thoại in: chọn khổ <b>A4</b>, lề <b>Không (None)</b>, bật <b>Đồ họa nền (Background graphics)</b>. Muốn lưu file thì chọn máy in “Lưu dưới dạng PDF”.</div>
+  </aside>
+  <section class="prev">
+    <div class="prev-bar"><b>Xem trước</b><span class="count" id="count"></span>
+      <span><button class="btn l" data-z="-1">－</button> <button class="btn l" data-z="1">＋</button></span></div>
+    <div id="pages"></div>
+  </section>
+</div>
+<script>
+'use strict';
+try{if(localStorage.getItem('etv1_theme')==='dark')document.body.classList.add('dark')}catch(e){}
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const KEY='ttb_settings';
+const S={style:'bar',color:'#1d4ed8',logo:'',zoom:.5};
+const FMT={
+  tent1:{orient:'land',cols:1,rows:1,tent:true,nm:72,ev:15,ro:24,un:16,lg:22},
+  tent2:{orient:'port',cols:1,rows:2,tent:true,nm:46,ev:11,ro:16,un:12,lg:15},
+  tent3:{orient:'land',cols:2,rows:2,tent:true,nm:30,ev:8,ro:11,un:9,lg:10},
+  flat8:{orient:'port',cols:2,rows:4,tent:false,nm:28,ev:8,ro:11,un:9,lg:11}
+};
+function parse(){
+  const def=$('#role-def').value.trim();
+  return $('#names').value.split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{
+    const p=l.split(/\t|\s*\|\s*|\s*;\s*/).map(s=>s.trim());
+    return {name:p[0]||'',role:p[1]||def,unit:p[2]||'',ev:p[3]||''};
+  }).filter(x=>x.name);
+}
+function faceHTML(p,f,flip){
+  const ev=p.ev||$('#event').value.trim(),up=$('#upper').checked,unit=$('#showunit').checked?p.unit:'';
+  const logo=S.logo?`<img class="lg" src="${S.logo}" style="height:${f.lg}mm;max-width:40%">`:'';
+  return `<div class="face${flip?' flip':''}" style="--c:${S.color}"><div class="in">
+    ${logo}${ev?`<div class="ev" style="font-size:${f.ev}pt">${esc(ev)}</div>`:''}
+    <div class="nm" data-max="${f.nm}" style="font-size:${f.nm}pt">${esc(up?p.name.toLocaleUpperCase('vi'):p.name)}</div>
+    ${S.style==='min'?'<div class="line"></div>':''}
+    ${p.role?`<div class="ro" style="font-size:${f.ro}pt">${esc(p.role)}</div>`:''}
+    ${unit?`<div class="un" style="font-size:${f.un}pt">${esc(unit)}</div>`:''}
+  </div></div>`;
+}
+function render(){
+  const list=parse(),f=FMT[$('#format').value],per=f.cols*f.rows,both=$('#both').checked,fl=$('#foldline').checked;
+  $('#page-style').textContent=`@page{size:A4 ${f.orient==='land'?'landscape':'portrait'};margin:0}`;
+  const pages=[];
+  const items=list.length?list:[{name:'Họ và tên',role:'Chức vụ',unit:'Đơn vị'}];
+  for(let i=0;i<items.length;i+=per){
+    const cells=items.slice(i,i+per).map(p=>f.tent
+      ?`<div class="tent${fl?' cut':''}">${both?faceHTML(p,f,true):'<div class="face"></div>'}${faceHTML(p,f,false)}${fl?'<div class="fold"><span>✂ gập theo đường này</span></div>':''}</div>`
+      :`<div class="flatcell${fl?' cut':''}">${faceHTML(p,f,false)}</div>`).join('');
+    pages.push(`<div class="sheet ${f.orient} st-${S.style}" style="grid-template-columns:repeat(${f.cols},1fr);grid-template-rows:repeat(${f.rows},1fr)">${cells}</div>`);
+  }
+  $('#pages').innerHTML=pages.join('');$('#pages').style.zoom=S.zoom;
+  $('#count').textContent=list.length?`${list.length} thẻ · ${pages.length} tờ A4`:'Nhập danh sách để tạo thẻ';
+  fit();save();
+}
+function fit(){
+  // thu nhỏ chữ cho vừa bề ngang thẻ
+  requestAnimationFrame(()=>$$('.nm').forEach(el=>{
+    let s=+el.dataset.max;el.style.fontSize=s+'pt';
+    while(el.scrollWidth>el.clientWidth+1&&s>8){s-=1;el.style.fontSize=s+'pt';}
+  }));
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({style:S.style,color:S.color,logo:S.logo,zoom:S.zoom,names:$('#names').value,event:$('#event').value,roleDef:$('#role-def').value,format:$('#format').value,both:$('#both').checked,fold:$('#foldline').checked,upper:$('#upper').checked,unit:$('#showunit').checked}))}catch(e){}}
+function load(){
+  let d={};try{d=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
+  Object.assign(S,{style:d.style||S.style,color:d.color||S.color,logo:d.logo||'',zoom:d.zoom||S.zoom});
+  if(d.names!=null)$('#names').value=d.names; if(d.event!=null)$('#event').value=d.event; if(d.roleDef!=null)$('#role-def').value=d.roleDef;
+  if(d.format)$('#format').value=d.format; ['both','fold','upper','unit'].forEach(k=>{if(d[k]!=null)$('#'+({both:'both',fold:'foldline',upper:'upper',unit:'showunit'}[k])).checked=d[k]});
+  if(!S.logo){try{const l=localStorage.getItem('pdf_logo');if(l)S.logo=l}catch(e){}}
+  syncUI();
+}
+function syncUI(){
+  $$('#styles .chip').forEach(c=>c.classList.toggle('on',c.dataset.s===S.style));
+  $$('#colors .sw').forEach(c=>c.classList.toggle('on',c.dataset.c===S.color));$('#color').value=S.color;
+  $('#logo-img').hidden=!S.logo;$('#logo-del').hidden=!S.logo;if(S.logo)$('#logo-img').src=S.logo;
+}
+$$('#styles .chip').forEach(c=>c.onclick=()=>{S.style=c.dataset.s;syncUI();render()});
+$$('#colors .sw').forEach(c=>c.onclick=()=>{S.color=c.dataset.c;syncUI();render()});
+$('#color').oninput=e=>{S.color=e.target.value;syncUI();render()};
+['names','event','role-def'].forEach(id=>$('#'+id).addEventListener('input',render));
+['format','both','foldline','upper','showunit'].forEach(id=>$('#'+id).addEventListener('change',render));
+$$('[data-z]').forEach(b=>b.onclick=()=>{S.zoom=Math.min(1,Math.max(.2,+(S.zoom+b.dataset.z*.1).toFixed(2)));$('#pages').style.zoom=S.zoom;save()});
+$('#print').onclick=()=>{fit();setTimeout(()=>print(),150)};
+$('#logo-btn').onclick=()=>$('#logo-file').click();
+$('#logo-del').onclick=()=>{S.logo='';syncUI();render()};
+$('#logo-file').onchange=e=>{const f=e.target.files[0];if(!f)return;const img=new Image();img.onload=()=>{const k=Math.min(1,600/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=img.width*k;c.height=img.height*k;c.getContext('2d').drawImage(img,0,0,c.width,c.height);S.logo=c.toDataURL('image/png');syncUI();render()};img.src=URL.createObjectURL(f)};
+function cnStudents(){try{return(JSON.parse(localStorage.getItem('cn_students')||'[]')||[]).filter(s=>s&&s.hoTen).sort((a,b)=>(+a.stt||0)-(+b.stt||0))}catch(e){return[]}}
+function cnClass(){try{const s=JSON.parse(localStorage.getItem('etv1_settings')||'{}');return s.cnClass||s.lop||s.className||''}catch(e){return''}}
+$('#from-cn').onclick=()=>{const st=cnStudents();if(!st.length){alert('Chưa có danh sách học sinh trong mục Chủ Nhiệm → Danh Sách HS.');return}
+  const lop=cnClass();$('#names').value=st.map(s=>s.hoTen+' | '+(lop?'Lớp '+lop:'Học sinh')).join('\n');$('#format').value='tent3';render()};
+$('#from-ph').onclick=()=>{const st=cnStudents();if(!st.length){alert('Chưa có danh sách học sinh trong mục Chủ Nhiệm → Danh Sách HS.');return}
+  $('#names').value=st.map(s=>'PHHS em '+s.hoTen).join('\n');$('#upper').checked=false;if(!$('#event').value)$('#event').value='Họp Cha mẹ học sinh';$('#format').value='tent2';render()};
+$('#sample').onclick=()=>{$('#names').value='Nguyễn Văn An | Hiệu trưởng | Trường THCS Long Thọ\nTrần Thị Bích Ngọc | Phó Hiệu trưởng | Trường THCS Long Thọ\nLê Hoàng Phúc | Tổ trưởng tổ Toán – Tin | Trường THCS Long Thọ\nPhạm Minh Châu | Đại biểu | Ban đại diện CMHS';if(!$('#event').value)$('#event').value='Hội nghị viên chức năm học 2026 – 2027';render()};
+$('#clear').onclick=()=>{if(confirm('Xóa toàn bộ danh sách?')){$('#names').value='';render()}};
+load();
+document.fonts.ready.then(render);render();
+</script>
+</body>
+</html>

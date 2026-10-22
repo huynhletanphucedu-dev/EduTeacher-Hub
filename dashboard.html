@@ -4,6 +4,12 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>EduTeacher Hub – ThS. Huỳnh Lê Tấn Phúc</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#3b7de9">
+<link rel="icon" type="image/png" href="icons/favicon-48.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="EduTeacher Hub">
 <style>
 :root{
   --sb-w:252px;
@@ -942,7 +948,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
 .gt-copy-ok{color:#10b981;font-size:.8rem;margin-top:6px;display:none;text-align:center;font-weight:700;}
 
 </style>
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script src="lib/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -1123,6 +1129,9 @@ body.dark .sd-table tr:hover td{background:#162032;}
           <p style="margin:8px 0 0;color:#64748b;font-size:.88rem;" id="welcomeDate"></p>
         </div>
 
+        <!-- Tìm kiếm nhanh -->
+        <button type="button" class="ehs-hero" id="ehs-hero">🔍 <span>Tìm nhanh công cụ, mô phỏng, trò chơi…</span><kbd>Ctrl K</kbd></button>
+
         <!-- Quick access cards -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;max-width:720px;width:100%;margin-bottom:36px;">
           <div onclick="showPage('gd-sodiem',null,'Giảng Dạy','Sổ Điểm Cá Nhân')" style="background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.25);border-radius:14px;padding:18px 12px;cursor:pointer;transition:.2s;" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform=''">
@@ -1156,6 +1165,12 @@ body.dark .sd-table tr:hover td{background:#162032;}
             <div style="font-size:.73rem;color:#64748b;margin-top:3px;">Điểm danh, liên lạc</div>
           </div>
         </div>
+
+        <!-- Yêu thích & gần đây -->
+        <div id="ehs-quick"></div>
+
+        <!-- Cài như ứng dụng / dùng offline -->
+        <div id="ehp-box"></div>
 
         <!-- Stats / quote -->
         <div style="color:#475569;font-size:.82rem;max-width:400px;line-height:1.6;">
@@ -2341,7 +2356,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
           </div>
 
           <!-- 05 Xếp lịch dạy -->
-          <div class="tool-card" onclick="window.open('cong_cu_lichdạy.html','_blank')">
+          <div class="tool-card" onclick="window.open('cong_cu_lichday.html','_blank')">
             <div class="tool-card-title">Xếp lịch dạy</div>
             <div class="tool-thumb-wrap">
               <span class="tool-num" style="background:#06b6d4;">05</span>
@@ -2402,7 +2417,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
                 </svg>
               </div>
             </div>
-            <div class="tool-card-desc">Ghép, tách, xóa, xoay, số trang, logo, đóng dấu</div>
+            <div class="tool-card-desc">Ghép, tách, sắp xếp trang, chữ ký, nén, PDF ↔ ảnh</div>
           </div>
 
           <!-- 08 Xử lí ảnh -->
@@ -2464,6 +2479,25 @@ body.dark .sd-table tr:hover td{background:#162032;}
             <div class="tool-card-desc">Kanban công việc + kho mẫu văn bản nhanh</div>
           </div>
 
+
+          <!-- 11 Thẻ tên để bàn -->
+          <div class="tool-card" onclick="window.open('cong_cu_thetenban.html','_blank')">
+            <div class="tool-card-title">Thẻ tên để bàn</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#1d4ed8;">11</span>
+              <div class="tool-thumb" style="background:#eff6ff;">
+                <svg viewBox="0 0 90 70" width="84" height="64">
+                  <polygon points="10,58 45,8 80,58" fill="#dbeafe" stroke="#1d4ed8" stroke-width="2" stroke-linejoin="round"/>
+                  <polygon points="24,58 45,28 80,58" fill="#fff" stroke="#1d4ed8" stroke-width="2" stroke-linejoin="round"/>
+                  <rect x="4" y="58" width="82" height="5" rx="2" fill="#1d4ed8"/>
+                  <line x1="40" y1="46" x2="66" y2="46" stroke="#1d4ed8" stroke-width="3" stroke-linecap="round"/>
+                  <line x1="44" y1="52" x2="62" y2="52" stroke="#93c5fd" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+            </div>
+            <div class="tool-card-desc">In thẻ tên gập đôi hàng loạt cho hội nghị, họp phụ huynh</div>
+          </div>
+
         </div>
         <div class="page-foot"><div class="pf-inner">📚 EduTeacher Hub được phát triển bởi <strong>ThS. Huỳnh Lê Tấn Phúc</strong> · Trường THCS Long Thọ </div></div>
       </div>
@@ -2475,6 +2509,180 @@ body.dark .sd-table tr:hover td{background:#162032;}
         <div class="tool-hub-header">
           <h2 class="tool-hub-title">🎮 Trò Chơi Học Tập</h2>
           <p class="tool-hub-sub">Bộ trò chơi tương tác cho học sinh</p>
+        </div>
+
+        <h3 style="font-size:.9rem;font-weight:700;color:var(--muted);margin:8px 0 6px;letter-spacing:.3px;">🐱 Toán 6 – Bộ 20 trò chơi “Tiên phong AI” <span style="background:#ef4444;color:#fff;font-size:.65rem;padding:2px 7px;border-radius:10px;margin-left:4px">MỚI</span></h3>
+        <p style="font-size:.8rem;color:var(--muted);margin:0 0 12px;">Ngân hàng câu hỏi theo từng bài Toán 6 – Kết nối tri thức · Mèo nhắc lỗi sai · Thêm được câu hỏi của thầy/cô · Chạy không cần tài khoản</p>
+        <div class="tool-hub-grid">
+
+          <div class="tool-card" onclick="window.open('tienphong/soan-cau-hoi.html','_blank')">
+            <div class="tool-card-title">Quản lý câu hỏi game</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#0f766e;">GV</span>
+              <div class="tool-thumb" style="background:#f0fdfa;font-size:2.6rem">📝</div>
+            </div>
+            <div class="tool-card-desc">Soạn câu hỏi riêng, chọn bài hiển thị, xem câu HS hay sai</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/lat-the.html','_blank')">
+            <div class="tool-card-title">Lật Thẻ Trí Nhớ</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">01</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-latthe.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Ghi nhớ rồi lật tìm cặp thẻ khớp nhau</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/cau-ca.html','_blank')">
+            <div class="tool-card-title">Câu Cá Tri Thức</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">02</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-cauca.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Thả câu bắt con cá mang đáp án đúng</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/quan-pho.html','_blank')">
+            <div class="tool-card-title">Quán Phở Tí Hon</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">03</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-pho.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Nấu đúng món cho khách trước khi hết kiên nhẫn</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/dan-vit.html','_blank')">
+            <div class="tool-card-title">Đàn Vịt Tìm Mồi</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">04</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-vit.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Dẫn đàn vịt ăn trái cây đúng</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/keo-co.html','_blank')">
+            <div class="tool-card-title">Kéo Co</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">05</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-keoco.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Trả lời nhanh để kéo dây về phe mình</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/dap-chuot.html','_blank')">
+            <div class="tool-card-title">Đập Chuột Chũi</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">06</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-dapchuot.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Đập đúng chú chuột mang đáp án</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/ban-bong.html','_blank')">
+            <div class="tool-card-title">Nghe và Bắn Bóng</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">07</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-banbong.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Bắn bóng bay có đáp án đúng</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/nguoi-tuyet.html','_blank')">
+            <div class="tool-card-title">Giải Cứu Người Tuyết</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">08</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-tuyet.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Đoán chữ trước khi tuyết tan</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/qua-cau.html','_blank')">
+            <div class="tool-card-title">Xếp Chữ Qua Cầu</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">09</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-cau.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Xếp đúng để bắc cầu qua sông</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/me-cung.html','_blank')">
+            <div class="tool-card-title">Mê Cung Đáp Án</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">10</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-mecung.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Chạy tới phòng có đáp án đúng</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/hung-trung.html','_blank')">
+            <div class="tool-card-title">Hứng Trứng Vàng</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">11</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-trung.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Hứng đúng những quả trứng theo yêu cầu</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/chim-bay.html','_blank')">
+            <div class="tool-card-title">Chim Bay</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">12</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-chim.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Bay qua cột, trả lời để bay tiếp</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/duong-ve-nha.html','_blank')">
+            <div class="tool-card-title">Đường Về Nhà</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">13</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-duong.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Băng qua đường an toàn về nhà</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/xep-thap.html','_blank')">
+            <div class="tool-card-title">Xếp Tháp Thông Minh</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">14</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-thap.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Thả khối xếp tháp thật cao</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/kho-bau.html','_blank')">
+            <div class="tool-card-title">Mê Cung Kho Báu</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">15</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-khobau.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Tìm chìa khóa, mở rương báu</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/leo-nui.html','_blank')">
+            <div class="tool-card-title">Leo Núi Tri Thức</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">16</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-leonui.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Nhảy từng bậc lên đỉnh núi</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/phi-thuyen.html','_blank')">
+            <div class="tool-card-title">Phi Thuyền Số</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">17</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-phithuyen.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Bắn thiên thạch đúng yêu cầu</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/chay-truc-so.html','_blank')">
+            <div class="tool-card-title">Chạy Trên Trục Số</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">18</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-chay.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Chạy qua cổng có đáp án đúng</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/chem-dap-an.html','_blank')">
+            <div class="tool-card-title">Chém Đáp Án</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">19</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-chem.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Chém trái cây mang đáp án đúng</div>
+          </div>
+          <div class="tool-card" onclick="window.open('tienphong/games/ghep-so.html','_blank')">
+            <div class="tool-card-title">Ghép Số Lũy Thừa</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ea7a1f;">20</span>
+              <div class="tool-thumb" style="background:#fff7ed;"><img src="tienphong/img/cat-ghep.png" alt="" loading="lazy" style="width:84px;height:84px;object-fit:contain"></div>
+            </div>
+            <div class="tool-card-desc">Vuốt ghép ô số kiểu 2048</div>
+          </div>
         </div>
 
         <h3 style="font-size:.9rem;font-weight:700;color:var(--muted);margin:8px 0 12px;letter-spacing:.3px;">🇬🇧 Tiếng Anh</h3>
@@ -5295,5 +5503,8 @@ function TC_noiseLoop(){
   </div>
 </div>
 
+<script src="eduhub_backup.js"></script>
+<script src="eduhub_search.js"></script>
+<script src="eduhub_pwa.js"></script>
 </body>
 </html>

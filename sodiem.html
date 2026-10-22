@@ -716,7 +716,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
 .st-page-wrap{margin-top:52px;padding:20px;max-width:1400px;margin-left:auto;margin-right:auto;}
 body{display:block;}
 </style>
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js">
+<script src="lib/xlsx.full.min.js">
 /* ── EXCEL IMPORT ── */
 function sdImportExcel(input){
   const file = input.files[0];
@@ -1698,5 +1698,6 @@ document.addEventListener('keydown',e=>{
   if((e.ctrlKey||e.metaKey)&&e.key==='z') undoScore();
 });
 </script>
+<script src="eduhub_backup.js"></script>
 </body>
 </html>
