@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nhận Dạng Chữ – EduTeacher Hub</title>
+<link rel="stylesheet" href="eduhub_ui.css">
+<script src="eduhub_data.js"></script>
+<script src="lib/pdf.min.js"></script>
+<script src="lib/tesseract/tesseract.min.js"></script>
+<style>
+:root{--accent:#9333ea}
+.drop{border:2px dashed var(--border);border-radius:14px;padding:26px;text-align:center;cursor:pointer;background:var(--card2)}
+.drop.over{border-color:var(--accent)}
+.drop b{display:block;font-size:1.05rem;margin-top:6px}
+.res{display:grid;grid-template-columns:260px 1fr;gap:12px;align-items:start;border-top:1px solid var(--border);padding-top:12px;margin-top:12px}
+.res img{width:100%;border:1px solid var(--border);border-radius:8px;background:#fff}
+.res textarea{min-height:260px;font-size:.92rem;line-height:1.6;font-family:'Times New Roman',serif}
+.bar{height:8px;background:var(--border);border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .2s}
+@media(max-width:760px){.res{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>🔠 Nhận dạng chữ từ ảnh / PDF scan <small>tiếng Việt · chạy ngay trên máy</small></h1>
+  <div class="right"><span class="privacy">🔒 Không tải ảnh lên mạng</span><a class="back" href="dashboard.html">← Trang chính</a></div>
+</div>
+<div class="wrap">
+  <div class="card">
+    <div class="drop" id="drop"><div style="font-size:2rem">📄🖼️</div><b>Kéo thả ảnh chụp hoặc file PDF scan vào đây, hoặc bấm để chọn</b><span class="hint">JPG, PNG, PDF · chọn được nhiều file</span><input type="file" id="file" accept="image/*,.pdf" multiple hidden></div>
+    <div class="row" style="margin-top:12px">
+      <div class="f s"><label>Ngôn ngữ</label><select id="lang"><option value="vie">Tiếng Việt</option></select></div>
+      <div class="f s"><label>Trang PDF</label><input type="text" id="range" placeholder="Tất cả (vd: 1-3)" style="width:150px"></div>
+      <div class="f"><label>Trình bày kết quả</label><select id="join"><option value="1">Nối các dòng thành đoạn văn (dễ dán vào Word)</option><option value="0">Giữ nguyên xuống dòng như ảnh</option></select></div>
+    </div>
+    <p class="hint" style="margin-top:10px">💡 Lần đầu dùng, hệ thống cần tải bộ nhận dạng (~10 MB) – các lần sau chạy ngay, kể cả khi mất mạng. Ảnh rõ, thẳng, chữ in cho kết quả tốt nhất; chữ viết tay, công thức Toán phức tạp sẽ nhận dạng kém. Ảnh chụp lệch? Dùng công cụ <a href="cong_cu_scan.html" target="_blank">📷 Quét tài liệu</a> để nắn thẳng trước.</p>
+    <div id="status" style="margin-top:10px" hidden><div class="hint" id="stxt"></div><div class="bar" style="margin-top:6px"><i id="sbar"></i></div></div>
+  </div>
+  <div class="card" id="out" hidden>
+    <div class="row" style="justify-content:space-between"><h2>📃 Kết quả</h2><div class="btns"><button class="btn" id="copy">📋 Sao chép tất cả</button><button class="btn g" id="doc">⬇️ Tải Word</button><button class="btn l" id="txt">⬇️ Tải .txt</button></div></div>
+    <div id="results"></div>
+  </div>
+</div>
+<script>
+'use strict';
+const {$, $$, esc} = ED;
+pdfjsLib.GlobalWorkerOptions.workerSrc='lib/pdf.worker.min.js';
+let worker=null, RES=[];
+function status(t,p){$('#status').hidden=false;$('#stxt').textContent=t;if(p!=null)$('#sbar').style.width=Math.round(p*100)+'%'}
+async function getWorker(){
+  if(worker)return worker;
+  status('⏳ Đang chuẩn bị bộ nhận dạng chữ tiếng Việt…',0.02);
+  worker=await Tesseract.createWorker($('#lang').value,1,{workerPath:'lib/tesseract/worker.min.js',corePath:'lib/tesseract/',langPath:'lib/tesseract/',gzip:true,
+    logger:m=>{if(m.status==='recognizing text')status(`🔎 Đang nhận dạng ${CUR}…`,m.progress);else if(/load|init/.test(m.status))status('⏳ '+({'loading tesseract core':'Đang tải lõi nhận dạng','initializing tesseract':'Đang khởi động','loading language traineddata':'Đang tải dữ liệu tiếng Việt','initializing api':'Đang khởi động'}[m.status]||m.status)+'…',m.progress*0.3)}});
+  return worker;
+}
+let CUR='';
+function prep(src){ // phóng to ảnh nhỏ & chuyển xám giúp nhận dạng tốt hơn
+  const w=src.width||src.naturalWidth,h=src.height||src.naturalHeight,k=Math.max(1,Math.min(2.5,1800/Math.max(w,h))),c=document.createElement('canvas');
+  c.width=Math.round(w*k);c.height=Math.round(h*k);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.filter='grayscale(1) contrast(1.15)';x.drawImage(src,0,0,c.width,c.height);return c;
+}
+function tidy(t){
+  t=t.replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+  if($('#join').value!=='1')return t;
+  return t.split(/\n\s*\n/).map(p=>p.replace(/([^\.\:\;\!\?…])\n(?=[^\n•\-–\d])/g,'$1 ').replace(/\n/g,'\n')).join('\n\n');
+}
+function parseRange(s,n){if(!s.trim())return Array.from({length:n},(_,i)=>i+1);const o=new Set();s.split(/[,;]/).forEach(p=>{const m=p.trim().match(/^(\d+)(?:\s*-\s*(\d+))?$/);if(m){let a=+m[1],b=+(m[2]||m[1]);for(let i=Math.min(a,b);i<=Math.min(n,Math.max(a,b));i++)o.add(i)}});return[...o].sort((a,b)=>a-b)}
+async function run(files){
+  const w=await getWorker();
+  for(const f of files){
+    if(/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name)){
+      const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise;
+      for(const n of parseRange($('#range').value,pdf.numPages)){
+        const pg=await pdf.getPage(n),vp=pg.getViewport({scale:2.4}),c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;
+        const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);await pg.render({canvasContext:x,viewport:vp}).promise;
+        CUR=`${f.name} – trang ${n}/${pdf.numPages}`;const {data}=await w.recognize(prep(c));
+        RES.push({name:CUR,img:c.toDataURL('image/jpeg',.5),text:tidy(data.text),conf:data.confidence});renderRes();
+      }
+    }else{
+      const img=await new Promise((r,j)=>{const i=new Image();i.onload=()=>r(i);i.onerror=j;i.src=URL.createObjectURL(f)});
+      CUR=f.name;const {data}=await w.recognize(prep(img));RES.push({name:f.name,img:img.src,text:tidy(data.text),conf:data.confidence});renderRes();
+    }
+  }
+  status(`✅ Xong ${RES.length} trang. Thầy/cô kiểm tra lại các chữ có dấu trước khi sử dụng.`,1);
+}
+function renderRes(){
+  $('#out').hidden=!RES.length;
+  $('#results').innerHTML=RES.map((r,i)=>`<div class="res"><div><img src="${r.img}" alt=""><div class="hint" style="margin-top:4px"><b>${esc(r.name)}</b><br>Độ tin cậy: ${Math.round(r.conf)}%${r.conf<60?' ⚠️ ảnh mờ/khó đọc':''}</div><button class="btn l s" data-cp="${i}" style="margin-top:6px">📋 Sao chép trang này</button></div><textarea data-i="${i}">${esc(r.text)}</textarea></div>`).join('');
+  $$('#results textarea').forEach(t=>t.oninput=()=>RES[+t.dataset.i].text=t.value);
+  $$('[data-cp]').forEach(b=>b.onclick=()=>ED.copy(RES[+b.dataset.cp].text).then(()=>ED.toast('📋 Đã sao chép')));
+}
+const all=()=>RES.map(r=>r.text).join('\n\n');
+$('#copy').onclick=()=>ED.copy(all()).then(()=>ED.toast('📋 Đã sao chép toàn bộ văn bản'));
+$('#txt').onclick=()=>ED.download('﻿'+all(),'van_ban_nhan_dang.txt','text/plain');
+$('#doc').onclick=()=>ED.exportDoc(RES.map(r=>r.text.split(/\n\s*\n/).map(p=>`<p>${esc(p).replace(/\n/g,'<br>')}</p>`).join('')).join('<br clear="all" style="page-break-before:always">'),'van_ban_nhan_dang');
+const drop=$('#drop'),inp=$('#file');
+drop.onclick=()=>inp.click();inp.onchange=()=>{const f=[...inp.files];inp.value='';go(f)};
+drop.ondragover=e=>{e.preventDefault();drop.classList.add('over')};drop.ondragleave=()=>drop.classList.remove('over');
+drop.ondrop=e=>{e.preventDefault();drop.classList.remove('over');go([...e.dataTransfer.files])};
+let busyRun=false;
+async function go(f){if(busyRun){ED.toast('Đang xử lý, chờ một chút nhé…');return}busyRun=true;try{await run(f)}catch(e){console.error(e);status('❌ Lỗi: '+(e.message||e),0)}busyRun=false}
+</script>
+<script src="eduhub_backup.js"></script>
+</body>
+</html>

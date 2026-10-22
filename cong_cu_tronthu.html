@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trộn Thư Hàng Loạt – EduTeacher Hub</title>
+<link rel="stylesheet" href="eduhub_ui.css">
+<script src="eduhub_data.js"></script>
+<style>
+:root{--accent:#7c3aed}
+.lay{display:grid;grid-template-columns:380px 1fr;gap:16px;align-items:start}
+.side{display:flex;flex-direction:column;gap:14px;position:sticky;top:70px;max-height:calc(100vh - 86px);overflow:auto}
+.tb{display:flex;gap:4px;flex-wrap:wrap;padding:6px;border:1px solid var(--border);border-bottom:none;border-radius:10px 10px 0 0;background:var(--card2)}
+.tb button,.tb select{border:1px solid var(--border);background:var(--card);border-radius:6px;padding:4px 9px;cursor:pointer;font-size:.8rem}
+.stage{background:#cbd5e1;border-radius:0 0 12px 12px;padding:18px;overflow:auto;border:1px solid var(--border)}
+body.dark .stage{background:#0b1222}
+.paper{background:#fff;color:#000;margin:0 auto;box-shadow:0 6px 24px rgba(0,0,0,.2);font-family:'Times New Roman',serif;font-size:13pt;line-height:1.45}
+.paper.p{width:210mm;min-height:297mm;padding:15mm 18mm 15mm 22mm}
+.paper.l{width:297mm;min-height:210mm;padding:14mm 18mm}
+.paper.h{width:210mm;min-height:148mm;padding:10mm 16mm 10mm 20mm;font-size:12pt}
+#ed{outline:none;min-height:100%}
+#ed p{margin:0 0 4pt}
+.tok{background:#ede9fe;color:#5b21b6;border-radius:4px;padding:0 3px;font-family:inherit}
+.flds{display:flex;flex-wrap:wrap;gap:5px}
+.flds .chip{font-size:.75rem;padding:4px 9px}
+.nav{display:flex;align-items:center;gap:8px}
+.recs{max-height:180px;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:6px 8px;background:var(--card2);display:flex;flex-direction:column;gap:3px}
+.recs label{font-size:.82rem;display:flex;gap:8px;align-items:center}
+.cf{display:grid;grid-template-columns:130px 1fr;gap:6px;align-items:center;margin-bottom:6px}
+.cf span{font-size:.8rem;color:var(--muted);font-weight:600}
+@media(max-width:1000px){.lay{grid-template-columns:1fr}.side{position:static;max-height:none}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>✉️ Trộn thư hàng loạt <small>giấy mời · giấy khen · phiếu liên lạc</small></h1>
+  <div class="right"><span class="privacy">🔒 Xử lý trên máy</span><a class="back" href="dashboard.html">← Trang chính</a></div>
+</div>
+<div class="wrap">
+<div class="lay">
+  <aside class="side">
+    <div class="card">
+      <h3>1️⃣ Chọn mẫu</h3>
+      <select id="tpl"></select>
+      <div class="btns" style="margin-top:8px"><button class="btn l s" id="tsave">💾 Lưu thành mẫu của tôi</button><button class="btn l s" id="tdel" hidden>🗑️ Xóa mẫu</button></div>
+    </div>
+    <div class="card">
+      <h3>2️⃣ Danh sách người nhận</h3>
+      <div class="tabs" style="margin-bottom:8px"><button class="tab on s" data-src="cn">Lớp chủ nhiệm</button><button class="tab" data-src="paste">Dán từ Excel</button><button class="tab" data-src="book">Sổ điểm</button></div>
+      <div id="src-cn" class="hint">Dùng danh sách lớp chủ nhiệm, kèm số buổi vắng, kết quả xếp loại và nhận xét (nếu đã làm ở công cụ <b>Nhận xét TT22</b>). <select id="cnhk" style="margin-top:6px"><option value="hk1">Kết quả Học kỳ I</option><option value="hk2">Kết quả Học kỳ II</option><option value="cn">Kết quả Cả năm</option></select></div>
+      <div id="src-paste" hidden><textarea id="paste" rows="5" placeholder="Dòng đầu là tên cột, ví dụ:&#10;Họ tên	Lớp	Thành tích&#10;Nguyễn Văn An	6/4	Học sinh Giỏi"></textarea><button class="btn l s" id="usepaste" style="margin-top:6px">Dùng danh sách này</button></div>
+      <div id="src-book" hidden><select id="book"></select><select id="bhk" style="margin-top:6px"><option value="hk1">Học kỳ I</option><option value="hk2">Học kỳ II</option><option value="cn">Cả năm</option></select></div>
+      <div class="row" style="margin:10px 0 6px;justify-content:space-between"><span class="hint" id="rinfo"></span><span class="btns"><button class="btn l s" id="rall">Chọn hết</button><button class="btn l s" id="rnone">Bỏ</button></span></div>
+      <div class="recs" id="recs"></div>
+    </div>
+    <div class="card">
+      <h3>3️⃣ Thông tin chung</h3>
+      <p class="hint" style="margin-bottom:8px">Các ô trong mẫu không có trong danh sách sẽ hiện ở đây để điền một lần cho tất cả.</p>
+      <div id="common"></div>
+    </div>
+  </aside>
+  <section>
+    <div class="card" style="margin-bottom:12px">
+      <div class="row">
+        <div class="nav"><button class="btn l s" id="prev">◀</button><b id="pos">–</b><button class="btn l s" id="next">▶</button><span class="hint" id="who"></span></div>
+        <div class="f s"><label>Khổ giấy</label><select id="layout"><option value="p">A4 dọc – 1 bản/trang</option><option value="h">A4 dọc – 2 bản/trang (giấy mời nhỏ)</option><option value="l">A4 ngang (giấy khen)</option></select></div>
+        <div class="btns" style="margin-left:auto"><button class="btn l" id="edit">✏️ Sửa mẫu</button><button class="btn" id="print">🖨️ In tất cả / Lưu PDF</button><button class="btn g" id="word">⬇️ Xuất Word</button></div>
+      </div>
+      <div id="fldbar" hidden style="margin-top:10px"><div class="hint" style="margin-bottom:6px">Bấm vào ô thông tin để chèn vào mẫu tại vị trí con trỏ:</div><div class="flds" id="flds"></div></div>
+    </div>
+    <div class="tb" id="tbar" hidden>
+      <button data-c="bold"><b>B</b></button><button data-c="italic"><i>I</i></button><button data-c="underline"><u>U</u></button>
+      <button data-c="justifyLeft">⬅</button><button data-c="justifyCenter">⬌</button><button data-c="justifyRight">➡</button><button data-c="justifyFull">☰</button>
+      <select id="fsz"><option value="">Cỡ chữ</option><option value="2">Nhỏ</option><option value="3">Vừa</option><option value="4">Lớn</option><option value="5">Rất lớn</option><option value="6">Tiêu đề</option><option value="7">Tiêu đề lớn</option></select>
+      <button data-c="removeFormat">Xóa định dạng</button>
+    </div>
+    <div class="stage" id="stage"><div class="paper p" id="paper"><div id="ed"></div></div></div>
+  </section>
+</div>
+</div>
+<script>
+'use strict';
+const {$, $$, esc} = ED;
+const T=ED.teacher(), CLS=ED.className();
+const HEAD=`<table style="width:100%;border-collapse:collapse;border:none"><tr><td style="border:none;text-align:center;width:42%;vertical-align:top;font-size:12pt">{{Cơ quan chủ quản}}<br><b>{{Trường}}</b><br>———</td><td style="border:none;text-align:center;vertical-align:top;font-size:12pt"><b>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</b><br><b>Độc lập – Tự do – Hạnh phúc</b><br>———————</td></tr></table>`;
+const SIGN=(t,n)=>`<table style="width:100%;border-collapse:collapse;border:none;margin-top:8pt"><tr><td style="border:none;width:50%"></td><td style="border:none;text-align:center"><b>${t}</b><br><i style="font-size:11pt">(Ký, ghi rõ họ tên)</i><br><br><br><br><b>${n}</b></td></tr></table>`;
+const BUILTIN={
+ moi:{name:'👪 Giấy mời họp Cha mẹ học sinh',layout:'h',html:HEAD+`<p style="text-align:right"><i>{{Địa danh}}, {{Ngày lập}}</i></p><p style="text-align:center;font-size:16pt"><b>GIẤY MỜI</b></p><p style="text-align:center"><b>Về việc họp Cha mẹ học sinh lớp {{Lớp}}</b></p><p>Kính gửi: Ông/Bà <b>{{Phụ huynh}}</b> – phụ huynh em <b>{{Họ tên}}</b></p><p>Giáo viên chủ nhiệm lớp {{Lớp}} trân trọng kính mời Quý phụ huynh đến dự buổi họp Cha mẹ học sinh:</p><p>– Thời gian: <b>{{Thời gian họp}}</b></p><p>– Địa điểm: {{Địa điểm họp}}</p><p>– Nội dung: {{Nội dung họp}}</p><p>Rất mong Quý phụ huynh sắp xếp thời gian đến dự đầy đủ, đúng giờ.</p>`+SIGN('GIÁO VIÊN CHỦ NHIỆM','{{GVCN}}')},
+ khen:{name:'🏅 Giấy khen',layout:'l',html:`<div style="border:6pt double #b8860b;padding:14pt 26pt;min-height:150mm">`+HEAD+`<p style="text-align:center;font-size:12pt;margin-top:10pt"><b>HIỆU TRƯỞNG {{Trường in hoa}}</b></p><p style="text-align:center;font-size:30pt;color:#b91c1c;margin:6pt 0"><b>GIẤY KHEN</b></p><p style="text-align:center;font-size:15pt">Khen tặng em: <b style="font-size:20pt">{{Họ tên}}</b></p><p style="text-align:center;font-size:14pt">Học sinh lớp {{Lớp}} – Năm học {{Năm học}}</p><p style="text-align:center;font-size:14pt">Đã có thành tích: <b>{{Thành tích}}</b></p><table style="width:100%;border-collapse:collapse;border:none;margin-top:10pt"><tr><td style="border:none;width:50%;font-size:11pt;vertical-align:bottom">Số: ……/GK-{{Viết tắt trường}}</td><td style="border:none;text-align:center"><i>{{Địa danh}}, {{Ngày lập}}</i><br><b>HIỆU TRƯỞNG</b><br><br><br><br><b>{{Hiệu trưởng}}</b></td></tr></table></div>`},
+ lienlac:{name:'📋 Phiếu liên lạc / thông báo kết quả cuối kỳ',layout:'p',html:HEAD+`<p style="text-align:center;font-size:16pt;margin-top:10pt"><b>PHIẾU THÔNG BÁO KẾT QUẢ HỌC TẬP VÀ RÈN LUYỆN</b></p><p style="text-align:center"><b>{{Học kỳ}} – Năm học {{Năm học}}</b></p><p>Kính gửi: Phụ huynh em <b>{{Họ tên}}</b> – Lớp {{Lớp}}</p><p>Giáo viên chủ nhiệm xin thông báo kết quả của em trong {{Học kỳ}} như sau:</p><table style="width:100%;border-collapse:collapse"><tr><td style="border:1px solid #000;padding:4pt 6pt;width:45%">Số buổi nghỉ học</td><td style="border:1px solid #000;padding:4pt 6pt">{{Số buổi vắng}}</td></tr><tr><td style="border:1px solid #000;padding:4pt 6pt">Kết quả học tập</td><td style="border:1px solid #000;padding:4pt 6pt"><b>{{Kết quả học tập}}</b></td></tr><tr><td style="border:1px solid #000;padding:4pt 6pt">Kết quả rèn luyện</td><td style="border:1px solid #000;padding:4pt 6pt"><b>{{Kết quả rèn luyện}}</b></td></tr><tr><td style="border:1px solid #000;padding:4pt 6pt">Danh hiệu</td><td style="border:1px solid #000;padding:4pt 6pt">{{Danh hiệu}}</td></tr></table><p style="margin-top:8pt"><b>Nhận xét của giáo viên chủ nhiệm:</b> {{Nhận xét GVCN}}</p><p><b>Ý kiến của phụ huynh:</b> ………………………………………………………………………………………………………………………………………………………………………………</p><table style="width:100%;border-collapse:collapse;border:none;margin-top:8pt"><tr><td style="border:none;text-align:center;width:50%"><b>PHỤ HUYNH HỌC SINH</b><br><i style="font-size:11pt">(Ký, ghi rõ họ tên)</i></td><td style="border:none;text-align:center"><i>{{Địa danh}}, {{Ngày lập}}</i><br><b>GIÁO VIÊN CHỦ NHIỆM</b><br><br><br><br><b>{{GVCN}}</b></td></tr></table>`},
+ diem:{name:'📊 Phiếu báo điểm môn học',layout:'h',html:HEAD+`<p style="text-align:center;font-size:15pt;margin-top:6pt"><b>PHIẾU BÁO ĐIỂM MÔN {{Môn in hoa}}</b></p><p style="text-align:center">{{Học kỳ}} – Năm học {{Năm học}}</p><p>Học sinh: <b>{{Họ tên}}</b> – Lớp {{Lớp}}</p><p>Điểm trung bình môn: <b style="font-size:15pt">{{ĐTB}}</b> – Mức: <b>{{Mức}}</b></p><p>Nhận xét: {{Nhận xét môn}}</p>`+SIGN('GIÁO VIÊN BỘ MÔN','{{Giáo viên}}')},
+ trong:{name:'📄 Mẫu trống (tự soạn)',layout:'p',html:HEAD+`<p style="text-align:right"><i>{{Địa danh}}, {{Ngày lập}}</i></p><p style="text-align:center;font-size:16pt"><b>THÔNG BÁO</b></p><p>Kính gửi: Phụ huynh em <b>{{Họ tên}}</b> – Lớp {{Lớp}}</p><p>…</p>`+SIGN('GIÁO VIÊN CHỦ NHIỆM','{{GVCN}}')}
+};
+const y=(()=>{const d=new Date();return d.getMonth()>=7?d.getFullYear():d.getFullYear()-1})();
+const DEFAULTS={'Cơ quan chủ quản':'UBND XÃ PHƯỚC AN','Trường':T.school||'TRƯỜNG THCS ……','Địa danh':'Phước An','Ngày lập':ED.longDate(),'Lớp':CLS,'GVCN':T.name,'Giáo viên':T.name,'Năm học':y+' – '+(y+1),'Học kỳ':'Học kỳ I','Thời gian họp':'7 giờ 30 phút, Chủ nhật ngày …/…/……','Địa điểm họp':'Phòng học lớp '+(CLS||'…'),'Nội dung họp':'Thông báo kết quả học tập, rèn luyện và kế hoạch giáo dục học kỳ tới','Thành tích':'Học sinh Giỏi Học kỳ I','Hiệu trưởng':'','Viết tắt trường':'THCS'};
+let MY=ED.get('tt_tpl',{}), ST=ED.get('tt_state',{tpl:'moi',common:{}});
+const COMMON=Object.assign({},DEFAULTS,ST.common||{});
+let REC=[], FIELDS=[], sel=new Set(), idx=0, editing=false, src='cn';
+
+/* ── mẫu ── */
+function allTpl(){return Object.assign({},BUILTIN,...Object.entries(MY).map(([k,v])=>({[k]:v})))}
+function fillTplSelect(){const a=allTpl();$('#tpl').innerHTML='<optgroup label="Mẫu có sẵn">'+Object.keys(BUILTIN).map(k=>`<option value="${k}">${BUILTIN[k].name}</option>`).join('')+'</optgroup>'+(Object.keys(MY).length?'<optgroup label="Mẫu của tôi">'+Object.keys(MY).map(k=>`<option value="${k}">⭐ ${esc(MY[k].name)}</option>`).join('')+'</optgroup>':'');$('#tpl').value=a[ST.tpl]?ST.tpl:'moi'}
+function cur(){return allTpl()[$('#tpl').value]}
+let HTML='';
+function loadTpl(){const t=cur();HTML=(ST.draft&&ST.draft[$('#tpl').value])||t.html;$('#layout').value=t.layout||'p';$('#tdel').hidden=!MY[$('#tpl').value];ST.tpl=$('#tpl').value;saveST();render()}
+function saveST(){ED.set('tt_state',ST)}
+
+/* ── nguồn dữ liệu ── */
+function fromCN(){
+  const hk=$('#cnhk').value,nx=ED.get('nx_gvcn_'+hk,{rows:{}})||{rows:{}};const st=ED.students();
+  const [a,b]=nx.from?[nx.from,nx.to]:[null,null];
+  REC=st.map(s=>{const r=nx.rows[s.id]||{},x=ED.statsFor(s.id,a,b);return {'STT':s.stt,'Họ tên':s.hoTen,'Lớp':CLS,'Tên':s.ten,'Ngày sinh':ED.vnDate(s.ngaySinh),'Giới tính':s.gioiTinh,'Phụ huynh':s.phName,'Số điện thoại':s.phone,'Địa chỉ':s.choO,'Số buổi vắng':String(x.vang),'Kết quả học tập':ED.LV[r.ht]||'','Kết quả rèn luyện':ED.LV[r.rl]||'','Danh hiệu':(r.ht==='T'&&r.rl==='T')?(r.x9>=6?'Học sinh Xuất sắc':'Học sinh Giỏi'):'—','Nhận xét GVCN':r.nx||''}});
+  COMMON['Học kỳ']=hk==='hk1'?'Học kỳ I':hk==='hk2'?'Học kỳ II':'Cả năm';
+  FIELDS=REC.length?Object.keys(REC[0]):['STT','Họ tên','Tên','Ngày sinh','Phụ huynh'];
+}
+function fromBook(){
+  const b=ED.books()[+$('#book').value];if(!b){REC=[];FIELDS=[];return}const hk=$('#bhk').value,nx=ED.get('nx_mon_'+b.id+'_'+hk,{});
+  REC=ED.bookScores(b,hk).map((s,i)=>({'STT':i+1,'Họ tên':s.ten,'Môn':b.mon,'ĐTB':s.tbm==null?'—':s.tbm.toFixed(1),'Mức':ED.LV[ED.level(s.tbm)]||'—','Nhận xét môn':(nx[s.ten]||{}).nx||''}));
+  COMMON['Lớp']=b.lop;COMMON['Học kỳ']=hk==='hk1'?'Học kỳ I':hk==='hk2'?'Học kỳ II':'Cả năm';FIELDS=['STT','Họ tên','Môn','ĐTB','Mức','Nhận xét môn'];
+}
+function fromPaste(){const t=ED.parseTable($('#paste').value);if(t.length<2){ED.toast('⚠️ Cần dòng tiêu đề và ít nhất 1 dòng dữ liệu');return}const h=t[0].map((x,i)=>x||('Cột '+(i+1)));REC=t.slice(1).map(r=>Object.fromEntries(h.map((k,i)=>[k,r[i]||''])));FIELDS=h;ST.paste=$('#paste').value;saveST()}
+function loadSrc(){if(src==='cn')fromCN();else if(src==='book')fromBook();else if(ST.paste){$('#paste').value=ST.paste;const t=ED.parseTable(ST.paste);if(t.length>1){const h=t[0];REC=t.slice(1).map(r=>Object.fromEntries(h.map((k,i)=>[k,r[i]||''])));FIELDS=h}else{REC=[];FIELDS=[]}}else{REC=[];FIELDS=[]}
+  sel=new Set(REC.map((_,i)=>i));idx=0;renderRecs();render()}
+$$('[data-src]').forEach(b=>b.onclick=()=>{src=b.dataset.src;$$('[data-src]').forEach(x=>x.classList.toggle('on',x===b));['cn','paste','book'].forEach(k=>$('#src-'+k).hidden=k!==src);if(src==='book'){const bs=ED.books();$('#book').innerHTML=bs.length?bs.map((b,i)=>`<option value="${i}">${esc(b.mon)} – Lớp ${esc(b.lop)}</option>`).join(''):'<option value="">(Chưa có sổ điểm)</option>'}loadSrc()});
+$('#cnhk').onchange=loadSrc;$('#book').onchange=loadSrc;$('#bhk').onchange=loadSrc;$('#usepaste').onclick=()=>{fromPaste();sel=new Set(REC.map((_,i)=>i));idx=0;renderRecs();render()};
+function renderRecs(){const nameK=FIELDS.find(f=>/họ tên|ho ten|tên/i.test(f))||FIELDS[0];
+  $('#recs').innerHTML=REC.length?REC.map((r,i)=>`<label><input type="checkbox" data-i="${i}" ${sel.has(i)?'checked':''}>${esc(r[nameK]||'(dòng '+(i+1)+')')}</label>`).join(''):'<span class="hint">Chưa có dữ liệu.</span>';
+  $$('#recs input').forEach(c=>c.onchange=()=>{c.checked?sel.add(+c.dataset.i):sel.delete(+c.dataset.i);info()});info()}
+function info(){$('#rinfo').textContent=`${sel.size}/${REC.length} người nhận`}
+$('#rall').onclick=()=>{sel=new Set(REC.map((_,i)=>i));renderRecs()};$('#rnone').onclick=()=>{sel.clear();renderRecs()};
+
+/* ── điền dữ liệu ── */
+function tokens(h){return [...new Set([...h.matchAll(/\{\{([^{}]+?)\}\}/g)].map(m=>m[1].trim()))]}
+function val(k,r){
+  if(r&&r[k]!=null&&r[k]!=='') return r[k];
+  if(k==='Trường in hoa') return (COMMON['Trường']||'').toLocaleUpperCase('vi');
+  if(k==='Môn in hoa') return String((r&&r['Môn'])||COMMON['Môn']||'').toLocaleUpperCase('vi');
+  if(r&&r[k]==='') return '';
+  return COMMON[k]!=null?COMMON[k]:'';
+}
+function merge(h,r){return h.replace(/\{\{([^{}]+?)\}\}/g,(m,k)=>esc(val(k.trim(),r)).replace(/\n/g,'<br>'))}
+function renderCommon(){
+  const need=tokens(HTML).filter(k=>!FIELDS.includes(k)&&!['Trường in hoa','Môn in hoa'].includes(k));
+  $('#common').innerHTML=need.length?need.map(k=>`<div class="cf"><span>${esc(k)}</span><input type="text" data-k="${esc(k)}" value="${esc(COMMON[k]||'')}"></div>`).join(''):'<span class="hint">Không có.</span>';
+  $$('#common input').forEach(i=>i.oninput=()=>{COMMON[i.dataset.k]=i.value;ST.common=ST.common||{};ST.common[i.dataset.k]=i.value;saveST();if(!editing)preview()});
+}
+function preview(){
+  const list=[...sel].sort((a,b)=>a-b);if(idx>=list.length)idx=Math.max(0,list.length-1);
+  const r=REC[list[idx]];$('#pos').textContent=list.length?`${idx+1} / ${list.length}`:'0 / 0';
+  const nameK=FIELDS.find(f=>/họ tên/i.test(f));$('#who').textContent=r&&nameK?r[nameK]:'';
+  $('#ed').innerHTML=merge(HTML,r||{});
+}
+function fit(){const p=$('#paper');p.style.zoom=1;const z=Math.min(1,($('#stage').clientWidth-40)/p.offsetWidth);p.style.zoom=z}
+addEventListener('resize',fit);
+function render(){
+  const L=$('#layout').value;$('#paper').className='paper '+L;setTimeout(fit,0);
+  renderCommon();
+  if(editing){$('#ed').innerHTML=HTML.replace(/\{\{([^{}]+?)\}\}/g,'<span class="tok">{{$1}}</span>');}
+  else preview();
+  $('#flds').innerHTML=[...FIELDS,...Object.keys(DEFAULTS).filter(k=>!FIELDS.includes(k))].map(f=>`<span class="chip" data-f="${esc(f)}">${esc(f)}</span>`).join('');
+  $$('#flds .chip').forEach(c=>c.onmousedown=e=>{e.preventDefault();document.execCommand('insertText',false,'{{'+c.dataset.f+'}}');});
+}
+function readEditor(){HTML=$('#ed').innerHTML.replace(/<span class="tok">(\{\{[^{}]+?\}\})<\/span>/g,'$1');ST.draft=ST.draft||{};ST.draft[$('#tpl').value]=HTML;saveST()}
+$('#edit').onclick=()=>{editing=!editing;if(!editing)readEditor();$('#ed').contentEditable=editing;$('#edit').textContent=editing?'✅ Xong – xem trước':'✏️ Sửa mẫu';$('#tbar').hidden=!editing;$('#fldbar').hidden=!editing;render()};
+$('#ed').addEventListener('input',()=>{if(editing){readEditor();renderCommon()}});
+$$('#tbar [data-c]').forEach(b=>b.onmousedown=e=>{e.preventDefault();document.execCommand(b.dataset.c)});
+$('#fsz').onchange=e=>{if(e.target.value)document.execCommand('fontSize',false,e.target.value);e.target.value=''};
+$('#prev').onclick=()=>{idx=Math.max(0,idx-1);preview()};$('#next').onclick=()=>{idx=Math.min(sel.size-1,idx+1);preview()};
+$('#tpl').onchange=()=>{if(editing)$('#edit').click();loadTpl()};$('#layout').onchange=render;
+$('#tsave').onclick=()=>{if(editing)readEditor();const n=prompt('Đặt tên cho mẫu:',cur().name.replace(/^\S+\s/,'')+' (của tôi)');if(!n)return;const k='my_'+ED.uid();MY[k]={name:n,layout:$('#layout').value,html:HTML};ED.set('tt_tpl',MY);ST.tpl=k;fillTplSelect();loadTpl();ED.toast('💾 Đã lưu mẫu')};
+$('#tdel').onclick=()=>{const k=$('#tpl').value;if(!MY[k]||!confirm('Xóa mẫu “'+MY[k].name+'”?'))return;delete MY[k];ED.set('tt_tpl',MY);ST.tpl='moi';fillTplSelect();loadTpl()};
+
+/* ── in & xuất ── */
+const PAGE={p:['210mm','297mm','15mm 18mm 15mm 22mm','portrait'],l:['297mm','210mm','14mm 18mm','landscape'],h:['210mm','148mm','10mm 16mm 10mm 20mm','portrait']};
+function docs(){if(editing)$('#edit').click();const list=[...sel].sort((a,b)=>a-b);if(!list.length){ED.toast('⚠️ Chưa chọn người nhận nào');return null}return list.map(i=>merge(HTML,REC[i]))}
+$('#print').onclick=()=>{const d=docs();if(!d)return;const L=$('#layout').value,[w,h,pad,o]=PAGE[L];
+  const css=`@page{size:A4 ${o};margin:0}body{font-size:${L==='h'?12:13}pt;line-height:1.45}p{margin:0 0 4pt}.pg{width:${w};height:${h};padding:${pad};box-sizing:border-box;overflow:hidden;page-break-after:always;position:relative}`+(L==='h'?'.pg:nth-child(odd){border-bottom:1px dashed #999}.pg:nth-child(even){page-break-after:always}.pg:nth-child(odd){page-break-after:auto}':'');
+  ED.printHTML(d.map(x=>`<div class="pg">${x}</div>`).join(''),css,cur().name)};
+$('#word').onclick=()=>{const d=docs();if(!d)return;const L=$('#layout').value;
+  ED.exportDoc(d.join('<br clear="all" style="page-break-before:always">'),ED.fileName(cur().name.replace(/^\S+\s/,''))+'_'+d.length+'_ban',{landscape:L==='l',css:'p{margin:0 0 4pt}'})};
+
+fillTplSelect();loadTpl();loadSrc();
+</script>
+<script src="eduhub_backup.js"></script>
+</body>
+</html>

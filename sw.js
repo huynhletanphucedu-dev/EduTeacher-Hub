@@ -1,30 +1,45 @@
 /* EduTeacher Hub – Service Worker (tạo tự động bằng tools/tao_sw.py – không sửa tay)
    • Mở một lần khi có mạng → các trang đã mở dùng được khi mất mạng.
    • Nút “Tải sẵn để dùng offline” → tải toàn bộ công cụ về máy. */
-const VERSION = '557b9a779b';
+const VERSION = 'b14f8ec1c7';
 const CACHE = 'eduhub-' + VERSION;
 const CORE = ["./", "index.html", "dashboard.html", "manifest.webmanifest", "eduhub_backup.js", "eduhub_search.js", "eduhub_pwa.js", "icons/icon-192.png"];
 const FILES = [
 "bangdiem.html",
 "chianhom.html",
 "chunhiem.html",
+"cn_nhanxet.html",
+"cn_thidua.html",
+"cn_tinnhan.html",
 "cong_cu_anh.html",
 "cong_cu_baocao.html",
 "cong_cu_bieumau.html",
 "cong_cu_congviec.html",
+"cong_cu_danhsach.html",
+"cong_cu_excel.html",
+"cong_cu_lichbaogiang.html",
 "cong_cu_lichday.html",
+"cong_cu_matran.html",
+"cong_cu_ocr.html",
 "cong_cu_pdf.html",
 "cong_cu_pdf.js",
+"cong_cu_phongthi.html",
 "cong_cu_qr.html",
 "cong_cu_rutgon.html",
+"cong_cu_scan.html",
 "cong_cu_taode.html",
 "cong_cu_thetenban.html",
+"cong_cu_thongke.html",
 "cong_cu_tronde.html",
+"cong_cu_tronthu.html",
 "dashboard.html",
 "dongho.html",
 "eduhub_backup.js",
+"eduhub_data.js",
 "eduhub_pwa.js",
 "eduhub_search.js",
+"eduhub_sheet.js",
+"eduhub_ui.css",
 "game_balloon_toan.html",
 "game_diendau_toan.html",
 "game_duathuyen_toan.html",

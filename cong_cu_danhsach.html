@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chuẩn Hóa Danh Sách – EduTeacher Hub</title>
+<link rel="stylesheet" href="eduhub_ui.css">
+<script src="eduhub_data.js"></script>
+<script src="lib/xlsx.full.min.js"></script>
+<script src="eduhub_sheet.js"></script>
+<style>
+:root{--accent:#16a34a}
+.drop{border:2px dashed var(--border);border-radius:12px;padding:18px;text-align:center;cursor:pointer;background:var(--card2)}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px}
+.opts label{display:flex;gap:8px;align-items:flex-start;padding:9px 11px;border:1px solid var(--border);border-radius:10px;background:var(--card2);cursor:pointer;font-size:.86rem;line-height:1.4}
+.opts label small{display:block;color:var(--muted);font-size:.75rem}
+td.chg{background:rgba(22,163,74,.13)}
+td.dup{background:rgba(239,68,68,.12)}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>🔤 Chuẩn hóa &amp; xếp ABC danh sách <small>họ tên · ngày sinh · số điện thoại</small></h1>
+  <div class="right"><span class="privacy">🔒 Xử lý trên máy</span><a class="back" href="dashboard.html">← Trang chính</a></div>
+</div>
+<div class="wrap">
+  <div class="card">
+    <h2>1️⃣ Đưa danh sách vào</h2>
+    <div class="grid2" style="margin-top:10px">
+      <div class="drop" id="drop">📂 <b>Chọn file Excel / CSV</b><div class="hint">hoặc kéo thả vào đây</div><input type="file" id="file" accept=".xlsx,.xls,.csv,.ods" hidden></div>
+      <div><textarea id="paste" rows="4" placeholder="…hoặc dán trực tiếp từ Excel (cả dòng tiêu đề)"></textarea><div class="btns" style="margin-top:6px"><button class="btn l s" id="usepaste">Dùng dữ liệu dán</button><button class="btn l s" id="usecn">📋 Lấy DS lớp chủ nhiệm</button><select id="sheet" style="width:auto" hidden></select></div></div>
+    </div>
+  </div>
+  <div class="card" id="cfg" hidden>
+    <h2>2️⃣ Chọn việc cần làm</h2>
+    <div class="row" style="margin:8px 0 12px"><div class="f s"><label>Cột họ tên</label><select id="ncol"></select></div><div class="f s"><label>Cột ngày sinh</label><select id="dcol"></select></div><div class="f s"><label>Cột số điện thoại</label><select id="pcol"></select></div><div class="f s"><label>Xếp theo nhóm (cột)</label><select id="gcol"></select></div></div>
+    <div class="opts">
+      <label><input type="checkbox" id="o-name" checked><div>✍️ Chuẩn hóa họ tên<small>Viết hoa chữ đầu, xóa khoảng trắng thừa, sửa lỗi mã chữ (Unicode tổ hợp → dựng sẵn)</small></div></label>
+      <label><input type="checkbox" id="o-sort" checked><div>🔠 Xếp ABC theo tên<small>Theo thói quen Việt Nam: xếp theo Tên, rồi đến Họ đệm (An → Bình → Châu…)</small></div></label>
+      <label><input type="checkbox" id="o-split"><div>✂️ Tách cột Họ đệm / Tên<small>Thêm 2 cột “Họ và chữ lót” và “Tên” ngay sau cột họ tên</small></div></label>
+      <label><input type="checkbox" id="o-date" checked><div>📅 Chuẩn hóa ngày sinh<small>Đưa về dạng dd/mm/yyyy (sửa cả ngày dạng số của Excel, 2014-05-03…)</small></div></label>
+      <label><input type="checkbox" id="o-phone" checked><div>📞 Chuẩn hóa số điện thoại<small>Bỏ dấu chấm/cách, đổi +84 thành 0, thêm số 0 bị Excel làm mất</small></div></label>
+      <label><input type="checkbox" id="o-stt" checked><div>🔢 Đánh lại số thứ tự<small>Cột STT đầu bảng (tự thêm nếu chưa có); đánh lại từ 1 trong mỗi nhóm</small></div></label>
+      <label><input type="checkbox" id="o-dup" checked><div>🔎 Đánh dấu trùng<small>Tô đỏ các dòng trùng họ tên (và ngày sinh nếu có)</small></div></label>
+      <label><input type="checkbox" id="o-empty" checked><div>🧹 Xóa dòng trống<small>Bỏ các dòng không có họ tên</small></div></label>
+    </div>
+  </div>
+  <div class="card" id="res" hidden>
+    <div class="row" style="justify-content:space-between"><div><h2>3️⃣ Kết quả</h2><div class="hint" id="sum"></div></div><div class="btns"><button class="btn" id="xlsx">⬇️ Tải Excel</button><button class="btn l" id="copy">📋 Sao chép (dán lại vào Excel)</button><button class="btn l" id="tocn" title="Ghi đè thứ tự & họ tên trong mục Chủ Nhiệm">↪ Cập nhật DS lớp CN</button></div></div>
+    <div class="tbl-wrap" style="margin-top:10px;max-height:65vh"><table class="tbl" id="tbl"></table></div>
+    <p class="hint" style="margin-top:6px"><span style="background:rgba(22,163,74,.2);padding:0 6px;border-radius:4px">xanh</span> = ô đã được sửa · <span style="background:rgba(239,68,68,.15);padding:0 6px;border-radius:4px">đỏ</span> = dòng bị trùng</p>
+  </div>
+</div>
+<script>
+'use strict';
+const {$, $$, esc} = ED;
+let SHEETS=[], RAW=null, OUT=null, FROMCN=false;
+function load(rows,fromCN){
+  FROMCN=!!fromCN;const h=ES.headerRow(rows);RAW=rows.slice(h);
+  const head=RAW[0],opt=(sel,i)=>`<option value="-1">(không có)</option>`+head.map((c,j)=>`<option value="${j}" ${j===i?'selected':''}>${esc(c||'Cột '+(j+1))}</option>`).join('');
+  $('#ncol').innerHTML=opt('n',ES.nameCol(head)>=0?ES.nameCol(head):Math.min(1,head.length-1));
+  $('#dcol').innerHTML=opt('d',ES.findCol(head,/ngay sinh|ns|sinh ngay/));
+  $('#pcol').innerHTML=opt('p',ES.findCol(head,/dien thoai|sdt|so dt|phone/));
+  $('#gcol').innerHTML=opt('g',ES.findCol(head,/^lop$|lop hoc/));
+  $('#cfg').hidden=$('#res').hidden=false;$('#tocn').hidden=!FROMCN;run();
+}
+function run(){
+  if(!RAW)return;const nc=+$('#ncol').value,dc=+$('#dcol').value,pc=+$('#pcol').value,gc=+$('#gcol').value,O=id=>$('#o-'+id).checked;
+  let head=RAW[0].slice(),rows=RAW.slice(1).map(r=>r.slice());const orig=new Map();rows.forEach((r,i)=>orig.set(r,RAW[i+1]));
+  if(O('empty')&&nc>=0)rows=rows.filter(r=>String(r[nc]||'').trim());
+  rows.forEach(r=>{if(nc>=0&&O('name'))r[nc]=ES.cleanName(r[nc]);if(dc>=0&&O('date'))r[dc]=ES.cleanDate(r[dc]);if(pc>=0&&O('phone'))r[pc]=ES.cleanPhone(r[pc]);});
+  if(O('sort')&&nc>=0)rows.sort((a,b)=>(gc>=0?ES.cmp(a[gc],b[gc]):0)||ES.cmpName(a[nc],b[nc]));
+  else if(gc>=0)rows.sort((a,b)=>ES.cmp(a[gc],b[gc]));
+  // ô đã sửa & dòng trùng (tính trước khi chèn cột)
+  let cells=[],dupRows=new Set();
+  rows.forEach((r,i)=>{const o=orig.get(r);r.forEach((c,j)=>{if(o&&String(o[j]??'')!==String(c))cells.push([i,j])})});
+  if(O('dup')&&nc>=0){const seen={};rows.forEach((r,i)=>{const k=ED.norm(r[nc])+'|'+(dc>=0?r[dc]:'');(seen[k]=seen[k]||[]).push(i)});Object.values(seen).forEach(a=>{if(a.length>1)a.forEach(x=>dupRows.add(x))})}
+  // chèn cột: tách họ tên, STT
+  const shift=[];
+  if(O('split')&&nc>=0){head.splice(nc+1,0,'Họ và chữ lót','Tên');rows.forEach(r=>{const x=ES.split(r[nc]);r.splice(nc+1,0,x.hoDem,x.ten)});shift.push([nc+1,2])}
+  let si=ES.findCol(head,/^(stt|tt|so tt)$/);
+  if(O('stt')){if(si<0){head.unshift('STT');rows.forEach(r=>r.unshift(''));shift.push([0,1]);si=0}
+    const gi=gc<0?-1:gc+shift.reduce((s,[at,n])=>s+(gc>=at||at===0?n:0),0);let n=0,g=null;
+    rows.forEach(r=>{if(gi>=0&&r[gi]!==g){g=r[gi];n=0}r[si]=String(++n)})}
+  const col=j=>shift.reduce((c,[at,n])=>c+((at===0||j>=at)?n:0),j);
+  const mark=new Set();cells.forEach(([i,j])=>mark.add((i+1)+','+col(j)));dupRows.forEach(i=>mark.add('row'+(i+1)));
+  OUT=[head,...rows];
+  $('#tbl').innerHTML=ES.table(OUT,mark);
+  $('#sum').textContent=`${rows.length} dòng · ${cells.length} ô đã sửa${dupRows.size?` · ⚠️ ${dupRows.size} dòng trùng tên`:''}`;
+}
+$$('#cfg input,#cfg select').forEach(e=>e.onchange=run);
+const drop=$('#drop'),fi=$('#file');drop.onclick=()=>fi.click();
+drop.ondragover=e=>e.preventDefault();drop.ondrop=e=>{e.preventDefault();openFile(e.dataTransfer.files[0])};
+fi.onchange=()=>{openFile(fi.files[0]);fi.value=''};
+async function openFile(f){if(!f)return;try{SHEETS=await ES.readFile(f);if(!SHEETS.length)throw new Error('File trống');
+  $('#sheet').hidden=SHEETS.length<2;$('#sheet').innerHTML=SHEETS.map((s,i)=>`<option value="${i}">${esc(s.name)}</option>`).join('');OUTNAME=f.name.replace(/\.[^.]+$/,'');load(SHEETS[0].rows)}catch(e){ED.toast('⚠️ Không đọc được file: '+e.message)}}
+let OUTNAME='danh_sach';
+$('#sheet').onchange=()=>load(SHEETS[+$('#sheet').value].rows);
+$('#usepaste').onclick=()=>{const t=ED.parseTable($('#paste').value);if(t.length<2){ED.toast('⚠️ Dán cả dòng tiêu đề và dữ liệu');return}OUTNAME='danh_sach';load(t)};
+$('#usecn').onclick=()=>{const st=ED.students();if(!st.length){ED.toast('Chưa có danh sách lớp chủ nhiệm');return}
+  OUTNAME='DS_lop_'+ED.fileName(ED.className());load([['STT','Họ và tên','Ngày sinh','Giới tính','Số điện thoại','_id'],...st.map(s=>[String(s.stt),s.hoTen,ED.vnDate(s.ngaySinh),s.gioiTinh,s.phone,s.id])],true)};
+$('#xlsx').onclick=()=>{const hid=OUT[0].indexOf('_id');const rows=hid>=0?OUT.map(r=>r.filter((_,j)=>j!==hid)):OUT;ED.exportXLSX([{name:'Danh sách',aoa:rows}],OUTNAME+'_chuan_hoa')};
+$('#copy').onclick=()=>{const hid=OUT[0].indexOf('_id');ED.copy(ES.toTSV(hid>=0?OUT.map(r=>r.filter((_,j)=>j!==hid)):OUT)).then(()=>ED.toast('📋 Đã sao chép – mở Excel và dán (Ctrl+V)'))};
+$('#tocn').onclick=()=>{if(!FROMCN)return;if(!confirm('Cập nhật lại họ tên (đã chuẩn hóa) và số thứ tự theo thứ tự ABC cho danh sách lớp chủ nhiệm?'))return;
+  const h=OUT[0],ii=h.indexOf('_id'),ni=h.indexOf('Họ và tên'),si=h.indexOf('STT'),list=ED.get('cn_students',[]);
+  OUT.slice(1).forEach(r=>{const s=list.find(x=>String(x.id)===r[ii]);if(s){s.hoTen=r[ni];s.stt=r[si]}});ED.set('cn_students',list);ED.toast('✅ Đã cập nhật danh sách lớp chủ nhiệm')};
+</script>
+<script src="eduhub_backup.js"></script>
+</body>
+</html>

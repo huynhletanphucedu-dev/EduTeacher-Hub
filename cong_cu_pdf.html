@@ -17,6 +17,24 @@
 body.dark{--bg:#0f172a;--card:#1e293b;--card2:#162032;--text:#e2e8f0;--text2:#cbd5e1;--muted:#94a3b8;--border:#334155;--shadow:0 4px 20px rgba(0,0,0,.3);}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 [hidden]{display:none!important}
+.edbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+.edstage{margin-top:10px;background:#94a3b8;border-radius:10px;padding:14px;overflow:auto;max-height:80vh}
+.edpage{position:relative;margin:0 auto;box-shadow:0 4px 18px rgba(0,0,0,.3);background:#fff;width:max-content}
+.edpage canvas{display:block}
+.edov{position:absolute;inset:0;cursor:crosshair}
+.edov.sel{cursor:default}
+.an{position:absolute;box-sizing:border-box}
+.an.white{background:#fff}
+.an.hl{background:rgba(250,204,21,.4);mix-blend-mode:multiply}
+.an.box{border:2px solid var(--c)}
+.an.line{height:0!important;border-top:2px solid var(--c)}
+.an.text{white-space:pre;line-height:1.25;font-family:'BVP','Segoe UI',sans-serif;outline:none;min-width:8px;padding:0;cursor:text}
+.an.on{outline:2px dashed #e11d48;outline-offset:2px}
+.an .hd{position:absolute;right:-6px;bottom:-6px;width:12px;height:12px;background:#e11d48;border-radius:3px;cursor:nwse-resize}
+.an.line .hd{bottom:-7px}
+@font-face{font-family:'BVP';src:url('lib/BeVietnamPro-Regular.ttf')}
+@font-face{font-family:'BVP';src:url('lib/BeVietnamPro-Bold.ttf');font-weight:700}
+
 body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
 button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 24px;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20}
@@ -122,10 +140,13 @@ body.dark .msg.ok{color:#6ee7b7}body.dark .msg.err{color:#fca5a5}
     <button class="tbtn active" data-t="merge" style="--tc:#3b82f6"><span class="ic">📎</span>Ghép PDF</button>
     <button class="tbtn" data-t="pages" style="--tc:#8b5cf6"><span class="ic">🗂️</span>Sắp xếp · Xóa · Xoay<span class="new">MỚI</span></button>
     <button class="tbtn" data-t="split" style="--tc:#6366f1"><span class="ic">✂️</span>Tách &amp; trích trang</button>
+    <button class="tbtn" data-t="nup" style="--tc:#0d9488"><span class="ic">🗞️</span>In nhiều trang/tờ<span class="new">MỚI</span></button>
+    <button class="tbtn" data-t="halve" style="--tc:#78716c"><span class="ic">🪓</span>Tách đôi trang scan<span class="new">MỚI</span></button>
     <div class="side-g">Chèn nội dung</div>
     <button class="tbtn" data-t="pagenum" style="--tc:#10b981"><span class="ic">🔢</span>Đánh số trang</button>
     <button class="tbtn" data-t="text" style="--tc:#06b6d4"><span class="ic">✍️</span>Chèn chữ · Tên GV</button>
     <button class="tbtn" data-t="logo" style="--tc:#ec4899"><span class="ic">🏫</span>Chèn logo / ảnh</button>
+    <button class="tbtn" data-t="edit" style="--tc:#e11d48"><span class="ic">📝</span>Sửa nhanh PDF<span class="new">MỚI</span></button>
     <button class="tbtn" data-t="sign" style="--tc:#0ea5e9"><span class="ic">🖋️</span>Chèn chữ ký<span class="new">MỚI</span></button>
     <button class="tbtn" data-t="stamp" style="--tc:#f97316"><span class="ic">🔏</span>Đóng dấu chìm</button>
     <div class="side-g">Chuyển đổi</div>
@@ -236,6 +257,67 @@ body.dark .msg.ok{color:#6ee7b7}body.dark .msg.err{color:#fca5a5}
         <div class="f"><label>Áp dụng cho</label><select id="lg-apply"><option value="all">Tất cả các trang</option><option value="first">Chỉ trang đầu</option></select></div>
       </div>
       <div class="actions"><button class="btn" id="logo-go" disabled>🏫 Chèn logo &amp; tải về</button></div>
+      <div class="prog"><i></i></div><div class="msg"></div>
+    </section>
+
+    <!-- N-UP -->
+    <section class="panel" id="p-nup" style="--accent:#0d9488">
+      <div class="ph"><h2>🗞️ In nhiều trang trên một tờ A4</h2><p>Gộp 2, 4, 6 hoặc 8 trang vào một mặt giấy để in đề, photo tài liệu tiết kiệm giấy. Có thể chọn nhiều file.</p></div>
+      <div class="drop" data-drop="nup" data-multi="1" data-accept=".pdf"><div class="big">🗞️</div><b>Chọn file PDF</b><span>Có thể chọn nhiều file cùng lúc</span></div>
+      <div class="flist" id="nup-list"></div>
+      <div class="row">
+        <div class="f"><label>Số trang mỗi tờ</label><div class="chips" id="nup-n"><span class="chip on" data-n="2">2 trang (A4 ngang)</span><span class="chip" data-n="4">4 trang</span><span class="chip" data-n="6">6 trang</span><span class="chip" data-n="8">8 trang</span></div></div>
+        <div class="f"><label>Thứ tự</label><select id="nup-ord"><option value="z">Trái → phải, rồi xuống dòng</option><option value="n">Trên → dưới, rồi sang cột</option></select></div>
+      </div>
+      <div class="row">
+        <div class="f"><label>Lề giấy: <span id="nup-mv">8</span> mm</label><input type="range" id="nup-m" min="0" max="20" value="8"></div>
+        <div class="f"><label>Khoảng cách giữa các trang: <span id="nup-gv">4</span> mm</label><input type="range" id="nup-g" min="0" max="15" value="4"></div>
+        <div class="f"><label>Đường cắt</label><select id="nup-line"><option value="dash">Nét đứt (để cắt)</option><option value="none">Không</option><option value="box">Khung quanh mỗi trang</option></select></div>
+      </div>
+      <div class="hint">💡 In 2 trang/tờ: đề A4 thu nhỏ còn khổ A5 – chữ vẫn đọc tốt. 4 trang/tờ hợp với phiếu bài tập ngắn, thẻ từ vựng.</div>
+      <div class="actions"><button class="btn" id="nup-go" disabled>🗞️ Tạo file in &amp; tải về</button></div>
+      <div class="prog"><i></i></div><div class="msg"></div>
+    </section>
+
+    <!-- TÁCH ĐÔI -->
+    <section class="panel" id="p-halve" style="--accent:#78716c">
+      <div class="ph"><h2>🪓 Tách đôi trang scan</h2><p>File scan khổ A3 (2 trang sách trên 1 mặt) → tách thành 2 trang A4 riêng.</p></div>
+      <div class="drop" data-drop="halve" data-accept=".pdf"><div class="big">🪓</div><b>Chọn 1 file PDF</b></div>
+      <div class="info" id="halve-info" hidden></div>
+      <div class="row">
+        <div class="f"><label>Cách tách</label><select id="hv-dir"><option value="v">Chia dọc (trái | phải)</option><option value="h">Chia ngang (trên / dưới)</option></select></div>
+        <div class="f"><label>Thứ tự</label><select id="hv-ord"><option value="ab">Trái trước, phải sau (trên trước)</option><option value="ba">Phải trước, trái sau</option></select></div>
+        <div class="f"><label>Chỉ tách trang khổ ngang</label><select id="hv-only"><option value="1">Có – trang dọc giữ nguyên</option><option value="0">Không – tách tất cả</option></select></div>
+      </div>
+      <div class="actions"><button class="btn" id="halve-go" disabled>🪓 Tách &amp; tải về</button></div>
+      <div class="prog"><i></i></div><div class="msg"></div>
+    </section>
+
+    <!-- SỬA NHANH -->
+    <section class="panel" id="p-edit" style="--accent:#e11d48">
+      <div class="ph"><h2>📝 Sửa nhanh nội dung PDF</h2><p>Che chữ sai bằng ô trắng rồi gõ chữ mới đè lên, tô sáng, gạch chân, đóng khung – không cần file Word gốc. Chữ tiếng Việt có dấu.</p></div>
+      <div class="drop" data-drop="edit" data-accept=".pdf" style="padding:16px"><b>📄 Chọn file PDF cần sửa</b></div>
+      <div id="ed-ui" hidden>
+        <div class="edbar">
+          <div class="chips" id="ed-tools">
+            <span class="chip on" data-tool="select" title="Chọn, kéo để di chuyển, kéo góc để đổi cỡ">✋ Chọn</span>
+            <span class="chip" data-tool="white" title="Kéo để che trắng">⬜ Che trắng</span>
+            <span class="chip" data-tool="text" title="Bấm vào trang để gõ chữ">🔤 Gõ chữ</span>
+            <span class="chip" data-tool="hl" title="Kéo để tô sáng">🖍️ Tô sáng</span>
+            <span class="chip" data-tool="line" title="Kéo để gạch chân / kẻ đường">➖ Gạch</span>
+            <span class="chip" data-tool="box" title="Kéo để đóng khung">▭ Khung</span>
+          </div>
+          <div class="btns">
+            <label class="hint">Cỡ chữ <input type="number" id="ed-size" value="13" min="6" max="72" style="width:60px"></label>
+            <label class="hint">Màu <input type="color" id="ed-color" value="#111111"></label>
+            <label class="hint"><input type="checkbox" id="ed-bold"> Đậm</label>
+            <button class="btn l s" id="ed-del">🗑️ Xóa mục chọn</button><button class="btn l s" id="ed-undo">↩ Hoàn tác</button>
+          </div>
+        </div>
+        <div class="edbar" style="margin-top:8px"><div class="btns"><button class="btn l s" id="ed-prev">◀ Trang trước</button><b id="ed-pos"></b><button class="btn l s" id="ed-next">Trang sau ▶</button></div><span class="hint" id="ed-hint">Chọn công cụ rồi kéo chuột trên trang.</span></div>
+        <div class="edstage"><div class="edpage" id="ed-page"><canvas id="ed-cv"></canvas><div class="edov" id="ed-ov"></div></div></div>
+      </div>
+      <div class="actions"><button class="btn" id="edit-go" disabled>💾 Lưu file đã sửa</button></div>
       <div class="prog"><i></i></div><div class="msg"></div>
     </section>
 

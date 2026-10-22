@@ -8,6 +8,7 @@ files, h = [], hashlib.sha1()
 for p in sorted(ROOT.rglob('*')):
     rel = p.relative_to(ROOT).as_posix()
     if p.is_dir() or any(part in SKIP_DIR for part in p.relative_to(ROOT).parts): continue
+    if rel.startswith('lib/tesseract/'): continue  # bộ OCR ~9MB: chỉ tải khi dùng lần đầu
     if p.suffix.lower() in SKIP_EXT or p.name.startswith('.') or rel == 'sw.js' or '.tmp.' in p.name: continue
     files.append(rel); h.update(rel.encode()); h.update(p.read_bytes())
 core = ['./', 'index.html', 'dashboard.html', 'manifest.webmanifest', 'eduhub_backup.js', 'eduhub_search.js', 'eduhub_pwa.js', 'icons/icon-192.png']

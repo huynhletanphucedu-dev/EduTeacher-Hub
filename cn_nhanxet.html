@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nhận Xét TT22 – EduTeacher Hub</title>
+<link rel="stylesheet" href="eduhub_ui.css">
+<script src="eduhub_data.js"></script>
+<script src="lib/xlsx.full.min.js"></script>
+<style>
+:root{--accent:#0d9488}
+.nx{width:100%;min-height:62px;font-size:.84rem;line-height:1.45;border:1px solid var(--border);background:var(--card2);border-radius:8px;padding:6px 8px;resize:vertical}
+.nx.edited{border-color:#f59e0b}
+.lvsel{padding:5px 6px;border-radius:7px;border:1px solid var(--border);background:var(--card2);font-weight:700;width:auto}
+.sugg{font-size:.7rem;color:var(--muted);display:block;margin-top:2px}
+.cnt{font-size:.68rem;color:var(--muted);text-align:right}
+.tbl td{vertical-align:middle}
+.mini{font-size:.75rem;color:var(--muted)}
+.bankcol textarea{min-height:150px;font-size:.82rem}
+.sumrow{display:flex;gap:10px;flex-wrap:wrap}
+.sumrow .stat{flex:1;min-width:110px}
+details summary{cursor:pointer;font-weight:700}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>📝 Nhận xét &amp; xếp loại học sinh <small>theo Thông tư 22/2021</small></h1>
+  <div class="right"><span class="privacy">🔒 Dữ liệu chỉ lưu trên máy này</span><a class="back" href="dashboard.html">← Trang chính</a></div>
+</div>
+<div class="wrap">
+  <div class="tabs">
+    <button class="tab on" data-t="gvcn">👩‍🏫 Giáo viên chủ nhiệm</button>
+    <button class="tab" data-t="mon">📘 Nhận xét môn học</button>
+    <button class="tab" data-t="bank">💬 Ngân hàng câu nhận xét</button>
+  </div>
+
+  <!-- ═══ GVCN ═══ -->
+  <section id="p-gvcn">
+    <div class="card">
+      <h2>👩‍🏫 Xếp loại &amp; nhận xét cuối kỳ – lớp <span id="cls"></span></h2>
+      <p class="hint">Hệ thống lấy danh sách học sinh, <b>số buổi vắng, số lần vi phạm / khen thưởng</b> từ mục Chủ Nhiệm để <b>gợi ý</b> mức rèn luyện và soạn sẵn lời nhận xét. Thầy/cô chỉ cần xem lại, sửa cho phù hợp rồi sao chép vào phần mềm quản lý (vnEdu, SMAS…) hoặc xuất Excel.</p>
+      <div class="row" style="margin-top:12px">
+        <div class="f s"><label>Học kỳ</label><select id="hk"><option value="hk1">Học kỳ I</option><option value="hk2">Học kỳ II</option><option value="cn">Cả năm</option></select></div>
+        <div class="f s"><label>Thống kê nề nếp từ</label><input type="date" id="from"></div>
+        <div class="f s"><label>đến</label><input type="date" id="to"></div>
+        <div class="btns">
+          <button class="btn" id="gen">✨ Tạo nhận xét cho cả lớp</button>
+          <button class="btn l" id="copy">📋 Sao chép cột nhận xét</button>
+          <button class="btn g" id="xlsx">⬇️ Xuất Excel</button>
+        </div>
+      </div>
+      <details style="margin-top:14px">
+        <summary>📊 Tự xếp loại HỌC TẬP từ bảng điểm tổng hợp (không bắt buộc)</summary>
+        <p class="hint" style="margin:6px 0">Dán bảng điểm trung bình các môn từ Excel / vnEdu: <b>dòng đầu là tiêu đề</b> (Họ và tên | Toán | Ngữ văn | …), các môn đánh giá bằng nhận xét ghi <b>Đ</b> hoặc <b>CĐ</b>. Hệ thống xếp loại theo Điều 9 TT22 (kể cả quy định nâng 1 mức khi bị hạ ≥ 2 mức chỉ vì 1 môn).</p>
+        <textarea id="paste" rows="5" placeholder="Họ và tên	Toán	Ngữ văn	Tiếng Anh	KHTN	LS&ĐL	GDCD	Công nghệ	Tin	GDTC	Nghệ thuật&#10;Nguyễn Văn An	8.5	7.8	9.0	8.1	8.4	9.2	8.0	8.8	Đ	Đ"></textarea>
+        <div class="btns" style="margin-top:8px"><button class="btn o" id="calc">🧮 Tính xếp loại học tập</button><span class="mini" id="calcmsg"></span></div>
+      </details>
+    </div>
+    <div class="card">
+      <div class="sumrow" id="sum"></div>
+      <div class="tbl-wrap" style="margin-top:12px;max-height:70vh"><table class="tbl" id="tb"></table></div>
+      <p class="hint" style="margin-top:8px">💡 Ô nhận xét viền <b style="color:#f59e0b">cam</b> là ô thầy/cô đã tự sửa – bấm “Tạo nhận xét cho cả lớp” sẽ <b>không</b> ghi đè các ô này. Bấm 🔄 để đổi cách diễn đạt khác.</p>
+    </div>
+  </section>
+
+  <!-- ═══ MÔN HỌC ═══ -->
+  <section id="p-mon" hidden>
+    <div class="card">
+      <h2>📘 Nhận xét môn học từ Sổ điểm</h2>
+      <p class="hint">Chọn sổ điểm của lớp → hệ thống tính ĐTB môn theo công thức TT22 và soạn lời nhận xét theo mức. Chưa có sổ điểm? Dán danh sách <b>Họ tên | Điểm</b> vào ô bên dưới.</p>
+      <div class="row" style="margin-top:12px">
+        <div class="f"><label>Sổ điểm</label><select id="book"></select></div>
+        <div class="f s"><label>Học kỳ</label><select id="mhk"><option value="hk1">Học kỳ I</option><option value="hk2">Học kỳ II</option><option value="cn">Cả năm</option></select></div>
+        <div class="btns"><button class="btn" id="mgen">✨ Tạo nhận xét</button><button class="btn l" id="mcopy">📋 Sao chép cột nhận xét</button><button class="btn g" id="mxlsx">⬇️ Xuất Excel</button></div>
+      </div>
+      <details style="margin-top:12px"><summary>✍️ Hoặc dán danh sách điểm</summary>
+        <textarea id="mpaste" rows="5" style="margin-top:8px" placeholder="Nguyễn Văn An	8.5&#10;Trần Thị Bình	6.8"></textarea>
+        <div class="btns" style="margin-top:8px"><input type="text" id="mname" placeholder="Tên môn (vd: Toán)" style="max-width:200px"><button class="btn o" id="muse">Dùng danh sách này</button></div>
+      </details>
+    </div>
+    <div class="card"><div class="sumrow" id="msum"></div><div class="tbl-wrap" style="margin-top:12px;max-height:70vh"><table class="tbl" id="mtb"></table></div></div>
+  </section>
+
+  <!-- ═══ NGÂN HÀNG ═══ -->
+  <section id="p-bank" hidden>
+    <div class="card">
+      <h2>💬 Ngân hàng câu nhận xét</h2>
+      <p class="hint">Mỗi dòng là một câu. Thầy/cô thêm, bớt, sửa tùy ý rồi bấm Lưu – hệ thống sẽ dùng các câu này khi soạn nhận xét. Bấm vào một câu ở khung xem nhanh để sao chép.</p>
+      <div class="btns" style="margin:10px 0"><button class="btn" id="bsave">💾 Lưu ngân hàng</button><button class="btn l" id="breset">↩ Khôi phục câu mặc định</button></div>
+      <div class="grid2" id="bank"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+'use strict';
+const {$, $$, esc} = ED;
+const LV=['C','D','K','T'], LVN=ED.LV;
+/* ───────── ngân hàng câu mặc định ───────── */
+const DEF_BANK={
+ rl_T:['Ngoan, lễ phép, chấp hành tốt nội quy trường lớp.','Có ý thức tự giác, tinh thần trách nhiệm cao; hòa đồng, đoàn kết với bạn bè.','Kính trọng thầy cô, thân thiện với bạn bè, gương mẫu trong các hoạt động của lớp.','Chăm chỉ, trung thực, nhiệt tình tham gia các hoạt động tập thể.'],
+ rl_K:['Ngoan, lễ phép, thực hiện khá tốt nội quy.','Có ý thức tham gia hoạt động tập thể, hòa đồng với bạn bè.','Biết vâng lời thầy cô, đoàn kết với bạn bè; đôi lúc còn chưa tập trung.'],
+ rl_D:['Cơ bản chấp hành nội quy nhưng đôi lúc còn vi phạm.','Còn chưa tự giác trong học tập và sinh hoạt, cần rèn luyện thêm.','Biết vâng lời nhưng ý thức kỷ luật chưa cao.'],
+ rl_C:['Còn vi phạm nội quy nhiều lần, cần nghiêm túc rèn luyện.','Ý thức kỷ luật chưa tốt, cần sự phối hợp chặt chẽ giữa gia đình và nhà trường.'],
+ ht_T:['Học tập chăm chỉ, tiếp thu bài nhanh, kết quả học tập tốt.','Có tinh thần tự học cao, tích cực phát biểu xây dựng bài.','Nắm vững kiến thức các môn học, có khả năng vận dụng tốt.'],
+ ht_K:['Có ý thức học tập, tiếp thu bài khá.','Chăm chỉ học tập, kết quả khá; cần phát huy hơn ở một số môn.','Nắm được kiến thức cơ bản, cần chủ động hơn trong học tập.'],
+ ht_D:['Nắm được kiến thức cơ bản nhưng chưa vững.','Học tập chưa đều giữa các môn, cần cố gắng nhiều hơn.','Tiếp thu bài còn chậm, cần dành thêm thời gian ôn tập ở nhà.'],
+ ht_C:['Kết quả học tập còn hạn chế, cần nỗ lực nhiều hơn.','Chưa nắm vững kiến thức cơ bản, cần sự hỗ trợ thêm của thầy cô và gia đình.'],
+ ket_T:['Cần tiếp tục phát huy.','Tiếp tục giữ vững và phát huy kết quả.'],
+ ket_K:['Cố gắng hơn nữa để đạt kết quả tốt.','Phát huy điểm mạnh để tiến bộ hơn.'],
+ ket_D:['Cần cố gắng nhiều hơn ở học kỳ tới.','Cần chăm chỉ và tập trung hơn trong học tập.'],
+ ket_C:['Cần nỗ lực rất nhiều; gia đình quan tâm, nhắc nhở thêm.','Cần cố gắng nhiều hơn, thầy cô và gia đình sẽ cùng hỗ trợ.'],
+ mon_T:['Nắm vững kiến thức, vận dụng tốt vào giải quyết bài tập.','Tiếp thu bài nhanh, tích cực phát biểu, kết quả tốt.','Có năng lực tự học tốt, trình bày bài cẩn thận, khoa học.'],
+ mon_K:['Nắm được kiến thức cơ bản, vận dụng khá.','Có ý thức học tập, cần rèn thêm kỹ năng giải bài tập nâng cao.','Tiếp thu bài khá, cần cẩn thận hơn khi làm bài.'],
+ mon_D:['Nắm được kiến thức cơ bản nhưng vận dụng còn hạn chế.','Cần chú ý nghe giảng và làm bài tập đầy đủ hơn.','Kết quả ở mức đạt, cần ôn tập thường xuyên hơn.'],
+ mon_C:['Chưa nắm vững kiến thức cơ bản, cần cố gắng nhiều hơn.','Cần tập trung trong giờ học và hoàn thành bài tập về nhà.'],
+ mon_Dat:['Hoàn thành tốt các yêu cầu của môn học.','Tích cực, đáp ứng yêu cầu của môn học.'],
+ mon_CDat:['Chưa hoàn thành một số yêu cầu của môn học, cần cố gắng hơn.']
+};
+const BANK_LABEL={rl_T:'Rèn luyện – Tốt',rl_K:'Rèn luyện – Khá',rl_D:'Rèn luyện – Đạt',rl_C:'Rèn luyện – Chưa đạt',ht_T:'Học tập – Tốt',ht_K:'Học tập – Khá',ht_D:'Học tập – Đạt',ht_C:'Học tập – Chưa đạt',ket_T:'Câu kết – HT Tốt',ket_K:'Câu kết – HT Khá',ket_D:'Câu kết – HT Đạt',ket_C:'Câu kết – HT Chưa đạt',mon_T:'Môn học – ĐTB ≥ 8,0',mon_K:'Môn học – ĐTB 6,5–7,9',mon_D:'Môn học – ĐTB 5,0–6,4',mon_C:'Môn học – ĐTB < 5,0',mon_Dat:'Môn nhận xét – Đạt',mon_CDat:'Môn nhận xét – Chưa đạt'};
+let BANK=Object.assign({},DEF_BANK,ED.get('nx_bank',{}));
+const hash=s=>{let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0};
+const pick=(arr,seed)=>arr&&arr.length?arr[hash(seed)%arr.length]:'';
+
+/* ───────── tabs ───────── */
+$$('.tab').forEach(t=>t.onclick=()=>{$$('.tab').forEach(x=>x.classList.toggle('on',x===t));['gvcn','mon','bank'].forEach(id=>$('#p-'+id).hidden=id!==t.dataset.t);if(t.dataset.t==='bank')renderBank();if(t.dataset.t==='mon')renderBooks()});
+
+/* ═════════════ GVCN ═════════════ */
+const STU=ED.students();
+$('#cls').textContent=ED.className()||'chủ nhiệm';
+function schoolYear(){const d=new Date(),y=d.getMonth()>=7?d.getFullYear():d.getFullYear()-1;return y}
+function defRange(hk){const y=schoolYear();return hk==='hk1'?[y+'-09-01',(y+1)+'-01-15']:hk==='hk2'?[(y+1)+'-01-16',(y+1)+'-05-31']:[y+'-09-01',(y+1)+'-05-31']}
+let S=null; // trạng thái lớp theo học kỳ
+const key=()=> 'nx_gvcn_'+$('#hk').value;
+function load(){
+  S=ED.get(key(),null)||{rows:{},from:'',to:'',subjects:null};
+  const [a,b]=defRange($('#hk').value); $('#from').value=S.from||a; $('#to').value=S.to||b;
+  render();
+}
+function save(){S.from=$('#from').value;S.to=$('#to').value;ED.set(key(),S)}
+function rlSuggest(st){
+  // gợi ý mức rèn luyện từ nề nếp (giáo viên quyết định cuối cùng)
+  const v=st.viPham, bad=v+Math.floor(st.vang/4)+Math.floor(st.tre/4);
+  if(bad===0) return 'T'; if(bad<=2) return st.khen>=2?'T':'K'; if(bad<=5) return 'D'; return 'C';
+}
+function compose(s,r,st){
+  const ht=r.ht, rl=r.rl||'D', seed=s.id+':'+(r.salt||0);
+  const parts=[pick(BANK['rl_'+rl],seed+'a'), ht?pick(BANK['ht_'+ht],seed+'b'):''];
+  if(st.khen>0) parts.push(st.khen>=3?'Tích cực tham gia phong trào, nhiều lần được tuyên dương.':'Tích cực tham gia hoạt động, được tuyên dương trước lớp.');
+  if(st.viPham>0&&(rl==='T'||rl==='K')) parts.push('Cần chú ý hơn trong việc chấp hành nội quy.');
+  if(st.vang>=3) parts.push('Cần đi học chuyên cần hơn.'); else if(st.tre>=3) parts.push('Cần đi học đúng giờ hơn.');
+  parts.push(ht?pick(BANK['ket_'+ht],seed+'c'):(rl==='T'||rl==='K'?'Cần tiếp tục phát huy.':'Cần cố gắng nhiều hơn.'));
+  return parts.filter(Boolean).join(' ');
+}
+function title(r){
+  if(r.ht==='T'&&r.rl==='T') return r.x9>=6?'Học sinh Xuất sắc':'Học sinh Giỏi';
+  return '';
+}
+function render(){
+  if(!STU.length){ED.noStudents($('#tb'));$('#sum').innerHTML='';return}
+  const from=$('#from').value,to=$('#to').value;
+  const cnt={T:[0,0],K:[0,0],D:[0,0],C:[0,0]};let dh={g:0,x:0};
+  const rows=STU.map(s=>{
+    const st=ED.statsFor(s.id,from,to), r=S.rows[s.id]||(S.rows[s.id]={});
+    const sug=rlSuggest(st); if(!r.rl) r.rl=sug;
+    if(r.ht) cnt[r.ht][0]++; if(r.rl) cnt[r.rl][1]++;
+    const t=title(r); if(t==='Học sinh Giỏi')dh.g++; if(t==='Học sinh Xuất sắc')dh.x++;
+    const opt=(v,sel)=>'<option value="">—</option>'+LV.slice().reverse().map(l=>`<option value="${l}" ${sel===l?'selected':''}>${LVN[l]}</option>`).join('');
+    return `<tr data-id="${s.id}"><td class="c">${s.stt}</td><td><b>${esc(s.hoTen)}</b></td>
+      <td class="c">${st.vang}${st.tre?` <span class="mini">(${st.tre} trễ)</span>`:''}</td><td class="c">${st.viPham}</td><td class="c">${st.khen}</td>
+      <td><select class="lvsel" data-f="ht">${opt('ht',r.ht)}</select>${r.htAuto?`<span class="sugg">từ bảng điểm</span>`:''}</td>
+      <td><select class="lvsel" data-f="rl">${opt('rl',r.rl)}</select><span class="sugg">gợi ý: ${LVN[sug]}</span></td>
+      <td class="c">${t?`<span class="badge lv-T">${t}</span>`:''}</td>
+      <td style="min-width:340px"><textarea class="nx ${r.edited?'edited':''}" data-f="nx">${esc(r.nx||'')}</textarea><div class="cnt">${(r.nx||'').length} ký tự</div></td>
+      <td><button class="btn l s" data-f="re" title="Đổi cách diễn đạt">🔄</button></td></tr>`;
+  }).join('');
+  $('#tb').innerHTML='<thead><tr><th class="c">STT</th><th>Họ và tên</th><th class="c">Vắng</th><th class="c">Vi phạm</th><th class="c">Khen</th><th>Học tập</th><th>Rèn luyện</th><th class="c">Danh hiệu</th><th>Nhận xét</th><th></th></tr></thead><tbody>'+rows+'</tbody>';
+  $('#sum').innerHTML=['T','K','D','C'].map(l=>`<div class="stat"><span>${LVN[l]}</span><b>${cnt[l][0]} / ${cnt[l][1]}</b><span style="text-transform:none">học tập / rèn luyện</span></div>`).join('')+`<div class="stat"><span>Danh hiệu</span><b>${dh.x+dh.g}</b><span style="text-transform:none">${dh.x} Xuất sắc · ${dh.g} Giỏi</span></div>`;
+  $$('#tb tr[data-id]').forEach(tr=>{
+    const id=tr.dataset.id,r=S.rows[id],s=STU.find(x=>x.id===id);
+    $$('select',tr).forEach(sel=>sel.onchange=()=>{r[sel.dataset.f]=sel.value;if(sel.dataset.f==='ht')r.htAuto=false;if(!r.edited)r.nx=compose(s,r,ED.statsFor(id,$('#from').value,$('#to').value));save();render()});
+    const ta=$('textarea',tr);ta.oninput=()=>{r.nx=ta.value;r.edited=true;ta.classList.add('edited');$('.cnt',tr).textContent=ta.value.length+' ký tự';save()};
+    $('[data-f=re]',tr).onclick=()=>{r.salt=(r.salt||0)+1;r.edited=false;r.nx=compose(s,r,ED.statsFor(id,$('#from').value,$('#to').value));save();render()};
+  });
+}
+$('#hk').onchange=load; $('#from').onchange=()=>{save();render()}; $('#to').onchange=()=>{save();render()};
+$('#gen').onclick=()=>{let n=0;STU.forEach(s=>{const r=S.rows[s.id];if(!r||r.edited)return;r.nx=compose(s,r,ED.statsFor(s.id,$('#from').value,$('#to').value));n++});save();render();ED.toast(`✅ Đã soạn nhận xét cho ${n} học sinh`)};
+$('#copy').onclick=()=>ED.copy(STU.map(s=>(S.rows[s.id]||{}).nx||'').join('\n')).then(()=>ED.toast('📋 Đã sao chép – dán vào cột nhận xét trong Excel/vnEdu (đúng thứ tự STT)'));
+$('#xlsx').onclick=()=>{const from=$('#from').value,to=$('#to').value;const aoa=[['STT','Họ và tên','Vắng','Vi phạm','Khen thưởng','Kết quả học tập','Kết quả rèn luyện','Danh hiệu','Nhận xét của GVCN']];
+  STU.forEach(s=>{const r=S.rows[s.id]||{},st=ED.statsFor(s.id,from,to);aoa.push([s.stt,s.hoTen,st.vang,st.viPham,st.khen,LVN[r.ht]||'',LVN[r.rl]||'',title(r),r.nx||''])});
+  ED.exportXLSX([{name:'Nhận xét',aoa,cols:[{wch:5},{wch:26},{wch:7},{wch:8},{wch:8},{wch:14},{wch:14},{wch:16},{wch:90}]}],'NhanXet_GVCN_'+ED.fileName(ED.className()||'lop')+'_'+$('#hk').value)};
+
+/* ── xếp loại học tập theo TT22 (Điều 9) ── */
+function isNX(v){const n=ED.norm(v);return n==='d'||n==='dat'||n==='cd'||n==='chua dat'}
+function isCD(v){const n=ED.norm(v);return n==='cd'||n==='chua dat'}
+function rank(sc,nx){
+  const cd=nx.filter(isCD).length,allD=cd===0,c=t=>sc.filter(x=>x>=t).length,all=t=>sc.every(x=>x>=t);
+  if(allD&&all(6.5)&&c(8)>=6) return 3;
+  if(allD&&all(5)&&c(6.5)>=6) return 2;
+  if(cd<=1&&c(5)>=6&&all(3.5)) return 1;
+  return 0;
+}
+function kqht(vals){
+  const sc=vals.filter(v=>!isNX(v)&&ED.num(v)!=null).map(ED.num), nx=vals.filter(isNX);
+  let lv=rank(sc,nx), best=lv;
+  // nâng 1 mức nếu bị hạ từ 2 mức trở lên chỉ do kết quả của 1 môn
+  sc.forEach((_,i)=>{const s2=sc.slice();s2[i]=10;best=Math.max(best,rank(s2,nx))});
+  nx.forEach((v,i)=>{if(isCD(v)){const n2=nx.slice();n2[i]='Đ';best=Math.max(best,rank(sc,n2))}});
+  if(best-lv>=2) lv++;
+  return {lv:LV[lv],x9:sc.filter(x=>x>=9).length,n:sc.length+nx.length};
+}
+$('#calc').onclick=()=>{
+  const t=ED.parseTable($('#paste').value); if(t.length<2){$('#calcmsg').textContent='⚠️ Cần dòng tiêu đề và ít nhất 1 học sinh.';return}
+  const head=t[0],ni=Math.max(0,head.findIndex(h=>/t[eê]n/i.test(ED.norm(h))||/ho va ten|ho ten/.test(ED.norm(h))));
+  const subjIdx=head.map((h,i)=>i).filter(i=>i!==ni&&!/^stt$|^tt$/.test(ED.norm(head[i])));
+  const map={},dup=new Set();STU.forEach(s=>{const k=ED.norm(s.hoTen);if(map[k])dup.add(s.hoTen);else map[k]=s});
+  let ok=0,miss=[];
+  t.slice(1).forEach(row=>{const s=map[ED.norm(row[ni])];if(!s){if(row[ni])miss.push(row[ni]);return}
+    const vals=subjIdx.map(i=>row[i]).filter(v=>v!=null&&v!=='');const k=kqht(vals);const r=S.rows[s.id]||(S.rows[s.id]={});r.ht=k.lv;r.htAuto=true;r.x9=k.x9;if(!r.edited)r.nx=compose(s,r,ED.statsFor(s.id,$('#from').value,$('#to').value));ok++});
+  save();render();
+  $('#calcmsg').innerHTML=`✅ Đã xếp loại ${ok} học sinh (${subjIdx.length} môn).`+(dup.size?` ⚠️ Lớp có học sinh trùng tên (${[...dup].map(esc).join(', ')}) – chỉ điền cho em có STT nhỏ hơn, thầy/cô kiểm tra lại.`:'')+(miss.length?` ⚠️ Không khớp tên: ${miss.slice(0,6).map(esc).join(', ')}${miss.length>6?'…':''}`:'');
+};
+
+/* ═════════════ MÔN HỌC ═════════════ */
+let M={list:[],mon:''};
+function renderBooks(){
+  const bs=ED.books(); $('#book').innerHTML=bs.length?bs.map((b,i)=>`<option value="${i}">${esc(b.mon)} – Lớp ${esc(b.lop)}${b.namhoc?' ('+esc(b.namhoc)+')':''}</option>`).join(''):'<option value="">(Chưa có sổ điểm nào)</option>';
+  if(!M.list.length&&bs.length) fromBook();
+}
+function fromBook(){
+  const b=ED.books()[+$('#book').value]; if(!b){M={list:[],mon:''};renderMon();return}
+  const hk=$('#mhk').value; const st=ED.get('nx_mon_'+b.id+'_'+hk,{});
+  M={key:'nx_mon_'+b.id+'_'+hk,mon:b.mon,lop:b.lop,list:ED.bookScores(b,hk).map((s,i)=>Object.assign({i,ten:s.ten,tbm:s.tbm,q:qual(s)},st[s.ten]||{}))};
+  renderMon();
+}
+function qual(s){/* môn đánh giá bằng nhận xét: điểm dạng Đ/CĐ */const v=[...(s.tx||[]),s.gk,s.ck].filter(x=>x!=null&&x!=='');if(!v.length||v.some(x=>!isNaN(+x)))return null;return v.every(x=>x==='Đ')?'Dat':'CDat'}
+function monComment(s){const k=s.q?'mon_'+s.q:'mon_'+(ED.level(s.tbm)||'D');return pick(BANK[k],s.ten+':'+(s.salt||0))}
+function renderMon(){
+  if(!M.list.length){$('#mtb').innerHTML='<tr><td><div class="empty">Chọn sổ điểm hoặc dán danh sách điểm ở trên.</div></td></tr>';$('#msum').innerHTML='';return}
+  const c={T:0,K:0,D:0,C:0,na:0};
+  M.list.forEach(s=>{if(!s.nx)s.nx=monComment(s);const l=s.q?null:ED.level(s.tbm);if(l)c[l]++;else if(!s.q)c.na++});
+  $('#msum').innerHTML=`<div class="stat"><span>Môn</span><b>${esc(M.mon||'—')}</b></div>`+['T','K','D','C'].map(l=>`<div class="stat"><span>${LVN[l]}</span><b>${c[l]}</b></div>`).join('')+(c.na?`<div class="stat"><span>Chưa đủ điểm</span><b>${c.na}</b></div>`:'');
+  $('#mtb').innerHTML='<thead><tr><th class="c">#</th><th>Họ và tên</th><th class="n">ĐTB</th><th>Mức</th><th>Nhận xét</th><th></th></tr></thead><tbody>'+M.list.map((s,i)=>`<tr data-i="${i}"><td class="c">${i+1}</td><td><b>${esc(s.ten)}</b></td><td class="n">${s.q?(s.q==='Dat'?'Đ':'CĐ'):s.tbm==null?'<span class="mini">chưa đủ</span>':s.tbm.toFixed(1)}</td><td>${s.q?ED.lvBadge(s.q==='Dat'?'T':'C').replace(/Tốt|Chưa đạt/,s.q==='Dat'?'Đạt':'Chưa đạt'):ED.lvBadge(ED.level(s.tbm))}</td><td style="min-width:360px"><textarea class="nx ${s.edited?'edited':''}">${esc(s.nx)}</textarea></td><td><button class="btn l s" title="Đổi cách diễn đạt">🔄</button></td></tr>`).join('')+'</tbody>';
+  $$('#mtb tr[data-i]').forEach(tr=>{const s=M.list[+tr.dataset.i];const ta=$('textarea',tr);ta.oninput=()=>{s.nx=ta.value;s.edited=true;ta.classList.add('edited');msave()};$('button',tr).onclick=()=>{s.salt=(s.salt||0)+1;s.edited=false;s.nx=monComment(s);msave();renderMon()}});
+  msave();
+}
+function msave(){if(!M.key)return;const o={};M.list.forEach(s=>o[s.ten]={nx:s.nx,edited:s.edited,salt:s.salt});ED.set(M.key,o)}
+$('#book').onchange=fromBook;$('#mhk').onchange=fromBook;
+$('#mgen').onclick=()=>{M.list.forEach(s=>{if(!s.edited)s.nx=monComment(s)});renderMon();ED.toast('✅ Đã soạn nhận xét')};
+$('#muse').onclick=()=>{const t=ED.parseTable($('#mpaste').value);M={key:'',mon:$('#mname').value.trim()||'Môn học',list:t.map((r,i)=>({i,ten:r[0],tbm:ED.num(r[r.length-1]),q:isNX(r[r.length-1])?(isCD(r[r.length-1])?'CDat':'Dat'):null})).filter(s=>s.ten)};renderMon()};
+$('#mcopy').onclick=()=>ED.copy(M.list.map(s=>s.nx||'').join('\n')).then(()=>ED.toast('📋 Đã sao chép cột nhận xét'));
+$('#mxlsx').onclick=()=>{const aoa=[['STT','Họ và tên','ĐTB môn','Mức','Nhận xét môn '+(M.mon||'')]];M.list.forEach((s,i)=>aoa.push([i+1,s.ten,s.q?(s.q==='Dat'?'Đ':'CĐ'):s.tbm,s.q?'':LVN[ED.level(s.tbm)]||'',s.nx||'']));ED.exportXLSX([{name:'Nhận xét môn',aoa,cols:[{wch:5},{wch:26},{wch:9},{wch:10},{wch:80}]}],'NhanXet_'+ED.fileName(M.mon)+'_'+ED.fileName(M.lop||'')+'_'+$('#mhk').value)};
+
+/* ═════════════ NGÂN HÀNG ═════════════ */
+function renderBank(){
+  $('#bank').innerHTML=Object.keys(DEF_BANK).map(k=>`<div class="f bankcol"><label>${BANK_LABEL[k]}</label><textarea data-k="${k}">${esc((BANK[k]||[]).join('\n'))}</textarea></div>`).join('');
+}
+$('#bsave').onclick=()=>{const o={};$$('#bank textarea').forEach(t=>o[t.dataset.k]=t.value.split('\n').map(x=>x.trim()).filter(Boolean));BANK=Object.assign({},DEF_BANK,o);ED.set('nx_bank',o);ED.toast('💾 Đã lưu ngân hàng câu nhận xét')};
+$('#breset').onclick=()=>{if(!confirm('Khôi phục toàn bộ câu mặc định? Các câu thầy/cô đã thêm sẽ mất.'))return;localStorage.removeItem('nx_bank');BANK=Object.assign({},DEF_BANK);renderBank()};
+
+load();
+</script>
+<script src="eduhub_backup.js"></script>
+</body>
+</html>

@@ -231,7 +231,7 @@ $('#logo-btn').onclick=()=>$('#logo-file').click();
 $('#logo-del').onclick=()=>{S.logo='';syncUI();render()};
 $('#logo-file').onchange=e=>{const f=e.target.files[0];if(!f)return;const img=new Image();img.onload=()=>{const k=Math.min(1,600/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=img.width*k;c.height=img.height*k;c.getContext('2d').drawImage(img,0,0,c.width,c.height);S.logo=c.toDataURL('image/png');syncUI();render()};img.src=URL.createObjectURL(f)};
 function cnStudents(){try{return(JSON.parse(localStorage.getItem('cn_students')||'[]')||[]).filter(s=>s&&s.hoTen).sort((a,b)=>(+a.stt||0)-(+b.stt||0))}catch(e){return[]}}
-function cnClass(){try{const s=JSON.parse(localStorage.getItem('etv1_settings')||'{}');return s.cnClass||s.lop||s.className||''}catch(e){return''}}
+function cnClass(){try{return JSON.parse(localStorage.getItem('cn_className')||'""')||''}catch(e){return localStorage.getItem('cn_className')||''}}
 $('#from-cn').onclick=()=>{const st=cnStudents();if(!st.length){alert('Chưa có danh sách học sinh trong mục Chủ Nhiệm → Danh Sách HS.');return}
   const lop=cnClass();$('#names').value=st.map(s=>s.hoTen+' | '+(lop?'Lớp '+lop:'Học sinh')).join('\n');$('#format').value='tent3';render()};
 $('#from-ph').onclick=()=>{const st=cnStudents();if(!st.length){alert('Chưa có danh sách học sinh trong mục Chủ Nhiệm → Danh Sách HS.');return}

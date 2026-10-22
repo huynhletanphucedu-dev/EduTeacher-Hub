@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gộp Tách Đối Chiếu Excel – EduTeacher Hub</title>
+<link rel="stylesheet" href="eduhub_ui.css">
+<script src="eduhub_data.js"></script>
+<script src="lib/xlsx.full.min.js"></script>
+<script src="lib/jszip.min.js"></script>
+<script src="eduhub_sheet.js"></script>
+<style>
+:root{--accent:#15803d}
+.drop{border:2px dashed var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;background:var(--card2)}
+.shl{display:flex;flex-direction:column;gap:4px;margin-top:10px;max-height:220px;overflow:auto}
+.shl label{display:flex;gap:8px;align-items:center;font-size:.85rem;border:1px solid var(--border);border-radius:8px;padding:6px 9px;background:var(--card2)}
+.shl label small{color:var(--muted);margin-left:auto}
+.cmp3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.cmp3 .stat b{font-size:1.6rem}
+@media(max-width:860px){.cmp3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>📑 Gộp · Tách · Đối chiếu Excel <small>bảng điểm, danh sách, khoản thu…</small></h1>
+  <div class="right"><span class="privacy">🔒 File không rời khỏi máy</span><a class="back" href="dashboard.html">← Trang chính</a></div>
+</div>
+<div class="wrap">
+  <div class="tabs"><button class="tab on" data-t="gop">➕ Gộp nhiều bảng</button><button class="tab" data-t="tach">✂️ Tách theo cột</button><button class="tab" data-t="doi">🔍 Đối chiếu 2 danh sách</button></div>
+
+  <!-- GỘP -->
+  <section id="p-gop">
+    <div class="card">
+      <h2>➕ Gộp bảng của nhiều lớp / nhiều file thành một</h2>
+      <p class="hint">Chọn nhiều file Excel (mỗi file có thể nhiều sheet). Các cột cùng tên được ghép thẳng hàng với nhau, cột khác tên được thêm vào cuối.</p>
+      <div class="drop" id="g-drop" style="margin-top:10px">📂 <b>Chọn các file Excel / CSV</b><div class="hint">chọn được nhiều file</div><input type="file" id="g-file" accept=".xlsx,.xls,.csv,.ods" multiple hidden></div>
+      <div class="shl" id="g-list"></div>
+      <div class="row" style="margin-top:10px"><label class="hint"><input type="checkbox" id="g-src" checked> Thêm cột “Nguồn” (tên file / sheet)</label><label class="hint"><input type="checkbox" id="g-stt" checked> Đánh lại STT liên tục</label><button class="btn" id="g-go" disabled>➕ Gộp</button></div>
+    </div>
+    <div class="card" id="g-res" hidden><div class="row" style="justify-content:space-between"><div class="hint" id="g-sum"></div><div class="btns"><button class="btn" id="g-x">⬇️ Tải Excel</button><button class="btn l" id="g-c">📋 Sao chép</button></div></div><div class="tbl-wrap" style="margin-top:10px;max-height:60vh"><table class="tbl" id="g-tbl"></table></div></div>
+  </section>
+
+  <!-- TÁCH -->
+  <section id="p-tach" hidden>
+    <div class="card">
+      <h2>✂️ Tách một bảng lớn thành nhiều phần</h2>
+      <p class="hint">Ví dụ: danh sách toàn khối → mỗi lớp một sheet (hoặc một file riêng) để gửi cho từng giáo viên chủ nhiệm.</p>
+      <div class="grid2" style="margin-top:10px"><div class="drop" id="t-drop">📂 <b>Chọn 1 file Excel / CSV</b><input type="file" id="t-file" accept=".xlsx,.xls,.csv,.ods" hidden></div><div><textarea id="t-paste" rows="3" placeholder="…hoặc dán bảng từ Excel"></textarea><button class="btn l s" id="t-usep" style="margin-top:6px">Dùng dữ liệu dán</button></div></div>
+      <div class="row" id="t-cfg" hidden style="margin-top:12px"><div class="f s"><label>Sheet</label><select id="t-sheet"></select></div><div class="f s"><label>Tách theo cột</label><select id="t-col"></select></div><div class="f s"><label>Kết quả</label><select id="t-mode"><option value="sheets">1 file – mỗi nhóm 1 sheet</option><option value="files">Mỗi nhóm 1 file (nén ZIP)</option></select></div><label class="hint"><input type="checkbox" id="t-stt" checked> Đánh lại STT trong từng nhóm</label><button class="btn" id="t-go">✂️ Tách &amp; tải về</button></div>
+      <div class="chips" id="t-groups" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <!-- ĐỐI CHIẾU -->
+  <section id="p-doi" hidden>
+    <div class="card">
+      <h2>🔍 Đối chiếu 2 danh sách – ai thiếu, ai thừa?</h2>
+      <p class="hint">Ví dụ: <b>Danh sách lớp</b> so với <b>Danh sách đã nộp tiền / nộp bài / đăng ký</b>. So khớp theo họ tên (không phân biệt hoa thường, khoảng trắng, dấu cách gõ), có thể thêm cột thứ hai như ngày sinh hoặc lớp.</p>
+      <div class="grid2" style="margin-top:12px">
+        <div><h3>📋 Danh sách A (danh sách gốc)</h3><div class="btns" style="margin-bottom:6px"><button class="btn l s" id="a-cn">Lấy DS lớp chủ nhiệm</button><button class="btn l s" id="a-fb">📂 Chọn file</button><input type="file" id="a-file" accept=".xlsx,.xls,.csv,.ods" hidden></div><textarea id="a-paste" rows="6" placeholder="Dán danh sách A (có dòng tiêu đề)…"></textarea><div class="row" style="margin-top:6px"><div class="f s"><label>Khóa chính</label><select id="a-k1"></select></div><div class="f s"><label>Khóa phụ</label><select id="a-k2"></select></div></div></div>
+        <div><h3>📋 Danh sách B (cần đối chiếu)</h3><div class="btns" style="margin-bottom:6px"><button class="btn l s" id="b-fb">📂 Chọn file</button><input type="file" id="b-file" accept=".xlsx,.xls,.csv,.ods" hidden></div><textarea id="b-paste" rows="6" placeholder="Dán danh sách B (có dòng tiêu đề)…"></textarea><div class="row" style="margin-top:6px"><div class="f s"><label>Khóa chính</label><select id="b-k1"></select></div><div class="f s"><label>Khóa phụ</label><select id="b-k2"></select></div></div></div>
+      </div>
+      <div class="btns" style="margin-top:12px"><button class="btn" id="d-go">🔍 Đối chiếu</button></div>
+    </div>
+    <div class="card" id="d-res" hidden>
+      <div class="cmp3" id="d-sum"></div>
+      <div class="row" style="justify-content:space-between;margin-top:12px"><div class="tabs" id="d-tabs"><button class="tab on" data-v="a">Có ở A, thiếu ở B</button><button class="tab" data-v="b">Có ở B, không có ở A</button><button class="tab" data-v="ab">Có ở cả hai</button></div><div class="btns"><button class="btn l" id="d-c">📋 Sao chép danh sách đang xem</button><button class="btn" id="d-x">⬇️ Tải Excel (3 sheet)</button></div></div>
+      <div class="tbl-wrap" style="margin-top:10px;max-height:60vh"><table class="tbl" id="d-tbl"></table></div>
+    </div>
+  </section>
+</div>
+<script>
+'use strict';
+const {$, $$, esc} = ED;
+$$('.tabs:not(#d-tabs) .tab').forEach(t=>t.onclick=()=>{$$('.tabs:not(#d-tabs) .tab').forEach(x=>x.classList.toggle('on',x===t));['gop','tach','doi'].forEach(k=>$('#p-'+k).hidden=k!==t.dataset.t)});
+const strip=rows=>{const h=ES.headerRow(rows);return rows.slice(h)};
+const dropFor=(d,inp,fn)=>{d.onclick=()=>inp.click();d.ondragover=e=>e.preventDefault();d.ondrop=e=>{e.preventDefault();fn([...e.dataTransfer.files])};inp.onchange=()=>{fn([...inp.files]);inp.value=''}};
+const isSTT=h=>/^(stt|tt|so tt)$/.test(ED.norm(h));
+
+/* ═══ GỘP ═══ */
+let G=[],GOUT=null;
+dropFor($('#g-drop'),$('#g-file'),async fs=>{for(const f of fs){try{(await ES.readFile(f)).forEach(s=>G.push({file:f.name.replace(/\.[^.]+$/,''),sheet:s.name,rows:strip(s.rows),on:true}))}catch(e){ED.toast('⚠️ Không đọc được '+f.name)}}gList()});
+function gList(){$('#g-list').innerHTML=G.map((g,i)=>`<label><input type="checkbox" data-i="${i}" ${g.on?'checked':''}>${esc(g.file)} › ${esc(g.sheet)}<small>${g.rows.length-1} dòng · ${g.rows[0].length} cột</small></label>`).join('');$$('#g-list input').forEach(c=>c.onchange=()=>{G[+c.dataset.i].on=c.checked});$('#g-go').disabled=!G.length}
+$('#g-go').onclick=()=>{
+  const use=G.filter(g=>g.on);if(!use.length)return;const head=[],key=[];
+  use.forEach(g=>g.rows[0].forEach(h=>{const k=ED.norm(h);if(k&&!key.includes(k)){key.push(k);head.push(h)}}));
+  const src=$('#g-src').checked,stt=$('#g-stt').checked,si=key.findIndex(k=>isSTT(k));let n=0;
+  const rows=[];use.forEach(g=>{const map=g.rows[0].map(h=>key.indexOf(ED.norm(h)));g.rows.slice(1).forEach(r=>{const o=new Array(head.length).fill('');r.forEach((c,j)=>{if(map[j]>=0)o[map[j]]=c});if(stt&&si>=0)o[si]=String(++n);if(src)o.push(use.length>1&&new Set(use.map(x=>x.file)).size>1?g.file+' › '+g.sheet:g.sheet);rows.push(o)})});
+  GOUT=[[...head,...(src?['Nguồn']:[])],...rows];$('#g-res').hidden=false;$('#g-tbl').innerHTML=ES.table(GOUT);$('#g-sum').textContent=`Đã gộp ${use.length} bảng → ${rows.length} dòng, ${GOUT[0].length} cột`;
+};
+$('#g-x').onclick=()=>ED.exportXLSX([{name:'Gộp',aoa:GOUT}],'bang_gop');
+$('#g-c').onclick=()=>ED.copy(ES.toTSV(GOUT)).then(()=>ED.toast('📋 Đã sao chép'));
+
+/* ═══ TÁCH ═══ */
+let T=[],TR=null,TNAME='bang';
+dropFor($('#t-drop'),$('#t-file'),async([f])=>{if(!f)return;T=await ES.readFile(f);TNAME=f.name.replace(/\.[^.]+$/,'');tCfg()});
+$('#t-usep').onclick=()=>{const r=ED.parseTable($('#t-paste').value);if(r.length<2)return ED.toast('⚠️ Cần dòng tiêu đề');T=[{name:'Dữ liệu dán',rows:r}];TNAME='bang';tCfg()};
+function tCfg(){$('#t-cfg').hidden=false;$('#t-sheet').innerHTML=T.map((s,i)=>`<option value="${i}">${esc(s.name)}</option>`).join('');tSheet()}
+function tSheet(){TR=strip(T[+$('#t-sheet').value].rows);const h=TR[0],gi=ES.findCol(h,/^lop$|lop hoc|^lop /);$('#t-col').innerHTML=h.map((c,j)=>`<option value="${j}" ${j===(gi>=0?gi:0)?'selected':''}>${esc(c||'Cột '+(j+1))}</option>`).join('');tGroups()}
+function groups(){const c=+$('#t-col').value,m=new Map();TR.slice(1).forEach(r=>{const k=r[c]||'(trống)';if(!m.has(k))m.set(k,[]);m.get(k).push(r)});return [...m.entries()].sort((a,b)=>ES.cmp(a[0],b[0]))}
+function tGroups(){const g=groups();$('#t-groups').innerHTML=g.map(([k,v])=>`<span class="chip">${esc(k)} · ${v.length}</span>`).join('')}
+$('#t-sheet').onchange=tSheet;$('#t-col').onchange=tGroups;
+$('#t-go').onclick=async()=>{
+  const g=groups(),h=TR[0],si=h.findIndex(isSTT),stt=$('#t-stt').checked;
+  const part=v=>[h,...v.map((r,i)=>{r=r.slice();if(stt&&si>=0)r[si]=String(i+1);return r})];
+  if($('#t-mode').value==='sheets'){const used={};ED.exportXLSX(g.map(([k,v])=>{let n=String(k).replace(/[\\\/\?\*\[\]:]/g,'-').slice(0,28)||'Nhom';while(used[n])n+='_';used[n]=1;return{name:n,aoa:part(v)}}),TNAME+'_tach')}
+  else{const z=new JSZip();g.forEach(([k,v])=>{const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(part(v)),'Danh sách');z.file(ED.fileName(TNAME+'_'+k)+'.xlsx',XLSX.write(wb,{type:'array',bookType:'xlsx'}))});ED.download(await z.generateAsync({type:'blob'}),TNAME+'_tach.zip')}
+  ED.toast(`✅ Đã tách thành ${g.length} phần`)};
+
+/* ═══ ĐỐI CHIẾU ═══ */
+const L={a:null,b:null};let DRES=null,DV='a';
+function setList(w,rows){L[w]=strip(rows);const h=L[w][0],ni=ES.nameCol(h);
+  $('#'+w+'-k1').innerHTML=h.map((c,j)=>`<option value="${j}" ${j===(ni>=0?ni:0)?'selected':''}>${esc(c||'Cột '+(j+1))}</option>`).join('');
+  $('#'+w+'-k2').innerHTML='<option value="-1">(không dùng)</option>'+h.map((c,j)=>`<option value="${j}">${esc(c||'Cột '+(j+1))}</option>`).join('');}
+['a','b'].forEach(w=>{$('#'+w+'-paste').addEventListener('change',()=>{const r=ED.parseTable($('#'+w+'-paste').value);if(r.length>1)setList(w,r)});
+  $('#'+w+'-fb').onclick=()=>$('#'+w+'-file').click();$('#'+w+'-file').onchange=async e=>{const f=e.target.files[0];if(!f)return;const s=await ES.readFile(f);setList(w,s[0].rows);$('#'+w+'-paste').value=ES.toTSV(L[w]).slice(0,20000);e.target.value=''}});
+$('#a-cn').onclick=()=>{const st=ED.students();if(!st.length)return ED.toast('Chưa có DS lớp chủ nhiệm');const r=[['STT','Họ và tên','Ngày sinh'],...st.map(s=>[String(s.stt),s.hoTen,ED.vnDate(s.ngaySinh)])];setList('a',r);$('#a-paste').value=ES.toTSV(r)};
+const keyOf=(r,k1,k2)=>ED.norm(ES.nfc(r[k1]||''))+(k2>=0?'|'+ED.norm(ES.cleanDate(r[k2]||'')):'');
+$('#d-go').onclick=()=>{
+  ['a','b'].forEach(w=>{if(!L[w]){const r=ED.parseTable($('#'+w+'-paste').value);if(r.length>1)setList(w,r)}});
+  if(!L.a||!L.b)return ED.toast('⚠️ Cần nhập đủ 2 danh sách');
+  const a1=+$('#a-k1').value,a2=+$('#a-k2').value,b1=+$('#b-k1').value,b2=+$('#b-k2').value;
+  const mb=new Map();L.b.slice(1).forEach(r=>{const k=keyOf(r,b1,b2);if(k.replace('|',''))(mb.get(k)||mb.set(k,[]).get(k)).push(r)});
+  const onlyA=[],both=[],usedB=new Set();
+  L.a.slice(1).forEach(r=>{const k=keyOf(r,a1,a2);if(!k.replace('|',''))return;const m=mb.get(k);if(m&&m.length){both.push([...r,...m[0]]);usedB.add(m[0]);m.shift()}else onlyA.push(r)});
+  const onlyB=L.b.slice(1).filter(r=>keyOf(r,b1,b2).replace('|','')&&!usedB.has(r));
+  DRES={a:[L.a[0],...onlyA],b:[L.b[0],...onlyB],ab:[[...L.a[0].map(h=>'A: '+h),...L.b[0].map(h=>'B: '+h)],...both]};
+  $('#d-res').hidden=false;
+  $('#d-sum').innerHTML=`<div class="stat"><span>Có ở A, thiếu ở B</span><b class="bad">${onlyA.length}</b></div><div class="stat"><span>Có ở B, không có ở A</span><b class="warn">${onlyB.length}</b></div><div class="stat"><span>Khớp cả hai</span><b class="ok">${both.length}</b></div>`;
+  dShow();
+};
+function dShow(){$$('#d-tabs .tab').forEach(t=>t.classList.toggle('on',t.dataset.v===DV));$('#d-tbl').innerHTML=DRES[DV].length>1?ES.table(DRES[DV]):'<tr><td class="hint">Không có dòng nào 🎉</td></tr>'}
+$$('#d-tabs .tab').forEach(t=>t.onclick=()=>{DV=t.dataset.v;dShow()});
+$('#d-c').onclick=()=>ED.copy(ES.toTSV(DRES[DV])).then(()=>ED.toast('📋 Đã sao chép'));
+$('#d-x').onclick=()=>ED.exportXLSX([{name:'Thiếu ở B',aoa:DRES.a},{name:'Thừa ở B',aoa:DRES.b},{name:'Khớp',aoa:DRES.ab}],'doi_chieu_danh_sach');
+</script>
+<style>.ok{color:#059669}.warn{color:#d97706}.bad{color:#dc2626}</style>
+<script src="eduhub_backup.js"></script>
+</body>
+</html>

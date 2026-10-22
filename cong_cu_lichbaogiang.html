@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lịch Báo Giảng – EduTeacher Hub</title>
+<link rel="stylesheet" href="eduhub_ui.css">
+<script src="eduhub_data.js"></script>
+<script src="lib/xlsx.full.min.js"></script>
+<style>
+:root{--accent:#0369a1}
+.subj{border:1px solid var(--border);border-radius:12px;padding:12px;background:var(--card2);margin-bottom:10px}
+.subj .hd{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.slots{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px}
+.slots label{font-size:.72rem;font-weight:700;color:var(--muted);display:flex;flex-direction:column;gap:3px}
+.slots input{padding:6px;text-align:center}
+.subj textarea{min-height:110px;font-size:.84rem;margin-top:8px}
+.hol{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+.hol input[type=text]{width:180px}.hol input[type=date]{width:auto}
+.wk{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tbl td input{width:100%;border:1px solid transparent;background:transparent;padding:3px 5px;border-radius:6px}
+.tbl td input:focus{border-color:var(--accent);background:var(--card)}
+.hl td{background:rgba(245,158,11,.1)}
+.prog{display:flex;flex-direction:column;gap:6px}
+.prog div{font-size:.84rem}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>🗓️ Lịch báo giảng tự động <small>phân phối chương trình + thời khóa biểu → lịch từng tuần</small></h1>
+  <div class="right"><span class="privacy">🔒 Lưu trên máy</span><a class="back" href="dashboard.html">← Trang chính</a></div>
+</div>
+<div class="wrap">
+  <div class="grid2">
+    <div class="card">
+      <h2>📅 Năm học</h2>
+      <div class="row" style="margin-top:8px"><div class="f s"><label>Thứ Hai của tuần 1</label><input type="date" id="start"></div><div class="f s"><label>Số tuần</label><input type="number" id="weeks" min="1" max="45" style="width:90px"></div><div class="f"><label>Giáo viên</label><input type="text" id="gv"></div></div>
+      <h3 style="margin-top:14px">🎌 Ngày nghỉ (lễ, Tết, nghỉ đột xuất)</h3>
+      <p class="hint" style="margin-bottom:6px">Tiết rơi vào ngày nghỉ sẽ tự dời sang buổi dạy kế tiếp.</p>
+      <div id="hols"></div>
+      <div class="btns"><button class="btn l s" id="hadd">+ Thêm ngày nghỉ</button><button class="btn l s" id="hpre">+ Lễ cố định (1/1, 30/4–1/5)</button></div>
+    </div>
+    <div class="card"><h2>📊 Tiến độ chương trình</h2><div class="prog" id="prog" style="margin-top:8px"></div></div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between"><h2>📚 Môn &amp; lớp dạy</h2><button class="btn l s" id="sadd">+ Thêm môn / lớp</button></div>
+    <p class="hint" style="margin:4px 0 10px"><b>Phân phối chương trình</b>: mỗi dòng 1 tiết, hoặc ghi <code>Tên bài | số tiết</code> để tự chia (ví dụ <code>Bài 1. Tập hợp | 2</code>). Dán thẳng cột từ file PPCT Excel cũng được. <b>Thời khóa biểu</b>: ghi số tiết trong buổi vào ô từng thứ, nhiều tiết cách nhau bằng dấu phẩy (ví dụ <code>2,3</code>).</p>
+    <div id="subjs"></div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <div class="wk"><button class="btn l s" id="wprev">◀</button><select id="wsel" style="width:auto"></select><button class="btn l s" id="wnext">▶</button><button class="btn l s" id="wnow">Tuần này</button></div>
+      <div class="btns"><button class="btn" id="dw">⬇️ Word tuần này</button><button class="btn l" id="dall">⬇️ Word cả năm</button><button class="btn g" id="xl">⬇️ Excel</button></div>
+    </div>
+    <div class="tbl-wrap" style="margin-top:10px"><table class="tbl" id="tbl"></table></div>
+    <p class="hint" style="margin-top:6px">✏️ Bấm vào ô <b>Đồ dùng / ghi chú</b> để ghi thêm – hệ thống tự lưu.</p>
+  </div>
+</div>
+<script>
+'use strict';
+const {$, $$, esc} = ED;
+const DOW=['Thứ Hai','Thứ Ba','Thứ Tư','Thứ Năm','Thứ Sáu','Thứ Bảy'];
+const y0=(()=>{const d=new Date();return d.getMonth()>=7?d.getFullYear():d.getFullYear()-1})();
+function firstMonday(y){const d=new Date(y,8,5);while(d.getDay()!==1)d.setDate(d.getDate()+1);return ED.today(d)}
+let D=ED.get('lbg_v1',null)||{start:firstMonday(y0),weeks:35,gv:ED.teacher().name||'',hols:[{from:(y0+1)+'-01-01',to:(y0+1)+'-01-01',name:'Tết Dương lịch'}],subs:[{id:ED.uid(),mon:'Toán',lop:'6/4',buoi:'Sáng',ppct:'',slots:['','','','','','']}],notes:{}};
+const save=()=>ED.set('lbg_v1',D);
+const addDays=(iso,n)=>{const d=new Date(iso+'T00:00');d.setDate(d.getDate()+n);return ED.today(d)};
+
+/* ── PPCT → danh sách tiết ── */
+function lessons(text){
+  const out=[];String(text||'').split('\n').map(l=>l.trim()).filter(Boolean).forEach(l=>{
+    const p=l.split(/\t|\s*\|\s*/).map(s=>s.trim()).filter(Boolean);
+    // dạng "Tiết 1 | Bài 1..." hoặc "1 | Bài 1"
+    if(p.length>=2&&/^(tiết\s*)?\d+$/i.test(p[0])){out.push(p.slice(1).join(' – ').replace(/\s*\|\s*\d+$/,''));return}
+    const n=p.length>=2&&/^\d+$/.test(p[p.length-1])?+p[p.length-1]:1,name=n>1||p.length>=2&&/^\d+$/.test(p[p.length-1])?p.slice(0,-1).join(' – '):p.join(' – ');
+    for(let i=1;i<=n;i++)out.push(n>1?`${name} (tiết ${i}/${n})`:name)});
+  return out;
+}
+const isHol=d=>D.hols.some(h=>h.from&&d>=h.from&&d<=(h.to||h.from));
+const holName=d=>(D.hols.find(h=>h.from&&d>=h.from&&d<=(h.to||h.from))||{}).name||'Nghỉ';
+/* ── sinh lịch ── */
+function build(){
+  const rows=[],cnt={},L={};D.subs.forEach(s=>{L[s.id]=lessons(s.ppct);cnt[s.id]=0});
+  for(let w=0;w<D.weeks;w++)for(let di=0;di<6;di++){
+    const date=addDays(D.start,w*7+di),hol=isHol(date);
+    const slots=[];D.subs.forEach(s=>String(s.slots[di]||'').split(/[,;\s]+/).filter(Boolean).forEach(t=>slots.push({s,t:+t||0})));
+    slots.sort((a,b)=>(a.s.buoi==='Chiều')-(b.s.buoi==='Chiều')||a.t-b.t);
+    slots.forEach(({s,t})=>{
+      if(hol){rows.push({w,di,date,s,t,hol:holName(date)});return}
+      const i=cnt[s.id];if(i>=L[s.id].length){rows.push({w,di,date,s,t,extra:true});return}
+      cnt[s.id]++;rows.push({w,di,date,s,t,n:i+1,bai:L[s.id][i]});
+    });
+  }
+  return {rows,cnt,L};
+}
+/* ── giao diện ── */
+function renderCfg(){
+  $('#start').value=D.start;$('#weeks').value=D.weeks;$('#gv').value=D.gv;
+  $('#hols').innerHTML=D.hols.map((h,i)=>`<div class="hol"><input type="date" value="${h.from}" data-h="${i}" data-k="from"> → <input type="date" value="${h.to||h.from}" data-h="${i}" data-k="to"><input type="text" value="${esc(h.name||'')}" placeholder="Lý do" data-h="${i}" data-k="name"><button class="btn l s" data-hdel="${i}">✕</button></div>`).join('')||'<span class="hint">Chưa có ngày nghỉ.</span>';
+  $$('[data-h]').forEach(x=>x.onchange=()=>{D.hols[+x.dataset.h][x.dataset.k]=x.value;save();renderAll()});
+  $$('[data-hdel]').forEach(b=>b.onclick=()=>{D.hols.splice(+b.dataset.hdel,1);save();renderCfg();renderAll()});
+  $('#subjs').innerHTML=D.subs.map((s,i)=>`<div class="subj" data-s="${i}"><div class="hd"><div class="f s"><label>Môn</label><input type="text" value="${esc(s.mon)}" data-k="mon" style="width:150px"></div><div class="f s"><label>Lớp</label><input type="text" value="${esc(s.lop)}" data-k="lop" style="width:90px"></div><div class="f s"><label>Buổi</label><select data-k="buoi"><option ${s.buoi==='Sáng'?'selected':''}>Sáng</option><option ${s.buoi==='Chiều'?'selected':''}>Chiều</option></select></div><span class="hint" id="cnt-${i}"></span><button class="btn l s" data-sdel="${i}" style="margin-left:auto">🗑️ Xóa</button></div>
+    <div class="slots">${DOW.map((d,j)=>`<label>${d}<input type="text" value="${esc(s.slots[j]||'')}" data-slot="${j}" placeholder="—"></label>`).join('')}</div>
+    <textarea data-k="ppct" placeholder="Bài 1. Tập hợp | 2&#10;Bài 2. Cách ghi số tự nhiên | 2&#10;Luyện tập chung | 1&#10;…">${esc(s.ppct)}</textarea></div>`).join('');
+  $$('.subj').forEach(el=>{const s=D.subs[+el.dataset.s];
+    $$('[data-k]',el).forEach(x=>x.onchange=()=>{s[x.dataset.k]=x.value;save();renderAll()});
+    $$('[data-slot]',el).forEach(x=>x.onchange=()=>{s.slots[+x.dataset.slot]=x.value;save();renderAll()});
+    $('[data-sdel]',el).onclick=()=>{if(confirm('Xóa môn/lớp này?')){D.subs.splice(+el.dataset.s,1);save();renderCfg();renderAll()}}});
+}
+let WK=0;
+function renderAll(){
+  const B=build();
+  D.subs.forEach((s,i)=>{const e=$('#cnt-'+i);if(e)e.textContent=`${B.L[s.id].length} tiết PPCT · ${s.slots.join(',').split(/[,;\s]+/).filter(Boolean).length} tiết/tuần`});
+  // tiến độ
+  $('#prog').innerHTML=D.subs.map(s=>{const L=B.L[s.id].length,used=B.cnt[s.id],last=B.rows.filter(r=>r.s===s&&r.n===L)[0],per=s.slots.join(',').split(/[,;\s]+/).filter(Boolean).length;
+    if(!L)return `<div>📘 <b>${esc(s.mon)} ${esc(s.lop)}</b>: <span class="hint">chưa nhập phân phối chương trình</span></div>`;
+    if(!per)return `<div>📘 <b>${esc(s.mon)} ${esc(s.lop)}</b>: <span class="hint">chưa nhập thời khóa biểu</span></div>`;
+    return `<div>📘 <b>${esc(s.mon)} ${esc(s.lop)}</b>: ${used}/${L} tiết · ${last?`xong tiết cuối ở <b>tuần ${last.w+1}</b> (${ED.vnDate(last.date)})`:`<span style="color:#dc2626">⚠️ thiếu ${L-used} tiết – cần thêm tuần hoặc tiết dạy</span>`}</div>`}).join('')||'<span class="hint">Thêm môn/lớp bên dưới.</span>';
+  $('#wsel').innerHTML=Array.from({length:D.weeks},(_,w)=>`<option value="${w}" ${w===WK?'selected':''}>Tuần ${w+1}: ${ED.vnDate(addDays(D.start,w*7))} – ${ED.vnDate(addDays(D.start,w*7+5))}</option>`).join('');
+  const rows=B.rows.filter(r=>r.w===WK);
+  $('#tbl').innerHTML='<thead><tr><th>Thứ</th><th>Ngày</th><th>Buổi</th><th class="c">Tiết</th><th>Lớp</th><th>Môn</th><th class="c">Tiết PPCT</th><th>Tên bài dạy</th><th>Đồ dùng / ghi chú</th></tr></thead><tbody>'+(rows.length?rows.map(r=>{const k=r.date+'|'+r.s.id+'|'+r.t;return `<tr class="${r.hol?'hl':''}"><td>${DOW[r.di]}</td><td>${ED.vnDate(r.date).slice(0,5)}</td><td>${esc(r.s.buoi)}</td><td class="c">${r.t||''}</td><td>${esc(r.s.lop)}</td><td>${esc(r.s.mon)}</td><td class="c">${r.n||''}</td><td>${r.hol?'🎌 <i>'+esc(r.hol)+'</i>':r.extra?'<span class="hint">(đã hết PPCT – ôn tập / dự trữ)</span>':esc(r.bai)}</td><td>${r.hol?'':`<input type="text" data-note="${esc(k)}" value="${esc(D.notes[k]||'')}">`}</td></tr>`}).join(''):'<tr><td colspan="9" class="hint">Tuần này chưa có tiết dạy. Nhập thời khóa biểu cho các môn ở trên.</td></tr>')+'</tbody>';
+  $$('[data-note]').forEach(i=>i.onchange=()=>{if(i.value)D.notes[i.dataset.note]=i.value;else delete D.notes[i.dataset.note];save()});
+}
+function weekHTML(B,w){
+  const rows=B.rows.filter(r=>r.w===w),T='border:1px solid #000;padding:2pt 4pt;font-size:11.5pt;vertical-align:top',C=T+';text-align:center';
+  const byDay=DOW.map((_,di)=>rows.filter(r=>r.di===di));
+  let body='';byDay.forEach((list,di)=>{const date=addDays(D.start,w*7+di);if(!list.length){body+=`<tr><td style="${C}"><b>${DOW[di]}</b><br>${ED.vnDate(date).slice(0,5)}</td><td style="${C}"></td><td style="${C}"></td><td style="${C}"></td><td style="${C}"></td><td style="${T}">${isHol(date)?'<i>'+esc(holName(date))+'</i>':''}</td><td style="${T}"></td></tr>`;return}
+    list.forEach((r,i)=>{body+=`<tr>${i===0?`<td style="${C}" rowspan="${list.length}"><b>${DOW[di]}</b><br>${ED.vnDate(date).slice(0,5)}</td>`:''}<td style="${C}">${esc(r.s.buoi)}</td><td style="${C}">${r.t||''}</td><td style="${C}">${esc(r.s.lop)}</td><td style="${C}">${r.n||''}</td><td style="${T}">${r.hol?'<i>'+esc(r.hol)+'</i>':r.extra?'Ôn tập / dự trữ':esc(r.s.mon)+': '+esc(r.bai)}</td><td style="${T}">${esc(D.notes[r.date+'|'+r.s.id+'|'+r.t]||'')}</td></tr>`})});
+  return `<p style="text-align:center;font-size:15pt;margin:0"><b>LỊCH BÁO GIẢNG</b></p><p style="text-align:center;margin:2pt 0 8pt">Tuần ${w+1} (từ ngày ${ED.vnDate(addDays(D.start,w*7))} đến ngày ${ED.vnDate(addDays(D.start,w*7+5))}) · Giáo viên: ${esc(D.gv)}</p>
+    <table width="100%" style="width:100%;border-collapse:collapse"><tr><th style="${C}" width="11%">Thứ / ngày</th><th style="${C}" width="8%">Buổi</th><th style="${C}" width="6%">Tiết TKB</th><th style="${C}" width="8%">Lớp</th><th style="${C}" width="8%">Tiết PPCT</th><th style="${C}">Tên bài dạy</th><th style="${C}" width="20%">Đồ dùng / ghi chú</th></tr>${body}</table>
+    <table width="100%" style="width:100%;border:none;margin-top:10pt"><tr><td style="border:none;text-align:center;width:50%"><b>Duyệt của Tổ chuyên môn</b></td><td style="border:none;text-align:center"><b>Giáo viên</b><br><br><br><br>${esc(D.gv)}</td></tr></table>`;
+}
+['start','weeks','gv'].forEach(k=>$('#'+k).onchange=()=>{D[k]=k==='weeks'?Math.max(1,Math.min(45,+$('#weeks').value||35)):$('#'+k).value;save();renderAll()});
+$('#hadd').onclick=()=>{D.hols.push({from:ED.today(),to:ED.today(),name:'Nghỉ'});save();renderCfg();renderAll()};
+$('#hpre').onclick=()=>{const y=+D.start.slice(0,4)+1;[[y+'-01-01',y+'-01-01','Tết Dương lịch'],[y+'-04-30',y+'-05-01','Lễ 30/4 – 1/5']].forEach(([f,t,n])=>{if(!D.hols.some(h=>h.from===f))D.hols.push({from:f,to:t,name:n})});save();renderCfg();renderAll();ED.toast('Đã thêm. Thầy/cô nhớ thêm lịch nghỉ Tết Nguyên đán theo kế hoạch của Sở.')};
+$('#sadd').onclick=()=>{const l=D.subs[D.subs.length-1]||{};D.subs.push({id:ED.uid(),mon:l.mon||'Toán',lop:'',buoi:l.buoi||'Sáng',ppct:l.ppct||'',slots:['','','','','','']});save();renderCfg();renderAll()};
+$('#wsel').onchange=()=>{WK=+$('#wsel').value;renderAll()};
+$('#wprev').onclick=()=>{WK=Math.max(0,WK-1);renderAll()};$('#wnext').onclick=()=>{WK=Math.min(D.weeks-1,WK+1);renderAll()};
+$('#wnow').onclick=()=>{const d=Math.floor((new Date(ED.today()+'T00:00')-new Date(D.start+'T00:00'))/864e5/7);WK=Math.max(0,Math.min(D.weeks-1,d));renderAll()};
+$('#dw').onclick=()=>ED.exportDoc(weekHTML(build(),WK),'LichBaoGiang_tuan_'+(WK+1),{css:'th{background:#eee}'});
+$('#dall').onclick=()=>{const B=build();ED.exportDoc(Array.from({length:D.weeks},(_,w)=>weekHTML(B,w)).join('<br clear="all" style="page-break-before:always">'),'LichBaoGiang_ca_nam',{css:'th{background:#eee}'})};
+$('#xl').onclick=()=>{const B=build();const a=[['Tuần','Thứ','Ngày','Buổi','Tiết TKB','Lớp','Môn','Tiết PPCT','Tên bài dạy','Ghi chú']];B.rows.forEach(r=>a.push([r.w+1,DOW[r.di],ED.vnDate(r.date),r.s.buoi,r.t||'',r.s.lop,r.s.mon,r.n||'',r.hol?'('+r.hol+')':r.extra?'(Ôn tập / dự trữ)':r.bai,D.notes[r.date+'|'+r.s.id+'|'+r.t]||'']));
+  const k=D.subs.map(s=>{const rs=B.rows.filter(r=>r.s===s&&r.n);return{name:(s.mon+' '+s.lop).replace(/[\\\/\?\*\[\]:]/g,'-').slice(0,30)||'Môn',aoa:[['Tiết PPCT','Tên bài','Tuần','Ngày dạy'],...rs.map(r=>[r.n,r.bai,r.w+1,ED.vnDate(r.date)])]}});
+  ED.exportXLSX([{name:'Lịch báo giảng',aoa:a},...k],'LichBaoGiang')};
+renderCfg();$('#wnow').click();
+</script>
+<script src="eduhub_backup.js"></script>
+</body>
+</html>

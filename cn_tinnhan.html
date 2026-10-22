@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tin Nhắn Phụ Huynh – EduTeacher Hub</title>
+<link rel="stylesheet" href="eduhub_ui.css">
+<script src="eduhub_data.js"></script>
+<style>
+:root{--accent:#0068ff}
+.lay{display:grid;grid-template-columns:400px 1fr;gap:16px;align-items:start}
+.side{position:sticky;top:70px}
+#tpl{min-height:190px;font-size:.88rem}
+.ph{font-size:.75rem;padding:4px 9px}
+.msgs{display:flex;flex-direction:column;gap:10px}
+.m{border:1px solid var(--border);border-radius:12px;background:var(--card);padding:12px 14px;display:grid;grid-template-columns:1fr auto;gap:10px}
+.m.sent{opacity:.55}
+.m h4{font-size:.9rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.m h4 small{font-weight:500;color:var(--muted)}
+.m .t{white-space:pre-wrap;font-size:.86rem;line-height:1.5;margin-top:6px;background:var(--card2);border-radius:10px;padding:8px 10px;border:1px solid var(--border);outline:none}
+.m .ops{display:flex;flex-direction:column;gap:6px}
+.zalo{background:#0068ff}
+.nophone{color:#b45309;font-size:.75rem}
+.picker{max-height:220px;overflow:auto;display:flex;flex-direction:column;gap:3px;border:1px solid var(--border);border-radius:10px;padding:8px;background:var(--card2)}
+.picker label{display:flex;gap:8px;align-items:center;font-size:.83rem}
+@media(max-width:960px){.lay{grid-template-columns:1fr}.side{position:static}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>💬 Tin nhắn phụ huynh hàng loạt <small>soạn sẵn – sao chép gửi Zalo</small></h1>
+  <div class="right"><span class="privacy">🔒 Không tự gửi – thầy/cô tự dán vào Zalo</span><a class="back" href="dashboard.html">← Trang chính</a></div>
+</div>
+<div class="wrap">
+<div class="lay">
+  <aside class="side card">
+    <div class="f"><label>1. Loại tin nhắn</label><select id="kind"></select></div>
+    <div class="row" style="margin-top:10px">
+      <div class="f s"><label id="dlabel">Ngày</label><input type="date" id="day"></div>
+      <div class="f s"><label>Người nhận</label><select id="who">
+        <option value="auto">Theo loại tin (tự lọc)</option><option value="all">Cả lớp</option><option value="pick">Tự chọn…</option></select></div>
+    </div>
+    <div class="row" id="extra" style="margin-top:10px"></div>
+    <div class="picker" id="picker" hidden style="margin-top:10px"></div>
+    <div class="f" style="margin-top:12px"><label>2. Nội dung mẫu (sửa thoải mái)</label><textarea id="tpl"></textarea></div>
+    <div class="hint" style="margin:6px 0">Bấm để chèn thông tin tự điền:</div>
+    <div class="chips" id="phs"></div>
+    <div class="btns" style="margin-top:12px"><button class="btn l s" id="savetpl">💾 Lưu mẫu này</button><button class="btn l s" id="resettpl">↩ Mẫu gốc</button></div>
+  </aside>
+  <section>
+    <div class="card" style="margin-bottom:12px">
+      <div class="row"><div><h2 id="ttl">Tin nhắn</h2><div class="hint" id="info"></div></div>
+        <div class="btns" style="margin-left:auto"><button class="btn l" id="copyall">📋 Sao chép tất cả</button><button class="btn l" id="clearsent">↺ Bỏ đánh dấu “đã gửi”</button></div></div>
+      <p class="hint" style="margin-top:6px">💡 Bấm <b>Sao chép</b> → bấm <b>Mở Zalo</b> (mở đúng cuộc trò chuyện với số điện thoại phụ huynh) → dán (Ctrl+V) → gửi. Tin đã sao chép sẽ được đánh dấu mờ để không gửi trùng.</p>
+    </div>
+    <div class="msgs" id="msgs"></div>
+  </section>
+</div>
+</div>
+<script>
+'use strict';
+const {$, $$, esc} = ED;
+const STU=ED.students(), T=ED.teacher(), CLS=ED.className();
+const KINDS={
+ vang:{name:'❌ Báo học sinh vắng học',date:'Ngày vắng',filter:'absent',
+  tpl:'Kính gửi phụ huynh em {hoTen}.\n{xungHo} {gv} – GVCN lớp {lop} xin thông báo: {buoi} ngày {ngay}, em {ten} {trangThai}. Kính mong phụ huynh phản hồi lý do giúp {xungHo2} ạ.\nTrân trọng cảm ơn!'},
+ tuan:{name:'📊 Kết quả học tập – rèn luyện trong tuần',date:'Một ngày trong tuần',filter:'all',
+  tpl:'Kính gửi phụ huynh em {hoTen}.\n{xungHo} {gv} – GVCN lớp {lop} xin gửi tình hình của em {ten} trong tuần {tuan}:\n• Chuyên cần: vắng {vang} buổi, đi trễ {tre} lần.\n• Được khen: {khen} lần{chiTietKhen}.\n• Vi phạm: {viPham} lần{chiTietViPham}.\n• Điểm thi đua: {diemThiDua}.\nMong phụ huynh tiếp tục quan tâm, động viên em. Trân trọng!'},
+ vipham:{name:'⚠️ Nhắc nhở học sinh vi phạm',date:'Một ngày trong tuần',filter:'violation',
+  tpl:'Kính gửi phụ huynh em {hoTen}.\nTrong tuần {tuan}, em {ten} có {viPham} lần vi phạm nội quy{chiTietViPham}. {xungHo} {gv} mong phụ huynh nhắc nhở, phối hợp cùng nhà trường giúp em tiến bộ hơn. Trân trọng cảm ơn!'},
+ khen:{name:'🌟 Tuyên dương học sinh',date:'Một ngày trong tuần',filter:'commend',
+  tpl:'Kính gửi phụ huynh em {hoTen}.\n{xungHo} {gv} rất vui thông báo: trong tuần {tuan}, em {ten} được tuyên dương {khen} lần{chiTietKhen}. Mong gia đình tiếp tục động viên em. Chúc gia đình nhiều sức khỏe!'},
+ hop:{name:'👪 Mời họp phụ huynh',date:'Ngày họp',filter:'all',extra:[['gio','Giờ họp','07:30'],['diaDiem','Địa điểm','Phòng học lớp {lop}']],
+  tpl:'Kính gửi phụ huynh em {hoTen}.\n{xungHo} {gv} – GVCN lớp {lop} trân trọng kính mời Quý phụ huynh đến dự buổi họp Cha mẹ học sinh vào lúc {gio}, {thu} ngày {ngay} tại {diaDiem}, {truong}.\nRất mong Quý phụ huynh sắp xếp thời gian đến dự đầy đủ. Trân trọng!'},
+ sinhnhat:{name:'🎂 Chúc mừng sinh nhật',date:'Một ngày trong tuần',filter:'birthday',
+  tpl:'🎉 Chúc mừng sinh nhật em {hoTen} ({ngaySinh})! {xungHo} {gv} chúc em luôn mạnh khỏe, vui vẻ, chăm ngoan và học thật giỏi! 🎂'},
+ chung:{name:'📢 Thông báo chung (tự soạn)',date:'Ngày',filter:'all',
+  tpl:'Kính gửi phụ huynh em {hoTen}.\n{xungHo} {gv} – GVCN lớp {lop} xin thông báo: …\nTrân trọng!'}
+};
+const PH=[['{ten}','Tên HS'],['{hoTen}','Họ tên HS'],['{lop}','Lớp'],['{gv}','Tên GVCN'],['{xungHo}','Thầy/Cô'],['{ngay}','Ngày'],['{thu}','Thứ'],['{tuan}','Tuần'],['{vang}','Số buổi vắng'],['{tre}','Số lần trễ'],['{khen}','Số lần khen'],['{viPham}','Số lần vi phạm'],['{chiTietViPham}','Chi tiết vi phạm'],['{chiTietKhen}','Chi tiết khen'],['{diemThiDua}','Điểm thi đua'],['{phuHuynh}','Tên phụ huynh'],['{truong}','Tên trường'],['{ngaySinh}','Ngày sinh']];
+const DOW=['Chủ nhật','thứ Hai','thứ Ba','thứ Tư','thứ Năm','thứ Sáu','thứ Bảy'];
+let saved=ED.get('tn_tpl',{}), sent=ED.get('tn_sent',{});
+$('#kind').innerHTML=Object.entries(KINDS).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join('');
+$('#phs').innerHTML=PH.map(([p,l])=>`<span class="chip ph" data-p="${p}" title="${l}">${l}</span>`).join('');
+$$('#phs .chip').forEach(c=>c.onclick=()=>{const t=$('#tpl'),a=t.selectionStart,b=t.selectionEnd;t.value=t.value.slice(0,a)+c.dataset.p+t.value.slice(b);t.focus();t.selectionStart=t.selectionEnd=a+c.dataset.p.length;render()});
+$('#day').value=ED.today();
+
+function setKind(){
+  const k=KINDS[$('#kind').value];$('#tpl').value=saved[$('#kind').value]||k.tpl;$('#dlabel').textContent=k.date;
+  $('#extra').innerHTML=(k.extra||[]).map(([id,l,d])=>`<div class="f"><label>${l}</label><input type="text" data-x="${id}" value="${esc(ED.get('tn_x_'+id,d))}"></div>`).join('');
+  $$('[data-x]').forEach(i=>i.oninput=()=>{ED.set('tn_x_'+i.dataset.x,i.value);render()});
+  render();
+}
+function tdPoints(){const D=ED.get('td_v1',null);if(!D)return null;const w=ED.weekRange($('#day').value);const m={};D.events.forEach(e=>{if(e.sid&&e.date>=w.from&&e.date<=w.to)m[e.sid]=(m[e.sid]||0)+e.pts});return m}
+function dayStatus(sid,day){const att=ED.attendance();let res=[];Object.keys(att).forEach(k=>{if(k.slice(0,10)!==day)return;const st=att[k][sid];if(st==='absent'||st==='late')res.push({ses:k.slice(11),st})});return res}
+function recipients(kind){
+  const who=$('#who').value,day=$('#day').value,w=ED.weekRange(day);
+  if(who==='all') return STU;
+  if(who==='pick'){const sel=ED.get('tn_pick',[]);return STU.filter(s=>sel.includes(s.id))}
+  const f=KINDS[kind].filter;
+  if(f==='absent') return STU.filter(s=>dayStatus(s.id,day).length);
+  if(f==='violation') return STU.filter(s=>ED.statsFor(s.id,w.from,w.to).viPham>0);
+  if(f==='commend') return STU.filter(s=>ED.statsFor(s.id,w.from,w.to).khen>0);
+  if(f==='birthday') return STU.filter(s=>{if(!s.ngaySinh)return false;const md=s.ngaySinh.slice(5,10);const days=[];for(let d=new Date(w.mon);d<=w.sun;d.setDate(d.getDate()+1))days.push(ED.today(d).slice(5,10));return days.includes(md)});
+  return STU;
+}
+function fill(tpl,s,ctx){
+  const w=ED.weekRange($('#day').value),st=ED.statsFor(s.id,w.from,w.to),ds=dayStatus(s.id,$('#day').value);
+  const ses=ds.map(x=>/chieu|chiều/i.test(ED.norm(x.ses))?'buổi chiều':/sang|sáng/i.test(ED.norm(x.ses))?'buổi sáng':'').filter(Boolean);
+  const tt=ds.some(x=>x.st==='absent')?'vắng học':ds.length?'đi học trễ':'vắng học';
+  const list=a=>a.length?' ('+[...new Set(a)].slice(0,4).join('; ')+')':'';
+  const day=new Date($('#day').value+'T00:00');
+  const map={ten:s.ten,hoTen:s.hoTen,lop:CLS||'',gv:T.name||'',xungHo:T.gender==='Cô'?'Cô':'Thầy',xungHo2:T.gender==='Cô'?'cô':'thầy',ngay:ED.vnDate($('#day').value),thu:DOW[day.getDay()],
+    tuan:ED.vnDate(w.from)+' – '+ED.vnDate(w.to),vang:st.vang,tre:st.tre,khen:st.khen,viPham:st.viPham,chiTietViPham:list(st.notesV),chiTietKhen:list(st.notesC),
+    diemThiDua:ctx.td?(ctx.td[s.id]>0?'+':'')+(ctx.td[s.id]||0):'—',phuHuynh:s.phName||'Quý phụ huynh',truong:T.school||'',ngaySinh:ED.vnDate(s.ngaySinh),
+    buoi:ses.length?ses.join(', '):'buổi học',trangThai:tt};
+  $$('[data-x]').forEach(i=>map[i.dataset.x]=i.value.replace(/\{lop\}/g,CLS||''));
+  return tpl.replace(/\{(\w+)\}/g,(m,k)=>map[k]!=null?map[k]:m);
+}
+const batchKey=()=>$('#kind').value+'_'+$('#day').value;
+function render(){
+  const kind=$('#kind').value,list=recipients(kind),ctx={td:tdPoints()},bk=batchKey(),done=sent[bk]||[];
+  $('#picker').hidden=$('#who').value!=='pick';
+  if($('#who').value==='pick'){const sel=ED.get('tn_pick',[]);$('#picker').innerHTML='<div class="btns"><button class="btn l s" id="pall">Chọn hết</button><button class="btn l s" id="pnone">Bỏ chọn</button></div>'+STU.map(s=>`<label><input type="checkbox" value="${s.id}" ${sel.includes(s.id)?'checked':''}>${s.stt}. ${esc(s.hoTen)}</label>`).join('');
+    $$('#picker input').forEach(c=>c.onchange=()=>{ED.set('tn_pick',$$('#picker input:checked').map(x=>x.value));render()});
+    $('#pall').onclick=()=>{ED.set('tn_pick',STU.map(s=>s.id));render()};$('#pnone').onclick=()=>{ED.set('tn_pick',[]);render()}}
+  $('#ttl').textContent=KINDS[kind].name.replace(/^\S+\s/,'');
+  $('#info').textContent=STU.length?`${list.length} tin nhắn · đã gửi ${list.filter(s=>done.includes(s.id)).length}`:'';
+  if(!STU.length){ED.noStudents($('#msgs'));return}
+  if(!list.length){$('#msgs').innerHTML=`<div class="empty">Không có học sinh nào phù hợp (${KINDS[kind].filter==='absent'?'không có em nào vắng/trễ ngày '+ED.vnDate($('#day').value)+' trong mục Điểm danh':KINDS[kind].filter==='birthday'?'không có sinh nhật trong tuần này':'không có dữ liệu trong tuần này'}).<br>Đổi ngày, hoặc chọn “Người nhận: Cả lớp / Tự chọn”.</div>`;return}
+  const tpl=$('#tpl').value;
+  $('#msgs').innerHTML=list.map(s=>{const txt=fill(tpl,s,ctx),isSent=done.includes(s.id),ph=s.phone;
+    return `<div class="m ${isSent?'sent':''}" data-id="${s.id}"><div><h4>${s.stt}. ${esc(s.hoTen)} <small>${s.phName?'PH: '+esc(s.phName)+' · ':''}${ph?'📞 '+esc(ph):'<span class="nophone">chưa có số điện thoại</span>'}</small>${isSent?'<span class="badge lv-T">✓ đã sao chép</span>':''}</h4><div class="t" contenteditable="true">${esc(txt)}</div></div>
+    <div class="ops"><button class="btn s" data-a="copy">📋 Sao chép</button>${ph?`<a class="btn s zalo" href="https://zalo.me/${esc(ph)}" target="_blank" rel="noopener">💬 Mở Zalo</a>`:''}<button class="btn l s" data-a="toggle">${isSent?'↺ Chưa gửi':'✓ Đã gửi'}</button></div></div>`}).join('');
+  $$('.m').forEach(m=>{const id=m.dataset.id;
+    $('[data-a=copy]',m).onclick=()=>ED.copy($('.t',m).innerText).then(()=>{mark(id,true);ED.toast('📋 Đã sao chép tin cho '+STU.find(s=>s.id===id).ten)});
+    $('[data-a=toggle]',m).onclick=()=>mark(id,!(sent[batchKey()]||[]).includes(id));
+  });
+}
+function mark(id,on){const k=batchKey(),a=new Set(sent[k]||[]);on?a.add(id):a.delete(id);sent[k]=[...a];const keys=Object.keys(sent);if(keys.length>60)delete sent[keys[0]];ED.set('tn_sent',sent);render()}
+$('#kind').onchange=setKind;$('#who').onchange=render;$('#day').onchange=render;$('#tpl').oninput=render;
+$('#savetpl').onclick=()=>{saved[$('#kind').value]=$('#tpl').value;ED.set('tn_tpl',saved);ED.toast('💾 Đã lưu mẫu tin nhắn')};
+$('#resettpl').onclick=()=>{delete saved[$('#kind').value];ED.set('tn_tpl',saved);setKind()};
+$('#copyall').onclick=()=>ED.copy($$('.m .t').map(t=>t.innerText).join('\n\n— — —\n\n')).then(()=>ED.toast('📋 Đã sao chép tất cả tin nhắn'));
+$('#clearsent').onclick=()=>{delete sent[batchKey()];ED.set('tn_sent',sent);render()};
+if(!T.name) setTimeout(()=>ED.toast('💡 Vào ⚙️ Cài đặt hồ sơ ở trang chính để điền họ tên, trường – tin nhắn sẽ tự ghi tên thầy/cô'),600);
+setKind();
+</script>
+<script src="eduhub_backup.js"></script>
+</body>
+</html>

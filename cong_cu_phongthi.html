@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Số Báo Danh &amp; Phòng Thi – EduTeacher Hub</title>
+<link rel="stylesheet" href="eduhub_ui.css">
+<script src="eduhub_data.js"></script>
+<script src="lib/xlsx.full.min.js"></script>
+<script src="eduhub_sheet.js"></script>
+<style>
+:root{--accent:#be123c}
+.drop{border:2px dashed var(--border);border-radius:12px;padding:16px;text-align:center;cursor:pointer;background:var(--card2)}
+.rooms{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.room{border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:var(--card2)}
+.room b{font-size:1rem}.room div{font-size:.78rem;color:var(--muted);line-height:1.5}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>🎫 Số báo danh &amp; chia phòng thi <small>danh sách phòng · niêm yết · thẻ dự thi</small></h1>
+  <div class="right"><span class="privacy">🔒 Xử lý trên máy</span><a class="back" href="dashboard.html">← Trang chính</a></div>
+</div>
+<div class="wrap">
+  <div class="card">
+    <h2>1️⃣ Danh sách thí sinh</h2>
+    <p class="hint">Cần ít nhất cột <b>Họ và tên</b>; nên có thêm <b>Ngày sinh</b>, <b>Lớp</b>. Có thể chọn nhiều file (mỗi lớp một file) – hệ thống tự gộp.</p>
+    <div class="grid2" style="margin-top:10px">
+      <div class="drop" id="drop">📂 <b>Chọn file Excel danh sách</b><div class="hint">chọn được nhiều file · kéo thả vào đây</div><input type="file" id="file" accept=".xlsx,.xls,.csv,.ods" multiple hidden></div>
+      <div><textarea id="paste" rows="4" placeholder="…hoặc dán từ Excel: Họ và tên | Ngày sinh | Lớp"></textarea><div class="btns" style="margin-top:6px"><button class="btn l s" id="usep">Dùng dữ liệu dán</button><button class="btn l s" id="usecn">📋 Lớp chủ nhiệm</button><span class="hint" id="nst"></span></div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>2️⃣ Thông tin kỳ thi &amp; cách chia</h2>
+    <div class="row" style="margin-top:10px">
+      <div class="f"><label>Tên kỳ thi</label><input type="text" id="kythi" value="KIỂM TRA CUỐI KỲ I"></div>
+      <div class="f"><label>Khối / Năm học</label><input type="text" id="khoi" value="Khối 6 – Năm học 2026 – 2027"></div>
+      <div class="f"><label>Trường</label><input type="text" id="truong"></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <div class="f s"><label>Thí sinh / phòng</label><input type="number" id="per" value="24" min="1" style="width:110px"></div>
+      <div class="f s"><label>Thứ tự xếp</label><select id="ord"><option value="name">ABC theo tên (cả khối)</option><option value="class">Theo lớp, trong lớp xếp ABC</option><option value="keep">Giữ nguyên thứ tự</option></select></div>
+      <div class="f s"><label>Cách vào phòng</label><select id="mode"><option value="seq">Liền nhau theo thứ tự</option><option value="mix">Xen kẽ (rải đều các lớp vào các phòng)</option></select></div>
+      <div class="f s"><label>Tiền tố SBD</label><input type="text" id="pre" value="6" style="width:80px"></div>
+      <div class="f s"><label>Số chữ số</label><input type="number" id="dig" value="3" min="1" max="6" style="width:80px"></div>
+      <div class="f s"><label>Bắt đầu từ</label><input type="number" id="start" value="1" style="width:90px"></div>
+      <div class="f s"><label>Phòng đầu tiên</label><input type="number" id="r0" value="1" style="width:90px"></div>
+    </div>
+    <div class="btns" style="margin-top:12px"><button class="btn" id="go">🎫 Đánh số &amp; chia phòng</button></div>
+  </div>
+  <div class="card" id="res" hidden>
+    <div class="row" style="justify-content:space-between"><div><h2>3️⃣ Kết quả</h2><div class="hint" id="sum"></div></div>
+      <div class="btns"><button class="btn" id="p1">🖨️ DS phòng thi (ký tên)</button><button class="btn l" id="p2">🖨️ DS niêm yết cửa phòng</button><button class="btn l" id="p3">🖨️ Thẻ dự thi / nhãn bàn</button><button class="btn l" id="p4">🖨️ DS tra cứu theo lớp</button><button class="btn g" id="xl">⬇️ Excel</button></div></div>
+    <div class="rooms" id="rooms" style="margin-top:12px"></div>
+    <div class="tbl-wrap" style="margin-top:12px;max-height:55vh"><table class="tbl" id="tbl"></table></div>
+  </div>
+</div>
+<script>
+'use strict';
+const {$, $$, esc} = ED;
+let ST=[], R=null;
+$('#truong').value=ED.teacher().school||'';
+function fromRows(rows,src){
+  const h=ES.headerRow(rows),head=rows[h],ni=ES.nameCol(head),di=ES.findCol(head,/ngay sinh|^ns$/),li=ES.findCol(head,/^lop$|lop hoc/),gi=ES.findCol(head,/gioi tinh|^gt$|^phai$/);
+  if(ni<0)throw new Error('Không thấy cột họ tên');
+  return rows.slice(h+1).filter(r=>String(r[ni]||'').trim()).map(r=>({ten:ES.cleanName(r[ni]),ns:di>=0?ES.cleanDate(r[di]):'',lop:li>=0?r[li]:(src||''),gt:gi>=0?r[gi]:''}));
+}
+function setST(a,add){ST=add?ST.concat(a):a;$('#nst').textContent=ST.length?`✅ ${ST.length} thí sinh`:''}
+const drop=$('#drop'),fi=$('#file');drop.onclick=()=>fi.click();drop.ondragover=e=>e.preventDefault();drop.ondrop=e=>{e.preventDefault();openFiles([...e.dataTransfer.files])};fi.onchange=()=>{openFiles([...fi.files]);fi.value=''};
+async function openFiles(fs){let all=[];for(const f of fs){try{for(const s of await ES.readFile(f))all=all.concat(fromRows(s.rows,f.name.replace(/\.[^.]+$/,'')))}catch(e){ED.toast('⚠️ '+f.name+': '+e.message)}}setST(all);ED.toast(`Đã đọc ${all.length} thí sinh`)}
+$('#usep').onclick=()=>{try{setST(fromRows(ED.parseTable($('#paste').value)))}catch(e){ED.toast('⚠️ '+e.message)}};
+$('#usecn').onclick=()=>setST(ED.students().map(s=>({ten:s.hoTen,ns:ED.vnDate(s.ngaySinh),lop:ED.className(),gt:s.gioiTinh})));
+
+$('#go').onclick=()=>{
+  if(!ST.length)return ED.toast('⚠️ Chưa có danh sách thí sinh');
+  let list=ST.map(x=>({...x}));const ord=$('#ord').value;
+  if(ord==='name')list.sort((a,b)=>ES.cmpName(a.ten,b.ten)||ES.cmp(a.lop,b.lop));
+  if(ord==='class')list.sort((a,b)=>ES.cmp(a.lop,b.lop)||ES.cmpName(a.ten,b.ten));
+  const per=Math.max(1,+$('#per').value||24),nR=Math.ceil(list.length/per),r0=+$('#r0').value||1;
+  const rooms=Array.from({length:nR},()=>[]);
+  if($('#mode').value==='mix'){list.forEach((x,i)=>rooms[i%nR].push(x));rooms.forEach(r=>r.sort((a,b)=>ES.cmpName(a.ten,b.ten)))}
+  else list.forEach((x,i)=>rooms[Math.floor(i/per)].push(x));
+  let n=+$('#start').value||1;const dig=+$('#dig').value||3,pre=$('#pre').value.trim();
+  rooms.forEach((r,ri)=>r.forEach(x=>{x.sbd=pre+String(n++).padStart(dig,'0');x.phong=ri+r0}));
+  R={rooms,all:rooms.flat()};
+  $('#res').hidden=false;$('#sum').textContent=`${R.all.length} thí sinh · ${nR} phòng · SBD ${R.all[0].sbd} → ${R.all[R.all.length-1].sbd}`;
+  $('#rooms').innerHTML=rooms.map((r,i)=>{const cl={};r.forEach(x=>cl[x.lop]=(cl[x.lop]||0)+1);return `<div class="room"><b>Phòng ${i+r0}</b> · ${r.length} TS<div>SBD ${r[0].sbd} – ${r[r.length-1].sbd}</div><div>${Object.entries(cl).map(([k,v])=>esc(k||'—')+': '+v).join(' · ')}</div></div>`}).join('');
+  $('#tbl').innerHTML=ES.table([['Phòng','SBD','Họ và tên','Ngày sinh','Lớp'],...R.all.map(x=>[String(x.phong),x.sbd,x.ten,x.ns,x.lop])]);
+};
+const HEAD=()=>`<table style="width:100%;border:none;margin-bottom:6pt"><tr><td style="border:none;text-align:center;width:45%;font-size:11pt">${esc(($('#truong').value||'').toLocaleUpperCase('vi'))}<br><b>HỘI ĐỒNG COI THI</b></td><td style="border:none;text-align:center;font-size:11pt"><b>${esc($('#kythi').value)}</b><br>${esc($('#khoi').value)}</td></tr></table>`;
+const CSS='@page{size:A4;margin:12mm 12mm 12mm 15mm}body{font-size:12pt}table.t{width:100%;border-collapse:collapse}table.t td,table.t th{border:1px solid #000;padding:3pt 5pt;font-size:11.5pt}table.t th{background:#eee}.pg{page-break-after:always}.pg:last-child{page-break-after:auto}h2{text-align:center;margin:8pt 0 2pt;font-size:15pt}.c{text-align:center}';
+$('#p1').onclick=()=>ED.printHTML(R.rooms.map(r=>`<div class="pg">${HEAD()}<h2>DANH SÁCH THÍ SINH – PHÒNG THI SỐ ${r[0].phong}</h2><p class="c" style="margin:0 0 6pt">Số báo danh từ ${r[0].sbd} đến ${r[r.length-1].sbd}</p><table class="t"><tr><th>STT</th><th>SBD</th><th>Họ và tên</th><th>Ngày sinh</th><th>Lớp</th><th>Số tờ</th><th>Chữ ký</th><th>Ghi chú</th></tr>${r.map((x,i)=>`<tr><td class="c">${i+1}</td><td class="c"><b>${x.sbd}</b></td><td>${esc(x.ten)}</td><td class="c">${esc(x.ns)}</td><td class="c">${esc(x.lop)}</td><td></td><td style="width:22%"></td><td></td></tr>`).join('')}</table><p style="margin-top:8pt">Tổng số thí sinh: ${r.length} &nbsp;·&nbsp; Số dự thi: ……… &nbsp;·&nbsp; Vắng: ………</p><table style="width:100%;border:none;margin-top:6pt"><tr><td style="border:none;text-align:center"><b>Cán bộ coi thi 1</b><br><i>(Ký, ghi rõ họ tên)</i></td><td style="border:none;text-align:center"><b>Cán bộ coi thi 2</b><br><i>(Ký, ghi rõ họ tên)</i></td></tr></table></div>`).join(''),CSS,'DS phòng thi');
+$('#p2').onclick=()=>ED.printHTML(R.rooms.map(r=>`<div class="pg">${HEAD()}<h2 style="font-size:26pt">PHÒNG THI SỐ ${r[0].phong}</h2><p class="c" style="font-size:14pt;margin:0 0 8pt">SBD: <b>${r[0].sbd} – ${r[r.length-1].sbd}</b> · ${r.length} thí sinh</p><table class="t"><tr><th>STT</th><th>SBD</th><th>Họ và tên</th><th>Lớp</th></tr>${r.map((x,i)=>`<tr><td class="c" style="font-size:13pt">${i+1}</td><td class="c" style="font-size:14pt"><b>${x.sbd}</b></td><td style="font-size:14pt">${esc(x.ten)}</td><td class="c" style="font-size:13pt">${esc(x.lop)}</td></tr>`).join('')}</table></div>`).join(''),CSS,'DS niêm yết');
+$('#p3').onclick=()=>{const cards=R.all.map(x=>`<div class="tc"><div style="font-size:9pt">${esc($('#kythi').value)}</div><div style="font-size:28pt;font-weight:bold;letter-spacing:2pt">${x.sbd}</div><div style="font-size:13pt;font-weight:bold">${esc(x.ten)}</div><div style="font-size:10pt">Lớp ${esc(x.lop)}${x.ns?' · '+esc(x.ns):''} · <b>Phòng ${x.phong}</b></div></div>`);
+  ED.printHTML(`<div class="grid">${cards.join('')}</div>`,'@page{size:A4;margin:8mm}.grid{display:grid;grid-template-columns:1fr 1fr;grid-auto-rows:66mm;gap:0}.tc{border:1px dashed #999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:3pt;break-inside:avoid;font-family:Arial,sans-serif}','Thẻ dự thi')};
+$('#p4').onclick=()=>{const by={};R.all.forEach(x=>(by[x.lop||'—']=by[x.lop||'—']||[]).push(x));
+  ED.printHTML(Object.keys(by).sort(ES.cmp).map(k=>`<div class="pg">${HEAD()}<h2>DANH SÁCH SỐ BÁO DANH – LỚP ${esc(k)}</h2><table class="t"><tr><th>STT</th><th>Họ và tên</th><th>Ngày sinh</th><th>SBD</th><th>Phòng thi</th></tr>${by[k].sort((a,b)=>ES.cmpName(a.ten,b.ten)).map((x,i)=>`<tr><td class="c">${i+1}</td><td>${esc(x.ten)}</td><td class="c">${esc(x.ns)}</td><td class="c"><b>${x.sbd}</b></td><td class="c">${x.phong}</td></tr>`).join('')}</table></div>`).join(''),CSS,'DS tra cứu theo lớp')};
+$('#xl').onclick=()=>ED.exportXLSX([{name:'Tổng hợp',aoa:[['Phòng','SBD','Họ và tên','Ngày sinh','Lớp','Giới tính'],...R.all.map(x=>[x.phong,x.sbd,x.ten,x.ns,x.lop,x.gt])]},...R.rooms.map(r=>({name:'Phòng '+r[0].phong,aoa:[['STT','SBD','Họ và tên','Ngày sinh','Lớp','Ký tên'],...r.map((x,i)=>[i+1,x.sbd,x.ten,x.ns,x.lop,''])]}))],'PhongThi_'+ED.fileName($('#kythi').value));
+</script>
+<script src="eduhub_backup.js"></script>
+</body>
+</html>

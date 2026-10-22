@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ma Trận Đề Kiểm Tra – EduTeacher Hub</title>
+<link rel="stylesheet" href="eduhub_ui.css">
+<script src="eduhub_data.js"></script>
+<script src="lib/xlsx.full.min.js"></script>
+<style>
+:root{--accent:#4f46e5}
+.mt{border-collapse:collapse;font-size:.8rem;min-width:100%}
+.mt th,.mt td{border:1px solid var(--border);padding:4px 5px;text-align:center;vertical-align:middle}
+.mt th{background:var(--card2);font-size:.72rem;color:var(--text2)}
+.mt td.l{text-align:left}
+.mt input[type=number]{width:44px;padding:4px;text-align:center;border-radius:6px}
+.mt input.z{color:var(--muted)}
+.mt textarea{width:100%;min-width:170px;min-height:46px;font-size:.78rem;padding:4px 6px}
+.mt input[type=text]{min-width:140px;padding:5px 7px;font-size:.8rem}
+.mt tfoot td{background:var(--card2);font-weight:700}
+.mt .lvB{background:rgba(59,125,233,.06)}.mt .lvH{background:rgba(16,185,129,.06)}.mt .lvV{background:rgba(245,158,11,.08)}
+.chk{display:flex;gap:10px;flex-wrap:wrap}
+.chk .stat{min-width:150px;flex:1}
+.ok{color:#059669}.warn{color:#d97706}.bad{color:#dc2626}
+.parts{display:grid;grid-template-columns:1.6fr .8fr .8fr .8fr 36px;gap:6px;align-items:center;margin-bottom:6px}
+.parts input{padding:6px 8px}
+.qn{font-size:.72rem;color:var(--muted);display:block}
+.lst{display:flex;gap:6px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>🧮 Ma trận &amp; bản đặc tả đề kiểm tra <small>theo cấu trúc CV 7991 hoặc tự chọn</small></h1>
+  <div class="right"><span class="privacy">🔒 Lưu trên máy</span><a class="back" href="dashboard.html">← Trang chính</a></div>
+</div>
+<div class="wrap">
+  <div class="card">
+    <div class="row">
+      <div class="f"><label>Ma trận đã lưu</label><select id="list"></select></div>
+      <div class="btns"><button class="btn l" id="new">➕ Ma trận mới</button><button class="btn l" id="dup">⧉ Nhân bản</button><button class="btn l" id="del">🗑️ Xóa</button></div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div class="f"><label>Môn</label><input type="text" id="mon"></div>
+      <div class="f s"><label>Khối</label><input type="number" id="khoi" min="6" max="9" style="width:80px"></div>
+      <div class="f"><label>Bài kiểm tra</label><input type="text" id="loai" placeholder="Kiểm tra giữa kỳ I"></div>
+      <div class="f s"><label>Thời gian (phút)</label><input type="number" id="tg" style="width:100px"></div>
+      <div class="f s"><label>Năm học</label><input type="text" id="namhoc" style="width:120px"></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card"><h2>🧱 Cấu trúc đề</h2>
+      <div class="row" style="margin:8px 0"><div class="f"><label>Mẫu cấu trúc</label><select id="preset">
+        <option value="7991">CV 7991: Nhiều lựa chọn 3đ · Đúng–Sai 2đ · Trả lời ngắn 2đ · Tự luận 3đ</option>
+        <option value="7991b">CV 7991 (không dùng Trả lời ngắn): NLC 3đ · Đúng–Sai 4đ · Tự luận 3đ</option>
+        <option value="tn3">Trắc nghiệm 3đ · Tự luận 7đ</option>
+        <option value="tn4">Trắc nghiệm 4đ · Tự luận 6đ</option>
+        <option value="tl">Tự luận 10đ</option></select></div><button class="btn l s" id="apply">Áp dụng</button></div>
+      <div class="parts hint"><span>Dạng câu hỏi</span><span>Viết tắt</span><span>Điểm/câu</span><span>Điểm mục tiêu</span><span></span></div>
+      <div id="parts"></div><button class="btn l s" id="addpart">+ Thêm dạng</button>
+    </div>
+    <div class="card"><h2>🎯 Mức độ &amp; kiểm tra</h2>
+      <div class="row" style="margin:8px 0">
+        <div class="f s"><label>Biết (%)</label><input type="number" id="t0" style="width:90px"></div>
+        <div class="f s"><label>Hiểu (%)</label><input type="number" id="t1" style="width:90px"></div>
+        <div class="f s"><label>Vận dụng (%)</label><input type="number" id="t2" style="width:90px"></div>
+      </div>
+      <div class="chk" id="chk"></div>
+    </div>
+  </div>
+
+  <div class="tabs"><button class="tab on" data-t="mt">📊 Ma trận</button><button class="tab" data-t="dt">📝 Bản đặc tả</button></div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:10px">
+      <div class="btns"><button class="btn l s" id="addrow">+ Thêm nội dung</button><button class="btn l s" id="kntt">📚 Thêm từ Toán 6 – KNTT</button><button class="btn l s" id="clr">Xóa số câu</button></div>
+      <div class="btns"><button class="btn g" id="word">⬇️ Xuất Word</button><button class="btn l" id="xlsx">⬇️ Excel</button></div>
+    </div>
+    <div class="lst" id="knttbox" hidden style="margin-bottom:10px"></div>
+    <div class="tbl-wrap"><table class="mt" id="tbl"></table></div>
+    <p class="hint" style="margin-top:8px">💡 Nhập <b>số câu</b> vào từng ô. Hệ thống tự tính điểm (= số câu × điểm/câu), tỉ lệ từng mức và báo nếu lệch so với mục tiêu. Cột “Điểm gợi ý” chia điểm theo số tiết của từng nội dung.</p>
+  </div>
+</div>
+<script type="module">
+'use strict';
+const {$, $$, esc} = ED;
+const LVL=['Biết','Hiểu','Vận dụng'], LC=['lvB','lvH','lvV'];
+const y=(()=>{const d=new Date();return d.getMonth()>=7?d.getFullYear():d.getFullYear()-1})();
+const PRESETS={
+ '7991':[['Trắc nghiệm nhiều lựa chọn','NLC',0.25,3],['Trắc nghiệm Đúng – Sai','ĐS',1,2],['Trắc nghiệm trả lời ngắn','TLN',0.5,2],['Tự luận','TL',1,3]],
+ '7991b':[['Trắc nghiệm nhiều lựa chọn','NLC',0.25,3],['Trắc nghiệm Đúng – Sai','ĐS',1,4],['Tự luận','TL',1,3]],
+ 'tn3':[['Trắc nghiệm khách quan','TN',0.25,3],['Tự luận','TL',1,7]],
+ 'tn4':[['Trắc nghiệm khách quan','TN',0.25,4],['Tự luận','TL',1,6]],
+ 'tl':[['Tự luận','TL',1,10]]};
+const mkParts=p=>PRESETS[p].map(([name,k,ppq,target])=>({name,k,ppq,target}));
+const blank=()=>({id:ED.uid(),mon:'Toán',khoi:6,loai:'Kiểm tra giữa kỳ I',tg:90,namhoc:y+' – '+(y+1),preset:'7991',parts:mkParts('7991'),lv:[40,30,30],rows:[{chude:'',noidung:'',tiet:'',c:{},yc:['','','']}]});
+let LIST=ED.get('mt_list',[]); if(!LIST.length) LIST=[blank()];
+let cur=ED.get('mt_cur',LIST[0].id); let M=LIST.find(m=>m.id===cur)||LIST[0];
+const save=()=>{ED.set('mt_list',LIST);ED.set('mt_cur',M.id)};
+const r2=x=>Math.round(x*100)/100, f=x=>String(r2(x)).replace('.',',');
+const cell=(r,k)=>r.c[k]||(r.c[k]=[0,0,0]);
+const title=m=>`${m.loai||'Đề kiểm tra'} – ${m.mon||''} ${m.khoi||''}`;
+
+/* ── tính toán ── */
+function calc(){
+  const P=M.parts, rows=M.rows;
+  const colQ=P.map(p=>[0,0,0]), rowQ=rows.map(()=>0), rowD=rows.map(()=>0), lvD=[0,0,0], partD=P.map(()=>0);
+  rows.forEach((r,i)=>P.forEach((p,j)=>cell(r,p.k).forEach((n,l)=>{n=+n||0;colQ[j][l]+=n;rowQ[i]+=n;const d=n*(+p.ppq||0);rowD[i]+=d;lvD[l]+=d;partD[j]+=d})));
+  const tot=lvD.reduce((a,b)=>a+b,0), tiet=rows.reduce((a,r)=>a+(+r.tiet||0),0), totTarget=P.reduce((a,p)=>a+(+p.target||0),0)||10;
+  // đánh số câu theo từng dạng
+  const labels=rows.map(()=>P.map(()=>[[],[],[]]));
+  P.forEach((p,j)=>{let k=0;rows.forEach((r,i)=>[0,1,2].forEach(l=>{for(let t=0;t<(+cell(r,p.k)[l]||0);t++)labels[i][j][l].push((p.k==='TL'?'Bài ':'C')+(++k))}))});
+  return {colQ,rowQ,rowD,lvD,partD,tot,tiet,totTarget,labels};
+}
+
+/* ── kiểm tra ── */
+function renderCheck(C){
+  const s=(lb,v,t,u)=>{const d=Math.abs(v-t),cls=d<0.01?'ok':d<=t*0.1+0.01?'warn':'bad';return `<div class="stat"><span>${lb}</span><b class="${cls}">${f(v)}${u}</b><span style="text-transform:none">mục tiêu ${f(t)}${u} ${cls==='ok'?'✓':cls==='warn'?'≈':'✗'}</span></div>`};
+  const totT=C.totTarget;
+  $('#chk').innerHTML=s('Tổng điểm',C.tot,totT,'đ')+LVL.map((l,i)=>s(l,C.tot?C.lvD[i]/C.tot*100:0,+M.lv[i]||0,'%')).join('')+M.parts.map((p,j)=>s(p.short||p.k,C.partD[j],+p.target||0,'đ')).join('');
+}
+
+/* ── bảng ma trận / đặc tả ── */
+let TAB='mt';
+function render(){
+  ['mon','khoi','loai','tg','namhoc'].forEach(k=>{if(document.activeElement!==$('#'+k))$('#'+k).value=M[k]??''});
+  $('#preset').value=M.preset||'7991';[0,1,2].forEach(i=>$('#t'+i).value=M.lv[i]);
+  $('#list').innerHTML=LIST.map(m=>`<option value="${m.id}" ${m.id===M.id?'selected':''}>${esc(title(m))}${m.namhoc?' ('+esc(m.namhoc)+')':''}</option>`).join('');
+  $('#parts').innerHTML=M.parts.map((p,j)=>`<div class="parts"><input type="text" value="${esc(p.name)}" data-p="${j}" data-k="name"><input type="text" value="${esc(p.k)}" data-p="${j}" data-k="k"><input type="number" step="0.05" value="${p.ppq}" data-p="${j}" data-k="ppq"><input type="number" step="0.25" value="${p.target}" data-p="${j}" data-k="target"><button class="btn l s" data-pdel="${j}">✕</button></div>`).join('');
+  $$('[data-p]').forEach(i=>i.onchange=()=>{const p=M.parts[+i.dataset.p],k=i.dataset.k;if(k==='k'){const old=p.k,nk=i.value.trim()||old;M.rows.forEach(r=>{if(r.c[old]){r.c[nk]=r.c[old];if(nk!==old)delete r.c[old]}});p.k=nk}else p[k]=k==='name'?i.value:(+i.value||0);save();render()});
+  $$('[data-pdel]').forEach(b=>b.onclick=()=>{M.parts.splice(+b.dataset.pdel,1);save();render()});
+  const C=calc();renderCheck(C);
+  TAB==='mt'?renderMT(C):renderDT(C);
+}
+function renderMT(C){
+  const P=M.parts;
+  const h1=`<tr><th rowspan="3">TT</th><th rowspan="3">Chủ đề / Chương</th><th rowspan="3">Nội dung / đơn vị kiến thức</th><th rowspan="3">Số tiết</th><th colspan="${P.length*3}">Mức độ đánh giá (số câu)</th><th rowspan="3">Tổng số câu</th><th rowspan="3">Tổng điểm</th><th rowspan="3">Tỉ lệ %</th><th rowspan="3">Điểm gợi ý<br><span class="qn">theo số tiết</span></th><th rowspan="3"></th></tr>`;
+  const h2='<tr>'+P.map(p=>`<th colspan="3">${esc(p.name)}<span class="qn">${f(p.ppq)} đ/câu</span></th>`).join('')+'</tr>';
+  const h3='<tr>'+P.map(()=>LVL.map((l,i)=>`<th class="${LC[i]}">${l}</th>`).join('')).join('')+'</tr>';
+  const body=M.rows.map((r,i)=>`<tr data-r="${i}"><td>${i+1}</td><td class="l"><input type="text" value="${esc(r.chude)}" data-f="chude"></td><td class="l"><input type="text" value="${esc(r.noidung)}" data-f="noidung" style="min-width:200px"></td><td><input type="number" min="0" value="${esc(r.tiet)}" data-f="tiet"></td>`+
+    P.map(p=>cell(r,p.k).map((n,l)=>`<td class="${LC[l]}"><input type="number" min="0" value="${n||''}" placeholder="0" data-k="${esc(p.k)}" data-l="${l}"></td>`).join('')).join('')+
+    `<td><b>${C.rowQ[i]||''}</b></td><td><b>${C.rowD[i]?f(C.rowD[i]):''}</b></td><td>${C.tot&&C.rowD[i]?f(C.rowD[i]/C.tot*100)+'%':''}</td><td class="qn">${C.tiet&&r.tiet?f(C.totTarget*(+r.tiet)/C.tiet)+' đ':''}</td><td><button class="btn l s" data-rdel="${i}">✕</button></td></tr>`).join('');
+  const sumQ='<tr><td colspan="4" class="l">Tổng số câu</td>'+C.colQ.map(a=>a.map((n,l)=>`<td class="${LC[l]}">${n||''}</td>`).join('')).join('')+`<td>${C.rowQ.reduce((a,b)=>a+b,0)}</td><td>${f(C.tot)}</td><td>100%</td><td></td><td></td></tr>`;
+  const sumD='<tr><td colspan="4" class="l">Tổng điểm</td>'+C.colQ.map((a,j)=>a.map((n,l)=>`<td class="${LC[l]}">${n?f(n*M.parts[j].ppq):''}</td>`).join('')).join('')+'<td colspan="5"></td></tr>';
+  const lvRow='<tr><td colspan="4" class="l">Tỉ lệ theo mức độ</td>'+`<td colspan="${P.length*3}">`+LVL.map((l,i)=>`${l}: <b>${C.tot?f(C.lvD[i]/C.tot*100):0}%</b> (${f(C.lvD[i])}đ)`).join(' &nbsp;·&nbsp; ')+'</td><td colspan="5"></td></tr>';
+  $('#tbl').innerHTML=`<thead>${h1}${h2}${h3}</thead><tbody>${body}</tbody><tfoot>${sumQ}${sumD}${lvRow}</tfoot>`;
+  bindRows();
+}
+function renderDT(C){
+  const P=M.parts;
+  const h1=`<tr><th rowspan="3">TT</th><th rowspan="3">Chủ đề / Chương</th><th rowspan="3">Nội dung / đơn vị kiến thức</th><th rowspan="3" style="min-width:260px">Yêu cầu cần đạt</th><th colspan="${P.length*3}">Số câu hỏi ở các mức độ đánh giá</th></tr>`;
+  const h2='<tr>'+P.map(p=>`<th colspan="3">${esc(p.name)}</th>`).join('')+'</tr>';
+  const h3='<tr>'+P.map(()=>LVL.map((l,i)=>`<th class="${LC[i]}">${l}</th>`).join('')).join('')+'</tr>';
+  const body=M.rows.map((r,i)=>`<tr data-r="${i}"><td>${i+1}</td><td class="l">${esc(r.chude)}</td><td class="l">${esc(r.noidung)}</td><td class="l">${LVL.map((l,k)=>`<b style="font-size:.72rem">${l}:</b><textarea data-yc="${k}" placeholder="– …">${esc((r.yc||[])[k]||'')}</textarea>`).join('')}</td>`+
+    P.map((p,j)=>cell(r,p.k).map((n,l)=>`<td class="${LC[l]}">${n?`<b>${n}</b><span class="qn">${C.labels[i][j][l].join(', ')}</span>`:''}</td>`).join('')).join('')+'</tr>').join('');
+  $('#tbl').innerHTML=`<thead>${h1}${h2}${h3}</thead><tbody>${body}</tbody>`;
+  $$('#tbl [data-yc]').forEach(t=>t.oninput=()=>{const r=M.rows[+t.closest('tr').dataset.r];r.yc=r.yc||['','',''];r.yc[+t.dataset.yc]=t.value;save()});
+}
+function bindRows(){
+  $$('#tbl tr[data-r]').forEach(tr=>{const r=M.rows[+tr.dataset.r];
+    $$('[data-f]',tr).forEach(i=>i.onchange=()=>{r[i.dataset.f]=i.value;save();render()});
+    $$('[data-k]',tr).forEach(i=>i.onchange=()=>{cell(r,i.dataset.k)[+i.dataset.l]=Math.max(0,+i.value||0);save();render();const n=$(`#tbl tr[data-r="${tr.dataset.r}"] [data-k="${i.dataset.k}"][data-l="${i.dataset.l}"]`);if(n)n.focus()});
+    $('[data-rdel]',tr).onclick=()=>{if(M.rows.length>1||confirm('Xóa dòng cuối?')){M.rows.splice(+tr.dataset.r,1);if(!M.rows.length)M.rows.push({chude:'',noidung:'',tiet:'',c:{},yc:['','','']});save();render()}};
+  });
+}
+
+/* ── sự kiện ── */
+['mon','khoi','loai','tg','namhoc'].forEach(k=>$('#'+k).oninput=()=>{M[k]=$('#'+k).value;save();$('#list').innerHTML=LIST.map(m=>`<option value="${m.id}" ${m.id===M.id?'selected':''}>${esc(title(m))}</option>`).join('')});
+[0,1,2].forEach(i=>$('#t'+i).onchange=()=>{M.lv[i]=+$('#t'+i).value||0;save();render()});
+$('#apply').onclick=()=>{const hasQ=M.rows.some(r=>Object.values(r.c).some(a=>a.some(Boolean)));if(hasQ&&!confirm('Đổi cấu trúc sẽ xóa số câu đã nhập ở các dạng không còn dùng. Tiếp tục?'))return;M.preset=$('#preset').value;M.parts=mkParts(M.preset);save();render()};
+$('#addpart').onclick=()=>{M.parts.push({name:'Dạng mới',k:'D'+(M.parts.length+1),ppq:1,target:0});save();render()};
+$('#addrow').onclick=()=>{M.rows.push({chude:M.rows.length?M.rows[M.rows.length-1].chude:'',noidung:'',tiet:'',c:{},yc:['','','']});save();render()};
+$('#clr').onclick=()=>{if(confirm('Xóa toàn bộ số câu đã nhập?')){M.rows.forEach(r=>r.c={});save();render()}};
+$('#list').onchange=()=>{M=LIST.find(m=>m.id===$('#list').value);save();render()};
+$('#new').onclick=()=>{M=blank();LIST.push(M);save();render()};
+$('#dup').onclick=()=>{const c=JSON.parse(JSON.stringify(M));c.id=ED.uid();c.loai=(c.loai||'')+' (bản sao)';LIST.push(c);M=c;save();render()};
+$('#del').onclick=()=>{if(!confirm('Xóa ma trận “'+title(M)+'”?'))return;LIST=LIST.filter(m=>m.id!==M.id);if(!LIST.length)LIST=[blank()];M=LIST[0];save();render()};
+$$('.tab').forEach(t=>t.onclick=()=>{TAB=t.dataset.t;$$('.tab').forEach(x=>x.classList.toggle('on',x===t));render()});
+
+/* Toán 6 KNTT */
+$('#kntt').onclick=async()=>{
+  const box=$('#knttbox');if(!box.hidden){box.hidden=true;return}
+  try{const {SUBJECTS}=await import('./tienphong/js/lessons.js');const L=SUBJECTS[0].bai,ch=[...new Set(L.map(x=>x.chuong))];
+    box.innerHTML='<span class="hint" style="width:100%">Chọn chương để thêm các bài thành dòng nội dung:</span>'+ch.map((c,i)=>`<button class="btn l s" data-ch="${i}">${esc(c.replace(/^Chương\s+/,'Ch. '))}</button>`).join('');box.hidden=false;
+    $$('[data-ch]',box).forEach(b=>b.onclick=()=>{const c=ch[+b.dataset.ch];if(M.rows.length===1&&!M.rows[0].chude&&!M.rows[0].noidung)M.rows=[];L.filter(x=>x.chuong===c).forEach(x=>M.rows.push({chude:c,noidung:x.ten.replace(/^Bài \d+\.\s*/,''),tiet:'',c:{},yc:['','','']}));save();render();ED.toast('✅ Đã thêm các bài của '+c)});
+  }catch(e){ED.toast('⚠️ Không tải được danh sách bài học')}
+};
+
+/* ── xuất ── */
+function docHTML(){
+  const C=calc(),P=M.parts,T=ED.teacher(),th='style="border:1px solid #000;padding:2pt 4pt;font-size:10.5pt;text-align:center;font-weight:bold"',td='style="border:1px solid #000;padding:2pt 4pt;font-size:10.5pt;text-align:center;vertical-align:top"',tl='style="border:1px solid #000;padding:2pt 4pt;font-size:10.5pt;vertical-align:top"';
+  const head=(extra)=>`<tr><td ${th} rowspan="3" width="3%">TT</td><td ${th} rowspan="3" width="12%">Chủ đề / Chương</td><td ${th} rowspan="3" width="18%">Nội dung / đơn vị kiến thức</td>${extra}<td ${th} colspan="${P.length*3}">Mức độ đánh giá</td>${extra?'':`<td ${th} rowspan="3">Tổng số câu</td><td ${th} rowspan="3">Tổng điểm</td><td ${th} rowspan="3">Tỉ lệ %</td>`}</tr><tr>${P.map(p=>`<td ${th} colspan="3">${esc(p.name)}</td>`).join('')}</tr><tr>${P.map(()=>LVL.map(l=>`<td ${th}>${l}</td>`).join('')).join('')}</tr>`;
+  const mt=`<table width="100%" style="width:100%;border-collapse:collapse">${head('')}${M.rows.map((r,i)=>`<tr><td ${td}>${i+1}</td><td ${tl}>${esc(r.chude)}</td><td ${tl}>${esc(r.noidung)}</td>${P.map(p=>cell(r,p.k).map(n=>`<td ${td}>${n||''}</td>`).join('')).join('')}<td ${td}>${C.rowQ[i]||''}</td><td ${td}>${C.rowD[i]?f(C.rowD[i]):''}</td><td ${td}>${C.tot&&C.rowD[i]?f(C.rowD[i]/C.tot*100)+'%':''}</td></tr>`).join('')}
+    <tr><td ${tl} colspan="3"><b>Tổng số câu</b></td>${C.colQ.map(a=>a.map(n=>`<td ${td}><b>${n||''}</b></td>`).join('')).join('')}<td ${td}><b>${C.rowQ.reduce((a,b)=>a+b,0)}</b></td><td ${td}><b>${f(C.tot)}</b></td><td ${td}><b>100%</b></td></tr>
+    <tr><td ${tl} colspan="3"><b>Tổng điểm</b></td>${C.colQ.map((a,j)=>a.map(n=>`<td ${td}>${n?f(n*P[j].ppq):''}</td>`).join('')).join('')}<td ${td} colspan="3"></td></tr>
+    <tr><td ${tl} colspan="3"><b>Tỉ lệ %</b></td>${P.map(()=>LVL.map(()=>'').join('')).join('')}<td ${td} colspan="${P.length*3+3}">${LVL.map((l,i)=>`${l}: ${C.tot?f(C.lvD[i]/C.tot*100):0}%`).join(' – ')}</td></tr></table>`;
+  const dt=`<table width="100%" style="width:100%;border-collapse:collapse"><tr><td ${th} rowspan="3" width="3%">TT</td><td ${th} rowspan="3" width="11%">Chủ đề / Chương</td><td ${th} rowspan="3" width="14%">Nội dung / đơn vị kiến thức</td><td ${th} rowspan="3" width="34%">Yêu cầu cần đạt</td><td ${th} colspan="${P.length*3}">Số câu hỏi ở các mức độ đánh giá</td></tr><tr>${P.map(p=>`<td ${th} colspan="3">${esc(p.name)}</td>`).join('')}</tr><tr>${P.map(()=>LVL.map(l=>`<td ${th}>${l}</td>`).join('')).join('')}</tr>
+    ${M.rows.map((r,i)=>`<tr><td ${td}>${i+1}</td><td ${tl}>${esc(r.chude)}</td><td ${tl}>${esc(r.noidung)}</td><td ${tl}>${LVL.map((l,k)=>(r.yc||[])[k]?`<b>${l}:</b><br>${esc(r.yc[k]).replace(/\n/g,'<br>')}`:'').filter(Boolean).join('<br>')}</td>${P.map((p,j)=>cell(r,p.k).map((n,l)=>`<td ${td}>${n?n+'<br><i style="font-size:9pt">'+C.labels[i][j][l].join(', ')+'</i>':''}</td>`).join('')).join('')}</tr>`).join('')}</table>`;
+  const cap=`<p style="text-align:center;font-size:14pt"><b>{T}</b></p><p style="text-align:center">Môn: ${esc(M.mon)} ${esc(M.khoi)} – Thời gian làm bài: ${esc(M.tg)} phút – Năm học ${esc(M.namhoc)}</p>`;
+  return {mt,dt,cap,school:T.school};
+}
+$('#word').onclick=()=>{const d=docHTML();ED.exportDoc(`<p style="font-size:12pt"><b>${esc((d.school||'').toLocaleUpperCase('vi'))}</b></p>`+d.cap.replace('{T}','MA TRẬN '+esc((M.loai||'ĐỀ KIỂM TRA').toLocaleUpperCase('vi')))+d.mt+'<br clear="all" style="page-break-before:always">'+d.cap.replace('{T}','BẢN ĐẶC TẢ '+esc((M.loai||'ĐỀ KIỂM TRA').toLocaleUpperCase('vi')))+d.dt,'MaTran_'+ED.fileName(title(M)),{landscape:true,css:'p{margin:0 0 4pt}'})};
+$('#xlsx').onclick=()=>{const C=calc(),P=M.parts;const hd=['TT','Chủ đề','Nội dung','Số tiết',...P.flatMap(p=>LVL.map(l=>p.k+' – '+l)),'Tổng câu','Tổng điểm','Tỉ lệ %'];
+  const a=[hd,...M.rows.map((r,i)=>[i+1,r.chude,r.noidung,r.tiet,...P.flatMap(p=>cell(r,p.k).map(n=>n||'')),C.rowQ[i],r2(C.rowD[i]),C.tot?r2(C.rowD[i]/C.tot*100):0]),['','Tổng','','',...C.colQ.flatMap(x=>x),C.rowQ.reduce((a,b)=>a+b,0),r2(C.tot),100]];
+  const b=[['TT','Chủ đề','Nội dung','Yêu cầu – Biết','Yêu cầu – Hiểu','Yêu cầu – Vận dụng',...P.flatMap(p=>LVL.map(l=>p.k+' – '+l))],...M.rows.map((r,i)=>[i+1,r.chude,r.noidung,...[0,1,2].map(k=>(r.yc||[])[k]||''),...P.flatMap((p,j)=>[0,1,2].map(l=>C.labels[i][j][l].join(', ')))])];
+  ED.exportXLSX([{name:'Ma trận',aoa:a},{name:'Đặc tả',aoa:b}],'MaTran_'+ED.fileName(title(M)))};
+
+save();render();
+</script>
+<script src="eduhub_backup.js"></script>
+</body>
+</html>

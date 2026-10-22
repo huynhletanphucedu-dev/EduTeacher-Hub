@@ -1026,6 +1026,15 @@ body.dark .sd-table tr:hover td{background:#162032;}
       <div class="nav-sub-item" onclick="showCN('t-diary',this,'Chủ Nhiệm','Nhật Ký')">
         <span class="si-dot" style="background:#34d399"></span>📝 Nhật Ký
       </div>
+      <div class="nav-sub-item" onclick="showPage('cn-nhanxet',this,'Chủ Nhiệm','Nhận Xét TT22')">
+        <span class="si-dot" style="background:#2dd4bf"></span>🧾 Nhận Xét TT22 <span style="margin-left:auto;font-size:.58rem;background:#ef4444;color:#fff;padding:1px 5px;border-radius:8px">MỚI</span>
+      </div>
+      <div class="nav-sub-item" onclick="showPage('cn-thidua',this,'Chủ Nhiệm','Thi Đua Tuần')">
+        <span class="si-dot" style="background:#2dd4bf"></span>🏆 Thi Đua Tuần <span style="margin-left:auto;font-size:.58rem;background:#ef4444;color:#fff;padding:1px 5px;border-radius:8px">MỚI</span>
+      </div>
+      <div class="nav-sub-item" onclick="showPage('cn-tinnhan',this,'Chủ Nhiệm','Tin Nhắn Phụ Huynh')">
+        <span class="si-dot" style="background:#2dd4bf"></span>💬 Tin Nhắn PH <span style="margin-left:auto;font-size:.58rem;background:#ef4444;color:#fff;padding:1px 5px;border-radius:8px">MỚI</span>
+      </div>
     </div>
   </div>
 
@@ -1187,6 +1196,15 @@ body.dark .sd-table tr:hover td{background:#162032;}
     </div>
 
     <!-- ── GD: Sổ Điểm ── -->
+    <div class="page" id="cn-nhanxet" style="padding:0;height:calc(100vh - var(--top-h));overflow:hidden;">
+      <iframe data-live data-src="cn_nhanxet.html" title="Nhận xét TT22" style="width:100%;height:100%;border:none;display:block;"></iframe>
+    </div>
+    <div class="page" id="cn-thidua" style="padding:0;height:calc(100vh - var(--top-h));overflow:hidden;">
+      <iframe data-live data-src="cn_thidua.html" title="Thi đua tuần" style="width:100%;height:100%;border:none;display:block;"></iframe>
+    </div>
+    <div class="page" id="cn-tinnhan" style="padding:0;height:calc(100vh - var(--top-h));overflow:hidden;">
+      <iframe data-live data-src="cn_tinnhan.html" title="Tin nhắn phụ huynh" style="width:100%;height:100%;border:none;display:block;"></iframe>
+    </div>
     <div class="page" id="gd-sodiem">
       <!-- Toolbar -->
       <div class="sd-toolbar">
@@ -2417,7 +2435,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
                 </svg>
               </div>
             </div>
-            <div class="tool-card-desc">Ghép, tách, sắp xếp trang, chữ ký, nén, PDF ↔ ảnh</div>
+            <div class="tool-card-desc">Ghép, tách, sửa nhanh, in 2–4 trang/tờ, chữ ký, nén, PDF ↔ ảnh</div>
           </div>
 
           <!-- 08 Xử lí ảnh -->
@@ -2496,6 +2514,126 @@ body.dark .sd-table tr:hover td{background:#162032;}
               </div>
             </div>
             <div class="tool-card-desc">In thẻ tên gập đôi hàng loạt cho hội nghị, họp phụ huynh</div>
+          </div>
+
+          <!-- 12 Trộn thư hàng loạt -->
+          <div class="tool-card" onclick="window.open('cong_cu_tronthu.html','_blank')">
+            <div class="tool-card-title">Trộn thư hàng loạt</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#7c3aed;">12</span>
+              <div class="tool-thumb" style="background:#f5f3ff;font-size:2.6rem">✉️</div>
+            </div>
+            <div class="tool-card-desc">Giấy mời họp PH, giấy khen, phiếu liên lạc – in & xuất Word</div>
+          </div>
+
+          <!-- 13 Thống kê điểm -->
+          <div class="tool-card" onclick="window.open('cong_cu_thongke.html','_blank')">
+            <div class="tool-card-title">Thống kê điểm</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#2a78d6;">13</span>
+              <div class="tool-thumb" style="background:#eff6ff;font-size:2.6rem">📈</div>
+            </div>
+            <div class="tool-card-desc">Phổ điểm, tỉ lệ Tốt/Khá/Đạt, so sánh lớp – cho báo cáo tổ</div>
+          </div>
+
+          <!-- 14 Ma trận đề kiểm tra -->
+          <div class="tool-card" onclick="window.open('cong_cu_matran.html','_blank')">
+            <div class="tool-card-title">Ma trận đề kiểm tra</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#4f46e5;">14</span>
+              <div class="tool-thumb" style="background:#eef2ff;font-size:2.6rem">🧮</div>
+            </div>
+            <div class="tool-card-desc">Ma trận & bản đặc tả theo CV 7991, tự tính điểm, xuất Word</div>
+          </div>
+
+          <!-- 15 Nhận xét học sinh TT22 -->
+          <div class="tool-card" onclick="window.open('cn_nhanxet.html','_blank')">
+            <div class="tool-card-title">Nhận xét học sinh TT22</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#0d9488;">15</span>
+              <div class="tool-thumb" style="background:#f0fdfa;font-size:2.6rem">🧾</div>
+            </div>
+            <div class="tool-card-desc">Xếp loại học tập, rèn luyện & soạn nhận xét học bạ</div>
+          </div>
+
+          <!-- 16 Thi đua tổ – cá nhân -->
+          <div class="tool-card" onclick="window.open('cn_thidua.html','_blank')">
+            <div class="tool-card-title">Thi đua tổ – cá nhân</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#d97706;">16</span>
+              <div class="tool-thumb" style="background:#fffbeb;font-size:2.6rem">🏆</div>
+            </div>
+            <div class="tool-card-desc">Chấm điểm thi đua tuần, bảng vàng trình chiếu</div>
+          </div>
+
+          <!-- 17 Tin nhắn phụ huynh -->
+          <div class="tool-card" onclick="window.open('cn_tinnhan.html','_blank')">
+            <div class="tool-card-title">Tin nhắn phụ huynh</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#0068ff;">17</span>
+              <div class="tool-thumb" style="background:#eff6ff;font-size:2.6rem">💬</div>
+            </div>
+            <div class="tool-card-desc">Soạn tin Zalo cá nhân hóa cho từng phụ huynh</div>
+          </div>
+
+          <!-- 18 Quét tài liệu bằng điện thoại -->
+          <div class="tool-card" onclick="window.open('cong_cu_scan.html','_blank')">
+            <div class="tool-card-title">Quét tài liệu bằng điện thoại</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#0891b2;">18</span>
+              <div class="tool-thumb" style="background:#ecfeff;font-size:2.6rem">📷</div>
+            </div>
+            <div class="tool-card-desc">Chụp → tự cắt mép, nắn thẳng, làm trắng → PDF</div>
+          </div>
+
+          <!-- 19 Nhận dạng chữ (OCR) -->
+          <div class="tool-card" onclick="window.open('cong_cu_ocr.html','_blank')">
+            <div class="tool-card-title">Nhận dạng chữ (OCR)</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#9333ea;">19</span>
+              <div class="tool-thumb" style="background:#faf5ff;font-size:2.6rem">🔠</div>
+            </div>
+            <div class="tool-card-desc">Ảnh chụp / PDF scan → chữ tiếng Việt để dán vào Word</div>
+          </div>
+
+          <!-- 20 Chuẩn hóa & xếp ABC danh sách -->
+          <div class="tool-card" onclick="window.open('cong_cu_danhsach.html','_blank')">
+            <div class="tool-card-title">Chuẩn hóa & xếp ABC danh sách</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#16a34a;">20</span>
+              <div class="tool-thumb" style="background:#f0fdf4;font-size:2.6rem">🔤</div>
+            </div>
+            <div class="tool-card-desc">Sửa họ tên, ngày sinh, SĐT; xếp ABC kiểu Việt Nam</div>
+          </div>
+
+          <!-- 21 Gộp · tách · đối chiếu Excel -->
+          <div class="tool-card" onclick="window.open('cong_cu_excel.html','_blank')">
+            <div class="tool-card-title">Gộp · tách · đối chiếu Excel</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#15803d;">21</span>
+              <div class="tool-thumb" style="background:#f0fdf4;font-size:2.6rem">📑</div>
+            </div>
+            <div class="tool-card-desc">Gộp bảng các lớp, tách theo lớp, tìm ai thiếu / thừa</div>
+          </div>
+
+          <!-- 22 Số báo danh & phòng thi -->
+          <div class="tool-card" onclick="window.open('cong_cu_phongthi.html','_blank')">
+            <div class="tool-card-title">Số báo danh & phòng thi</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#be123c;">22</span>
+              <div class="tool-thumb" style="background:#fff1f2;font-size:2.6rem">🎫</div>
+            </div>
+            <div class="tool-card-desc">Đánh SBD, chia phòng, in DS ký tên, thẻ dự thi</div>
+          </div>
+
+          <!-- 23 Lịch báo giảng tự động -->
+          <div class="tool-card" onclick="window.open('cong_cu_lichbaogiang.html','_blank')">
+            <div class="tool-card-title">Lịch báo giảng tự động</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#0369a1;">23</span>
+              <div class="tool-thumb" style="background:#f0f9ff;font-size:2.6rem">🗓️</div>
+            </div>
+            <div class="tool-card-desc">PPCT + thời khóa biểu → lịch từng tuần, tự dời ngày nghỉ</div>
           </div>
 
         </div>
@@ -3573,6 +3711,9 @@ function showPage(pageId, el, section, page){
   if(el) el.classList.add('active');
   document.getElementById('tb-section').textContent=section||'';
   document.getElementById('tb-page').textContent=page||'';
+  // Trang nhúng: tải lại để luôn lấy dữ liệu mới nhất (danh sách HS, điểm danh…)
+  const fr=document.querySelector('#'+pageId+' iframe[data-live]');
+  if(fr) fr.src=fr.dataset.src;
 }
 
 // Đánh dấu iframe Chủ Nhiệm đã load xong

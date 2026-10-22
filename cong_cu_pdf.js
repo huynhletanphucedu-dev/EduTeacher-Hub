@@ -570,3 +570,197 @@ $('#compress-go').onclick = () => busy('compress', 'compress-go', async () => {
   download(bytes, baseName(CP.file) + '_da_nen.pdf');
   msg('compress', 'ok', `✅ Đã nén từ <b>${fmtSize(before)}</b> xuống <b>${fmtSize(after)}</b> (giảm ${Math.round((1 - after / before) * 100)}%).`);
 });
+
+/* ═════════════ 12. IN NHIỀU TRANG / TỜ ═════════════ */
+const nupL = enableWhen('nup', 'nup-go');
+handlers.nup = f => nupL.add(f);
+let NUP = 2;
+$$('#nup-n .chip').forEach(c => c.onclick = () => { NUP = +c.dataset.n; $$('#nup-n .chip').forEach(x => x.classList.toggle('on', x === c)); });
+$('#nup-m').oninput = e => $('#nup-mv').textContent = e.target.value;
+$('#nup-g').oninput = e => $('#nup-gv').textContent = e.target.value;
+/* vẽ trang nguồn (đã nhúng) vào ô, xử lý trang có /Rotate */
+function drawEmb(page, emb, src, X, Y, s) {
+  const r = (((src.getRotation().angle || 0) % 360) + 360) % 360, { width: w0, height: h0 } = src.getSize();
+  const o = { xScale: s, yScale: s };
+  if (r === 90) Object.assign(o, { x: X, y: Y + w0 * s, rotate: degrees(-90) });
+  else if (r === 180) Object.assign(o, { x: X + w0 * s, y: Y + h0 * s, rotate: degrees(180) });
+  else if (r === 270) Object.assign(o, { x: X + h0 * s, y: Y, rotate: degrees(90) });
+  else Object.assign(o, { x: X, y: Y });
+  page.drawPage(emb, o);
+}
+$('#nup-go').onclick = () => busy('nup', 'nup-go', async () => {
+  const L = { 2: [2, 1, true], 4: [2, 2, false], 6: [2, 3, false], 8: [2, 4, false] }[NUP], [cols, rows, land] = L;
+  const PW = land ? 841.89 : 595.28, PH = land ? 595.28 : 841.89, m = +$('#nup-m').value * MM, g = +$('#nup-g').value * MM;
+  const cw = (PW - 2 * m - (cols - 1) * g) / cols, ch = (PH - 2 * m - (rows - 1) * g) / rows, ord = $('#nup-ord').value, line = $('#nup-line').value;
+  const files = okFiles(nupL), outs = []; let k = 0;
+  for (const f of files) {
+    const src = await loadLib(await f.arrayBuffer()), out = await PDFDocument.create(), pages = src.getPages();
+    const embs = await out.embedPages(pages);
+    for (let i = 0; i < pages.length; i += NUP) {
+      const sheet = out.addPage([PW, PH]);
+      for (let j = 0; j < NUP && i + j < pages.length; j++) {
+        const c = ord === 'z' ? j % cols : Math.floor(j / rows), r = ord === 'z' ? Math.floor(j / cols) : j % rows;
+        const sp = pages[i + j], v = vis(sp), s = Math.min(cw / v.W, ch / v.H), w = v.W * s, h = v.H * s;
+        const cx = m + c * (cw + g), cy = PH - m - (r + 1) * ch - r * g, X = cx + (cw - w) / 2, Y = cy + (ch - h) / 2;
+        drawEmb(sheet, embs[i + j], sp, X, Y, s);
+        if (line === 'box') sheet.drawRectangle({ x: X, y: Y, width: w, height: h, borderColor: rgb(.55, .55, .55), borderWidth: .6 });
+      }
+      if (line === 'dash') {
+        const gray = rgb(.6, .6, .6), dash = { thickness: .5, color: gray, dashArray: [4, 3] };
+        for (let c = 1; c < cols; c++) { const x = m + c * cw + (c - .5) * g; sheet.drawLine({ start: { x, y: 4 }, end: { x, y: PH - 4 }, ...dash }); }
+        for (let r = 1; r < rows; r++) { const y = PH - m - r * ch - (r - .5) * g; sheet.drawLine({ start: { x: 4, y }, end: { x: PW - 4, y }, ...dash }); }
+      }
+    }
+    outs.push({ name: baseName(f) + '_' + NUP + 'trang_1to.pdf', bytes: await out.save() });
+    prog('nup', ++k / files.length);
+  }
+  await downloadMany(outs, 'in_' + NUP + '_trang_moi_to.zip');
+  msg('nup', 'ok', `✅ Đã tạo ${outs.length} file in ${NUP} trang/tờ. Khi in, chọn <b>Thực tế (Actual size)</b> hoặc <b>Vừa trang</b>.`);
+});
+
+/* ═════════════ 13. TÁCH ĐÔI TRANG SCAN ═════════════ */
+const HV = { buf: null, file: null };
+handlers.halve = async ([f]) => {
+  HV.file = f; HV.buf = await f.arrayBuffer(); const d = await loadLib(HV.buf);
+  const land = d.getPages().filter(p => { const v = vis(p); return v.W > v.H; }).length;
+  $('#halve-info').hidden = false; $('#halve-info').innerHTML = `📄 <b>${esc(f.name)}</b> · ${d.getPageCount()} trang · ${land} trang khổ ngang`;
+  $('#halve-go').disabled = false;
+};
+$('#halve-go').onclick = () => busy('halve', 'halve-go', async () => {
+  const src = await loadLib(HV.buf), out = await PDFDocument.create(), dir = $('#hv-dir').value, rev = $('#hv-ord').value === 'ba', only = $('#hv-only').value === '1';
+  const pages = src.getPages(); let n = 0;
+  for (let i = 0; i < pages.length; i++) {
+    const p = pages[i], mb = p.getMediaBox(), { width: w, height: h } = p.getSize(), v = vis(p);
+    if (only && v.W <= v.H || v.r) { const [cp] = await out.copyPages(src, [i]); out.addPage(cp); continue; }
+    const boxes = dir === 'v'
+      ? [{ left: mb.x, bottom: mb.y, right: mb.x + w / 2, top: mb.y + h }, { left: mb.x + w / 2, bottom: mb.y, right: mb.x + w, top: mb.y + h }]
+      : [{ left: mb.x, bottom: mb.y + h / 2, right: mb.x + w, top: mb.y + h }, { left: mb.x, bottom: mb.y, right: mb.x + w, top: mb.y + h / 2 }];
+    if (rev) boxes.reverse();
+    for (const bb of boxes) {
+      const emb = await out.embedPage(p, bb), np = out.addPage([bb.right - bb.left, bb.top - bb.bottom]);
+      np.drawPage(emb, { x: 0, y: 0 }); n++;
+    }
+    prog('halve', (i + 1) / pages.length);
+  }
+  const bytes = await out.save(); download(bytes, baseName(HV.file) + '_tach_doi.pdf');
+  msg('halve', 'ok', `✅ Đã tách thành <b>${out.getPageCount()}</b> trang (${n} trang mới từ các trang khổ ngang).`);
+});
+
+/* ═════════════ 14. SỬA NHANH PDF ═════════════ */
+const EDS = { buf: null, file: null, pdf: null, n: 0, cur: 1, ann: {}, ptW: {}, tool: 'select', sel: null, undo: [] };
+handlers.edit = async ([f]) => {
+  EDS.file = f; EDS.buf = await f.arrayBuffer(); if (EDS.pdf) EDS.pdf.destroy(); EDS.pdf = await loadJs(EDS.buf);
+  EDS.n = EDS.pdf.numPages; EDS.cur = 1; EDS.ann = {}; EDS.undo = []; $('#ed-ui').hidden = false; $('#edit-go').disabled = false;
+  await edShow();
+};
+async function edShow() {
+  const sw = $('.edstage').clientWidth, stageW = Math.min(900, sw > 120 ? sw - 28 : 800);
+  const page = await EDS.pdf.getPage(EDS.cur); EDS.ptW[EDS.cur] = page.getViewport({ scale: 1 }).width;
+  const c = await renderPage(EDS.pdf, EDS.cur, { maxW: stageW * (devicePixelRatio > 1 ? 1.5 : 1) });
+  const cv = $('#ed-cv'); cv.width = c.width; cv.height = c.height; cv.getContext('2d').drawImage(c, 0, 0);
+  cv.style.width = stageW + 'px'; cv.style.height = (stageW * c.height / c.width) + 'px';
+  $('#ed-pos').textContent = `Trang ${EDS.cur} / ${EDS.n}`; EDS.sel = null; edRender();
+}
+const edList = () => EDS.ann[EDS.cur] || (EDS.ann[EDS.cur] = []);
+const edPush = () => { EDS.undo.push(JSON.stringify(EDS.ann)); if (EDS.undo.length > 60) EDS.undo.shift(); };
+const pxPerPt = () => $('#ed-cv').clientWidth / (EDS.ptW[EDS.cur] || 595);
+function edRender() {
+  const ov = $('#ed-ov'); ov.innerHTML = ''; ov.classList.toggle('sel', EDS.tool === 'select');
+  edList().forEach((a, i) => {
+    const d = document.createElement('div'); d.className = 'an ' + a.t + (EDS.sel === i ? ' on' : ''); d.dataset.i = i;
+    Object.assign(d.style, { left: a.x * 100 + '%', top: a.y * 100 + '%', width: a.w * 100 + '%', '--c': a.color || '#e11d48' });
+    if (a.t !== 'text') d.style.height = a.h * 100 + '%';
+    if (a.t === 'white') d.style.background = a.color || '#fff';
+    if (a.t === 'text') {
+      d.style.width = 'auto'; d.textContent = a.text || ''; d.style.fontSize = (a.size * pxPerPt()) + 'px'; d.style.color = a.color; d.style.fontWeight = a.bold ? 700 : 400;
+      d.contentEditable = 'true'; d.spellcheck = false;
+      d.oninput = () => { a.text = d.innerText; edMeasure(a, d); };
+      d.onblur = () => { if (!(a.text || '').trim()) { edList().splice(i, 1); edRender(); } };
+    }
+    if (EDS.sel === i && a.t !== 'text') { const h = document.createElement('div'); h.className = 'hd'; d.appendChild(h); }
+    ov.appendChild(d);
+  });
+}
+function edMeasure(a, d) { const ov = $('#ed-ov'); a.w = d.offsetWidth / ov.clientWidth; a.h = d.offsetHeight / ov.clientHeight; }
+$$('#ed-tools .chip').forEach(c => c.onclick = () => {
+  EDS.tool = c.dataset.tool; $$('#ed-tools .chip').forEach(x => x.classList.toggle('on', x === c));
+  $('#ed-hint').textContent = { select: 'Bấm chọn một mục để di chuyển / đổi cỡ / xóa.', white: 'Kéo chuột để che trắng vùng chữ cần sửa.', text: 'Bấm vào vị trí cần gõ chữ rồi gõ (Enter để xuống dòng).', hl: 'Kéo chuột để tô sáng.', line: 'Kéo chuột theo chiều ngang để gạch chân.', box: 'Kéo chuột để đóng khung.' }[EDS.tool];
+  edRender();
+});
+(function edPointer() {
+  const ov = $('#ed-ov'); let drag = null;
+  const pt = e => { const r = ov.getBoundingClientRect(); return { x: Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), y: Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)) }; };
+  ov.addEventListener('pointerdown', e => {
+    const an0 = e.target.closest('.an'), p = pt(e);
+    // công cụ tạo mới vẫn vẽ đè lên ô che trắng / tô sáng (để gõ chữ mới lên ô trắng)
+    const an = an0 && (EDS.tool === 'select' || e.target.classList.contains('hd') || edList()[+an0.dataset.i].t === 'text') ? an0 : null;
+    if (an) {
+      const i = +an.dataset.i, a = edList()[i];
+      if (a.t === 'text' && document.activeElement === an && !e.target.classList.contains('hd')) return; // đang gõ chữ
+      EDS.sel = i; edPush();
+      drag = { mode: e.target.classList.contains('hd') ? 'resize' : 'move', a, p0: p, o: { ...a } };
+      if (a.t !== 'text' || drag.mode === 'resize') { edRender(); }
+      else { $$('.an', ov).forEach(x => x.classList.toggle('on', +x.dataset.i === i)); }
+      ov.setPointerCapture(e.pointerId); e.preventDefault(); return;
+    }
+    EDS.sel = null;
+    if (EDS.tool === 'select') { edRender(); return; }
+    edPush();
+    if (EDS.tool === 'text') {
+      const a = { t: 'text', x: p.x, y: p.y, w: .05, h: .03, text: '', size: +$('#ed-size').value || 13, color: $('#ed-color').value, bold: $('#ed-bold').checked };
+      edList().push(a); EDS.sel = edList().length - 1; edRender();
+      const d = $(`.an[data-i="${EDS.sel}"]`, ov); setTimeout(() => d && d.focus(), 0); e.preventDefault(); return;
+    }
+    const col = EDS.tool === 'white' ? '#ffffff' : EDS.tool === 'hl' ? '#facc15' : $('#ed-color').value;
+    const a = { t: EDS.tool, x: p.x, y: p.y, w: 0, h: 0, color: col }; edList().push(a); EDS.sel = edList().length - 1;
+    drag = { mode: 'new', a, p0: p }; ov.setPointerCapture(e.pointerId); edRender();
+  });
+  ov.addEventListener('pointermove', e => {
+    if (!drag) return; const p = pt(e), a = drag.a;
+    if (drag.mode === 'new') { a.x = Math.min(p.x, drag.p0.x); a.w = Math.abs(p.x - drag.p0.x); if (a.t === 'line') { a.y = drag.p0.y; a.h = 0; } else { a.y = Math.min(p.y, drag.p0.y); a.h = Math.abs(p.y - drag.p0.y); } }
+    else if (drag.mode === 'move') { a.x = drag.o.x + p.x - drag.p0.x; a.y = drag.o.y + p.y - drag.p0.y; }
+    else if (drag.mode === 'resize') { a.w = Math.max(.01, drag.o.w + p.x - drag.p0.x); if (a.t !== 'line') a.h = Math.max(.005, drag.o.h + p.y - drag.p0.y); }
+    const d = $(`.an[data-i="${EDS.sel}"]`, ov); if (d) Object.assign(d.style, { left: a.x * 100 + '%', top: a.y * 100 + '%', width: a.t === 'text' ? 'auto' : a.w * 100 + '%', height: a.t === 'text' ? '' : a.h * 100 + '%' });
+  });
+  ov.addEventListener('pointerup', () => {
+    if (!drag) return; const a = drag.a;
+    if (drag.mode === 'new' && a.w < .005 && (a.t === 'line' || a.h < .005)) { edList().splice(EDS.sel, 1); EDS.sel = null; EDS.undo.pop(); }
+    if (drag.mode === 'move' && a.t === 'text' && Math.abs(a.x - drag.o.x) + Math.abs(a.y - drag.o.y) < .002) { drag = null; const d = $(`.an[data-i="${EDS.sel}"]`, ov); if (d) d.focus(); return; }
+    drag = null; edRender();
+  });
+  addEventListener('keydown', e => {
+    if ($('#p-edit').classList.contains('active') && (e.key === 'Delete' || e.key === 'Backspace') && EDS.sel != null && !(document.activeElement && document.activeElement.isContentEditable) && !/INPUT|TEXTAREA/.test(document.activeElement.tagName)) { edPush(); edList().splice(EDS.sel, 1); EDS.sel = null; edRender(); e.preventDefault(); }
+  });
+})();
+$('#ed-del').onclick = () => { if (EDS.sel == null) return; edPush(); edList().splice(EDS.sel, 1); EDS.sel = null; edRender(); };
+$('#ed-undo').onclick = () => { const s = EDS.undo.pop(); if (s) { EDS.ann = JSON.parse(s); EDS.sel = null; edRender(); } };
+['ed-size', 'ed-color', 'ed-bold'].forEach(id => $('#' + id).addEventListener('change', () => {
+  const a = EDS.sel != null && edList()[EDS.sel]; if (!a) return; edPush();
+  if (a.t === 'text') { a.size = +$('#ed-size').value || 13; a.color = $('#ed-color').value; a.bold = $('#ed-bold').checked; }
+  else if (id === 'ed-color' && a.t !== 'white' && a.t !== 'hl') a.color = $('#ed-color').value;
+  edRender();
+}));
+$('#ed-prev').onclick = () => { if (EDS.cur > 1) { EDS.cur--; edShow(); } };
+$('#ed-next').onclick = () => { if (EDS.cur < EDS.n) { EDS.cur++; edShow(); } };
+$('#edit-go').onclick = () => busy('edit', 'edit-go', async () => {
+  if (document.activeElement && document.activeElement.isContentEditable) document.activeElement.blur();
+  const doc = await loadLib(EDS.buf), pages = doc.getPages(); let fonts = {}, cnt = 0;
+  for (const [pn, list] of Object.entries(EDS.ann)) {
+    const pg = pages[+pn - 1]; if (!pg || !list.length) continue; const v = vis(pg);
+    for (const a of list) {
+      const X = a.x * v.W, Yt = a.y * v.H, W = a.w * v.W, H = a.h * v.H, Yb = v.H - Yt - H, p = mapPt(v, X, Yb), rot = degrees(v.r);
+      if (a.t === 'white') pg.drawRectangle({ x: p.x, y: p.y, width: W, height: H, color: hexRGB(a.color || '#ffffff'), rotate: rot });
+      else if (a.t === 'hl') pg.drawRectangle({ x: p.x, y: p.y, width: W, height: H, color: hexRGB('#facc15'), opacity: .4, blendMode: PDFLib.BlendMode.Multiply, rotate: rot });
+      else if (a.t === 'box') pg.drawRectangle({ x: p.x, y: p.y, width: W, height: H, borderColor: hexRGB(a.color), borderWidth: 1.5, rotate: rot });
+      else if (a.t === 'line') { const y0 = v.H - Yt, s = mapPt(v, X, y0), e = mapPt(v, X + W, y0); pg.drawLine({ start: s, end: e, thickness: 1.5, color: hexRGB(a.color) }); }
+      else if (a.t === 'text' && (a.text || '').trim()) {
+        const k = a.bold ? 'b' : 'r'; if (!fonts[k]) fonts[k] = await vnFont(doc, a.bold);
+        String(a.text).split('\n').forEach((ln, i) => { if (ln) drawT(pg, ln, X, v.H - Yt - a.size * (1.03 + i * 1.25), { font: fonts[k], size: a.size, color: hexRGB(a.color || '#111111') }); });
+      }
+      cnt++;
+    }
+  }
+  if (!cnt) throw new Error('Chưa có chỉnh sửa nào trên trang.');
+  const bytes = await doc.save(); download(bytes, baseName(EDS.file) + '_da_sua.pdf');
+  msg('edit', 'ok', `✅ Đã lưu <b>${cnt}</b> chỉnh sửa vào file mới. <br><span class="hint">Lưu ý: “che trắng” chỉ phủ lên chữ cũ – nội dung gốc vẫn còn bên dưới nếu ai đó trích xuất văn bản; với tài liệu mật hãy dùng thêm “Nén PDF” (chuyển thành ảnh).</span>`);
+});
