@@ -80,9 +80,12 @@
   };
   /* Danh sách điểm của một sổ: [{ten, tx[], gk, ck, tbm}] ; hk = 'hk1'|'hk2'|'cn' */
   ED.bookScores = function (book, hk) {
-    var n = ED.nTX(book.mon, book.khoi), list = (book.hk1 && book.hk1.students) || [];
+    // HK I lấy ở book.hk1.students[].hk1, HK II lấy ở book.hk2.students[].hk2 (cùng id)
+    var n = ED.nTX(book.mon, book.khoi), list = (book.hk1 && book.hk1.students) || [], m2 = {};
+    ((book.hk2 && book.hk2.students) || []).forEach(function (s) { m2[s.id] = s; });
     return list.map(function (s) {
-      var a = ED.tbm(s.hk1, n), b = ED.tbm(s.hk2, n), h = hk === 'cn' ? null : s[hk] || {};
+      var s2 = m2[s.id] || s, h1 = s.hk1 || {}, h2 = s2.hk2 || {};
+      var a = ED.tbm(h1, n), b = ED.tbm(h2, n), h = hk === 'hk1' ? h1 : hk === 'hk2' ? h2 : null;
       var t = hk === 'cn' ? (a != null && b != null ? Math.round((a + 2 * b) / 3 * 10) / 10 : null) : (hk === 'hk1' ? a : b);
       return { ten: s.ten, tx: h ? (h.tx || []) : [], gk: h ? h.gk : null, ck: h ? h.ck : null, tbm: t };
     });
