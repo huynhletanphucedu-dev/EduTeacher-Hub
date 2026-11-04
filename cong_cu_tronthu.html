@@ -8,7 +8,8 @@
 <script src="eduhub_data.js"></script>
 <style>
 :root{--accent:#7c3aed}
-.lay{display:grid;grid-template-columns:380px 1fr;gap:16px;align-items:start}
+.lay{display:grid;grid-template-columns:minmax(0,380px) minmax(0,1fr);gap:16px;align-items:start}
+.lay>*{min-width:0}
 .side{display:flex;flex-direction:column;gap:14px;position:sticky;top:70px;max-height:calc(100vh - 86px);overflow:auto}
 .tb{display:flex;gap:4px;flex-wrap:wrap;padding:6px;border:1px solid var(--border);border-bottom:none;border-radius:10px 10px 0 0;background:var(--card2)}
 .tb button,.tb select{border:1px solid var(--border);background:var(--card);border-radius:6px;padding:4px 9px;cursor:pointer;font-size:.8rem}
@@ -28,7 +29,8 @@ body.dark .stage{background:#0b1222}
 .recs label{font-size:.82rem;display:flex;gap:8px;align-items:center}
 .cf{display:grid;grid-template-columns:130px 1fr;gap:6px;align-items:center;margin-bottom:6px}
 .cf span{font-size:.8rem;color:var(--muted);font-weight:600}
-@media(max-width:1000px){.lay{grid-template-columns:1fr}.side{position:static;max-height:none}}
+@media(max-width:1000px){.lay{grid-template-columns:minmax(0,1fr)}.side{position:static;max-height:none}}
+@media(max-width:600px){.stage{padding:8px}.cf{grid-template-columns:minmax(0,1fr)}.side select,.side input,.side textarea{max-width:100%}}
 </style>
 </head>
 <body>

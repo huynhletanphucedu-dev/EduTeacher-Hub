@@ -160,7 +160,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .sb-ver{margin-top:10px;font-size:.62rem;color:rgba(255,255,255,.2);text-align:center;}
 
 /* ══ MAIN ══ */
-.main{margin-left:var(--sb-w);flex:1;display:flex;flex-direction:column;min-height:100vh;transition:margin-left .22s ease;}
+.main{margin-left:var(--sb-w);flex:1;min-width:0;display:flex;flex-direction:column;min-height:100vh;transition:margin-left .22s ease;}
 
 /* Topbar */
 .topbar{
@@ -535,10 +535,25 @@ body.sb-collapsed .sb-toggle-btn{left:12px;}
 .sb-toggle-btn:hover{background:var(--blue-lt);color:var(--blue);}
 
 @media(max-width:700px){
-  .sidebar{display:none;}.main{margin-left:0;}
-  .topbar{padding:0 14px;}.content{padding:14px;}
-  .sb-toggle-btn{display:none;}
+  /* Điện thoại: menu trượt ra (drawer) */
+  .sidebar,body.sb-collapsed .sidebar{width:min(280px,84vw);min-width:0;transform:translateX(-105%);
+    transition:transform .25s ease;z-index:1000;box-shadow:none;overflow-y:auto;}
+  body.sb-open .sidebar{transform:none;box-shadow:6px 0 30px rgba(0,0,0,.35);}
+  .main,body.sb-collapsed .main{margin-left:0;}
+  .topbar{padding:0 12px 0 54px;}.content{padding:14px;}
+  .sb-toggle-btn,body.sb-collapsed .sb-toggle-btn{display:flex;left:10px;top:11px;z-index:1001;}
+  body.sb-open .sb-toggle-btn{left:calc(min(280px,84vw) - 44px);background:rgba(255,255,255,.12);color:#fff;box-shadow:none;}
+  .sb-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(2px);z-index:999;
+    opacity:0;pointer-events:none;transition:opacity .25s;}
+  body.sb-open .sb-backdrop{opacity:1;pointer-events:auto;}
+  body.sb-open{overflow:hidden;}
+  .tb-date{display:none;}
+  .tb-breadcrumb .tb-section,.tb-breadcrumb .tb-sep{display:none;}
+  .tb-breadcrumb{min-width:0;overflow:hidden;}
+  .tb-breadcrumb .tb-page{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tb-right{gap:8px;flex-shrink:0;}
 }
+@media(max-width:480px){ .tb-greeting{display:none;} }
 
 /* ══ SỔ ĐIỂM CSS ══ */
 .sd-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px;}
@@ -615,6 +630,12 @@ body.sb-collapsed .sb-toggle-btn{left:12px;}
 body.dark .sd-table tr:hover td{background:#162032;}
 .sd-table td.td-stt{color:var(--muted);font-size:.75rem;width:32px;}
 .sd-table td.td-ten{text-align:left;padding-left:14px;font-weight:600;}
+/* Giữ cột STT + Họ tên khi cuộn ngang */
+.sd-table thead tr:first-child th:first-child,.sd-table td.td-stt{position:sticky;left:0;min-width:36px;width:36px;}
+.sd-table th.th-ten,.sd-table td.td-ten{position:sticky;left:36px;box-shadow:2px 0 0 var(--border);}
+.sd-table td.td-stt,.sd-table td.td-ten{background:var(--white);z-index:1;}
+.sd-table thead tr:first-child th:first-child,.sd-table th.th-ten{z-index:3;}
+@media(max-width:700px){.sd-table th.th-ten{min-width:140px;}}
 .sd-score-input{
   width:46px;padding:4px 2px;text-align:center;
   border:1.5px solid transparent;border-radius:5px;
@@ -1088,10 +1109,10 @@ body.dark .sd-table tr:hover td{background:#162032;}
   <!-- Footer -->
   <div class="sb-footer">
     <div class="sb-author">
-      <div class="sb-ava">P</div>
+      <div class="sb-ava">👤</div>
       <div class="sb-ainfo">
-        <div class="aname">ThS. Huỳnh Lê Tấn Phúc</div>
-        <div class="arole">Trường THCS Long Thọ</div>
+        <div class="aname">Giáo viên</div>
+        <div class="arole"></div>
       </div>
     </div>
     <div class="sb-ver">EduTeacher Hub v1.0 · Đồng Nai 2026</div>
@@ -1099,7 +1120,8 @@ body.dark .sd-table tr:hover td{background:#162032;}
 </aside>
 
 <!-- Toggle btn -->
-<button class="sb-toggle-btn" id="sb-toggle" onclick="toggleSidebar()" title="Ẩn/Hiện sidebar">☰</button>
+<button class="sb-toggle-btn" id="sb-toggle" onclick="toggleSidebar()" title="Ẩn/Hiện menu" aria-label="Menu">☰</button>
+<div class="sb-backdrop" id="sb-backdrop" onclick="closeMobileMenu()"></div>
 
 <!-- ══ MAIN ══ -->
 <div class="main">
@@ -1129,12 +1151,12 @@ body.dark .sd-table tr:hover td{background:#162032;}
         <div style="margin-bottom:32px;">
           <div style="font-size:3.5rem;margin-bottom:12px;">🏫</div>
           <h1 style="margin:0;font-size:2rem;font-weight:900;background:linear-gradient(135deg,#38bdf8,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">EduTeacher Hub</h1>
-          <p style="margin:6px 0 0;color:#94a3b8;font-size:1rem;">Bộ công cụ hỗ trợ giáo viên – Trường THCS Long Thọ</p>
+          <p style="margin:6px 0 0;color:#94a3b8;font-size:1rem;">Bộ công cụ hỗ trợ giáo viên<span id="welcomeSchool"></span></p>
         </div>
 
         <!-- Greeting -->
         <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:20px 32px;margin-bottom:36px;max-width:500px;">
-          <p style="margin:0;color:#e2e8f0;font-size:1.05rem;">Xin chào, <strong style="color:#38bdf8;" id="welcomeName">Thầy Phúc</strong> 👋</p>
+          <p style="margin:0;color:#e2e8f0;font-size:1.05rem;">Xin chào, <strong style="color:#38bdf8;" id="welcomeName">Thầy/Cô</strong> 👋</p>
           <p style="margin:8px 0 0;color:#64748b;font-size:.88rem;" id="welcomeDate"></p>
         </div>
 
@@ -2276,7 +2298,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
 
     <!-- ── GD: Hoạt Động ── -->
     <!-- ── CC: PDF ── -->
-    <div class="page" id="cc-pdf">
+    <template class="dev-hidden"><div class="page" id="cc-pdf">
       <div class="hero h-orange">
         <h2>📄 Công Cụ PDF</h2>
         <p>Tách, ghép, xoay, xóa trang, chèn nội dung và xuất PDF mới</p>
@@ -2286,8 +2308,8 @@ body.dark .sd-table tr:hover td{background:#162032;}
       <div class="page-foot"><div class="pf-inner">📚 EduTeacher Hub được phát triển bởi <strong>ThS. Huỳnh Lê Tấn Phúc</strong> · Trường THCS Long Thọ </div></div>
     </div>
 
-    <!-- ── CC: Tạo Đề ── -->
-    <div class="page" id="cc-taode">
+    <!-- ── CC: Tạo Đề ── --></template>
+    <template class="dev-hidden"><div class="page" id="cc-taode">
       <div class="hero h-blue">
         <h2>✏️ Tạo Đề Thi</h2>
         <p>Chọn mẫu, nhập thông tin, tạo đề – đáp án – hướng dẫn chấm – ma trận</p>
@@ -2297,8 +2319,8 @@ body.dark .sd-table tr:hover td{background:#162032;}
       <div class="page-foot"><div class="pf-inner">📚 EduTeacher Hub được phát triển bởi <strong>ThS. Huỳnh Lê Tấn Phúc</strong> · Trường THCS Long Thọ </div></div>
     </div>
 
-    <!-- ── CC: Trộn Đề ── -->
-    <div class="page" id="cc-tronde">
+    <!-- ── CC: Trộn Đề ── --></template>
+    <template class="dev-hidden"><div class="page" id="cc-tronde">
       <div class="hero h-purple">
         <h2>🔀 Trộn Đề</h2>
         <p>Tạo nhiều mã đề, trộn câu & đáp án, xuất đáp án từng mã</p>
@@ -2308,8 +2330,8 @@ body.dark .sd-table tr:hover td{background:#162032;}
       <div class="page-foot"><div class="pf-inner">📚 EduTeacher Hub được phát triển bởi <strong>ThS. Huỳnh Lê Tấn Phúc</strong> · Trường THCS Long Thọ </div></div>
     </div>
 
-    <!-- ── CC: Xếp Lịch ── -->
-    <div class="page" id="cc-xeplich">
+    <!-- ── CC: Xếp Lịch ── --></template>
+    <template class="dev-hidden"><div class="page" id="cc-xeplich">
       <div class="hero h-teal">
         <h2>📅 Xếp Lịch</h2>
         <p>Xếp thời khóa biểu, kiểm tra trùng tiết và xuất Excel</p>
@@ -2319,7 +2341,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
       <div class="page-foot"><div class="pf-inner">📚 EduTeacher Hub được phát triển bởi <strong>ThS. Huỳnh Lê Tấn Phúc</strong> · Trường THCS Long Thọ </div></div>
     </div>
 
-    <!-- ── CC: QR ── -->
+    <!-- ── CC: QR ── --></template>
     <div class="page" id="cc-qr">
       <div class="hero h-green">
         <h2>📱 Tạo QR Code</h2>
@@ -2336,7 +2358,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
     </div>
 
     <!-- ── CC: Sơ Đồ ── -->
-    <div class="page" id="cc-sodo">
+    <template class="dev-hidden"><div class="page" id="cc-sodo">
       <div class="hero h-orange">
         <h2>🪑 Sơ Đồ Chỗ Ngồi</h2>
         <p>Tạo và tùy chỉnh sơ đồ chỗ ngồi, gán tên học sinh theo vị trí</p>
@@ -2346,8 +2368,8 @@ body.dark .sd-table tr:hover td{background:#162032;}
       <div class="page-foot"><div class="pf-inner">📚 EduTeacher Hub được phát triển bởi <strong>ThS. Huỳnh Lê Tấn Phúc</strong> · Trường THCS Long Thọ </div></div>
     </div>
 
-    <!-- ── CC: Phiếu ── -->
-    <div class="page" id="cc-phieu">
+    <!-- ── CC: Phiếu ── --></template>
+    <template class="dev-hidden"><div class="page" id="cc-phieu">
       <div class="hero h-rose">
         <h2>📋 Phiếu Học Tập</h2>
         <p>Tạo phiếu học tập, ô chữ, câu hỏi trắc nghiệm và rubric</p>
@@ -2357,8 +2379,8 @@ body.dark .sd-table tr:hover td{background:#162032;}
       <div class="page-foot"><div class="pf-inner">📚 EduTeacher Hub được phát triển bởi <strong>ThS. Huỳnh Lê Tấn Phúc</strong> · Trường THCS Long Thọ </div></div>
     </div>
 
-    <!-- ── CC: Báo Cáo ── -->
-    <div class="page" id="cc-baocao">
+    <!-- ── CC: Báo Cáo ── --></template>
+    <template class="dev-hidden"><div class="page" id="cc-baocao">
       <div class="hero h-blue">
         <h2>📑 Báo Cáo</h2>
         <p>Tạo báo cáo học tập, biểu đồ điểm và giấy khen học sinh</p>
@@ -2368,7 +2390,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
       <div class="page-foot"><div class="pf-inner">📚 EduTeacher Hub được phát triển bởi <strong>ThS. Huỳnh Lê Tấn Phúc</strong> · Trường THCS Long Thọ </div></div>
     </div>
 
-    <!-- ── Công Cụ Khác Hub ── -->
+    <!-- ── Công Cụ Khác Hub ── --></template>
     <div class="page" id="cong-cu-khac">
       <div class="tool-hub-wrap">
         <div class="tool-hub-header">
@@ -3550,9 +3572,9 @@ body.dark .sd-table tr:hover td{background:#162032;}
       <div class="prof-card" id="prof-card">
         <div class="prof-ava-lg" id="prof-ava-lg">P</div>
         <div>
-          <div class="pname" id="prof-name-disp">ThS. Huỳnh Lê Tấn Phúc</div>
+          <div class="pname" id="prof-name-disp">—</div>
           <div class="prole" id="prof-role-disp">Giáo viên Toán · Tổ trưởng</div>
-          <div class="pschool" id="prof-school-disp">Trường THCS Long Thọ</div>
+          <div class="pschool" id="prof-school-disp">—</div>
         </div>
       </div>
 
@@ -3597,7 +3619,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
         <div class="drawer-section-title">🏫 Thông tin công tác</div>
         <div class="form-field">
           <label>Tên trường</label>
-          <input type="text" id="s-school" placeholder="Trường THCS Long Thọ"/>
+          <input type="text" id="s-school" placeholder="VD: Trường THCS …"/>
         </div>
         <div class="form-row">
           <div class="form-field">
@@ -3649,7 +3671,16 @@ body.dark .sd-table tr:hover td{background:#162032;}
 
 <script>
 /* SIDEBAR TOGGLE */
+function isMobileView(){return window.matchMedia('(max-width:700px)').matches;}
+function closeMobileMenu(){document.body.classList.remove('sb-open');const b=document.getElementById('sb-toggle');if(b)b.textContent='☰';}
+window.addEventListener('resize',()=>{if(!isMobileView())closeMobileMenu();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMobileMenu();});
 function toggleSidebar(){
+  if(isMobileView()){
+    const open=document.body.classList.toggle('sb-open');
+    document.getElementById('sb-toggle').textContent=open?'✕':'☰';
+    return;
+  }
   document.body.classList.toggle('sb-collapsed');
   const btn=document.getElementById('sb-toggle');
   btn.textContent=document.body.classList.contains('sb-collapsed')?'▶':'☰';
@@ -3667,9 +3698,9 @@ function toggleSidebar(){
 /* ══ SETTINGS / PROFILE ══ */
 const SKEY='etv1_settings';
 const DEF={
-  name:'Huỳnh Lê Tấn Phúc',gender:'Thầy',dob:'',phone:'',email:'',
-  address:'',school:'Trường THCS Long Thọ',dept:'Toán – Tin',
-  position:'Tổ trưởng',homeroom:'',teaches:'6/3, 6/5, 6/6',
+  name:'',gender:'',dob:'',phone:'',email:'',
+  address:'',school:'',dept:'',
+  position:'',homeroom:'',teaches:'',
   other:'',appname:'EduTeacher Hub'
 };
 
@@ -3679,19 +3710,24 @@ function loadSettings(){
 }
 function applySettings(p){
   // Greeting
-  const short=p.name.split(' ').pop();
+  const nm=(p.name||'').trim();
+  const xung=p.gender||'Thầy/Cô';
+  const goi=nm?`${xung} ${nm.split(/\s+/).pop()}`:'Thầy/Cô';
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const greet=document.getElementById('tb-greeting');
-  if(greet) greet.innerHTML=`Xin chào, <strong>${p.gender} ${short}</strong>`;
+  if(greet) greet.innerHTML=`Xin chào, <strong>${esc(goi)}</strong>${nm?'':' 👋'}`;
+  const wn=document.getElementById('welcomeName'); if(wn) wn.textContent=goi;
+  const ws=document.getElementById('welcomeSchool'); if(ws) ws.textContent=p.school?' – '+p.school:'';
   // Sidebar author
   const aname=document.querySelector('.aname');
   const arole=document.querySelector('.arole');
-  if(aname) aname.textContent=(p.position?p.position+' ':'')+(p.name||'');
-  if(arole) arole.textContent=p.school||'';
+  if(aname) aname.textContent=nm?((p.position?p.position+' ':'')+nm):'Giáo viên';
+  if(arole) arole.textContent=p.school||(nm?'':'Bấm ⚙️ để nhập hồ sơ');
   // Sidebar avatar initial
   const sava=document.querySelector('.sb-ava');
-  if(sava) sava.textContent=(p.name||'?').trim().slice(-1).toUpperCase();
+  if(sava) sava.textContent=nm?nm.split(/\s+/).pop().charAt(0).toUpperCase():'👤';
   // Profile card in drawer
-  const ini=(p.name||'?').split(' ').pop().charAt(0).toUpperCase();
+  const ini=nm?nm.split(/\s+/).pop().charAt(0).toUpperCase():'👤';
   document.getElementById('prof-ava-lg').textContent=ini;
   document.getElementById('prof-name-disp').textContent=p.name||'—';
   document.getElementById('prof-role-disp').textContent=[p.position,p.dept].filter(Boolean).join(' · ')||'—';
@@ -3726,7 +3762,7 @@ function closeDrawer(){document.getElementById('drawer-overlay').classList.remov
 function closeDrawerOnBg(e){if(e.target===document.getElementById('drawer-overlay'))closeDrawer();}
 function saveSettings(){
   const p={
-    name:document.getElementById('s-name').value.trim()||DEF.name,
+    name:document.getElementById('s-name').value.trim(),
     gender:document.getElementById('s-gender').value,
     dob:document.getElementById('s-dob').value,
     phone:document.getElementById('s-phone').value.trim(),
@@ -3795,6 +3831,7 @@ function showPage(pageId, el, section, page){
   if(el) el.classList.add('active');
   document.getElementById('tb-section').textContent=section||'';
   document.getElementById('tb-page').textContent=page||'';
+  if(typeof isMobileView==='function' && isMobileView()) closeMobileMenu();
   // Trang nhúng: tải lại để luôn lấy dữ liệu mới nhất (danh sách HS, điểm danh…)
   const fr=document.querySelector('#'+pageId+' iframe[data-live]');
   if(fr) fr.src=fr.dataset.src;
@@ -4593,7 +4630,7 @@ function exportExcel(){
     });
     const ws = XLSX.utils.aoa_to_sheet([
       [`SỔ ĐIỂM – ${book.mon} – LỚP ${book.lop} – HỌC KỲ ${hkNum}`],
-      ['Trường THCS Long Thọ'],
+      [(loadSettings().school||'')],
       [],
       headerRow,
       ...dataRows
@@ -5728,6 +5765,74 @@ function TC_noiseLoop(){
   </div>
 </div>
 
+
+<!-- ══ HỎI TÊN LẦN ĐẦU ══ -->
+<div id="ask-name" class="askn-ov" hidden>
+  <form class="askn-box" onsubmit="saveAskName(event)">
+    <div class="askn-ic">👋</div>
+    <h3>Chào mừng đến EduTeacher Hub</h3>
+    <p>EduTeacher Hub nên gọi thầy/cô thế nào?</p>
+    <div class="askn-row">
+      <select id="askn-gender" aria-label="Xưng hô"><option value="Thầy">Thầy</option><option value="Cô">Cô</option></select>
+      <input id="askn-name" type="text" placeholder="Họ và tên" autocomplete="name" maxlength="60">
+    </div>
+    <input id="askn-school" type="text" placeholder="Trường (không bắt buộc)" maxlength="80">
+    <small>🔒 Thông tin chỉ lưu trên máy này. Có thể sửa lại trong ⚙️ Hồ sơ.</small>
+    <div class="askn-btns"><button type="button" class="askn-skip" onclick="skipAskName()">Để sau</button><button type="submit" class="askn-ok">Bắt đầu</button></div>
+  </form>
+</div>
+<!-- ══ NÚT LIÊN HỆ ZALO ══ -->
+<a id="zalo-fab" class="zalo-fab" target="_blank" rel="noopener" hidden title="Cần công cụ riêng? Nhắn Zalo cho tác giả">
+  <span class="zf-ic">💬</span><span class="zf-tx">Cần công cụ riêng? <b>Nhắn Zalo</b></span>
+</a>
+<style>
+.askn-ov{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:9995;display:flex;align-items:center;justify-content:center;padding:16px;}
+.askn-ov[hidden]{display:none!important;}
+.askn-box{background:var(--white);color:var(--text);width:min(380px,100%);border-radius:18px;padding:22px 20px 18px;box-shadow:0 20px 60px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:10px;text-align:center;}
+.askn-ic{font-size:2.2rem;line-height:1;}
+.askn-box h3{font-size:1.1rem;font-weight:800;margin:0;}
+.askn-box p{margin:0;color:var(--muted);font-size:.9rem;}
+.askn-row{display:flex;gap:8px;}
+.askn-box input,.askn-box select{width:100%;min-width:0;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;font:inherit;font-size:.95rem;background:var(--bg);color:var(--text);}
+.askn-row select{width:auto;flex:0 0 84px;}
+.askn-box input:focus,.askn-box select:focus{outline:none;border-color:var(--blue);}
+.askn-box small{color:var(--muted);font-size:.75rem;}
+.askn-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;}
+.askn-btns button{padding:9px 16px;border-radius:10px;border:none;font:inherit;font-weight:700;cursor:pointer;}
+.askn-skip{background:transparent;color:var(--muted);}
+.askn-ok{background:var(--blue);color:#fff;}
+.zalo-fab{position:fixed;right:16px;bottom:16px;z-index:900;display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:30px;background:#0068ff;color:#fff;text-decoration:none;font-size:.82rem;box-shadow:0 6px 20px rgba(0,104,255,.35);transition:transform .15s;}
+.zalo-fab[hidden]{display:none!important;}
+.zalo-fab:hover{transform:translateY(-2px);}
+.zalo-fab .zf-ic{font-size:1.1rem;line-height:1;}
+@media(max-width:700px){.zalo-fab{padding:12px;}.zalo-fab .zf-tx{display:none;}}
+@media print{.zalo-fab{display:none!important;}}
+</style>
+<script>
+/* Số Zalo của tác giả để giáo viên liên hệ – điền số (VD: '0912345678'); để trống thì nút sẽ ẩn */
+const ZALO_PHONE = '';
+(function(){
+  const fab=document.getElementById('zalo-fab');
+  const so=String(ZALO_PHONE).replace(/\D/g,'');
+  if(fab && so){fab.href='https://zalo.me/'+so;fab.hidden=false;}
+})();
+/* Lần đầu mở: hỏi tên để chào cho đúng */
+function needAskName(){
+  try{ if(localStorage.getItem('etv1_name_asked')) return false;
+       const s=JSON.parse(localStorage.getItem('etv1_settings')||'null'); return !(s&&s.name&&s.name.trim()); }catch(e){return false;}
+}
+function closeAskName(){document.getElementById('ask-name').hidden=true;try{localStorage.setItem('etv1_name_asked','1');}catch(e){}}
+function skipAskName(){closeAskName();}
+function saveAskName(e){
+  e.preventDefault();
+  const name=document.getElementById('askn-name').value.trim();
+  if(!name){document.getElementById('askn-name').focus();return;}
+  const p={...loadSettings(),name,gender:document.getElementById('askn-gender').value};
+  const sc=document.getElementById('askn-school').value.trim(); if(sc) p.school=sc;
+  localStorage.setItem(SKEY,JSON.stringify(p)); applySettings(p); closeAskName();
+}
+window.addEventListener('load',()=>{ if(needAskName()){ const o=document.getElementById('ask-name'); o.hidden=false; setTimeout(()=>document.getElementById('askn-name').focus(),50);} });
+</script>
 <script src="eduhub_backup.js"></script>
 <script src="eduhub_search.js"></script>
 <script src="eduhub_pwa.js"></script>

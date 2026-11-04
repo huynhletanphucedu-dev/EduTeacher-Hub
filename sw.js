@@ -1,11 +1,10 @@
 /* EduTeacher Hub – Service Worker (tạo tự động bằng tools/tao_sw.py – không sửa tay)
    • Mở một lần khi có mạng → các trang đã mở dùng được khi mất mạng.
    • Nút “Tải sẵn để dùng offline” → tải toàn bộ công cụ về máy. */
-const VERSION = 'd13193c20a';
+const VERSION = '3ec3d483d2';
 const CACHE = 'eduhub-' + VERSION;
 const CORE = ["./", "index.html", "dashboard.html", "manifest.webmanifest", "eduhub_backup.js", "eduhub_search.js", "eduhub_pwa.js", "icons/icon-192.png"];
 const FILES = [
-"_rieng_tu/EduTeacherHub_saoluu_GV_Phuc_2026-2027.json",
 "bangdiem.html",
 "chianhom.html",
 "chunhiem.html",
@@ -36,6 +35,7 @@ const FILES = [
 "dashboard.html",
 "dongho.html",
 "eduhub_backup.js",
+"eduhub_canvasfit.js",
 "eduhub_data.js",
 "eduhub_pwa.js",
 "eduhub_search.js",

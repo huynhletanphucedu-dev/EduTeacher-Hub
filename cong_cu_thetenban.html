@@ -88,7 +88,7 @@ textarea{resize:vertical;min-height:140px;line-height:1.5;font-size:.88rem}
   .sheet:last-child{page-break-after:auto;break-after:auto}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
-@media(max-width:900px){.wrap{flex-direction:column}.ctl{width:100%;position:static;max-height:none}#pages{zoom:.3}}
+@media(max-width:900px){.wrap{flex-direction:column;align-items:stretch;padding:12px}.ctl{width:100%;position:static;max-height:none}.prev{width:100%}}
 </style>
 <style id="page-style">@page{size:A4 landscape;margin:0}</style>
 </head>
@@ -240,6 +240,16 @@ $('#sample').onclick=()=>{$('#names').value='Nguyễn Văn An | Hiệu trưởng
 $('#clear').onclick=()=>{if(confirm('Xóa toàn bộ danh sách?')){$('#names').value='';render()}};
 load();
 document.fonts.ready.then(render);render();
+</script>
+<script>
+/* Thu nhỏ bản xem trước cho vừa khung (điện thoại) – không ảnh hưởng bản in */
+(function(){
+  const pg=document.getElementById('pages'); if(!pg) return;
+  function fit(){ const w=pg.querySelector('.sheet.land')?1123:794; const avail=(pg.parentElement.clientWidth||w)-4;
+    pg.style.zoom=Math.min(.5,avail/w).toFixed(3); }
+  new MutationObserver(fit).observe(pg,{childList:true,subtree:false});
+  window.addEventListener('resize',fit); fit();
+})();
 </script>
 </body>
 </html>

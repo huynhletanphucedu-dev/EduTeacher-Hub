@@ -599,6 +599,12 @@ body.sb-collapsed .sb-toggle-btn{left:12px;}
 body.dark .sd-table tr:hover td{background:#162032;}
 .sd-table td.td-stt{color:var(--muted);font-size:.75rem;width:32px;}
 .sd-table td.td-ten{text-align:left;padding-left:14px;font-weight:600;}
+/* Giữ cột STT + Họ tên khi cuộn ngang */
+.sd-table thead tr:first-child th:first-child,.sd-table td.td-stt{position:sticky;left:0;min-width:36px;width:36px;}
+.sd-table th.th-ten,.sd-table td.td-ten{position:sticky;left:36px;box-shadow:2px 0 0 var(--border);}
+.sd-table td.td-stt,.sd-table td.td-ten{background:var(--white);z-index:1;}
+.sd-table thead tr:first-child th:first-child,.sd-table th.th-ten{z-index:3;}
+@media(max-width:700px){.sd-table th.th-ten{min-width:140px;}}
 .sd-score-input{
   width:46px;padding:4px 2px;text-align:center;
   border:1.5px solid transparent;border-radius:5px;
@@ -956,7 +962,7 @@ function sdImportExcel(input){
 <script>
 
 const SKEY='etv1_settings';
-const DEF={name:'ThS. Huỳnh Lê Tấn Phúc',school:'Trường THCS Long Thọ'};
+const DEF={name:'',school:''};
 function loadSettings(){try{return JSON.parse(localStorage.getItem(SKEY))||DEF;}catch(e){return DEF;}}
 function applyTheme(mode,save=true){
   document.body.classList.toggle('dark', mode==='dark');
@@ -1663,7 +1669,7 @@ function exportExcel(){
 
   const allRows = [
     [`SỔ ĐIỂM – ${book.mon} – LỚP ${book.lop} – HỌC KỲ ${SD.hk}`],
-    ['Trường THCS Long Thọ'],
+    [(loadSettings().school||'')],
     [],
     headerRow,
     ...dataRows
