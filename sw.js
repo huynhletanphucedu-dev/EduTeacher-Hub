@@ -1,7 +1,7 @@
 /* EduTeacher Hub – Service Worker (tạo tự động bằng tools/tao_sw.py – không sửa tay)
    • Mở một lần khi có mạng → các trang đã mở dùng được khi mất mạng.
    • Nút “Tải sẵn để dùng offline” → tải toàn bộ công cụ về máy. */
-const VERSION = '3ec3d483d2';
+const VERSION = 'ba61bd25bf';
 const CACHE = 'eduhub-' + VERSION;
 const CORE = ["./", "index.html", "dashboard.html", "manifest.webmanifest", "eduhub_backup.js", "eduhub_search.js", "eduhub_pwa.js", "icons/icon-192.png"];
 const FILES = [
@@ -69,6 +69,7 @@ const FILES = [
 "game_wordsearch_eng.html",
 "giaobai.html",
 "goiten.html",
+"goiten_vui.html",
 "haihoa.html",
 "icons/apple-touch-icon.png",
 "icons/favicon-48.png",
