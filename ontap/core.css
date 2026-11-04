@@ -1,0 +1,106 @@
+/* EduTeacher Hub – bộ trò chơi ôn tập cả lớp (dùng chung) */
+:root{--ink:#0f172a;--muted:#64748b;--ok:#16a34a;--bad:#dc2626;--gold:#f59e0b;--A:#e11d48;--B:#2563eb;--C:#d97706;--D:#16a34a}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;color:var(--ink);overflow:hidden;background:#0f172a;-webkit-tap-highlight-color:transparent}
+button,input,select,textarea{font-family:inherit}
+button{cursor:pointer}
+[hidden]{display:none!important}
+
+/* thanh công cụ nổi */
+.ot-tools{position:fixed;top:8px;right:8px;z-index:60;display:flex;gap:6px}
+.ot-tools a,.ot-tools button{display:inline-flex;align-items:center;gap:4px;background:rgba(15,23,42,.6);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:6px 10px;font-weight:700;font-size:.85rem;text-decoration:none;backdrop-filter:blur(4px)}
+.ot-tools .l{display:inline}
+@media(max-width:600px){.ot-tools .l{display:none}}
+
+/* ===== màn hình thiết lập ===== */
+.ot-setup{position:fixed;inset:0;z-index:50;overflow:auto;padding:56px 14px 24px;display:flex;justify-content:center;align-items:flex-start}
+.ot-card{color:var(--ink);width:min(760px,100%);background:#fff;border-radius:22px;box-shadow:0 30px 80px rgba(0,0,0,.35);padding:22px 22px 18px}
+.ot-head{display:flex;gap:14px;align-items:center;margin-bottom:8px}
+.ot-head .ic{font-size:3rem;line-height:1;filter:drop-shadow(0 4px 6px rgba(0,0,0,.2))}
+.ot-head h1{font-size:clamp(1.4rem,4vw,2rem);font-weight:900;line-height:1.1}
+.ot-head p{color:var(--muted);font-size:.92rem;margin-top:3px}
+.ot-sec{border-top:1px dashed #e2e8f0;padding-top:12px;margin-top:12px}
+.ot-sec>h3{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.ot-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ot-sel,.ot-in,.ot-ta{border:1.5px solid #cbd5e1;border-radius:10px;padding:8px 10px;font-size:.95rem;background:#fff;color:var(--ink);min-width:0}
+.ot-ta{width:100%;min-height:110px;resize:vertical;font-size:.88rem}
+.ot-chips{display:flex;gap:6px;flex-wrap:wrap;max-height:170px;overflow:auto;padding:2px}
+.ot-chip{border:1.5px solid #cbd5e1;background:#f8fafc;border-radius:999px;padding:5px 11px;font-size:.82rem;font-weight:700;color:#334155}
+.ot-chip.on{background:#0d9488;border-color:#0d9488;color:#fff}
+.ot-seg{display:inline-flex;border:1.5px solid #cbd5e1;border-radius:11px;overflow:hidden}
+.ot-seg button{border:0;background:#fff;padding:7px 13px;font-weight:800;font-size:.9rem;color:#334155}
+.ot-seg button.on{background:#0f172a;color:#fff}
+.ot-teams{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-top:8px}
+.ot-team{display:flex;align-items:center;gap:6px;border:2px solid var(--c);border-radius:12px;padding:5px 8px;background:color-mix(in srgb,var(--c) 10%,#fff)}
+.ot-team i{width:14px;height:14px;border-radius:50%;background:var(--c);flex:none}
+.ot-team input{border:0;background:transparent;font-weight:800;font-size:.95rem;width:100%;min-width:0;color:var(--ink)}
+.ot-hint{font-size:.8rem;color:var(--muted);margin-top:6px;line-height:1.45}
+.ot-go{display:block;width:100%;margin-top:16px;border:0;border-radius:14px;padding:14px;font-size:1.25rem;font-weight:900;color:#fff;background:linear-gradient(135deg,#f97316,#e11d48);box-shadow:0 6px 0 #9f1239}
+.ot-go:active{transform:translateY(3px);box-shadow:0 3px 0 #9f1239}
+.ot-btn{border:1.5px solid #cbd5e1;background:#fff;border-radius:10px;padding:7px 12px;font-weight:800;font-size:.88rem;color:#334155}
+
+/* ===== bảng câu hỏi ===== */
+.ot-q{position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;padding:14px;background:rgba(2,6,23,.55);backdrop-filter:blur(3px);animation:otfade .25s}
+@keyframes otfade{from{opacity:0}}
+.ot-qbox{color:var(--ink);width:min(1100px,100%);max-height:100%;overflow:auto;background:#fff;border-radius:24px;padding:clamp(14px,3vw,28px);box-shadow:0 30px 90px rgba(0,0,0,.5);animation:otpop .4s cubic-bezier(.3,1.5,.5,1)}
+@keyframes otpop{from{transform:scale(.7);opacity:0}}
+.ot-qtop{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.ot-badge{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 12px;font-weight:900;font-size:.95rem;color:#fff;background:var(--c,#0f172a)}
+.ot-qtop .sp{flex:1}
+.ot-timer{font-weight:900;font-size:1.4rem;min-width:56px;text-align:center;border-radius:12px;padding:2px 10px;background:#0f172a;color:#fff}
+.ot-timer.low{background:var(--bad);animation:otbeat .5s infinite alternate}
+@keyframes otbeat{to{transform:scale(1.12)}}
+.ot-tbar{height:8px;border-radius:5px;background:#e2e8f0;overflow:hidden;margin-bottom:12px}
+.ot-tbar>i{display:block;height:100%;background:linear-gradient(90deg,#16a34a,#f59e0b,#dc2626);transition:width 1s linear}
+.ot-qt{font-size:clamp(1.3rem,3.4vw,2.4rem);font-weight:800;line-height:1.3;margin:4px 0 16px;white-space:pre-wrap}
+.ot-opts{display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,1.5vw,14px)}
+@media(max-width:640px){.ot-opts{grid-template-columns:1fr}}
+.ot-opt{display:flex;align-items:center;gap:12px;text-align:left;border:0;border-radius:16px;padding:clamp(10px,2vw,18px);font-size:clamp(1.05rem,2.6vw,1.7rem);font-weight:800;color:#fff;background:var(--c);box-shadow:0 5px 0 color-mix(in srgb,var(--c) 70%,#000);transition:transform .15s,opacity .3s,filter .3s;min-height:64px}
+.ot-opt b{flex:none;width:1.7em;height:1.7em;border-radius:50%;background:rgba(255,255,255,.25);display:grid;place-items:center}
+.ot-opt:hover{transform:translateY(-2px)}
+.ot-opt.dim{opacity:.25;filter:grayscale(1)}
+.ot-opt.sel{outline:5px solid #fde047;outline-offset:2px}
+.ot-opt.ok{background:var(--ok)!important;animation:otok .6s}
+.ot-opt.no{background:var(--bad)!important;animation:otno .4s}
+.ot-opt.gone{visibility:hidden}
+@keyframes otok{40%{transform:scale(1.06)}}
+@keyframes otno{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.ot-res{margin-top:14px;border-radius:16px;padding:12px 16px;font-size:clamp(1rem,2.2vw,1.3rem);font-weight:700;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.ot-res.ok{background:#dcfce7;color:#14532d}.ot-res.no{background:#fee2e2;color:#7f1d1d}
+.ot-res .big{font-size:2.2rem;line-height:1}
+.ot-res .g{flex-basis:100%;font-weight:500;font-size:.92em;color:#334155}
+.ot-acts{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+.ot-next{border:0;border-radius:14px;padding:12px 26px;font-size:1.15rem;font-weight:900;color:#fff;background:#0f172a}
+.ot-teamsel{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.ot-teamsel button{border:3px solid var(--c);background:#fff;color:var(--ink);border-radius:14px;padding:10px 16px;font-weight:900;font-size:1.05rem}
+.ot-teamsel button.on{background:var(--c);color:#fff}
+
+/* ===== bảng điểm đội ===== */
+.ot-board{position:fixed;left:8px;top:8px;z-index:30;display:flex;gap:6px;flex-wrap:wrap;max-width:calc(100% - 230px)}
+.ot-sc{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.92);border-radius:14px;padding:5px 12px 5px 6px;font-weight:900;box-shadow:0 4px 12px rgba(0,0,0,.2);border:3px solid transparent;transition:transform .3s}
+.ot-sc i{width:26px;height:26px;border-radius:50%;background:var(--c);display:grid;place-items:center;color:#fff;font-style:normal;font-size:.85rem}
+.ot-sc .n{font-size:.95rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ot-sc .p{font-size:1.25rem;color:var(--c);min-width:2ch;text-align:right}
+.ot-sc.turn{border-color:var(--c);transform:scale(1.08)}
+.ot-sc.bump .p{animation:otbump .6s}
+@keyframes otbump{40%{transform:scale(1.6)}}
+@media(max-width:600px){.ot-board{max-width:calc(100% - 120px)}.ot-sc .n{max-width:70px;font-size:.8rem}.ot-sc .p{font-size:1rem}}
+
+/* ===== bục vinh quang ===== */
+.ot-end{position:fixed;inset:0;z-index:45;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(circle at 50% 30%,#312e81,#0f172a)}
+.ot-endbox{text-align:center;color:#fff;width:min(820px,100%)}
+.ot-endbox h2{font-size:clamp(1.6rem,5vw,3rem);font-weight:900;margin-bottom:6px}
+.ot-pod{display:flex;align-items:flex-end;justify-content:center;gap:clamp(6px,2vw,18px);margin:24px 0 18px}
+.ot-pd{flex:1;max-width:200px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.ot-pd .m{font-size:clamp(2rem,6vw,3.4rem)}
+.ot-pd .nm{font-weight:900;font-size:clamp(.95rem,2.4vw,1.4rem)}
+.ot-pd .bx{width:100%;border-radius:14px 14px 0 0;background:var(--c);display:flex;align-items:flex-start;justify-content:center;padding-top:10px;font-size:clamp(1.3rem,4vw,2.4rem);font-weight:900;animation:otrise 1s cubic-bezier(.3,1.3,.5,1) both}
+@keyframes otrise{from{transform:scaleY(0);transform-origin:bottom}}
+.ot-endbox .ot-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.ot-endbox .ot-btns button{border:0;border-radius:14px;padding:12px 22px;font-weight:900;font-size:1.05rem}
+.ot-conf{position:fixed;top:-20px;width:10px;height:14px;z-index:70;border-radius:2px;pointer-events:none;animation:otfall linear forwards}
+@keyframes otfall{to{transform:translateY(110vh) rotate(720deg)}}
+.ot-toast{position:fixed;left:50%;top:44%;transform:translateX(-50%);z-index:80;background:#fff;border-radius:18px;padding:12px 24px;font-size:clamp(1.2rem,4vw,2rem);font-weight:900;box-shadow:0 20px 50px rgba(0,0,0,.4);animation:ottoast 1.8s forwards;pointer-events:none;white-space:nowrap}
+@keyframes ottoast{0%{opacity:0;transform:translate(-50%,20px) scale(.7)}15%{opacity:1;transform:translate(-50%,0) scale(1.05)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-20px)}}
+.ot-foot{position:fixed;bottom:4px;left:0;right:0;text-align:center;font-size:11px;color:rgba(255,255,255,.55);z-index:5;pointer-events:none}

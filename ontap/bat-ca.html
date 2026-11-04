@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bắt Cá – EduTeacher Hub</title>
+<link rel="stylesheet" href="core.css">
+<style>
+body{background:#0369a1}
+#cv{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:manipulation;cursor:crosshair}
+.qp{position:fixed;left:50%;top:52px;transform:translateX(-50%);z-index:20;width:min(1080px,calc(100% - 20px));background:rgba(255,255,255,.95);border-radius:20px;padding:12px 16px;box-shadow:0 14px 40px rgba(0,0,0,.3);transition:opacity .3s}
+.qp .top{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.qp .qt{font-size:clamp(1.1rem,2.8vw,1.9rem);font-weight:800;line-height:1.3}
+.qp .ops{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:8px}
+@media(max-width:760px){.qp .ops{grid-template-columns:1fr 1fr}}
+.qp .op{display:flex;gap:8px;align-items:center;border-radius:12px;padding:6px 10px;color:#fff;font-weight:800;font-size:clamp(.95rem,2vw,1.3rem);background:var(--c)}
+.qp .op b{flex:none;width:1.6em;height:1.6em;border-radius:50%;background:rgba(255,255,255,.3);display:grid;place-items:center}
+.qp .op.ok{outline:4px solid #22c55e;outline-offset:2px}.qp .op.dim{opacity:.35}
+.qp .msg{margin-top:8px;font-weight:700;font-size:1.05rem}
+.qp .g{font-weight:500;color:#334155;font-size:.95rem}
+.qp .nx{border:0;border-radius:12px;padding:9px 20px;font-weight:900;font-size:1.05rem;background:#0f172a;color:#fff;margin-left:auto}
+.qp .hint{font-size:.9rem;color:#0369a1;font-weight:700}
+.start{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;border:0;border-radius:20px;padding:18px 36px;font-size:1.5rem;font-weight:900;background:linear-gradient(#fde047,#f59e0b);color:#422006;box-shadow:0 6px 0 #92400e}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div class="qp" id="qp" hidden></div>
+<button class="start" id="start" hidden>🎣 Câu hỏi đầu tiên</button>
+<script type="module">
+import { setup, tools, SFX, board, toast, podium, $, $$, esc, rnd, pick, wait, tone, L4 } from "./core.js";
+tools();
+const { cfg, questions, teams } = await setup({
+  id: "batca", icon: "🐟", title: "Bắt Cá", teams: { min: 2, max: 6, def: 4 }, count: { def: 12, opts: [8, 12, 16, 20] },
+  desc: "Mỗi câu hỏi có 4 chú cá mang chữ <b>A, B, C, D</b> bơi dưới hồ. Đội đến lượt lên bảng <b>chạm vào con cá có đáp án đúng</b> để bắt (cá thường +10, <b>cá vàng +20</b>). Chọn sai là cá chạy mất!",
+  bg: "linear-gradient(#38bdf8,#0369a1)"
+});
+const B = board(teams);
+const cv = $("#cv"), ctx = cv.getContext("2d");
+let W = 0, H = 0, D = 1;
+function fit() { D = window.devicePixelRatio || 1; W = innerWidth; H = innerHeight; cv.width = W * D; cv.height = H * D; ctx.setTransform(D, 0, 0, D, 0, 0); }
+addEventListener("resize", fit); fit();
+const FC = ["#e11d48", "#2563eb", "#d97706", "#16a34a"];
+let SY = 200; const surf = () => SY;
+function calcSurf() { const p = document.getElementById('qp'); SY = Math.max(170, H * .3, p && !p.hidden ? Math.min(H * .55, p.getBoundingClientRect().bottom + 14) : 0); }
+const fish = []; // cá trang trí
+for (let i = 0; i < 9; i++) fish.push({ x: rnd(0, W), y: rnd(surf() + 40, H - 40), vx: rnd(.4, 1.1) * (Math.random() < .5 ? -1 : 1), s: rnd(.35, .6), c: pick(["#fb7185", "#fbbf24", "#a78bfa", "#34d399", "#f472b6", "#60a5fa"]), ph: rnd(0, 6) });
+let ans = [], qi = 0, turn = 0, phase = "idle", q = null, net = null, caught = [], bubbles = [];
+for (let i = 0; i < 26; i++) bubbles.push({ x: rnd(0, W), y: rnd(0, H), r: rnd(2, 6), v: rnd(.3, 1) });
+
+function drawFish(f, t, label) {
+  const dir = f.vx >= 0 ? 1 : -1, s = f.s * Math.min(1.25, Math.max(.75, W / 1100)), sw = Math.sin(t / 180 + f.ph) * .25;
+  ctx.save(); ctx.translate(f.x, f.y); ctx.scale(dir * s, s);
+  ctx.fillStyle = f.c; ctx.beginPath(); ctx.moveTo(-60, 0); ctx.lineTo(-95, -30 + sw * 30); ctx.lineTo(-95, 30 + sw * 30); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(0, 0, 70, 44, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,.25)"; ctx.beginPath(); ctx.ellipse(-5, 16, 52, 16, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = f.c; ctx.beginPath(); ctx.moveTo(-10, -40); ctx.quadraticCurveTo(10, -70, 30, -38); ctx.fill();
+  if (f.gold) { ctx.strokeStyle = "#fef08a"; ctx.lineWidth = 6; ctx.beginPath(); ctx.ellipse(0, 0, 72, 46, 0, 0, 7); ctx.stroke(); }
+  ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(42, -10, 11, 0, 7); ctx.fill(); ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(45, -10, 5.5, 0, 7); ctx.fill();
+  ctx.strokeStyle = "#111"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(54, 10, 7, .3, 2); ctx.stroke();
+  if (label) { ctx.scale(dir, 1); ctx.fillStyle = "#fff"; ctx.font = "900 58px Segoe UI"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.lineWidth = 7; ctx.strokeStyle = "rgba(0,0,0,.35)"; ctx.strokeText(label, dir * -8, 4); ctx.fillText(label, dir * -8, 4); }
+  ctx.restore();
+}
+function move(f, dt, t) {
+  f.x += f.vx * dt; f.y += Math.sin(t / 700 + f.ph) * .4 * dt;
+  const m = 90 * f.s; if (f.x < m) { f.x = m; f.vx = Math.abs(f.vx); } if (f.x > W - m) { f.x = W - m; f.vx = -Math.abs(f.vx); }
+  f.y = Math.max(surf() + 50 * f.s + 20, Math.min(H - 50 * f.s - 30, f.y));
+}
+let last = performance.now();
+function loop(t) {
+  const dt = Math.min(3, (t - last) / 16.67); last = t; calcSurf(); const sy = surf();
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#bae6fd"); g.addColorStop(sy / H, "#7dd3fc"); g.addColorStop(Math.min(1, sy / H + .01), "#0ea5e9"); g.addColorStop(1, "#075985");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  // sóng
+  ctx.fillStyle = "rgba(255,255,255,.35)"; ctx.beginPath(); ctx.moveTo(0, sy); for (let x = 0; x <= W; x += 20) ctx.lineTo(x, sy + Math.sin(x / 50 + t / 400) * 6); ctx.lineTo(W, sy + 12); ctx.lineTo(0, sy + 12); ctx.fill();
+  // rong + cát
+  ctx.fillStyle = "#fde68a"; ctx.beginPath(); ctx.moveTo(0, H); for (let x = 0; x <= W; x += 40) ctx.lineTo(x, H - 18 - Math.sin(x / 90) * 8); ctx.lineTo(W, H); ctx.fill();
+  ctx.strokeStyle = "#15803d"; ctx.lineWidth = 6; ctx.lineCap = "round";
+  for (let i = 0; i < W / 90; i++) { const x = i * 90 + 30; ctx.beginPath(); ctx.moveTo(x, H - 16); ctx.quadraticCurveTo(x + Math.sin(t / 600 + i) * 18, H - 70, x + Math.sin(t / 500 + i) * 10, H - 110 - (i % 3) * 20); ctx.stroke(); }
+  bubbles.forEach(b => { b.y -= b.v * dt; if (b.y < sy) { b.y = H; b.x = rnd(0, W); } ctx.strokeStyle = "rgba(255,255,255,.6)"; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, 7); ctx.stroke(); });
+  fish.forEach(f => { move(f, dt, t); drawFish(f, t); });
+  ans.forEach(f => {
+    if (f.gone) { f.x += f.vx * 4 * dt; } else if (f.held) { f.y += (sy - 60 - f.y) * .08 * dt; } else if (phase === "ask") move(f, dt, t);
+    if (f.x > -200 && f.x < W + 200) drawFish(f, t, L4[f.i]);
+  });
+  // lưới
+  if (net) { net.k = Math.min(1, net.k + .06 * dt); const r = 70 * net.k; ctx.save(); ctx.translate(net.x, net.y); ctx.strokeStyle = "#78350f"; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(r * .7, -r * .7); ctx.lineTo(r * 2.2, -r * 2.2); ctx.stroke();
+    ctx.strokeStyle = "#fef3c7"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.stroke(); ctx.lineWidth = 1.5; for (let i = -r; i < r; i += 12) { ctx.beginPath(); ctx.moveTo(i, -Math.sqrt(r * r - i * i)); ctx.lineTo(i, Math.sqrt(r * r - i * i)); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-Math.sqrt(r * r - i * i), i); ctx.lineTo(Math.sqrt(r * r - i * i), i); ctx.stroke(); } ctx.restore(); }
+  requestAnimationFrame(loop);
+}
+function showQ() {
+  q = questions[qi]; phase = "ask";
+  const P0 = $("#qp");
+  ans = [0, 1, 2, 3].map(i => ({ i, x: W * (.15 + i * .23) + rnd(-30, 30), y: rnd(H * .6, H - 80), vx: rnd(.7, 1.4) * (i % 2 ? -1 : 1), s: .85, c: FC[i], ph: rnd(0, 6), gold: false }));
+  ans[q.ans].gold = Math.random() < .25;
+  const P = $("#qp"); P.hidden = false;
+  P.innerHTML = `<div class="top"><span class="ot-badge">🐟 Câu ${qi + 1}/${questions.length}</span><span class="ot-badge" style="--c:${teams[turn].color}">👉 ${esc(teams[turn].name)}</span>${cfg.timer ? `<span class="ot-timer" id="tm">${cfg.timer}</span>` : ""}<span class="hint">Chạm vào chú cá có đáp án đúng!</span></div>
+    <div class="qt">${esc(q.q)}</div><div class="ops">${q.opts.map((o, i) => `<div class="op" style="--c:${FC[i]}"><b>${L4[i]}</b><span>${esc(o)}</span></div>`).join("")}</div><div id="msg"></div>`;
+  B.draw(turn); SFX.pop();
+  if (cfg.timer) { let s = cfg.timer; clearInterval(window.__iv); window.__iv = setInterval(() => { s--; const e = $("#tm"); if (!e || phase !== "ask") return clearInterval(window.__iv); e.textContent = s; if (s <= 5) { e.classList.add("low"); SFX.tick(); } if (s <= 0) { clearInterval(window.__iv); choose(null); } }, 1000); }
+}
+async function choose(f) {
+  if (phase !== "ask") return; phase = "done"; clearInterval(window.__iv);
+  const right = ans[q.ans], ok = f && f.i === q.ans;
+  if (f) { net = { x: f.x, y: f.y, k: 0 }; tone(200, .3, "sine", .12, 500); await wait(380); }
+  $$("#qp .op").forEach((o, i) => o.classList.add(i === q.ans ? "ok" : "dim"));
+  let msg;
+  if (ok) {
+    const pts = f.gold ? 20 : 10; f.held = true; teams[turn].score += pts; B.draw(turn, turn); SFX.ok(); if (f.gold) SFX.win();
+    toast(f.gold ? "✨ Cá vàng! +20" : "🐟 Bắt được! +10", f.gold ? "#b45309" : "#16a34a");
+    msg = `<b style="color:#16a34a">🎉 Chính xác! ${esc(teams[turn].name)} +${pts} điểm</b>`;
+    ans.forEach(x => { if (x !== f) { x.gone = true; } });
+  } else {
+    SFX.bad(); if (f) { f.gone = true; f.vx = (f.x > W / 2 ? 1 : -1) * 3; } toast(f ? "💦 Cá chạy mất rồi!" : "⏰ Hết giờ!", "#dc2626");
+    right.held = true; ans.forEach(x => { if (x !== right && x !== f) x.gone = true; });
+    msg = `<b style="color:#dc2626">${f ? "Chưa đúng!" : "Hết giờ!"}</b> Đáp án đúng: <b>${L4[q.ans]}. ${esc(q.opts[q.ans])}</b>`;
+  }
+  setTimeout(() => net = null, 700);
+  const last = qi >= questions.length - 1;
+  $("#msg").innerHTML = `<div class="msg" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span>${msg}${q.g ? `<br><span class="g">💡 ${esc(q.g)}</span>` : ""}</span><button class="nx" id="nx">${last ? "🏁 Xem kết quả" : "▶ Câu tiếp theo"}</button></div>`;
+  $("#nx").onclick = () => { qi++; if (last) { $("#qp").hidden = true; ans = []; podium(teams, { title: "🏆 Đội bắt được nhiều cá nhất" }); return; } turn = (turn + 1) % teams.length; showQ(); };
+}
+cv.addEventListener("pointerdown", e => {
+  if (phase !== "ask") return; const x = e.clientX, y = e.clientY;
+  const f = ans.slice().reverse().find(f => { const s = f.s * Math.min(1.25, Math.max(.75, W / 1100)); return Math.abs(x - f.x) < 95 * s && Math.abs(y - f.y) < 55 * s; });
+  if (f) choose(f);
+});
+addEventListener("keydown", e => { if (phase === "ask") { const i = L4.indexOf(e.key.toUpperCase()); if (i >= 0) choose(ans[i]); } else if ((e.key === "Enter" || e.code === "Space") && $("#nx")) { e.preventDefault(); $("#nx").click(); } });
+$("#start").hidden = false; $("#start").onclick = () => { $("#start").remove(); showQ(); };
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

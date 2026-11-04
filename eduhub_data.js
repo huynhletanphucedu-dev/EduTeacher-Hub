@@ -94,6 +94,128 @@
   ED.LV = { T: 'Tốt', K: 'Khá', D: 'Đạt', C: 'Chưa đạt' };
   ED.lvBadge = function (l) { return l ? '<span class="badge lv-' + l + '">' + ED.LV[l] + '</span>' : '—'; };
 
+
+  /* ---------- LỚP DÙNG CHUNG: lớp chủ nhiệm + các sổ điểm ---------- */
+  // Mỗi lớp: { id, name, kind:'cn'|'book', book?, students:[{id, stt, hoTen, ten, gioiTinh}] }
+  ED.classes = function () {
+    var out = [], cn = ED.students(), cnMap = {};
+    cn.forEach(function (s) { cnMap[ED.norm(s.hoTen)] = s; });
+    if (cn.length) out.push({ id: 'cn', kind: 'cn', name: 'Lớp ' + (ED.className() || 'chủ nhiệm') + ' (chủ nhiệm)', short: ED.className() || 'Chủ nhiệm',
+      students: cn.map(function (s) { return { id: s.id, stt: s.stt, hoTen: s.hoTen, ten: s.ten, gioiTinh: s.gioiTinh }; }) });
+    ED.books().forEach(function (b) {
+      var list = ((b.hk1 && b.hk1.students) || []).filter(function (s) { return s && s.ten; });
+      if (!list.length) return;
+      out.push({ id: 'b:' + b.id, kind: 'book', book: b, name: (b.mon || 'Sổ điểm') + ' – Lớp ' + (b.lop || '?') + (b.namhoc ? ' (' + b.namhoc + ')' : ''), short: b.lop || '',
+        students: list.map(function (s, i) { var m = cnMap[ED.norm(s.ten)]; return { id: String(s.id), stt: i + 1, hoTen: s.ten.trim(), ten: lastName(s.ten), gioiTinh: m ? m.gioiTinh : '' }; }) });
+    });
+    return out;
+  };
+  ED.classById = function (id) { var c = ED.classes(); return c.find(function (x) { return x.id === id; }) || null; };
+  /* <select> chọn lớp; nhớ lựa chọn theo khóa key */
+  ED.classSelect = function (sel, key, onChange) {
+    var cls = ED.classes(), cur = ED.get(key, null);
+    if (!cls.some(function (c) { return c.id === cur; })) cur = cls.length ? cls[0].id : '';
+    sel.innerHTML = cls.length ? cls.map(function (c) { return '<option value="' + ED.esc(c.id) + '"' + (c.id === cur ? ' selected' : '') + '>' + ED.esc(c.name) + ' – ' + c.students.length + ' HS</option>'; }).join('')
+      : '<option value="">(Chưa có lớp – nhập ở Chủ Nhiệm hoặc Sổ Điểm)</option>';
+    sel.onchange = function () { ED.set(key, sel.value); onChange && onChange(ED.classById(sel.value)); };
+    return cur ? ED.classById(cur) : null;
+  };
+  /* Học sinh vắng hôm nay (chỉ lớp chủ nhiệm có điểm danh) → Set id */
+  ED.absentToday = function (cls, date) {
+    var out = new Set(); if (!cls || cls.kind !== 'cn') return out;
+    var d = date || ED.today(), att = ED.attendance();
+    Object.keys(att).forEach(function (k) { if (k.slice(0, 10) !== d) return; var a = att[k]; Object.keys(a).forEach(function (sid) { if (a[sid] === 'absent') out.add(sid); }); });
+    return out;
+  };
+  /* Điểm của từng học sinh trong lớp từ một sổ điểm: {sid: điểm}. Dùng ĐTB môn nếu đủ cột,
+     chưa đủ thì lấy trung bình có trọng số các điểm đã có (TX×1, GK×2, CK×3). */
+  ED.scoreMap = function (cls, bookId, hk) {
+    var out = {}, b = ED.books().find(function (x) { return x.id === bookId; }); if (!b || !cls) return out;
+    hk = hk || 'hk1';
+    var n = ED.nTX(b.mon, b.khoi), rows = ED.bookScores(b, hk === 'cn' ? 'cn' : hk), byName = {};
+    rows.forEach(function (r) {
+      var v = r.tbm;
+      if (v == null && hk !== 'cn') {
+        var s = 0, w = 0; (r.tx || []).slice(0, n).forEach(function (x) { if (ED.num(x) != null) { s += +x; w += 1; } });
+        if (ED.num(r.gk) != null) { s += 2 * r.gk; w += 2; } if (ED.num(r.ck) != null) { s += 3 * r.ck; w += 3; }
+        v = w ? Math.round(s / w * 10) / 10 : null;
+      }
+      byName[ED.norm(r.ten)] = v;
+    });
+    cls.students.forEach(function (s) { var v = byName[ED.norm(s.hoTen)]; if (v != null) out[s.id] = v; });
+    return out;
+  };
+
+  /* ---------- CHIA NHÓM DÙNG CHUNG ----------
+     ED.makeGroups(students, {
+       count: số nhóm (hoặc size: số em/nhóm),
+       mode: 'random' | 'score' | 'gender' | 'both',
+       scores: {sid: điểm},            // cho 'score' / 'both' / chọn nhóm trưởng
+       apart: [[sidA, sidB], …],       // không xếp chung
+       together: [[sidA, sidB], …],    // phải chung nhóm
+       leader: 'score' | 'random' | 'none'
+     }) → { groups: [{ members:[sid…], leader: sid|null }], violations: số cặp “không xếp chung” chưa tách được } */
+  ED.makeGroups = function (students, o) {
+    o = o || {}; var ids = students.map(function (s) { return String(s.id); }), N = ids.length;
+    var info = {}; students.forEach(function (s) { info[String(s.id)] = s; });
+    var G = Math.max(1, Math.min(N || 1, o.count ? +o.count : Math.ceil(N / Math.max(1, +o.size || 4))));
+    var sc = o.scores || {}, has = function (id) { return sc[id] != null; };
+    var rnd = Math.random, shuffle = function (a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rnd() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
+    // 1) gom các cặp "phải chung" thành cụm (union-find)
+    var par = {}; ids.forEach(function (i) { par[i] = i; });
+    var find = function (x) { while (par[x] !== x) { par[x] = par[par[x]]; x = par[x]; } return x; };
+    (o.together || []).forEach(function (p) { var a = String(p[0]), b = String(p[1]); if (par[a] != null && par[b] != null) par[find(a)] = find(b); });
+    var cl = {}; ids.forEach(function (i) { var r = find(i); (cl[r] = cl[r] || []).push(i); });
+    var clusters = Object.keys(cl).map(function (k) { return cl[k]; });
+    var avg = function (c) { var v = c.filter(has).map(function (i) { return sc[i]; }); return v.length ? v.reduce(function (a, b) { return a + b; }, 0) / v.length : -1; };
+    var gkey = function (c) { var g = ED.norm(info[c[0]].gioiTinh || ''); return g === 'nu' ? 'F' : g === 'nam' ? 'M' : 'X'; };
+    var apart = {}; (o.apart || []).forEach(function (p) { var a = String(p[0]), b = String(p[1]); (apart[a] = apart[a] || {})[b] = 1; (apart[b] = apart[b] || {})[a] = 1; });
+    var conflict = function (g, c) { return c.some(function (i) { return g.some(function (j) { return apart[i] && apart[i][j]; }); }); };
+    // 2) thứ tự xếp: ngẫu nhiên / theo điểm / theo giới / cả hai
+    shuffle(clusters);
+    var seqs;
+    if (o.mode === 'score') seqs = [clusters.slice().sort(function (a, b) { return avg(b) - avg(a); })];
+    else if (o.mode === 'gender' || o.mode === 'both') {
+      var by = { F: [], M: [], X: [] }; clusters.forEach(function (c) { by[gkey(c)].push(c); });
+      seqs = ['F', 'M', 'X'].map(function (k) { return o.mode === 'both' ? by[k].sort(function (a, b) { return avg(b) - avg(a); }) : by[k]; });
+    } else seqs = [clusters];
+    var groups = []; for (var g = 0; g < G; g++) groups.push([]);
+    var cap = Math.ceil(N / G), dir = 1, pos = 0, bad = 0;
+    var sumSc = function (gr) { return gr.reduce(function (s, i) { return s + (has(i) ? sc[i] : 0); }, 0); };
+    seqs.forEach(function (seq, si) {
+      // nhóm thứ tự: dãy sau bắt đầu từ nhóm đang yếu/ít người nhất để bù lại
+      var gorder = groups.map(function (x, i) { return i; });
+      if (si > 0) gorder.sort(function (a, b) { return groups[a].length - groups[b].length || sumSc(groups[a]) - sumSc(groups[b]); });
+      pos = 0; dir = 1;
+      seq.forEach(function (c) {
+        // vị trí "rắn" (snake) để rải đều giỏi–khá–TB–yếu, rồi chọn nhóm hợp lệ gần nhất
+        var order = []; for (var k = 0; k < G; k++) order.push(gorder[(pos + k * dir + G * 4) % G]);
+        var target = order.find(function (gi) { return groups[gi].length + c.length <= cap && !conflict(groups[gi], c); });
+        if (target == null) target = order.find(function (gi) { return !conflict(groups[gi], c); });
+        if (target == null) { target = groups.map(function (x, i) { return i; }).sort(function (a, b) { return groups[a].length - groups[b].length; })[0]; bad++; }
+        Array.prototype.push.apply(groups[target], c);
+        pos += dir; if (pos >= G) { pos = G - 1; dir = -1; } else if (pos < 0) { pos = 0; dir = 1; }
+      });
+    });
+    // 3) sửa vi phạm còn lại bằng cách đổi chỗ (không tách cụm "phải chung")
+    var inCluster = function (i) { return cl[find(i)].length > 1; };
+    var count = function () { var v = 0; groups.forEach(function (gr) { for (var a = 0; a < gr.length; a++) for (var b = a + 1; b < gr.length; b++) if (apart[gr[a]] && apart[gr[a]][gr[b]]) v++; }); return v; };
+    for (var it = 0, v = count(); v > 0 && it < 400; it++) {
+      var gi = Math.floor(rnd() * G), gj = Math.floor(rnd() * G); if (gi === gj || !groups[gi].length || !groups[gj].length) continue;
+      var a = groups[gi][Math.floor(rnd() * groups[gi].length)], b = groups[gj][Math.floor(rnd() * groups[gj].length)];
+      if (inCluster(a) || inCluster(b)) continue;
+      groups[gi][groups[gi].indexOf(a)] = b; groups[gj][groups[gj].indexOf(b)] = a;
+      var nv = count(); if (nv <= v) v = nv; else { groups[gi][groups[gi].indexOf(b)] = a; groups[gj][groups[gj].indexOf(a)] = b; }
+    }
+    var res = groups.filter(function (x) { return x.length; }).map(function (m) {
+      var ld = null;
+      if (o.leader === 'random') ld = m[Math.floor(rnd() * m.length)];
+      else if (o.leader === 'score') { ld = m.slice().sort(function (a, b) { return (has(b) ? sc[b] : -1) - (has(a) ? sc[a] : -1) || rnd() - .5; })[0]; }
+      return { members: m, leader: ld };
+    });
+    return { groups: res, violations: count() };
+  };
+
   /* ---------- dán bảng từ Excel ---------- */
   ED.parseTable = function (txt) {
     var lines = String(txt || '').replace(/\r/g, '').split('\n').filter(function (l) { return l.trim(); });

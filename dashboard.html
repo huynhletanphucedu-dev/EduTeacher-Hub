@@ -733,6 +733,14 @@ body.dark .sd-table tr:hover td{background:#162032;}
 .dc-toggle.dc-cd{color:#b91c1c;}
 .dc-toggle:hover{opacity:.7;}
 /* ── MAIN LAYOUT ── */
+.gt-modebar{display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--white);flex-wrap:wrap}
+.gt-mb{border:1.5px solid var(--border);background:transparent;color:var(--muted);border-radius:12px;padding:8px 16px;font:inherit;font-weight:800;font-size:.92rem;cursor:pointer}
+.gt-mb small{font-weight:600;font-size:.72rem;opacity:.8;margin-left:4px}
+.gt-mb.on{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
+.gt-vui{height:calc(100vh - var(--top-h) - 60px);min-height:420px}
+.gt-vui iframe{width:100%;height:100%;border:none;display:block}
+.gt-wrap[hidden],.gt-vui[hidden]{display:none!important}
+@media(max-width:700px){.gt-mb small{display:none}.gt-vui{height:calc(100vh - var(--top-h) - 56px)}}
 .gt-wrap { display:grid; grid-template-columns:340px 1fr; gap:0; min-height:calc(100vh - 52px); }
 @media(max-width:860px){ .gt-wrap{grid-template-columns:1fr;} }
 
@@ -1300,7 +1308,12 @@ body.dark .sd-table tr:hover td{background:#162032;}
 
         <!-- ── GD: Gọi Tên ── -->
     <div class="page" id="gd-goiten">
-<div class="gt-wrap">
+<div class="gt-modebar">
+  <button class="gt-mb on" data-v="nhanh" onclick="GT_view('nhanh')">⚡ Gọi tên nhanh</button>
+  <button class="gt-mb" data-v="vui" onclick="GT_view('vui')">🎉 Gọi tên vui <small>UFO · Công an · Câu cá · Bóng bay · Gà đẻ trứng</small></button>
+</div>
+<div class="gt-vui" id="gt-vui" hidden><iframe id="gt-vui-frame" title="Gọi tên vui" allow="fullscreen" allowfullscreen></iframe></div>
+<div class="gt-wrap" id="gt-nhanh">
 
   <!-- ── LEFT PANEL ── -->
   <div class="gt-left">
@@ -1522,11 +1535,63 @@ body.dark .sd-table tr:hover td{background:#162032;}
         <div class="tool-card-desc">Tạo ô chữ crossword cho lớp học</div>
       </div>
 
-      <!-- 07 Hái Hoa Dân Chủ -->
+      <!-- 07 Chia Nhóm -->
+      <div class="tool-card" onclick="window.open('chianhom.html','_blank')">
+        <div class="tool-card-title">Chia Nhóm Thông Minh</div>
+        <div class="tool-thumb-wrap">
+          <span class="tool-num">07</span>
+          <div class="tool-thumb" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);">
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <div style="display:flex;gap:4px;">
+                <div style="background:#3b7de9;color:#fff;border-radius:6px;padding:2px 7px;font-size:.6rem;font-weight:800;">Nhóm 1</div>
+                <div style="background:#10b981;color:#fff;border-radius:6px;padding:2px 7px;font-size:.6rem;font-weight:800;">Nhóm 2</div>
+              </div>
+              <div style="display:flex;gap:4px;">
+                <div style="background:#f59e0b;color:#fff;border-radius:6px;padding:2px 7px;font-size:.6rem;font-weight:800;">Nhóm 3</div>
+                <div style="background:#8b5cf6;color:#fff;border-radius:6px;padding:2px 7px;font-size:.6rem;font-weight:800;">Nhóm 4</div>
+              </div>
+            </div>
+            <div style="font-size:.52rem;color:#3b7de9;font-weight:700;margin-top:7px;">CÂN BẰNG · RÀNG BUỘC</div>
+          </div>
+        </div>
+        <div class="tool-card-desc">Cân bằng học lực, nam/nữ, bỏ em vắng, cặp không/phải chung</div>
+      </div>
+
+      <!-- 08 Thẻ Hiệp Sĩ -->
+      <div class="tool-card" onclick="window.open('thehiepsi.html','_blank')">
+        <div class="tool-card-title">Thẻ Hiệp Sĩ</div>
+        <div class="tool-thumb-wrap">
+          <span class="tool-num">08</span>
+          <div class="tool-thumb" style="background:linear-gradient(135deg,#0f172a,#134e4a);">
+            <div style="display:flex;gap:6px;align-items:center;">
+              <div style="width:34px;height:34px;background:#fff;border-radius:4px;padding:4px;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);">
+                <i style="background:#000"></i><i style="background:#000"></i><i></i><i style="background:#000"></i>
+                <i></i><i style="background:#000"></i><i style="background:#000"></i><i></i>
+                <i style="background:#000"></i><i></i><i style="background:#000"></i><i style="background:#000"></i>
+                <i style="background:#000"></i><i style="background:#000"></i><i></i><i style="background:#000"></i>
+              </div>
+              <span style="font-size:1.3rem;">📷</span>
+            </div>
+            <div style="font-size:.52rem;color:#5eead4;font-weight:700;margin-top:7px;">✓ 32/38 THẺ</div>
+          </div>
+        </div>
+        <div class="tool-card-desc">Thẻ giấy quét bằng camera: trả lời, điểm danh, tự đánh giá, thi đấu đội</div>
+      </div>
+
+
+
+    </div>
+    <div class="tool-hub-header" style="margin-top:28px">
+      <h2 class="tool-hub-title">🎉 Trò Chơi Ôn Tập – Tổng Kết Bài</h2>
+      <p class="tool-hub-sub">Chơi cả lớp trên máy chiếu · câu hỏi từ Ngân hàng Toán 6 hoặc câu thầy/cô tự soạn · chia đội hoặc lấy đội từ Chia nhóm</p>
+    </div>
+    <div class="tool-hub-grid">
+
+      <!-- 01 Hái Hoa Dân Chủ -->
       <div class="tool-card" onclick="window.open('haihoa.html','_blank')">
         <div class="tool-card-title">Hái Hoa Dân Chủ</div>
         <div class="tool-thumb-wrap">
-          <span class="tool-num">07</span>
+          <span class="tool-num">01</span>
           <div class="tool-thumb" style="background:linear-gradient(135deg,#fdf4ff,#fce7f3);">
             <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;width:80px;">
               <span style="font-size:1.3rem;">🌸</span>
@@ -1542,40 +1607,70 @@ body.dark .sd-table tr:hover td{background:#162032;}
         <div class="tool-card-desc">Học sinh chọn hoa, lật câu hỏi bí ẩn</div>
       </div>
 
-      <!-- 08 Chia Nhóm -->
-      <div class="tool-card" onclick="window.open('chianhom.html','_blank')">
-        <div class="tool-card-title">Chia Nhóm Tự Động</div>
+      <!-- 02 Ai Là Triệu Phú -->
+      <div class="tool-card" onclick="window.open('ontap/trieu-phu.html','_blank')">
+        <div class="tool-card-title">Ai Là Triệu Phú</div>
         <div class="tool-thumb-wrap">
-          <span class="tool-num">08</span>
-          <div class="tool-thumb" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);">
-            <div style="display:flex;flex-direction:column;gap:4px;">
-              <div style="display:flex;gap:4px;">
-                <div style="background:#3b7de9;color:#fff;border-radius:6px;padding:2px 7px;font-size:.6rem;font-weight:800;">Nhóm 1</div>
-                <div style="background:#10b981;color:#fff;border-radius:6px;padding:2px 7px;font-size:.6rem;font-weight:800;">Nhóm 2</div>
-              </div>
-              <div style="display:flex;gap:4px;">
-                <div style="background:#f59e0b;color:#fff;border-radius:6px;padding:2px 7px;font-size:.6rem;font-weight:800;">Nhóm 3</div>
-                <div style="background:#8b5cf6;color:#fff;border-radius:6px;padding:2px 7px;font-size:.6rem;font-weight:800;">Nhóm 4</div>
-              </div>
-            </div>
-            <div style="font-size:.52rem;color:#3b7de9;font-weight:700;margin-top:7px;">NGẪU NHIÊN · CÔNG BẰNG</div>
+          <span class="tool-num">02</span>
+          <div class="tool-thumb" style="background:radial-gradient(circle,#1e3a8a,#0b1640);">
+            <div style="font-size:2.3rem;line-height:1;">💰</div>
+            <div style="font-size:.52rem;color:#fde68a;font-weight:800;margin-top:6px;">15 CÂU · 3 TRỢ GIÚP</div>
           </div>
         </div>
-        <div class="tool-card-desc">Chia lớp thành nhóm ngẫu nhiên</div>
+        <div class="tool-card-desc">Một bạn lên chơi, 3 mốc an toàn, 50:50 – gọi bạn – hỏi cả lớp</div>
       </div>
 
-      <!-- 09 Gọi tên vui -->
-      <div class="tool-card" onclick="window.open('goiten_vui.html','_blank')">
-        <div class="tool-card-title">Gọi Tên Vui – UFO &amp; Công An</div>
+      <!-- 03 Đào Vàng -->
+      <div class="tool-card" onclick="window.open('ontap/dao-vang.html','_blank')">
+        <div class="tool-card-title">Đào Vàng</div>
         <div class="tool-thumb-wrap">
-          <span class="tool-num">09</span>
-          <div class="tool-thumb" style="background:linear-gradient(135deg,#1e1b4b,#312e81);">
-            <svg viewBox="0 0 120 60" width="110"><polygon points="44,22 76,22 92,58 28,58" fill="#fef08a" opacity=".35"/><ellipse cx="60" cy="14" rx="12" ry="9" fill="#a5f3fc"/><ellipse cx="60" cy="21" rx="30" ry="7" fill="#cbd5e1"/><circle cx="60" cy="44" r="5" fill="#fcd9b6"/><rect x="55" y="49" width="10" height="9" rx="2" fill="#3b82f6"/><path d="M96 40 L106 32 L116 40Z" fill="#f87171"/><rect x="98" y="40" width="16" height="14" fill="#fef3c7"/><rect x="105" y="45" width="5" height="9" fill="#b45309"/></svg>
+          <span class="tool-num">03</span>
+          <div class="tool-thumb" style="background:linear-gradient(#7dd3fc 0 30%,#a16207 30%,#78350f);">
+            <div style="font-size:2.3rem;line-height:1;">⛏️💰</div>
+            <div style="font-size:.52rem;color:#fef3c7;font-weight:800;margin-top:6px;">TRẢ LỜI ĐỂ KÉO VÀNG</div>
           </div>
         </div>
-        <div class="tool-card-desc">UFO bắt cóc hoặc chú công an gõ cửa từng nhà để chọn ngẫu nhiên học sinh lên bảng</div>
+        <div class="tool-card-desc">Các đội thả móc, trả lời đúng mới kéo được vàng lên</div>
       </div>
 
+      <!-- 04 Bắt Cá -->
+      <div class="tool-card" onclick="window.open('ontap/bat-ca.html','_blank')">
+        <div class="tool-card-title">Bắt Cá</div>
+        <div class="tool-thumb-wrap">
+          <span class="tool-num">04</span>
+          <div class="tool-thumb" style="background:linear-gradient(#bae6fd,#0369a1);">
+            <div style="font-size:2.3rem;line-height:1;">🐟🎣</div>
+            <div style="font-size:.52rem;color:#fff;font-weight:800;margin-top:6px;">CHẠM CÁ ĐÚNG ĐÁP ÁN</div>
+          </div>
+        </div>
+        <div class="tool-card-desc">4 chú cá A/B/C/D bơi – lên bảng chạm đúng con để bắt</div>
+      </div>
+
+      <!-- 05 Hái Quả -->
+      <div class="tool-card" onclick="window.open('ontap/hai-qua.html','_blank')">
+        <div class="tool-card-title">Hái Quả</div>
+        <div class="tool-thumb-wrap">
+          <span class="tool-num">05</span>
+          <div class="tool-thumb" style="background:linear-gradient(#bae6fd,#86efac);">
+            <div style="font-size:2.3rem;line-height:1;">🌳🍎</div>
+            <div style="font-size:.52rem;color:#14532d;font-weight:800;margin-top:6px;">QUẢ VÀNG · QUÀ · SÂU</div>
+          </div>
+        </div>
+        <div class="tool-card-desc">Chọn quả trên cây, trả lời đúng thì quả rơi vào giỏ đội</div>
+      </div>
+
+      <!-- 06 Leo Núi -->
+      <div class="tool-card" onclick="window.open('ontap/leo-nui.html','_blank')">
+        <div class="tool-card-title">Leo Núi</div>
+        <div class="tool-thumb-wrap">
+          <span class="tool-num">06</span>
+          <div class="tool-thumb" style="background:linear-gradient(#0ea5e9,#e0f2fe);">
+            <div style="font-size:2.3rem;line-height:1;">🏔️🧗</div>
+            <div style="font-size:.52rem;color:#0c4a6e;font-weight:800;margin-top:6px;">CẢ LỚP CÙNG TRẢ LỜI</div>
+          </div>
+        </div>
+        <div class="tool-card-desc">Đội đúng leo lên 1 bậc – cáp treo, lở tuyết – ai cắm cờ đỉnh trước?</div>
+      </div>
 
     </div>
   </div>
@@ -5822,7 +5917,7 @@ function TC_noiseLoop(){
 </style>
 <script>
 /* Số Zalo của tác giả để giáo viên liên hệ – điền số (VD: '0912345678'); để trống thì nút sẽ ẩn */
-const ZALO_PHONE = '';
+const ZALO_PHONE = '0898904446';
 (function(){
   const fab=document.getElementById('zalo-fab');
   const so=String(ZALO_PHONE).replace(/\D/g,'');
@@ -5844,6 +5939,19 @@ function saveAskName(e){
   localStorage.setItem(SKEY,JSON.stringify(p)); applySettings(p); closeAskName();
 }
 window.addEventListener('load',()=>{ if(needAskName()){ const o=document.getElementById('ask-name'); o.hidden=false; setTimeout(()=>document.getElementById('askn-name').focus(),50);} });
+</script>
+<script>
+/* Chuyển giữa Gọi tên nhanh / Gọi tên vui */
+function GT_view(v){
+  document.querySelectorAll('.gt-mb').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
+  document.getElementById('gt-nhanh').hidden=v!=='nhanh';
+  const box=document.getElementById('gt-vui'),fr=document.getElementById('gt-vui-frame');
+  box.hidden=v!=='vui';
+  if(v==='vui') fr.src='goiten_vui.html?'+Date.now();   // tải lại để lấy danh sách mới nhất
+  else fr.removeAttribute('src');
+  try{localStorage.setItem('gt_view',v);}catch(e){}
+}
+document.addEventListener('DOMContentLoaded',()=>{try{if(localStorage.getItem('gt_view')==='vui')GT_view('vui');}catch(e){}});
 </script>
 <script src="eduhub_backup.js"></script>
 <script src="eduhub_search.js"></script>

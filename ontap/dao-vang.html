@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Đào Vàng – EduTeacher Hub</title>
+<link rel="stylesheet" href="core.css">
+<style>
+body{background:#78350f}
+#cv{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:manipulation}
+.ctl{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:20;display:flex;gap:10px;align-items:center}
+.drop{border:0;border-radius:18px;padding:14px 34px;font-size:clamp(1.1rem,3vw,1.5rem);font-weight:900;color:#422006;background:linear-gradient(#fde047,#f59e0b);box-shadow:0 6px 0 #92400e;white-space:nowrap}
+.drop:disabled{filter:grayscale(.8);opacity:.6}
+.drop:active{transform:translateY(3px);box-shadow:0 3px 0 #92400e}
+.info{position:fixed;right:12px;bottom:28px;z-index:20;color:#fef3c7;font-weight:800;font-size:.95rem;text-shadow:0 2px 0 #000;text-align:right}
+@media(max-width:600px){.info{bottom:86px}}
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+<div class="ctl" hidden id="ctl"><button class="drop" id="drop">⛏️ THẢ MÓC <small style="opacity:.7">(Space)</small></button></div>
+<div class="info" id="info"></div>
+<script type="module">
+import { setup, ask, tools, SFX, board, toast, podium, $, rnd, pick, wait, tone } from "./core.js";
+tools();
+const { cfg, questions, teams } = await setup({
+  id: "daovang", icon: "⛏️", title: "Đào Vàng", teams: { min: 2, max: 6, def: 4 }, count: { def: 12, opts: [8, 12, 16, 20] },
+  desc: "Các đội lần lượt thả móc. Móc trúng vàng, kim cương hay túi bí mật thì phải <b>trả lời đúng</b> mới kéo lên được! Vàng to thì nhiều điểm nhưng kéo chậm. Hết câu hỏi thì đội nhiều điểm nhất thắng.",
+  bg: "linear-gradient(#7dd3fc 0 18%,#a16207 18%,#78350f)"
+});
+const B = board(teams);
+const cv = $("#cv"), ctx = cv.getContext("2d");
+const LW = 1280, LH = 720; let S = 1, OX = 0, OY = 0;
+function fit() { const d = window.devicePixelRatio || 1; cv.width = innerWidth * d; cv.height = innerHeight * d; S = Math.min(innerWidth / LW, innerHeight / LH); OX = (innerWidth - LW * S) / 2; OY = (innerHeight - LH * S) / 2; ctx.setTransform(S * d, 0, 0, S * d, OX * d, OY * d); }
+addEventListener("resize", fit); fit();
+
+/* ── vật phẩm ── */
+const KIND = {
+  gold3: { r: 46, v: 500, w: 3.2, c: "#facc15", t: "gold" }, gold2: { r: 30, v: 250, w: 2, c: "#fbbf24", t: "gold" }, gold1: { r: 18, v: 100, w: 1.2, c: "#fde047", t: "gold" },
+  rock2: { r: 38, v: 20, w: 3.4, c: "#78716c", t: "rock" }, rock1: { r: 24, v: 10, w: 2, c: "#a8a29e", t: "rock" },
+  dia: { r: 13, v: 600, w: 1, c: "#67e8f9", t: "dia" }, bag: { r: 22, v: 0, w: 1.3, c: "#a16207", t: "bag" }
+};
+const MIX = ["gold3", "gold3", "gold2", "gold2", "gold2", "gold1", "gold1", "gold1", "rock2", "rock2", "rock1", "rock1", "dia", "dia", "bag", "bag"];
+let items = [], level = 1;
+function makeLevel() {
+  items = []; const list = MIX.slice(); if (level > 1) list.push("dia", "gold3", "bag");
+  for (const k of list) {
+    const K = KIND[k]; let x, y, ok, n = 0;
+    do { x = rnd(80 + K.r, LW - 80 - K.r); y = rnd(250 + K.r, LH - 40 - K.r); ok = items.every(it => Math.hypot(it.x - x, it.y - y) > it.r + K.r + 18); n++; } while (!ok && n < 200);
+    if (ok) items.push({ k, ...K, x, y, rot: rnd(0, 6.28), seed: Math.random() });
+  }
+}
+makeLevel();
+/* ── móc ── */
+const PX = 640, PY = 150, L0 = 46;
+let ang = 0, swingT = 0, L = L0, state = "swing", got = null, turn = 0, qi = 0, pullSpeed = 8, busy = false;
+const tip = () => ({ x: PX + Math.sin(ang) * L, y: PY + Math.cos(ang) * L });
+function updInfo() { $("#info").innerHTML = `Màn ${level} · Còn <b>${questions.length - qi}</b> câu hỏi · ${items.length} món dưới đất`; B.draw(turn); }
+
+/* ── vẽ ── */
+function blob(x, y, r, seed, n = 9) { ctx.beginPath(); for (let i = 0; i <= n; i++) { const a = i / n * Math.PI * 2, rr = r * (.82 + .18 * Math.sin(seed * 50 + i * 2.3)); const px = x + Math.cos(a) * rr, py = y + Math.sin(a) * rr; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); } ctx.closePath(); }
+function drawItem(it, x = it.x, y = it.y) {
+  ctx.save();
+  if (it.t === "gold" || it.t === "rock") {
+    blob(x, y, it.r, it.seed); const g = ctx.createRadialGradient(x - it.r * .3, y - it.r * .3, 2, x, y, it.r);
+    g.addColorStop(0, it.t === "gold" ? "#fef9c3" : "#e7e5e4"); g.addColorStop(1, it.c); ctx.fillStyle = g; ctx.fill();
+    ctx.lineWidth = 3; ctx.strokeStyle = it.t === "gold" ? "#a16207" : "#44403c"; ctx.stroke();
+    if (it.t === "gold") { ctx.fillStyle = "rgba(255,255,255,.8)"; ctx.beginPath(); ctx.ellipse(x - it.r * .35, y - it.r * .4, it.r * .18, it.r * .09, -.6, 0, 7); ctx.fill(); }
+  } else if (it.t === "dia") {
+    ctx.translate(x, y); ctx.beginPath(); ctx.moveTo(0, -it.r * 1.3); ctx.lineTo(it.r, 0); ctx.lineTo(0, it.r * 1.3); ctx.lineTo(-it.r, 0); ctx.closePath();
+    ctx.fillStyle = it.c; ctx.fill(); ctx.strokeStyle = "#0e7490"; ctx.lineWidth = 2.5; ctx.stroke();
+    const tw = (Math.sin(performance.now() / 200 + it.seed * 9) + 1) / 2; ctx.fillStyle = `rgba(255,255,255,${tw})`; ctx.beginPath(); ctx.arc(-it.r * .3, -it.r * .4, 3, 0, 7); ctx.fill();
+  } else {
+    ctx.translate(x, y); ctx.fillStyle = it.c; ctx.beginPath(); ctx.ellipse(0, 4, it.r, it.r * .9, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = "#854d0e"; ctx.fillRect(-it.r * .35, -it.r * .95, it.r * .7, it.r * .35); ctx.strokeStyle = "#422006"; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.fillStyle = "#fef3c7"; ctx.font = `900 ${it.r * 1.1}px Segoe UI`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("?", 0, 6);
+  }
+  ctx.restore();
+}
+function drawMiner(t) {
+  ctx.save(); ctx.translate(PX, PY - 26);
+  // tời quay
+  ctx.fillStyle = "#57534e"; ctx.fillRect(-60, 6, 120, 16); ctx.fillStyle = "#292524"; ctx.beginPath(); ctx.arc(0, 14, 16, 0, 7); ctx.fill();
+  ctx.strokeStyle = "#a8a29e"; ctx.lineWidth = 3; const sp = state === "pull" ? t / 60 : 0; for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.moveTo(0, 14); ctx.lineTo(Math.cos(sp + i * 1.57) * 14, 14 + Math.sin(sp + i * 1.57) * 14); ctx.stroke(); }
+  // người thợ
+  ctx.translate(-92, -40);
+  ctx.fillStyle = "#1d4ed8"; ctx.fillRect(-14, 20, 28, 30); ctx.fillStyle = "#422006"; ctx.fillRect(-14, 48, 11, 16); ctx.fillRect(3, 48, 11, 16);
+  ctx.fillStyle = "#fcd9b6"; ctx.beginPath(); ctx.arc(0, 8, 14, 0, 7); ctx.fill();
+  ctx.fillStyle = "#facc15"; ctx.beginPath(); ctx.arc(0, 2, 15, Math.PI, 0); ctx.fill(); ctx.fillRect(-18, 0, 36, 5); ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(0, -6, 4, 0, 7); ctx.fill();
+  ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(-5, 10, 2, 0, 7); ctx.arc(5, 10, 2, 0, 7); ctx.fill();
+  ctx.strokeStyle = "#7c2d12"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 13, 5, .2, Math.PI - .2); ctx.stroke();
+  ctx.strokeStyle = "#1d4ed8"; ctx.lineWidth = 7; ctx.lineCap = "round"; const arm = state === "pull" ? Math.sin(t / 90) * 8 : 0;
+  ctx.beginPath(); ctx.moveTo(10, 26); ctx.lineTo(40, 40 + arm); ctx.stroke();
+  ctx.restore();
+}
+function drawHook() {
+  const p = tip(); ctx.strokeStyle = "#1c1917"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(PX, PY - 12); ctx.lineTo(p.x, p.y); ctx.stroke();
+  if (got) drawItem(got, p.x + Math.sin(ang) * got.r * .8, p.y + Math.cos(ang) * got.r * .8);
+  ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(-ang); ctx.strokeStyle = "#475569"; ctx.lineWidth = 6; ctx.lineCap = "round";
+  const op = got ? .25 : .7; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-16 * Math.sin(op + .3), 16); ctx.moveTo(0, 0); ctx.lineTo(16 * Math.sin(op + .3), 16); ctx.stroke();
+  ctx.fillStyle = "#334155"; ctx.beginPath(); ctx.arc(0, 0, 7, 0, 7); ctx.fill(); ctx.restore();
+}
+function drawBG(t) {
+  // trời + mặt đất ra ngoài vùng logic cho kín màn hình
+  ctx.fillStyle = "#7dd3fc"; ctx.fillRect(-2000, -2000, LW + 4000, 2000 + PY);
+  const g = ctx.createLinearGradient(0, PY, 0, LH); g.addColorStop(0, "#a16207"); g.addColorStop(.35, "#854d0e"); g.addColorStop(1, "#451a03");
+  ctx.fillStyle = g; ctx.fillRect(-2000, PY, LW + 4000, LH - PY + 2000);
+  ctx.fillStyle = "#65a30d"; ctx.fillRect(-2000, PY - 8, LW + 4000, 14);
+  ctx.fillStyle = "#fde047"; ctx.beginPath(); ctx.arc(1150, 60, 36, 0, 7); ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,.9)"; for (let i = 0; i < 3; i++) { const x = ((t / 40 + i * 470) % (LW + 300)) - 150; ctx.beginPath(); ctx.ellipse(x, 50 + i * 22, 60, 16, 0, 0, 7); ctx.ellipse(x + 30, 40 + i * 22, 36, 18, 0, 0, 7); ctx.fill(); }
+  ctx.fillStyle = "rgba(0,0,0,.12)"; for (let i = 0; i < 40; i++) { const x = (i * 137) % LW, y = PY + 40 + (i * 89) % (LH - PY - 40); ctx.beginPath(); ctx.arc(x, y, 3 + i % 4, 0, 7); ctx.fill(); }
+}
+/* ── vòng lặp ── */
+let last = performance.now();
+function loop(t) {
+  const dt = Math.min(3, (t - last) / 16.67); last = t;
+  if (state === "swing") { swingT += dt * .028; ang = Math.sin(swingT) * 1.22; L = L0; }
+  else if (state === "shoot") {
+    L += 11 * dt; const p = tip();
+    const hit = items.find(it => Math.hypot(it.x - p.x, it.y - p.y) < it.r + 8);
+    if (hit) { state = "hold"; onHit(hit); }
+    else if (p.x < 0 || p.x > LW || p.y > LH) { state = "pull"; pullSpeed = 12; got = null; tone(300, .2, "sine", .08, 200); missed = true; }
+  } else if (state === "pull") {
+    L -= pullSpeed * dt; if (L <= L0) { L = L0; state = "swing"; arrived(); }
+  }
+  drawBG(t); items.forEach(it => drawItem(it)); drawMiner(t); drawHook();
+  requestAnimationFrame(loop);
+}
+let missed = false;
+async function onHit(it) {
+  SFX.pop(); busy = true; $("#drop").disabled = true;
+  const q = questions[qi++]; updInfo();
+  const name = it.t === "gold" ? "cục vàng " + it.v + " điểm" : it.t === "dia" ? "viên kim cương 600 điểm" : it.t === "bag" ? "túi bí mật" : "cục đá " + it.v + " điểm";
+  const r = await ask(q, { title: `⛏️ Móc trúng ${name}! Trả lời đúng để kéo lên`, team: teams[turn], timer: cfg.timer });
+  if (r.ok) { got = it; items = items.filter(x => x !== it); pullSpeed = 8 / it.w; }
+  else { got = null; pullSpeed = 12; toast("😢 Tuột mất rồi!", "#dc2626"); it.x += rnd(-6, 6); }
+  missed = false; state = "pull";
+}
+function arrived() {
+  if (missed) { missed = false; toast("Trượt rồi! Thả lại nhé 🎯", "#0f172a"); busy = false; $("#drop").disabled = false; return; }
+  if (got) {
+    let v = got.v;
+    if (got.t === "bag") { v = pick([50, 100, 150, 200, 300, 400, 800]); toast(`🎁 Túi bí mật: +${v} điểm!`, "#7c3aed"); }
+    else toast((got.t === "rock" ? "🪨 " : got.t === "dia" ? "💎 " : "💰 ") + "+" + v + " điểm", got.t === "rock" ? "#57534e" : "#b45309");
+    teams[turn].score += v; B.draw(turn, turn); v >= 300 ? SFX.win() : SFX.ok(); got = null;
+  }
+  turn = (turn + 1) % teams.length; busy = false; $("#drop").disabled = false;
+  if (!items.some(it => it.t !== "rock") && qi < questions.length) { level++; makeLevel(); toast(`🌟 Màn ${level}: kho báu mới!`, "#16a34a"); }
+  updInfo();
+  if (qi >= questions.length) { $("#drop").disabled = true; setTimeout(() => podium(teams, { title: "🏆 Đội đào được nhiều vàng nhất", sub: `Sau ${questions.length} câu hỏi` }), 900); }
+}
+function drop() { if (state !== "swing" || busy || qi >= questions.length) return; state = "shoot"; SFX.click(); tone(500, .4, "sawtooth", .04, 180); }
+$("#drop").onclick = drop;
+cv.addEventListener("pointerdown", e => { if (e.target === cv) drop(); });
+addEventListener("keydown", e => { if (e.code === "Space" && !document.querySelector(".ot-q,.ot-end")) { e.preventDefault(); drop(); } });
+$("#ctl").hidden = false; updInfo(); requestAnimationFrame(loop);
+</script>
+</body>
+</html>

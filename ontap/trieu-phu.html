@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ai Là Triệu Phú – EduTeacher Hub</title>
+<link rel="stylesheet" href="core.css">
+<style>
+body{background:radial-gradient(ellipse at 40% 35%,#1e3a8a 0%,#172554 45%,#020617 100%);color:#fff}
+.rays{position:fixed;inset:-50%;background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.05) 0 6deg,transparent 6deg 18deg);animation:spin 60s linear infinite;pointer-events:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.stage{position:fixed;inset:0;display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:16px;padding:56px 16px 26px}
+.main{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;min-height:0}
+.logo{width:min(260px,52vw);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 50% 40%,#3b82f6,#1e3a8a 60%,#0b1640);border:6px solid #fbbf24;box-shadow:0 0 0 10px rgba(251,191,36,.18),0 0 60px rgba(59,130,246,.7);animation:glow 3s ease-in-out infinite}
+@keyframes glow{50%{box-shadow:0 0 0 18px rgba(251,191,36,.1),0 0 90px rgba(59,130,246,.9)}}
+.logo div{font-weight:900;line-height:1.05;font-size:clamp(1.2rem,4.2vw,2.3rem);color:#fde68a;text-shadow:0 3px 0 #92400e;letter-spacing:.02em}
+.logo small{display:block;font-size:.45em;color:#bfdbfe;text-shadow:none;margin-top:6px;letter-spacing:.2em}
+.who{font-size:clamp(1rem,2.6vw,1.4rem);color:#bfdbfe}
+.who b{color:#fff;font-size:1.25em}
+.next{font-size:clamp(1.2rem,3.4vw,2rem);font-weight:900}
+.next em{font-style:normal;color:#fbbf24}
+.btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.btns button{border:0;border-radius:16px;padding:14px 26px;font-size:1.15rem;font-weight:900}
+.b-go{background:linear-gradient(#fbbf24,#f59e0b);color:#111;box-shadow:0 5px 0 #92400e}
+.b-stop{background:#334155;color:#fff;box-shadow:0 5px 0 #0f172a}
+.ladder{display:flex;flex-direction:column-reverse;gap:3px;background:rgba(2,6,23,.6);border:2px solid #1d4ed8;border-radius:16px;padding:10px;overflow:auto;align-self:center;max-height:100%}
+.lv{display:flex;justify-content:space-between;align-items:center;padding:4px 12px;border-radius:9px;font-weight:800;font-size:.98rem;color:#fbbf24;transition:background .3s}
+.lv .n{color:#93c5fd;width:2.2em}
+.lv.safe{color:#fff}
+.lv.done{opacity:.45}
+.lv.cur{background:linear-gradient(90deg,#f59e0b,#fbbf24);color:#111;animation:pulse 1.2s infinite alternate}
+.lv.cur .n{color:#111}
+@keyframes pulse{to{filter:brightness(1.2)}}
+.lifes{display:flex;gap:10px;justify-content:center}
+.life{width:64px;height:44px;border-radius:50%;border:3px solid #60a5fa;background:#1e3a8a;color:#fff;font-weight:900;font-size:1rem;display:grid;place-items:center}
+.life.used{opacity:.3;position:relative}
+.life.used::after{content:'';position:absolute;left:8px;right:8px;top:50%;height:4px;background:#ef4444;transform:rotate(-25deg)}
+/* trợ giúp trong bảng câu hỏi */
+.ll{display:flex;gap:6px}
+.ll button{border:2px solid #1d4ed8;background:#eff6ff;color:#1e3a8a;border-radius:999px;padding:5px 12px;font-weight:900;font-size:.9rem}
+.ll button:disabled{opacity:.3;text-decoration:line-through}
+.help{margin-top:12px;border:2px dashed #93c5fd;border-radius:16px;padding:12px 14px;background:#eff6ff;color:#1e3a8a}
+.help h4{font-size:1.05rem;margin-bottom:6px}
+.poll{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-items:end;height:170px;margin-top:8px}
+.poll .c{display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.poll .bar{width:70%;background:linear-gradient(#60a5fa,#1d4ed8);border-radius:8px 8px 0 0;transition:height .5s;min-height:2px}
+.poll input{width:64px;text-align:center;border:1.5px solid #93c5fd;border-radius:8px;padding:4px;font-weight:800;font-size:1rem}
+.poll .pc{font-weight:900}
+.end{position:fixed;inset:0;z-index:45;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:16px;background:radial-gradient(circle,#1e3a8a,#020617)}
+.end .amt{font-size:clamp(2.4rem,9vw,5.5rem);font-weight:900;color:#fbbf24;text-shadow:0 5px 0 #92400e}
+@media(max-width:800px){.stage{grid-template-columns:1fr;grid-template-rows:auto auto;overflow:auto}.ladder{max-height:none;flex-direction:column-reverse}.lv{font-size:.85rem;padding:3px 10px}}
+</style>
+</head>
+<body>
+<div class="rays"></div>
+<div class="stage" id="stage" hidden>
+  <div class="main">
+    <div class="logo"><div>AI LÀ<br>TRIỆU PHÚ<small>ÔN TẬP TOÁN</small></div></div>
+    <div class="who">Người chơi: <b id="who"></b></div>
+    <div class="lifes" id="lifes"></div>
+    <div class="next" id="next"></div>
+    <div class="btns"><button class="b-go" id="go">▶ Hiện câu hỏi</button><button class="b-stop" id="stop">🛑 Dừng cuộc chơi</button></div>
+  </div>
+  <div class="ladder" id="ladder"></div>
+</div>
+<script type="module">
+import { setup, ask, tools, SFX, $, $$, esc, wait, pick, store, confetti, classNames, L4 } from "./core.js";
+tools();
+const PRIZE = [200, 400, 600, 1000, 2000, 3000, 6000, 10000, 14000, 22000, 30000, 40000, 80000, 150000, 250000].map(x => x * 1000);
+const SAFE = [4, 9, 14];
+const vnd = n => n.toLocaleString("vi-VN") + " đ";
+const names = classNames();
+
+const { cfg, questions } = await setup({
+  id: "trieuphu", icon: "💰", title: "Ai Là Triệu Phú", fixedCount: 15, count: null,
+  desc: "15 câu hỏi, 3 mốc an toàn (câu 5, 10, 15) và 3 quyền trợ giúp: 50:50, Gọi bạn trợ giúp, Hỏi ý kiến cả lớp. Một học sinh lên chơi, cả lớp cùng theo dõi.",
+  bg: "radial-gradient(ellipse at 40% 35%,#1e3a8a,#020617)",
+  extra: `<div class="ot-sec"><h3>🧑‍🎓 Người chơi</h3><div class="ot-row"><input class="ot-in" id="pl" placeholder="Tên học sinh lên chơi" style="flex:1;min-width:180px">${names.length ? '<button class="ot-btn" id="plR">🎲 Chọn ngẫu nhiên trong lớp</button>' : ""}</div></div>`,
+  onSetup(w) { const r = $("#plR", w); if (r) r.onclick = () => { $("#pl", w).value = pick(names); SFX.pop(); }; $("#pl", w).oninput = e => window.__pl = e.target.value; }
+});
+const player = (window.__pl || "").trim() || "Thí sinh";
+let k = 0, life = { fifty: true, call: true, poll: true }, over = false;
+$("#who").textContent = player; $("#stage").hidden = false;
+
+function drawLadder() {
+  $("#ladder").innerHTML = PRIZE.map((p, i) => `<div class="lv${SAFE.includes(i) ? " safe" : ""}${i < k ? " done" : ""}${i === k ? " cur" : ""}"><span class="n">${i + 1}</span><span>${SAFE.includes(i) ? "⭐ " : ""}${vnd(p)}</span></div>`).join("");
+  $("#lifes").innerHTML = `<div class="life${life.fifty ? "" : " used"}">50:50</div><div class="life${life.call ? "" : " used"}">📞</div><div class="life${life.poll ? "" : " used"}">👥</div>`;
+  $("#next").innerHTML = `Câu hỏi số <em>${k + 1}</em> trị giá <em>${vnd(PRIZE[k])}</em>`;
+  $("#stop").hidden = k === 0;
+}
+const safeWin = () => { let s = 0; SAFE.forEach(i => { if (k > i) s = PRIZE[i]; }); return s; };
+
+function lifelines(ov, q) {
+  const top = $(".ot-qtop", ov), box = document.createElement("div"); box.className = "ll";
+  box.innerHTML = `<button data-l="fifty">50:50</button><button data-l="call">📞 Gọi bạn</button><button data-l="poll">👥 Hỏi cả lớp</button>`;
+  top.insertBefore(box, top.querySelector(".sp"));
+  const upd = () => $$("button", box).forEach(b => b.disabled = !life[b.dataset.l]); upd();
+  const area = document.createElement("div"); $("#otRes", ov).before(area);
+  box.onclick = e => {
+    const b = e.target.closest("button"); if (!b || b.disabled) return; const l = b.dataset.l; life[l] = false; upd(); SFX.pop();
+    if (l === "fifty") { const wrong = [0, 1, 2, 3].filter(i => i !== q.ans); const keep = pick(wrong); wrong.filter(i => i !== keep).forEach(i => $$(".ot-opt", ov)[i].classList.add("gone")); }
+    if (l === "call") {
+      const fr = names.length ? pick(names.filter(n => n !== player)) : "";
+      area.innerHTML = `<div class="help"><h4>📞 Gọi bạn trợ giúp</h4>${fr ? `Bạn được gọi: <b style="font-size:1.3em">${esc(fr)}</b>` : "Người chơi chọn 1 bạn trong lớp."} – bạn có <b id="cd">30</b> giây để nói đáp án của mình.</div>`;
+      let s = 30; const iv = setInterval(() => { s--; const c = $("#cd", ov); if (!c) return clearInterval(iv); c.textContent = s; if (s <= 0) clearInterval(iv); }, 1000);
+    }
+    if (l === "poll") {
+      const live = [0, 1, 2, 3].filter(i => !$$(".ot-opt", ov)[i].classList.contains("gone"));
+      area.innerHTML = `<div class="help"><h4>👥 Hỏi ý kiến cả lớp</h4>Cả lớp giơ tay cho từng đáp án – thầy/cô nhập số bạn giơ tay:<div class="poll">${L4.map((x, i) => `<div class="c"><span class="pc" id="pc${i}"></span><div class="bar" id="pb${i}" style="height:0"></div><b>${x}</b>${live.includes(i) ? `<input type="number" min="0" max="60" data-i="${i}" value="0">` : "<span>—</span>"}</div>`).join("")}</div></div>`;
+      const calc = () => { const v = L4.map((_, i) => +($(`.poll input[data-i="${i}"]`, ov)?.value || 0)); const t = v.reduce((a, b) => a + b, 0) || 1; v.forEach((x, i) => { $("#pb" + i, ov).style.height = (x / t * 110) + "px"; $("#pc" + i, ov).textContent = Math.round(x / t * 100) + "%"; }); };
+      $$(".poll input", ov).forEach(i => i.oninput = calc); calc();
+    }
+  };
+}
+async function play() {
+  if (over) return; $("#go").disabled = true; $("#stop").disabled = true;
+  const q = questions[k];
+  const r = await ask(q, { title: `Câu ${k + 1} · ${vnd(PRIZE[k])}`, timer: cfg.timer, confirm: true, suspense: true, lifelines, nextText: "Tiếp tục ▶" });
+  $("#go").disabled = false; $("#stop").disabled = false;
+  if (!r.ok) return finish(safeWin(), false);
+  k++; if (k >= PRIZE.length) return finish(PRIZE[PRIZE.length - 1], true, true);
+  if (SAFE.includes(k - 1)) { confetti(60); }
+  drawLadder();
+}
+function finish(amt, ok, champ) {
+  over = true; const d = document.createElement("div"); d.className = "end";
+  d.innerHTML = `<div style="font-size:4rem">${champ ? "👑" : ok ? "🎉" : amt ? "⭐" : "💪"}</div>
+    <div style="font-size:clamp(1.2rem,3.5vw,2rem);font-weight:800">${champ ? "TRIỆU PHÚ! Xin chúc mừng" : ok ? "Dừng cuộc chơi an toàn!" : amt ? "Rất tiếc! Nhưng vẫn mang về mốc an toàn" : "Rất tiếc! Cố gắng lần sau nhé"}</div>
+    <div style="font-size:clamp(1.4rem,4vw,2.6rem);font-weight:900">${esc(player)}</div>
+    <div class="amt">${vnd(amt)}</div><div style="opacity:.8">Trả lời đúng ${k}/15 câu</div>
+    <div class="btns"><button class="b-go" id="again">🔁 Người chơi mới</button><button class="b-stop" id="home">🏠 Về Hub</button></div>`;
+  document.body.appendChild(d); if (amt) { SFX.win(); confetti(); }
+  $("#again", d).onclick = () => location.reload(); $("#home", d).onclick = () => location.href = "../dashboard.html";
+}
+$("#go").onclick = play;
+$("#stop").onclick = () => { if (confirm(`Dừng cuộc chơi và mang về ${vnd(k ? PRIZE[k - 1] : 0)}?`)) finish(k ? PRIZE[k - 1] : 0, true); };
+document.addEventListener("keydown", e => { if ((e.key === "Enter" || e.code === "Space") && !$(".ot-q") && !over && !$(".ot-setup")) { e.preventDefault(); play(); } });
+drawLadder(); SFX.win();
+</script>
+</body>
+</html>

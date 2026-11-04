@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hái Quả – EduTeacher Hub</title>
+<link rel="stylesheet" href="core.css">
+<style>
+body{background:linear-gradient(#7dd3fc 0%,#bae6fd 55%,#86efac 56%,#22c55e 100%)}
+.sun{position:fixed;right:6%;top:9%;width:70px;height:70px;border-radius:50%;background:#fde047;box-shadow:0 0 0 14px rgba(253,224,71,.3);animation:sp 3s ease-in-out infinite}
+@keyframes sp{50%{box-shadow:0 0 0 24px rgba(253,224,71,.15)}}
+.cloud{position:fixed;width:130px;height:38px;background:#fff;border-radius:40px;opacity:.9;animation:drift linear infinite}
+.cloud::before{content:'';position:absolute;width:56px;height:56px;left:20px;top:-26px;background:#fff;border-radius:50%}
+@keyframes drift{from{transform:translateX(-160px)}to{transform:translateX(110vw)}}
+.area{position:fixed;left:0;right:0;top:44px;bottom:118px;display:flex;justify-content:center}
+.tree{position:relative;height:100%;aspect-ratio:1.15;max-width:100%}
+.tree svg.t{position:absolute;inset:0;width:100%;height:100%}
+.fr{position:absolute;transform:translate(-50%,-50%);border:0;background:none;font-size:var(--fs,46px);line-height:1;filter:drop-shadow(0 4px 2px rgba(0,0,0,.25));transition:transform .2s;animation:hang 2.6s ease-in-out infinite;animation-delay:var(--dl);transform-origin:50% 0;padding:0}
+@keyframes hang{50%{rotate:6deg}}
+.fr:hover{transform:translate(-50%,-50%) scale(1.15)}
+.fr .no{position:absolute;right:-6px;top:-4px;font-size:max(11px,calc(var(--fs) * .3));font-weight:900;background:#fff;color:#14532d;border-radius:999px;padding:1px 6px;border:2px solid #14532d;font-family:'Segoe UI',sans-serif}
+.fr.shake{animation:shk .1s 8}
+@keyframes shk{25%{rotate:-14deg}75%{rotate:14deg}}
+.fr.fall{transition:left 1s cubic-bezier(.5,0,.7,1),top 1s cubic-bezier(.5,0,.9,.5),font-size 1s,opacity .3s 1s;animation:none;pointer-events:none}
+.fr.rot{filter:grayscale(1) brightness(.6);transition:top .9s cubic-bezier(.5,0,1,.6),opacity .6s .9s;animation:none;pointer-events:none}
+.baskets{position:fixed;left:0;right:0;bottom:22px;display:flex;justify-content:center;gap:clamp(6px,2vw,22px);padding:0 8px;z-index:10}
+.bk{position:relative;width:clamp(90px,15vw,170px);display:flex;flex-direction:column;align-items:center}
+.bk .fruits{min-height:30px;font-size:clamp(14px,2vw,22px);line-height:1;text-align:center;max-width:100%;word-break:break-all}
+.bk .b{width:100%;height:clamp(40px,6vw,62px);border-radius:0 0 28px 28px;background:repeating-linear-gradient(90deg,#b45309 0 10px,#92400e 10px 20px);border:4px solid #78350f;border-top:8px solid var(--c);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:clamp(.8rem,1.6vw,1.05rem);text-shadow:0 2px 0 #000;text-align:center;padding:0 4px;line-height:1.1}
+.bk.turn .b{box-shadow:0 0 0 5px #fde047,0 0 30px #fde047}
+.bk.turn::before{content:'👇';position:absolute;top:-34px;font-size:26px;animation:bob .6s infinite alternate}
+@keyframes bob{to{transform:translateY(-6px)}}
+.tip{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:11;background:rgba(255,255,255,.9);border-radius:999px;padding:5px 16px;font-weight:800;color:#14532d;white-space:nowrap;font-size:.92rem}
+.ot-board{display:none}
+</style>
+</head>
+<body>
+<div class="sun"></div><div class="cloud" style="top:12%;animation-duration:48s"></div><div class="cloud" style="top:22%;animation-duration:66s;animation-delay:-30s"></div>
+<div class="area"><div class="tree" id="tree"><svg class="t" viewBox="0 0 115 100" preserveAspectRatio="none">
+  <path d="M51 100 L53 62 Q44 56 36 58 Q46 52 53 55 L54 44 L60 44 L61 55 Q70 50 80 55 Q70 56 62 62 L64 100Z" fill="#92400e"/>
+  <g fill="#16a34a"><circle cx="57" cy="30" r="27"/><circle cx="33" cy="38" r="20"/><circle cx="82" cy="38" r="20"/><circle cx="44" cy="16" r="17"/><circle cx="71" cy="16" r="17"/><circle cx="57" cy="47" r="18"/><circle cx="20" cy="48" r="12"/><circle cx="95" cy="48" r="12"/></g>
+  <g fill="#22c55e" opacity=".7"><circle cx="50" cy="22" r="12"/><circle cx="72" cy="30" r="12"/><circle cx="34" cy="34" r="9"/><circle cx="84" cy="44" r="8"/></g>
+</svg></div></div>
+<div class="tip" id="tip" hidden></div>
+<div class="baskets" id="baskets"></div>
+<script type="module">
+import { setup, ask, tools, SFX, board, toast, podium, $, $$, esc, rnd, pick, shuffle, wait } from "./core.js";
+tools();
+const { cfg, questions, teams } = await setup({
+  id: "haiqua", icon: "🍎", title: "Hái Quả", teams: { min: 2, max: 6, def: 4 }, count: { def: 12, opts: [8, 12, 16, 20] },
+  desc: "Đội đến lượt chọn 1 quả trên cây rồi trả lời câu hỏi – đúng thì quả rơi vào giỏ của đội. Quả thường +10, <b>quả vàng 🌟 +20</b>. Trên cây còn giấu <b>🎁 quà</b> (+15, không cần trả lời) và <b>🐛 sâu</b> (mất lượt)!",
+  bg: "linear-gradient(#7dd3fc,#86efac)"
+});
+board(teams); // (ẩn – dùng giỏ làm bảng điểm)
+const FRUITS = ["🍎", "🍊", "🍑", "🍐", "🥭", "🍋", "🍒", "🍏"];
+const n = questions.length, nGift = Math.max(1, Math.round(n / 8)), nWorm = Math.max(1, Math.round(n / 10)), nGold = Math.max(1, Math.round(n / 5));
+let kinds = shuffle([...Array(nGold).fill("gold"), ...Array(n - nGold).fill("norm"), ...Array(nGift).fill("gift"), ...Array(nWorm).fill("worm")]);
+const tree = $("#tree");
+// điểm trong tán cây (theo tọa độ % của viewBox 115×100)
+const blobs = [[57, 30, 27], [33, 38, 20], [82, 38, 20], [44, 16, 17], [71, 16, 17], [57, 47, 18], [20, 48, 12], [95, 48, 12]];
+const pts = []; let tries = 0;
+const minD = Math.max(7, 22 - kinds.length * .45);
+while (pts.length < kinds.length && tries < 6000) {
+  tries++; const b = pick(blobs), a = rnd(0, 6.28), r = Math.sqrt(Math.random()) * b[2] * .82, x = b[0] + Math.cos(a) * r, y = b[1] + Math.sin(a) * r;
+  if (y < 6 || y > 60) continue; if (pts.every(p => Math.hypot(p[0] - x, (p[1] - y) * 1.15) > (tries > 3000 ? minD * .7 : minD))) pts.push([x, y]);
+}
+kinds = kinds.slice(0, pts.length);
+const fs = Math.max(26, Math.min(62, 980 / Math.sqrt(kinds.length) / 2.4));
+tree.style.setProperty("--fs", fs + "px");
+pts.sort((a, b) => a[1] - b[1] || a[0] - b[0]);
+kinds.forEach((k, i) => {
+  const b = document.createElement("button"); b.className = "fr"; b.dataset.k = k;
+  b.style.left = pts[i][0] / 115 * 100 + "%"; b.style.top = pts[i][1] + "%"; b.style.setProperty("--dl", -rnd(0, 2.6) + "s");
+  b.innerHTML = `${k === "gold" ? "🌟" : pick(FRUITS)}<span class="no">${i + 1}</span>`; tree.appendChild(b);
+});
+let turn = 0, qi = 0, busy = false;
+teams.forEach(t => t.got = []);
+function drawBaskets() {
+  $("#baskets").innerHTML = teams.map((t, i) => `<div class="bk${i === turn ? " turn" : ""}" style="--c:${t.color}" id="bk${i}"><div class="fruits">${t.got.join("")}</div><div class="b">${esc(t.name)}<br>${t.score} điểm</div></div>`).join("");
+  $("#tip").hidden = false; $("#tip").innerHTML = `Lượt của <b style="color:${teams[turn].color}">${esc(teams[turn].name)}</b> – chọn một quả trên cây! · còn ${n - qi} câu hỏi`;
+}
+async function dropTo(b, ok) {
+  const tr = tree.getBoundingClientRect(), r = b.getBoundingClientRect();
+  if (ok) {
+    const bk = $("#bk" + turn).getBoundingClientRect();
+    b.classList.add("fall"); b.style.left = (bk.left + bk.width / 2 - tr.left) + "px"; b.style.top = (bk.top + 10 - tr.top) + "px"; b.style.fontSize = "24px"; b.querySelector(".no").remove();
+    await wait(1000); b.style.opacity = 0; await wait(300); b.remove();
+  } else { b.classList.add("rot"); b.style.top = (innerHeight - tr.top - 120) + "px"; await wait(900); b.style.opacity = 0; await wait(600); b.remove(); }
+}
+async function choose(b) {
+  if (busy || !b.isConnected) return; busy = true; SFX.click(); b.classList.add("shake"); await wait(800); b.classList.remove("shake");
+  const k = b.dataset.k, t = teams[turn], emo = b.firstChild.textContent;
+  if (k === "gift") { SFX.win(); toast("🎁 Quà bất ngờ! +15", "#7c3aed"); t.score += 15; t.got.push("🎁"); await dropTo(b, true); }
+  else if (k === "worm") { SFX.bad(); b.firstChild.textContent = "🐛"; toast("🐛 Ối, quả có sâu! Mất lượt", "#b45309"); await wait(900); await dropTo(b, false); }
+  else {
+    const q = questions[qi++]; const pts = k === "gold" ? 20 : 10;
+    const r = await ask(q, { title: `${emo} Quả số ${b.querySelector(".no").textContent} · ${pts} điểm`, team: t, timer: cfg.timer });
+    if (r.ok) { t.score += pts; t.got.push(emo); toast(`${emo} +${pts} điểm`, "#16a34a"); await dropTo(b, true); }
+    else { toast("🍂 Quả rụng mất rồi!", "#dc2626"); await dropTo(b, false); }
+  }
+  const left = $$(".fr", tree).filter(x => x.dataset.k !== "worm" && x.dataset.k !== "gift").length;
+  turn = (turn + 1) % teams.length; busy = false; drawBaskets();
+  if (qi >= n || !left) { $("#tip").hidden = true; setTimeout(() => podium(teams, { title: "🏆 Đội hái được nhiều quả nhất", sub: "Mùa thu hoạch kết thúc!" }), 700); }
+}
+tree.addEventListener("click", e => { const b = e.target.closest(".fr"); if (b) choose(b); });
+drawBaskets();
+</script>
+</body>
+</html>

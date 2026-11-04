@@ -1,317 +1,233 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Chia Nhóm Tự Động – EduTeacher Hub</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chia nhóm thông minh – EduTeacher Hub</title>
+<link rel="stylesheet" href="eduhub_ui.css">
+<script src="eduhub_data.js"></script>
+<script src="lib/xlsx.full.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --blue:#3b7de9;--blue-lt:#eff6ff;--blue-dk:#1d4ed8;
-  --green:#10b981;--orange:#f59e0b;--purple:#8b5cf6;--red:#ef4444;
-  --pink:#ec4899;--teal:#06b6d4;
-  --text:#1e293b;--text2:#334155;--muted:#64748b;
-  --border:#e2e8f0;--bg:#f8fafc;--white:#fff;
-  --shadow:0 4px 20px rgba(59,125,233,.1);
-}
-body{font-family:'Segoe UI',sans-serif;background:var(--bg);min-height:100vh;}
-
-.app-header{background:linear-gradient(135deg,#3b7de9,#8b5cf6);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(59,125,233,.3);}
-.app-logo{color:#fff;font-size:1.1rem;font-weight:900;}
-.app-logo span{opacity:.7;font-weight:400;font-size:.85rem;margin-left:8px;}
-.hbtn{padding:7px 14px;border-radius:8px;border:none;font-size:.8rem;font-weight:700;cursor:pointer;}
-.hbtn-white{background:#fff;color:var(--blue-dk);}
-.hbtn-white:hover{background:#eff6ff;}
-
-.main{max-width:960px;margin:0 auto;padding:28px 20px;display:grid;grid-template-columns:320px 1fr;gap:24px;}
-@media(max-width:720px){.main{grid-template-columns:1fr;}}
-
-/* ── LEFT PANEL ── */
-.panel{background:var(--white);border-radius:16px;padding:20px;box-shadow:var(--shadow);border:1.5px solid var(--border);}
-.panel-title{font-size:.82rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px;}
-
-.input-group{margin-bottom:14px;}
-.input-label{font-size:.75rem;font-weight:700;color:var(--text2);margin-bottom:5px;display:block;}
-textarea,input[type=text],input[type=number]{width:100%;padding:9px 12px;border-radius:9px;border:1.5px solid var(--border);font-size:.85rem;color:var(--text);background:#fff;outline:none;font-family:inherit;transition:border-color .15s;}
-textarea:focus,input:focus{border-color:var(--blue);}
-textarea{resize:vertical;min-height:120px;}
-
-.mode-row{display:flex;gap:8px;margin-bottom:6px;}
-.mode-btn{flex:1;padding:8px 6px;border-radius:9px;border:2px solid var(--border);background:#fff;font-size:.78rem;font-weight:700;color:var(--muted);cursor:pointer;text-align:center;transition:all .14s;}
-.mode-btn.sel{border-color:var(--blue);background:var(--blue-lt);color:var(--blue);}
-
-.num-row{display:flex;gap:8px;align-items:center;}
-.num-row input{width:80px;text-align:center;font-size:1rem;font-weight:800;}
-.num-row span{font-size:.82rem;color:var(--muted);}
-
-.divider{height:1px;background:var(--border);margin:16px 0;}
-
-.btn{width:100%;padding:12px;border-radius:11px;border:none;font-size:.9rem;font-weight:800;cursor:pointer;transition:all .15s;margin-bottom:8px;}
-.btn-blue{background:linear-gradient(135deg,var(--blue),var(--purple));color:#fff;box-shadow:0 4px 14px rgba(59,125,233,.3);}
-.btn-blue:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(59,125,233,.4);}
-.btn-ghost{background:var(--bg);border:1.5px solid var(--border);color:var(--text2);}
-.btn-ghost:hover{background:var(--border);}
-
-.import-label{display:flex;align-items:center;justify-content:center;gap:6px;width:100%;padding:10px;border-radius:11px;border:1.5px dashed var(--border);font-size:.82rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;margin-bottom:8px;}
-.import-label:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-lt);}
-
-.info-bar{background:var(--blue-lt);border-radius:8px;padding:8px 12px;font-size:.75rem;color:var(--blue);font-weight:600;margin-top:4px;}
-
-/* ── RIGHT PANEL ── */
-.result-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-.result-title{font-size:1rem;font-weight:800;color:var(--text);}
-.result-actions{display:flex;gap:8px;}
-.icon-btn{padding:7px 12px;border-radius:8px;border:1.5px solid var(--border);background:#fff;font-size:.78rem;font-weight:700;color:var(--text2);cursor:pointer;transition:all .14s;}
-.icon-btn:hover{border-color:var(--blue);color:var(--blue);}
-
-.groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
-.group-card{border-radius:12px;padding:14px;border:2px solid;}
-.group-title{font-size:.8rem;font-weight:800;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
-.group-count{font-size:.65rem;font-weight:700;background:rgba(0,0,0,.08);padding:2px 7px;border-radius:10px;}
-.member-list{list-style:none;display:flex;flex-direction:column;gap:5px;}
-.member-item{display:flex;align-items:center;gap:7px;font-size:.82rem;color:var(--text);font-weight:600;}
-.member-avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:800;color:#fff;flex-shrink:0;}
-
-.empty-result{text-align:center;padding:60px 20px;color:var(--muted);}
-.empty-icon{font-size:3rem;margin-bottom:12px;}
-.empty-text{font-size:.88rem;line-height:1.6;}
-
-/* animation */
-@keyframes cardIn{from{transform:translateY(12px);opacity:0}to{transform:translateY(0);opacity:1}}
-.group-card{animation:cardIn .3s ease both;}
-
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1e293b;color:#fff;padding:10px 20px;border-radius:10px;font-size:.82rem;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:9999;}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+:root{--accent:#7c3aed}
+.ck{display:flex;align-items:center;gap:6px;font-size:.85rem;cursor:pointer}.ck input{width:auto}
+.lay{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:16px;align-items:start}
+.lay>*{min-width:0}
+@media(max-width:900px){.lay{grid-template-columns:minmax(0,1fr)}}
+.card h2{font-size:1rem;margin-bottom:10px}
+.sec{margin-top:14px}.sec>label.ck{text-transform:none;letter-spacing:0;font-size:.85rem;font-weight:600;color:var(--text)}
+.sec>label:not(.ck),.lb{display:block;font-size:.75rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.seg button{border:1.5px solid var(--border);background:var(--card2);border-radius:10px;padding:9px 8px;font:inherit;font-size:.82rem;font-weight:700;cursor:pointer;color:var(--text);text-align:left}
+.seg button.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent)}
+.seg button small{display:block;font-weight:500;color:var(--muted);font-size:.72rem;margin-top:2px}
+.numrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.numrow input{width:76px;text-align:center;font-weight:800;font-size:1rem}
+.pairs{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.pair{display:inline-flex;align-items:center;gap:6px;border-radius:20px;padding:4px 6px 4px 10px;font-size:.8rem;font-weight:600}
+.pair.ap{background:#fee2e2;color:#991b1b}.pair.tg{background:#dcfce7;color:#166534}
+.pair button{border:none;background:rgba(0,0,0,.08);border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:.7rem}
+.addpair{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:'a b' 't p';gap:6px;align-items:center}
+#pa{grid-area:a}#pb{grid-area:b}#pt{grid-area:t;width:100%!important}#padd{grid-area:p}
+.addpair select{min-width:0}
+.who{display:flex;flex-wrap:wrap;gap:5px;max-height:190px;overflow:auto;margin-top:6px}
+.who span{border:1px solid var(--border);border-radius:16px;padding:3px 9px;font-size:.78rem;cursor:pointer;user-select:none;background:var(--card2)}
+.who span.off{opacity:.4;text-decoration:line-through}
+.who span.abs{border-color:#f87171;color:#b91c1c}
+.big{width:100%;padding:13px;font-size:1.05rem}
+.res-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.res-h h2{margin:0 auto 0 0}
+.groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.grp{border-radius:16px;border:2px solid var(--gc);background:var(--card);overflow:hidden;animation:gin .35s both}
+@keyframes gin{from{opacity:0;transform:translateY(10px) scale(.97)}}
+.grp-h{background:var(--gc);color:#fff;padding:9px 12px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.grp-h b{font-size:1.05rem}.grp-h small{font-size:.72rem;opacity:.9;text-align:right}
+.grp ul{list-style:none;padding:8px 10px;display:flex;flex-direction:column;gap:4px}
+.grp li{display:flex;align-items:center;gap:6px;font-size:.9rem;padding:3px 4px;border-radius:7px}
+.grp li.ld{font-weight:800;background:color-mix(in srgb,var(--gc) 14%,transparent)}
+.grp li .sc{margin-left:auto;font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.grp li .g{font-size:.7rem;color:var(--muted)}
+.warn{background:#fef3c7;color:#92400e;border-radius:10px;padding:8px 12px;font-size:.82rem;margin-bottom:10px}
+/* trình chiếu */
+.show{position:fixed;inset:0;background:#0f172a;z-index:60;padding:18px;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.show .groups{grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.show .grp li{font-size:1.25rem}.show .grp-h b{font-size:1.4rem}
+.show-top{display:flex;justify-content:space-between;align-items:center;color:#fff}
+.show-top h1{font-size:1.4rem}
+@media print{.noprint,.top{display:none!important}.lay{display:block}.grp{break-inside:avoid}}
 </style>
 </head>
 <body>
-
-<div class="app-header">
-  <div class="app-logo">👥 Chia Nhóm Tự Động <span>EduTeacher Hub</span></div>
-  <button class="hbtn hbtn-white" onclick="copyResult()">📋 Sao chép kết quả</button>
+<div class="top">
+  <h1>👥 Chia nhóm thông minh</h1>
+  <div class="right"><span class="privacy">🔒 Lưu trên máy này</span><a class="back" href="dashboard.html">← Trang chính</a></div>
 </div>
-
-<div class="main">
-  <!-- LEFT -->
-  <div>
-    <div class="panel">
-      <div class="panel-title">📋 Danh Sách</div>
-
-      <div class="input-group">
-        <label class="input-label">Nhập tên học sinh (mỗi dòng 1 tên)</label>
-        <textarea id="names-input" placeholder="Nguyễn Văn A&#10;Trần Thị B&#10;Lê Văn C&#10;..."></textarea>
-      </div>
-
-      <label class="import-label">
-        📂 Nhập từ file .txt
-        <input type="file" accept=".txt" style="display:none" onchange="importTxt(this)"/>
-      </label>
-
-      <div class="divider"></div>
-      <div class="panel-title">⚙️ Cài Đặt</div>
-
-      <div class="input-group">
-        <label class="input-label">Chế độ chia</label>
-        <div class="mode-row">
-          <div class="mode-btn sel" id="mode-groups" onclick="setMode('groups')">Số nhóm</div>
-          <div class="mode-btn" id="mode-size" onclick="setMode('size')">Người/nhóm</div>
-        </div>
-      </div>
-
-      <div class="input-group">
-        <div class="num-row">
-          <input type="number" id="num-val" value="4" min="1" max="50" oninput="updateInfo()"/>
-          <span id="num-label">nhóm</span>
-        </div>
-        <div class="info-bar" id="info-bar" style="margin-top:8px;">Nhập danh sách để xem thông tin</div>
-      </div>
-
-      <div class="input-group">
-        <label class="input-label">Tên nhóm</label>
-        <div class="mode-row">
-          <div class="mode-btn sel" id="name-num" onclick="setNameStyle('num')">Số (Nhóm 1…)</div>
-          <div class="mode-btn" id="name-alpha" onclick="setNameStyle('alpha')">Chữ (A, B, C…)</div>
-          <div class="mode-btn" id="name-color" onclick="setNameStyle('color')">Màu 🌈</div>
-        </div>
-      </div>
-
-      <button class="btn btn-blue" onclick="generate()">🎲 Chia Nhóm Ngẫu Nhiên</button>
-      <button class="btn btn-ghost" onclick="reset()">↺ Làm mới</button>
+<div class="wrap">
+<div class="lay">
+  <!-- ═════ BẢNG ĐIỀU KHIỂN ═════ -->
+  <div class="card noprint">
+    <div class="sec" style="margin-top:0"><label>Lớp</label>
+      <select id="cls"></select>
+      <textarea id="paste" placeholder="Dán danh sách (mỗi dòng 1 tên; dán từ Excel được)" style="margin-top:8px;min-height:120px" hidden></textarea>
     </div>
+    <div class="sec">
+      <label class="ck" id="absBox"><input type="checkbox" id="skipAbs" checked> <span id="absTxt">Bỏ học sinh vắng hôm nay</span></label>
+      <details id="whoBox" style="margin-top:6px"><summary class="hint" style="cursor:pointer">Học sinh tham gia: <b id="whoN">0</b> em (bấm tên để bỏ/thêm)</summary><div class="who" id="who"></div></details>
+    </div>
+    <div class="sec"><label>Số nhóm</label>
+      <div class="numrow"><select id="by" style="width:auto"><option value="count">Chia thành</option><option value="size">Mỗi nhóm</option></select>
+        <input type="number" id="num" min="1" max="30" value="6"><span id="numHint" class="hint"></span></div>
+    </div>
+    <div class="sec"><label>Kiểu chia</label>
+      <div class="seg" id="mode">
+        <button data-m="random">🎲 Ngẫu nhiên<small>Xáo trộn hoàn toàn</small></button>
+        <button data-m="score">📊 Cân bằng học lực<small>Rải đều giỏi – khá – TB – yếu</small></button>
+        <button data-m="gender">⚧ Cân bằng nam/nữ<small>Nhóm nào cũng có nam, nữ</small></button>
+        <button data-m="both">⭐ Học lực + nam/nữ<small>Cân bằng cả hai</small></button>
+      </div>
+      <div id="scoreBox" class="row" style="margin-top:8px" hidden>
+        <div class="f"><label class="hint">Lấy điểm từ sổ</label><select id="book"></select></div>
+        <div class="f s"><label class="hint">Học kỳ</label><select id="hk"><option value="hk1">HK I</option><option value="hk2">HK II</option><option value="cn">Cả năm</option></select></div>
+      </div>
+      <div id="modeWarn" class="hint" style="margin-top:6px"></div>
+    </div>
+    <div class="sec"><label>Nhóm trưởng</label>
+      <div class="chips" id="leader"><span class="chip" data-v="none">Không chọn</span><span class="chip" data-v="score">⭐ Điểm cao nhất</span><span class="chip" data-v="random">🎲 Ngẫu nhiên</span></div>
+    </div>
+    <div class="sec"><label>Ràng buộc (lưu theo lớp)</label>
+      <div class="addpair"><select id="pa"></select><select id="pt" style="width:auto"><option value="apart">🚫 không chung</option><option value="together">🤝 phải chung</option></select><select id="pb"></select><button class="btn s" id="padd">+</button></div>
+      <div class="pairs" id="pairs"></div>
+      <div class="hint" style="margin-top:4px">VD: tách 2 em hay nói chuyện; ghép bạn học tốt kèm bạn cần hỗ trợ.</div>
+    </div>
+    <div class="sec"><button class="btn big" id="go">🎲 Chia nhóm</button></div>
   </div>
 
-  <!-- RIGHT -->
-  <div class="panel">
-    <div class="result-header">
-      <div class="result-title">📊 Kết Quả Chia Nhóm</div>
-      <div class="result-actions">
-        <button class="icon-btn" onclick="generate()" title="Xáo trộn lại">🔀 Xáo lại</button>
-        <button class="icon-btn" onclick="copyResult()" title="Sao chép">📋 Copy</button>
-      </div>
+  <!-- ═════ KẾT QUẢ ═════ -->
+  <div class="card">
+    <div class="res-h">
+      <h2 id="resTitle">Kết quả</h2>
+      <label class="ck noprint"><input type="checkbox" id="showSc"> Hiện điểm</label>
+      <button class="btn l s noprint" id="again">🔀 Xáo lại</button>
+      <button class="btn l s noprint" id="present">📺 Trình chiếu</button>
+      <button class="btn l s noprint" id="copy">📋 Sao chép</button>
+      <button class="btn l s noprint" id="xlsx">⬇️ Excel</button>
+      <button class="btn l s noprint" onclick="print()">🖨️ In</button>
     </div>
-    <div id="result">
-      <div class="empty-result">
-        <div class="empty-icon">👥</div>
-        <div class="empty-text">Nhập danh sách học sinh và bấm<br><b>Chia Nhóm Ngẫu Nhiên</b> để bắt đầu.</div>
-      </div>
-    </div>
+    <div id="res"><div class="empty">Chọn lớp và bấm <b>🎲 Chia nhóm</b>.</div></div>
   </div>
 </div>
-
-<div class="toast" id="toast"></div>
-
+</div>
 <script>
-const GROUP_COLORS = [
-  {bg:'#eff6ff',border:'#3b7de9',text:'#1d4ed8',av:'#3b7de9'},
-  {bg:'#f0fdf4',border:'#10b981',text:'#047857',av:'#10b981'},
-  {bg:'#fffbeb',border:'#f59e0b',text:'#b45309',av:'#f59e0b'},
-  {bg:'#faf5ff',border:'#8b5cf6',text:'#6d28d9',av:'#8b5cf6'},
-  {bg:'#fdf4ff',border:'#ec4899',text:'#be185d',av:'#ec4899'},
-  {bg:'#ecfeff',border:'#06b6d4',text:'#0e7490',av:'#06b6d4'},
-  {bg:'#fff1f2',border:'#ef4444',text:'#b91c1c',av:'#ef4444'},
-  {bg:'#f0fdfa',border:'#14b8a6',text:'#0f766e',av:'#14b8a6'},
-];
-const COLOR_NAMES = ['Xanh Dương','Xanh Lá','Vàng','Tím','Hồng','Lam','Đỏ','Ngọc'];
-const ALPHA = ['A','B','C','D','E','F','G','H','I','J','K','L'];
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)],esc=ED.esc;
+const COLORS=['#2563eb','#db2777','#059669','#ea580c','#7c3aed','#0891b2','#ca8a04','#dc2626','#4f46e5','#16a34a','#c026d3','#0d9488'];
+let CLS=null, PASTE=false, off=new Set(), opt=ED.get('cnhom_opt',{by:'count',num:6,mode:'random',leader:'none',book:'',hk:'hk1'}), last=null;
+const key=s=>s+'_'+(PASTE?'paste':(CLS?CLS.id:''));
 
-let mode = 'groups'; // 'groups' | 'size'
-let nameStyle = 'num'; // 'num' | 'alpha' | 'color'
-let lastGroups = [];
-
-function setMode(m){
-  mode = m;
-  document.querySelectorAll('.mode-btn[id^=mode-]').forEach(b=>b.classList.remove('sel'));
-  document.getElementById('mode-'+m).classList.add('sel');
-  document.getElementById('num-label').textContent = m==='groups' ? 'nhóm' : 'người/nhóm';
-  updateInfo();
+/* ── danh sách lớp ── */
+function initClass(){
+  CLS=ED.classSelect($('#cls'),'cnhom_class',c=>{CLS=c;onClass();});
+  $('#cls').insertAdjacentHTML('beforeend','<option value="__paste">✍️ Dán danh sách tự nhập…</option>');
+  if(ED.get('cnhom_class','')==='__paste'){ $('#cls').value='__paste'; }
+  const oc=$('#cls').onchange; $('#cls').onchange=()=>{ if($('#cls').value==='__paste'){ED.set('cnhom_class','__paste');CLS=null;onClass();} else oc(); };
+  onClass();
 }
-
-function setNameStyle(s){
-  nameStyle = s;
-  document.querySelectorAll('.mode-btn[id^=name-]').forEach(b=>b.classList.remove('sel'));
-  document.getElementById('name-'+s).classList.add('sel');
-  if(lastGroups.length) renderGroups(lastGroups);
+function students(){
+  if($('#cls').value==='__paste'){PASTE=true;
+    return [...new Set($('#paste').value.split(/\r?\n/).map(l=>(l.split('\t').find(x=>x.trim()&&isNaN(x))||'').trim()).filter(Boolean))].map((n,i)=>({id:'p'+i+'_'+ED.norm(n),stt:i+1,hoTen:n,ten:n.split(/\s+/).pop(),gioiTinh:''}));}
+  PASTE=false; return CLS?CLS.students:[];
 }
-
-function getNames(){
-  return document.getElementById('names-input').value
-    .split('\n').map(s=>s.trim()).filter(s=>s.length>0);
+function onClass(){
+  PASTE=$('#cls').value==='__paste'; $('#paste').hidden=!PASTE; if(PASTE)$('#paste').value=ED.get('cnhom_paste','');
+  off=new Set(ED.get(key('cnhom_off'),[]));
+  // sổ điểm để cân bằng học lực
+  const bs=ED.books(); let def=opt.book;
+  if(CLS&&CLS.kind==='book') def=CLS.book.id; else if(!bs.some(b=>b.id===def)) def=(bs.find(b=>CLS&&ED.norm(b.lop)===ED.norm(CLS.short))||bs[0]||{}).id||'';
+  $('#book').innerHTML=bs.length?bs.map(b=>`<option value="${esc(b.id)}"${b.id===def?' selected':''}>${esc(b.mon)} – ${esc(b.lop)}</option>`).join(''):'<option value="">(chưa có sổ điểm)</option>';
+  last=ED.get(key('cnhom_last'),null);
+  renderWho(); renderPairs(); renderModeWarn(); render();
 }
-
-function updateInfo(){
-  const names = getNames();
-  const n = names.length;
-  const val = parseInt(document.getElementById('num-val').value)||1;
-  const bar = document.getElementById('info-bar');
-  if(!n){ bar.textContent='Nhập danh sách để xem thông tin'; return; }
-  if(mode==='groups'){
-    const g = Math.min(val, n);
-    const base = Math.floor(n/g), extra = n%g;
-    bar.textContent = `${n} học sinh → ${g} nhóm · ${extra?`${extra} nhóm ${base+1} người, ${g-extra} nhóm ${base} người`:`Mỗi nhóm ${base} người`}`;
-  } else {
-    const g = Math.ceil(n/val);
-    bar.textContent = `${n} học sinh → ${g} nhóm · ~${val} người/nhóm`;
-  }
+function absent(){return $('#skipAbs').checked?ED.absentToday(CLS):new Set();}
+function active(){const ab=absent();return students().filter(s=>!off.has(s.id)&&!ab.has(s.id));}
+function renderWho(){
+  const st=students(),ab=ED.absentToday(CLS);
+  $('#absBox').style.display=CLS&&CLS.kind==='cn'?'':'none';
+  $('#absTxt').textContent=`Bỏ học sinh vắng hôm nay${ab.size?` (${ab.size} em)`:' (chưa có em vắng)'}`;
+  $('#who').innerHTML=st.map(s=>`<span data-id="${esc(s.id)}" class="${off.has(s.id)?'off':''} ${ab.has(s.id)&&$('#skipAbs').checked?'abs off':''}" title="${ab.has(s.id)?'Vắng hôm nay':''}">${esc(s.hoTen)}</span>`).join('')||'<span class="hint" style="border:none">Chưa có học sinh</span>';
+  $$('#who span[data-id]').forEach(x=>x.onclick=()=>{const id=x.dataset.id;off.has(id)?off.delete(id):off.add(id);ED.set(key('cnhom_off'),[...off]);renderWho();});
+  $('#whoN').textContent=active().length;
+  const opts=st.map(s=>`<option value="${esc(s.id)}">${esc(s.hoTen)}</option>`).join('');
+  $('#pa').innerHTML=opts;$('#pb').innerHTML=opts;if(st[1])$('#pb').selectedIndex=1;
+  updNumHint();
 }
-
-function shuffle(arr){
-  const a=[...arr];
-  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
-  return a;
+function updNumHint(){const n=active().length,v=+$('#num').value||1;$('#numHint').textContent=$('#by').value==='count'?`nhóm (≈ ${Math.ceil(n/v)} em/nhóm)`:`em (→ ${Math.ceil(n/v)} nhóm)`;}
+/* ── ràng buộc ── */
+function rules(){return ED.get(key('cnhom_rules'),{apart:[],together:[]});}
+function renderPairs(){
+  const r=rules(),nm=id=>{const s=students().find(x=>x.id===id);return s?s.ten||s.hoTen:'?';};
+  $('#pairs').innerHTML=[...r.apart.map((p,i)=>`<span class="pair ap">🚫 ${esc(nm(p[0]))} – ${esc(nm(p[1]))}<button data-t="apart" data-i="${i}">✕</button></span>`),
+    ...r.together.map((p,i)=>`<span class="pair tg">🤝 ${esc(nm(p[0]))} + ${esc(nm(p[1]))}<button data-t="together" data-i="${i}">✕</button></span>`)].join('');
+  $$('#pairs button').forEach(b=>b.onclick=()=>{const r=rules();r[b.dataset.t].splice(+b.dataset.i,1);ED.set(key('cnhom_rules'),r);renderPairs();});
 }
-
-function generate(){
-  const names = getNames();
-  if(!names.length){ showToast('Hãy nhập danh sách học sinh!'); return; }
-  const val = parseInt(document.getElementById('num-val').value)||1;
-  const shuffled = shuffle(names);
-  let groups = [];
-
-  if(mode==='groups'){
-    const g = Math.max(1, Math.min(val, names.length));
-    groups = Array.from({length:g}, ()=>[]);
-    shuffled.forEach((name,i)=>groups[i%g].push(name));
-  } else {
-    const size = Math.max(1, val);
-    for(let i=0;i<shuffled.length;i+=size)
-      groups.push(shuffled.slice(i,i+size));
-  }
-
-  lastGroups = groups;
-  renderGroups(groups);
+$('#padd').onclick=()=>{const a=$('#pa').value,b=$('#pb').value,t=$('#pt').value;if(!a||!b||a===b){ED.toast('Chọn 2 học sinh khác nhau');return}
+  const r=rules();if(r[t].some(p=>(p[0]===a&&p[1]===b)||(p[0]===b&&p[1]===a)))return;
+  const other=t==='apart'?'together':'apart';r[other]=r[other].filter(p=>!((p[0]===a&&p[1]===b)||(p[0]===b&&p[1]===a)));
+  r[t].push([a,b]);ED.set(key('cnhom_rules'),r);renderPairs();};
+/* ── tùy chọn ── */
+function setOpt(k,v){opt[k]=v;ED.set('cnhom_opt',opt);}
+$$('#mode button').forEach(b=>{b.classList.toggle('on',b.dataset.m===opt.mode);b.onclick=()=>{$$('#mode button').forEach(x=>x.classList.toggle('on',x===b));setOpt('mode',b.dataset.m);renderModeWarn();};});
+$$('#leader .chip').forEach(c=>{c.classList.toggle('on',c.dataset.v===opt.leader);c.onclick=()=>{$$('#leader .chip').forEach(x=>x.classList.toggle('on',x===c));setOpt('leader',c.dataset.v);};});
+$('#by').value=opt.by;$('#num').value=opt.num;$('#hk').value=opt.hk;
+$('#by').onchange=()=>{setOpt('by',$('#by').value);updNumHint();};$('#num').oninput=()=>{setOpt('num',+$('#num').value||1);updNumHint();};
+$('#book').onchange=()=>{setOpt('book',$('#book').value);renderModeWarn();};$('#hk').onchange=()=>{setOpt('hk',$('#hk').value);renderModeWarn();};
+$('#skipAbs').onchange=renderWho;
+$('#paste').oninput=()=>{ED.set('cnhom_paste',$('#paste').value);renderWho();renderPairs();};
+$('#showSc').onchange=render;
+function scores(){return PASTE?{}:ED.scoreMap(CLS,$('#book').value,$('#hk').value);}
+function renderModeWarn(){
+  const m=opt.mode,need=m==='score'||m==='both'||opt.leader==='score';$('#scoreBox').hidden=!(m==='score'||m==='both');
+  const w=[];const st=active();
+  if(need){const sc=scores(),k=st.filter(s=>sc[s.id]!=null).length;w.push(k?`📊 Có điểm của ${k}/${st.length} em.`:'⚠️ Chưa có điểm trong sổ đã chọn – sẽ chia như ngẫu nhiên.');}
+  if(m==='gender'||m==='both'){const k=st.filter(s=>s.gioiTinh).length;w.push(k?`⚧ Có giới tính của ${k}/${st.length} em.`:'⚠️ Chưa có giới tính (nhập ở Chủ Nhiệm → Danh sách HS).');}
+  $('#modeWarn').innerHTML=w.join('<br>');
 }
-
-function groupName(i){
-  if(nameStyle==='alpha') return `Nhóm ${ALPHA[i]||i+1}`;
-  if(nameStyle==='color') return `Nhóm ${COLOR_NAMES[i%COLOR_NAMES.length]}`;
-  return `Nhóm ${i+1}`;
+/* ── chia nhóm ── */
+function run(){
+  const st=active();if(st.length<2){ED.toast('Cần ít nhất 2 học sinh');return}
+  const r=rules(),ids=new Set(st.map(s=>s.id)),keep=p=>ids.has(p[0])&&ids.has(p[1]);
+  const o={mode:opt.mode,scores:scores(),apart:r.apart.filter(keep),together:r.together.filter(keep),leader:opt.leader};
+  if($('#by').value==='count')o.count=+$('#num').value||1;else o.size=+$('#num').value||4;
+  const res=ED.makeGroups(st,o);
+  last={date:new Date().toISOString(),cls:PASTE?'paste':CLS.id,mode:opt.mode,groups:res.groups,violations:res.violations,names:Object.fromEntries(st.map(s=>[s.id,s.hoTen]))};
+  ED.set(key('cnhom_last'),last);render();
 }
-
-function renderGroups(groups){
-  const c = GROUP_COLORS;
-  document.getElementById('result').innerHTML = `<div class="groups-grid">
-    ${groups.map((g,i)=>{
-      const col = c[i%c.length];
-      return `<div class="group-card" style="background:${col.bg};border-color:${col.border};animation-delay:${i*0.05}s">
-        <div class="group-title" style="color:${col.text}">
-          ${groupName(i)} <span class="group-count">${g.length} người</span>
-        </div>
-        <ul class="member-list">
-          ${g.map((name,j)=>`<li class="member-item">
-            <div class="member-avatar" style="background:${col.av}">${getInitial(name)}</div>
-            ${escHtml(name)}
-          </li>`).join('')}
-        </ul>
-      </div>`;
-    }).join('')}
-  </div>`;
+$('#go').onclick=run;$('#again').onclick=run;
+const MODE_TX={random:'ngẫu nhiên',score:'cân bằng học lực',gender:'cân bằng nam/nữ',both:'học lực + nam/nữ'};
+function groupHTML(){
+  if(!last)return'<div class="empty">Chọn lớp và bấm <b>🎲 Chia nhóm</b>.</div>';
+  const sc=scores(),sh=$('#showSc').checked,st=students(),info=Object.fromEntries(st.map(s=>[s.id,s]));
+  const nm=id=>(info[id]&&info[id].hoTen)||last.names[id]||'?';
+  return (last.violations?`<div class="warn">⚠️ Còn ${last.violations} cặp “không chung” chưa tách được (do nhóm quá ít hoặc ràng buộc chồng nhau).</div>`:'')+
+   '<div class="groups">'+last.groups.map((g,i)=>{const c=COLORS[i%COLORS.length];
+    const v=g.members.map(id=>sc[id]).filter(x=>x!=null),avg=v.length?(v.reduce((a,b)=>a+b,0)/v.length).toFixed(1):null;
+    const f=g.members.filter(id=>info[id]&&ED.norm(info[id].gioiTinh)==='nu').length,m=g.members.filter(id=>info[id]&&ED.norm(info[id].gioiTinh)==='nam').length;
+    const mem=g.members.slice().sort((a,b)=>(b===g.leader)-(a===g.leader));
+    return `<div class="grp" style="--gc:${c};animation-delay:${i*60}ms"><div class="grp-h"><b>Nhóm ${i+1}</b><small>${g.members.length} em${f+m?` · ${m} nam ${f} nữ`:''}${sh&&avg?`<br>TB ${avg}`:''}</small></div>
+      <ul>${mem.map(id=>`<li class="${id===g.leader?'ld':''}">${id===g.leader?'👑':'•'} ${esc(nm(id))}${sh&&sc[id]!=null?`<span class="sc">${sc[id]}</span>`:''}</li>`).join('')}</ul></div>`}).join('')+'</div>';
 }
-
-function getInitial(name){
-  const parts = name.trim().split(' ');
-  return parts[parts.length-1][0]?.toUpperCase()||'?';
+function render(){
+  $('#res').innerHTML=groupHTML();
+  $('#resTitle').textContent=last?`Kết quả: ${last.groups.length} nhóm · ${MODE_TX[last.mode]||''} · ${new Date(last.date).toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit'})}`:'Kết quả';
 }
-
-function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-function copyResult(){
-  if(!lastGroups.length){ showToast('Chưa có kết quả để sao chép!'); return; }
-  const text = lastGroups.map((g,i)=>`${groupName(i)} (${g.length} người):\n${g.map((n,j)=>`  ${j+1}. ${n}`).join('\n')}`).join('\n\n');
-  navigator.clipboard.writeText(text).then(()=>showToast('Đã sao chép kết quả!')).catch(()=>{
-    const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();showToast('Đã sao chép!');
-  });
-}
-
-function importTxt(input){
-  const file=input.files[0]; if(!file) return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    document.getElementById('names-input').value=e.target.result.trim();
-    updateInfo(); showToast('Đã nhập '+getNames().length+' học sinh!');
-  };
-  reader.readAsText(file,'utf-8');
-  input.value='';
-}
-
-function reset(){
-  document.getElementById('names-input').value='';
-  document.getElementById('num-val').value='4';
-  lastGroups=[];
-  document.getElementById('result').innerHTML='<div class="empty-result"><div class="empty-icon">👥</div><div class="empty-text">Nhập danh sách học sinh và bấm<br><b>Chia Nhóm Ngẫu Nhiên</b> để bắt đầu.</div></div>';
-  updateInfo();
-}
-
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2200);
-}
-
-// Live update info when typing
-document.getElementById('names-input').addEventListener('input', updateInfo);
-document.getElementById('num-val').addEventListener('input', updateInfo);
+$('#present').onclick=()=>{if(!last)return;const d=document.createElement('div');d.className='show';
+  d.innerHTML=`<div class="show-top"><h1>👥 Chia nhóm ${esc(PASTE?'':CLS.short)}</h1><button class="btn" id="cls2">✕ Đóng</button></div>`+groupHTML();document.body.appendChild(d);
+  d.querySelector('#cls2').onclick=()=>{d.remove();document.fullscreenElement&&document.exitFullscreen();};document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen().catch(()=>{});};
+function asText(){const st=students(),nm=id=>(st.find(s=>s.id===id)||{}).hoTen||last.names[id];
+  return last.groups.map((g,i)=>`Nhóm ${i+1}: `+g.members.map(id=>nm(id)+(id===g.leader?' (NT)':'')).join(', ')).join('\n');}
+$('#copy').onclick=()=>{if(!last)return;ED.copy(asText()).then(()=>ED.toast('📋 Đã sao chép'));};
+$('#xlsx').onclick=()=>{if(!last)return;const st=students(),aoa=[['Nhóm','STT','Họ và tên','Nhóm trưởng']];
+  last.groups.forEach((g,i)=>g.members.forEach(id=>{const s=st.find(x=>x.id===id)||{};aoa.push([i+1,s.stt||'',s.hoTen||last.names[id],id===g.leader?'x':''])}));
+  ED.exportXLSX([{name:'Chia nhom',aoa}],'ChiaNhom_'+ED.fileName(PASTE?'danh_sach':CLS.short));};
+initClass();
 </script>
-
-<div style="margin-top:32px;padding:14px 0;border-top:1px solid #e0e0e0;text-align:center;font-size:13px;color:#666;">📚 EduTeacher Hub được phát triển bởi <strong style="color:#333;font-weight:800;">ThS. Huỳnh Lê Tấn Phúc</strong> · Trường THCS Long Thọ</div>
+<div style="padding:10px 0;text-align:center;font-size:12px;color:#94a3b8">📚 EduTeacher Hub được phát triển bởi <strong>ThS. Huỳnh Lê Tấn Phúc</strong></div>
 </body>
 </html>

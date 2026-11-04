@@ -1,7 +1,7 @@
 /* EduTeacher Hub – Service Worker (tạo tự động bằng tools/tao_sw.py – không sửa tay)
    • Mở một lần khi có mạng → các trang đã mở dùng được khi mất mạng.
    • Nút “Tải sẵn để dùng offline” → tải toàn bộ công cụ về máy. */
-const VERSION = 'ba61bd25bf';
+const VERSION = '202381387c';
 const CACHE = 'eduhub-' + VERSION;
 const CORE = ["./", "index.html", "dashboard.html", "manifest.webmanifest", "eduhub_backup.js", "eduhub_search.js", "eduhub_pwa.js", "icons/icon-192.png"];
 const FILES = [
@@ -80,6 +80,8 @@ const FILES = [
 "lib/BeVietnamPro-Bold.ttf",
 "lib/BeVietnamPro-Regular.ttf",
 "lib/FileSaver.min.js",
+"lib/aruco/aruco.js",
+"lib/aruco/cv.js",
 "lib/docx.min.js",
 "lib/fontkit.umd.min.js",
 "lib/html2canvas.min.js",
@@ -122,7 +124,15 @@ const FILES = [
 "mophong_uocboi.html",
 "mophong_vminhhoa.html",
 "ochu.html",
+"ontap/bat-ca.html",
+"ontap/core.css",
+"ontap/core.js",
+"ontap/dao-vang.html",
+"ontap/hai-qua.html",
+"ontap/leo-nui.html",
+"ontap/trieu-phu.html",
 "sodiem.html",
+"thehiepsi.html",
 "tiengon.html",
 "tienphong/games/ban-bong.html",
 "tienphong/games/cau-ca.html",
