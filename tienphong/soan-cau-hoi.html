@@ -77,9 +77,10 @@ code{background:var(--card2);border:1px solid var(--border);border-radius:5px;pa
     <table id="tk"></table>
   </section>
 </div>
-<script type="module">
-import { SUBJECTS } from "./js/lessons.js";
-import { BANK_T6 } from "./js/bank-toan6.js";
+<script src="js/bank-classic.js"></script>
+<script>
+(function(){
+const SUBJECTS = window.SUBJECTS || [], BANK_T6 = window.BANK_T6 || {};
 try{if(localStorage.getItem('etv1_theme')==='dark')document.body.classList.add('dark')}catch(e){}
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -129,6 +130,7 @@ function renderTK(){
   $('#tk').innerHTML=st.length?'<tr><th>Câu hỏi</th><th>Bài</th><th>Sai</th><th>Tự sửa đúng</th><th>Đúng ngay</th><th>Tỉ lệ sai</th></tr>'+st.map(e=>{const tot=e.sai+e.dung,r=tot?Math.round(e.sai/tot*100):0;return`<tr><td>${esc(e.q)}</td><td>${esc(name(e.bai))}</td><td class="no">${e.sai}</td><td>${e.sua||0}</td><td class="ok">${e.dung}</td><td><div class="bar"><i style="width:${r}%"></i></div>${r}%</td></tr>`}).join(''):'<tr><td class="hint">Chưa có dữ liệu. Thống kê sẽ có sau khi học sinh chơi trên máy này.</td></tr>';
 }
 $('#clr').onclick=()=>{if(confirm('Xóa toàn bộ thống kê câu sai trên máy này?')){localStorage.removeItem('tp_stats');renderTK()}};
+})();
 </script>
 </body>
 </html>

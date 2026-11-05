@@ -734,13 +734,6 @@ body.dark .sd-table tr:hover td{background:#162032;}
 .dc-toggle:hover{opacity:.7;}
 /* ── MAIN LAYOUT ── */
 .gt-modebar{display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--white);flex-wrap:wrap}
-.gt-mb{border:1.5px solid var(--border);background:transparent;color:var(--muted);border-radius:12px;padding:8px 16px;font:inherit;font-weight:800;font-size:.92rem;cursor:pointer}
-.gt-mb small{font-weight:600;font-size:.72rem;opacity:.8;margin-left:4px}
-.gt-mb.on{border-color:var(--blue);color:var(--blue);background:var(--blue-lt)}
-.gt-vui{height:calc(100vh - var(--top-h) - 60px);min-height:420px}
-.gt-vui iframe{width:100%;height:100%;border:none;display:block}
-.gt-wrap[hidden],.gt-vui[hidden]{display:none!important}
-@media(max-width:700px){.gt-mb small{display:none}.gt-vui{height:calc(100vh - var(--top-h) - 56px)}}
 .gt-wrap { display:grid; grid-template-columns:340px 1fr; gap:0; min-height:calc(100vh - 52px); }
 @media(max-width:860px){ .gt-wrap{grid-template-columns:1fr;} }
 
@@ -1168,6 +1161,9 @@ body.dark .sd-table tr:hover td{background:#162032;}
           <p style="margin:8px 0 0;color:#64748b;font-size:.88rem;" id="welcomeDate"></p>
         </div>
 
+        <!-- Lớp mẫu (dữ liệu giả) cho người mới -->
+        <div id="ehd-box" style="width:100%"></div>
+
         <!-- Tìm kiếm nhanh -->
         <button type="button" class="ehs-hero" id="ehs-hero">🔍 <span>Tìm nhanh công cụ, mô phỏng, trò chơi…</span><kbd>Ctrl K</kbd></button>
 
@@ -1308,11 +1304,6 @@ body.dark .sd-table tr:hover td{background:#162032;}
 
         <!-- ── GD: Gọi Tên ── -->
     <div class="page" id="gd-goiten">
-<div class="gt-modebar">
-  <button class="gt-mb on" data-v="nhanh" onclick="GT_view('nhanh')">⚡ Gọi tên nhanh</button>
-  <button class="gt-mb" data-v="vui" onclick="GT_view('vui')">🎉 Gọi tên vui <small>UFO · Công an · Câu cá · Bóng bay · Gà đẻ trứng</small></button>
-</div>
-<div class="gt-vui" id="gt-vui" hidden><iframe id="gt-vui-frame" title="Gọi tên vui" allow="fullscreen" allowfullscreen></iframe></div>
 <div class="gt-wrap" id="gt-nhanh">
 
   <!-- ── LEFT PANEL ── -->
@@ -1338,14 +1329,22 @@ body.dark .sd-table tr:hover td{background:#162032;}
 
     <!-- Game selector -->
     <div class="gt-game-bar">
-      <div class="gt-game-label">🎮 Chọn trò chơi</div>
+      <div class="gt-game-label">⚡ Gọi nhanh</div>
       <div class="gt-game-grid">
-        <button class="gt-game-btn sel" data-mode="fast" onclick="GT2_selectGame(this)"><span class="gt-game-icon">⚡</span>Gọi Nhanh</button>
+        <button class="gt-game-btn" data-mode="fast" onclick="GT2_selectGame(this)"><span class="gt-game-icon">⚡</span>Gọi Nhanh</button>
         <button class="gt-game-btn" data-mode="wheel" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🎡</span>Vòng Quay</button>
         <button class="gt-game-btn" data-mode="ball" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🎱</span>Lồng Cầu</button>
         <button class="gt-game-btn" data-mode="gift" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🎁</span>Hộp Quà</button>
-        <button class="gt-game-btn" data-mode="chicken" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🐔</span>Gà Đẻ Trứng</button>
-        <button class="gt-game-btn" data-mode="fishing" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🎣</span>Câu Cá</button>
+      </div>
+      <div class="gt-game-label" style="margin-top:10px">🎉 Gọi tên vui <span style="font-weight:600;opacity:.6">(hoạt hình toàn màn hình)</span></div>
+      <div class="gt-game-grid">
+        <button class="gt-game-btn" data-mode="vui:ufo" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🛸</span>UFO Bắt Cóc</button>
+        <button class="gt-game-btn" data-mode="vui:cop" onclick="GT2_selectGame(this)"><span class="gt-game-icon">👮</span>Công An Kiểm Tra</button>
+        <button class="gt-game-btn" data-mode="vui:fish" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🎣</span>Câu Cá</button>
+        <button class="gt-game-btn" data-mode="vui:ball" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🎈</span>Bắn Bóng Bay</button>
+        <button class="gt-game-btn" data-mode="vui:hen" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🐔</span>Gà Đẻ Trứng</button>
+        <button class="gt-game-btn" data-mode="vui:claw" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🧸</span>Máy Gắp Thú</button>
+        <button class="gt-game-btn" data-mode="vui:rocket" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🚀</span>Phóng Tên Lửa</button>
       </div>
     </div>
 
@@ -2641,7 +2640,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
                   <rect x="10" y="4" width="44" height="56" rx="4" fill="#fef2f2" stroke="#ef4444" stroke-width="2.5"/>
                   <path d="M34,4 L54,4 L54,22 L34,22 Z" fill="#ef4444" opacity=".2"/>
                   <polyline points="34,4 34,22 54,22" fill="none" stroke="#ef4444" stroke-width="2"/>
-                  <rect x="10" y="44" width="44" height="16" rx="0 0 4 4" fill="#ef4444"/>
+                  <rect x="10" y="44" width="44" height="16" rx="3" fill="#ef4444"/>
                   <text x="32" y="56" text-anchor="middle" font-size="9" font-weight="900" fill="#fff" font-family="Segoe UI,sans-serif">PDF</text>
                   <line x1="18" y1="32" x2="46" y2="32" stroke="#ef4444" stroke-width="2" stroke-linecap="round" opacity=".5"/>
                   <line x1="18" y1="40" x2="38" y2="40" stroke="#ef4444" stroke-width="2" stroke-linecap="round" opacity=".5"/>
@@ -4821,6 +4820,7 @@ function GT2_selectGame(el){
   document.querySelectorAll('.gt-game-btn').forEach(b=>b.classList.remove('sel'));
   el.classList.add('sel');
   GT2.gameMode = el.dataset.mode;
+  try{localStorage.setItem('gt_mode',GT2.gameMode);}catch(e){}
 }
 
 function GT2_resetSession(){
@@ -4872,6 +4872,8 @@ function GT2_play(){
 
   if(GT2.gameMode === 'fast'){
     GT2_callStudent(student, students);
+  } else if(String(GT2.gameMode).startsWith('vui:')){
+    GT2_runVui(GT2.gameMode.slice(4), student, students);
   } else {
     GT2_runAnimation(GT2.gameMode, student, students);
   }
@@ -5941,18 +5943,38 @@ function saveAskName(e){
 window.addEventListener('load',()=>{ if(needAskName()){ const o=document.getElementById('ask-name'); o.hidden=false; setTimeout(()=>document.getElementById('askn-name').focus(),50);} });
 </script>
 <script>
-/* Chuyển giữa Gọi tên nhanh / Gọi tên vui */
-function GT_view(v){
-  document.querySelectorAll('.gt-mb').forEach(b=>b.classList.toggle('on',b.dataset.v===v));
-  document.getElementById('gt-nhanh').hidden=v!=='nhanh';
-  const box=document.getElementById('gt-vui'),fr=document.getElementById('gt-vui-frame');
-  box.hidden=v!=='vui';
-  if(v==='vui') fr.src='goiten_vui.html?'+Date.now();   // tải lại để lấy danh sách mới nhất
-  else fr.removeAttribute('src');
-  try{localStorage.setItem('gt_view',v);}catch(e){}
+/* Gọi tên vui (UFO, Công an, Máy gắp thú…) chạy ngay trong trang Gọi tên học sinh:
+   dùng chung danh sách sổ điểm, "đã gọi", thẻ nhận xét của Gọi tên nhanh. */
+(function(){
+  const m=(()=>{try{return localStorage.getItem('gt_mode')}catch(e){return null}})();
+  const pick=document.querySelector(`.gt-game-btn[data-mode="${m||'fast'}"]`)||document.querySelector('.gt-game-btn[data-mode="fast"]');
+  if(pick){document.querySelectorAll('.gt-game-btn').forEach(b=>b.classList.remove('sel'));pick.classList.add('sel');GT2.gameMode=pick.dataset.mode;}
+})();
+function GT2_vuiLabels(all){const c={};all.forEach(s=>c[s.ten]=(c[s.ten]||0)+1);const L={};all.forEach((s,i)=>L[s.id]=c[s.ten]>1?`${s.ten} (${i+1})`:s.ten);return L;}
+function GT2_runVui(kind,winner,all){
+  let ov=document.getElementById('gt-vui-ov');
+  if(!ov){ov=document.createElement('div');ov.id='gt-vui-ov';
+    ov.style.cssText='position:fixed;inset:0;z-index:9000;background:#0f172a;display:none';
+    ov.innerHTML='<iframe title="Gọi tên vui" allow="fullscreen" allowfullscreen style="width:100%;height:100%;border:0;display:block"></iframe><button type="button" style="position:absolute;top:8px;right:8px;z-index:2;border:0;border-radius:10px;padding:8px 14px;font-weight:800;background:#ef4444;color:#fff;cursor:pointer">✕ Đóng</button>';
+    document.body.appendChild(ov);
+    ov.querySelector('button').onclick=()=>{const v=GT2.vui;if(v&&!GT2.calledIds.has(v.winner.id))GT2.queue.unshift(v.winner.id);GT2.vui=null;GT2.animating=false;ov.style.display='none';const f=ov.querySelector('iframe');f.removeAttribute('src');f.dataset.ready='';};
+  }
+  const fr=ov.querySelector('iframe'),L=GT2_vuiLabels(all);
+  GT2.animating=true;GT2.vui={winner,all,kind};ov.style.display='block';
+  const msg={type:'gtv-run',mode:kind,names:all.map(s=>L[s.id]),used:all.filter(s=>GT2.calledIds.has(s.id)).map(s=>L[s.id]),pick:L[winner.id]};
+  if(fr.dataset.ready==='1')fr.contentWindow.postMessage(msg,'*');
+  else{GT2.vuiPending=msg;fr.src='goiten_vui.html?remote=1';}
 }
-document.addEventListener('DOMContentLoaded',()=>{try{if(localStorage.getItem('gt_view')==='vui')GT_view('vui');}catch(e){}});
+window.addEventListener('message',e=>{
+  const ov=document.getElementById('gt-vui-ov'),fr=ov&&ov.querySelector('iframe');if(!fr||e.source!==fr.contentWindow)return;const d=e.data||{};
+  if(d.type==='gtv-ready'){fr.dataset.ready='1';if(GT2.vuiPending){fr.contentWindow.postMessage(GT2.vuiPending,'*');GT2.vuiPending=null;}}
+  if(d.type==='gtv-done'&&GT2.vui){const v=GT2.vui;GT2.vui=null;GT2.animating=false;GT2_callStudent(v.winner,v.all);
+    if(d.next)GT2_play();else ov.style.display='none';}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){const ov=document.getElementById('gt-vui-ov');if(ov&&ov.style.display==='block')ov.querySelector('button').click();}});
 </script>
+<script src="eduhub_demo.js"></script>
+<script>EHDemo.box(document.getElementById('ehd-box'));</script>
 <script src="eduhub_backup.js"></script>
 <script src="eduhub_search.js"></script>
 <script src="eduhub_pwa.js"></script>

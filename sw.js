@@ -1,7 +1,7 @@
 /* EduTeacher Hub – Service Worker (tạo tự động bằng tools/tao_sw.py – không sửa tay)
    • Mở một lần khi có mạng → các trang đã mở dùng được khi mất mạng.
    • Nút “Tải sẵn để dùng offline” → tải toàn bộ công cụ về máy. */
-const VERSION = '202381387c';
+const VERSION = 'e22bfcb2fb';
 const CACHE = 'eduhub-' + VERSION;
 const CORE = ["./", "index.html", "dashboard.html", "manifest.webmanifest", "eduhub_backup.js", "eduhub_search.js", "eduhub_pwa.js", "icons/icon-192.png"];
 const FILES = [
@@ -37,6 +37,7 @@ const FILES = [
 "eduhub_backup.js",
 "eduhub_canvasfit.js",
 "eduhub_data.js",
+"eduhub_demo.js",
 "eduhub_pwa.js",
 "eduhub_search.js",
 "eduhub_sheet.js",
@@ -176,9 +177,12 @@ const FILES = [
 "tienphong/img/cat-vit.png",
 "tienphong/img/favicon-48.png",
 "tienphong/js/bai-tap.js",
+"tienphong/js/bank-classic.js",
 "tienphong/js/bank-toan6.js",
 "tienphong/js/lessons.js",
+"tienphong/js/math-fmt-classic.js",
 "tienphong/js/math-fmt.js",
+"tienphong/js/tp-gate.bundle.js",
 "tienphong/js/tp-gate.js",
 "tienphong/js/tp-journey.js",
 "tienphong/soan-cau-hoi.html",

@@ -63,8 +63,12 @@ body{background:radial-gradient(ellipse at 40% 35%,#1e3a8a 0%,#172554 45%,#02061
   </div>
   <div class="ladder" id="ladder"></div>
 </div>
-<script type="module">
-import { setup, ask, tools, SFX, $, $$, esc, wait, pick, store, confetti, classNames, L4 } from "./core.js";
+<script src="../tienphong/js/bank-classic.js"></script>
+<script src="../tienphong/js/math-fmt-classic.js"></script>
+<script src="core.js"></script>
+<script>
+(async () => {
+const { setup, ask, tools, SFX, $, $$, esc, wait, pick, store, confetti, classNames, L4 } = OT;
 tools();
 const PRIZE = [200, 400, 600, 1000, 2000, 3000, 6000, 10000, 14000, 22000, 30000, 40000, 80000, 150000, 250000].map(x => x * 1000);
 const SAFE = [4, 9, 14];
@@ -136,6 +140,7 @@ $("#go").onclick = play;
 $("#stop").onclick = () => { if (confirm(`Dừng cuộc chơi và mang về ${vnd(k ? PRIZE[k - 1] : 0)}?`)) finish(k ? PRIZE[k - 1] : 0, true); };
 document.addEventListener("keydown", e => { if ((e.key === "Enter" || e.code === "Space") && !$(".ot-q") && !over && !$(".ot-setup")) { e.preventDefault(); play(); } });
 drawLadder(); SFX.win();
+})();
 </script>
 </body>
 </html>

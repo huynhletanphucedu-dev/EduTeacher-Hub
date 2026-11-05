@@ -1688,14 +1688,16 @@ function exportExcel(){
 }
 
 /* Init when page is shown */
-const _origShowPage = showPage;
-showPage = function(pageId, el, section, page){
-  _origShowPage(pageId, el, section, page);
-  if(pageId==='gd-sodiem') sdInit();
-};
-
-// Init on load if gd-sodiem is active
-if(document.getElementById('gd-sodiem').classList.contains('active')) sdInit();
+if(typeof showPage==='function'){
+  const _origShowPage = showPage;
+  showPage = function(pageId, el, section, page){
+    _origShowPage(pageId, el, section, page);
+    if(pageId==='gd-sodiem') sdInit();
+  };
+}
+// Mở riêng trang này (không nằm trong dashboard) hoặc trang đang hiện → khởi tạo luôn
+const _gs=document.getElementById('gd-sodiem');
+if(typeof showPage!=='function'||!_gs||_gs.classList.contains('active')) sdInit();
 
 
 // Init

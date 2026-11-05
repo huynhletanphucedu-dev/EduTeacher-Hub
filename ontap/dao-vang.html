@@ -20,8 +20,12 @@ body{background:#78350f}
 <canvas id="cv"></canvas>
 <div class="ctl" hidden id="ctl"><button class="drop" id="drop">⛏️ THẢ MÓC <small style="opacity:.7">(Space)</small></button></div>
 <div class="info" id="info"></div>
-<script type="module">
-import { setup, ask, tools, SFX, board, toast, podium, $, rnd, pick, wait, tone } from "./core.js";
+<script src="../tienphong/js/bank-classic.js"></script>
+<script src="../tienphong/js/math-fmt-classic.js"></script>
+<script src="core.js"></script>
+<script>
+(async () => {
+const { setup, ask, tools, SFX, board, toast, podium, $, rnd, pick, wait, tone } = OT;
 tools();
 const { cfg, questions, teams } = await setup({
   id: "daovang", icon: "⛏️", title: "Đào Vàng", teams: { min: 2, max: 6, def: 4 }, count: { def: 12, opts: [8, 12, 16, 20] },
@@ -154,6 +158,7 @@ $("#drop").onclick = drop;
 cv.addEventListener("pointerdown", e => { if (e.target === cv) drop(); });
 addEventListener("keydown", e => { if (e.code === "Space" && !document.querySelector(".ot-q,.ot-end")) { e.preventDefault(); drop(); } });
 $("#ctl").hidden = false; updInfo(); requestAnimationFrame(loop);
+})();
 </script>
 </body>
 </html>

@@ -4,6 +4,11 @@ import os, hashlib, json, pathlib
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SKIP_DIR = {'.git', '_to_delete', 'tools', 'node_modules', '.vscode', '_rieng_tu', 'Claude outputs'}
 SKIP_EXT = {'.docx', '.doc', '.sh', '.gs', '.md', '.py', '.map', '.txt'}
+# Cập nhật bản script thường của Ngân hàng câu hỏi (cho trò chơi chạy khi mở file trực tiếp)
+try:
+    import sys; sys.path.insert(0, str(ROOT / 'tools')); import tao_bank_classic; tao_bank_classic.build()
+except Exception as e:
+    print('Bỏ qua bank-classic:', e)
 files, h = [], hashlib.sha1()
 # Chỉ lấy các file sẽ thật sự đưa lên web: bỏ mọi thứ nằm trong .gitignore (dữ liệu riêng, hồ sơ…)
 try:

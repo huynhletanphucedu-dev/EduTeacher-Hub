@@ -15,3 +15,4 @@ _to_delete/
 # Dữ liệu học sinh – KHÔNG đưa lên GitHub
 _rieng_tu/
 Claude outputs/
+__pycache__/

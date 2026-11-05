@@ -27,8 +27,12 @@ body{background:#0369a1}
 <canvas id="cv"></canvas>
 <div class="qp" id="qp" hidden></div>
 <button class="start" id="start" hidden>🎣 Câu hỏi đầu tiên</button>
-<script type="module">
-import { setup, tools, SFX, board, toast, podium, $, $$, esc, rnd, pick, wait, tone, L4 } from "./core.js";
+<script src="../tienphong/js/bank-classic.js"></script>
+<script src="../tienphong/js/math-fmt-classic.js"></script>
+<script src="core.js"></script>
+<script>
+(async () => {
+const { setup, tools, SFX, board, toast, podium, $, $$, esc, rnd, pick, wait, tone, L4 } = OT;
 tools();
 const { cfg, questions, teams } = await setup({
   id: "batca", icon: "🐟", title: "Bắt Cá", teams: { min: 2, max: 6, def: 4 }, count: { def: 12, opts: [8, 12, 16, 20] },
@@ -128,6 +132,7 @@ cv.addEventListener("pointerdown", e => {
 addEventListener("keydown", e => { if (phase === "ask") { const i = L4.indexOf(e.key.toUpperCase()); if (i >= 0) choose(ans[i]); } else if ((e.key === "Enter" || e.code === "Space") && $("#nx")) { e.preventDefault(); $("#nx").click(); } });
 $("#start").hidden = false; $("#start").onclick = () => { $("#start").remove(); showQ(); };
 requestAnimationFrame(loop);
+})();
 </script>
 </body>
 </html>

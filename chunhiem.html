@@ -1123,6 +1123,7 @@ function renderSeating(){
   const rows=parseInt(document.getElementById('seat-rows').value)||6;
   const ds=parseInt(document.getElementById('seat-desk-size').value)||4;
   seatLayout=document.querySelector('#layout-radio input:checked').value;
+  STORE.set('seatLayout',{layout:seatLayout,rows,ds}); // nhớ kiểu sơ đồ (Thẻ Hiệp Sĩ dùng để vẽ đúng chỗ ngồi)
   const grid=document.getElementById('classroom-grid');
 
   let html='<div class="teacher-row">🎓 BẢNG / GIÁO VIÊN</div>';
@@ -1240,6 +1241,7 @@ function renderSeatStudentList(){
 
 document.getElementById('seat-stu-search').addEventListener('input',renderSeatStudentList);
 document.getElementById('btn-build-seat').addEventListener('click',renderSeating);
+(function(){const L=STORE.get('seatLayout');if(!L)return;const r=document.querySelector(`#layout-radio input[value="${L.layout}"]`);if(r&&!r.checked)r.click();if(L.rows)document.getElementById('seat-rows').value=L.rows;if(L.ds)document.getElementById('seat-desk-size').value=L.ds;})();
 document.getElementById('btn-clear-seat').addEventListener('click',()=>{ if(confirm('Xóa toàn bộ chỗ ngồi?')){currentSeating={};save();renderSeating();} });
 document.getElementById('btn-random-seat').addEventListener('click',()=>{
   currentSeating={};

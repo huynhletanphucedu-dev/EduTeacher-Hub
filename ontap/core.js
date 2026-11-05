@@ -2,28 +2,28 @@
 //  • Nguồn câu hỏi: Ngân hàng Toán 6 (685 câu), câu hỏi game của thầy/cô (tp_custom_q), hoặc dán nhanh.
 //  • Đội chơi: tự đặt tên, hoặc lấy từ kết quả Chia nhóm gần nhất.
 //  • Bảng câu hỏi to cho máy chiếu, hẹn giờ, âm thanh, bảng điểm, bục vinh quang.
-import { BANK_T6 } from "../tienphong/js/bank-toan6.js";
-import { SUBJECTS } from "../tienphong/js/lessons.js";
-import "../tienphong/js/math-fmt.js";
+// Cần nạp trước: ../tienphong/js/bank-classic.js và ../tienphong/js/math-fmt-classic.js (script thường → chạy được cả khi mở file trực tiếp)
+(function () {
+const BANK_T6 = window.BANK_T6 || {}, SUBJECTS = window.SUBJECTS || [];
 
-export const $ = (s, r = document) => r.querySelector(s);
-export const $$ = (s, r = document) => [...r.querySelectorAll(s)];
-export const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-export const wait = ms => new Promise(r => setTimeout(r, ms));
-export const rnd = (a, b) => a + Math.random() * (b - a);
-export const pick = a => a[Math.floor(Math.random() * a.length)];
-export const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-export const store = {
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const rnd = (a, b) => a + Math.random() * (b - a);
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } }
 };
-export const COLORS = ["#e11d48", "#2563eb", "#d97706", "#16a34a", "#7c3aed", "#0891b2"];
-export const L4 = ["A", "B", "C", "D"];
+const COLORS = ["#e11d48", "#2563eb", "#d97706", "#16a34a", "#7c3aed", "#0891b2"];
+const L4 = ["A", "B", "C", "D"];
 const OPTC = ["var(--A)", "var(--B)", "var(--C)", "var(--D)"];
 
 /* ───────── âm thanh (tự tạo, không cần file) ───────── */
 let AC = null, SOUND = store.get("ot_sound", true);
-export function tone(f, d = .15, type = "sine", v = .15, slide = 0, delay = 0) {
+function tone(f, d = .15, type = "sine", v = .15, slide = 0, delay = 0) {
   if (!SOUND) return;
   try {
     AC = AC || new (window.AudioContext || window.webkitAudioContext)();
@@ -33,7 +33,7 @@ export function tone(f, d = .15, type = "sine", v = .15, slide = 0, delay = 0) {
     o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d + .02);
   } catch (e) { }
 }
-export const SFX = {
+const SFX = {
   click: () => tone(660, .06, "square", .06),
   ok: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, .22, "triangle", .16, 0, i * .09)),
   bad: () => { tone(220, .25, "sawtooth", .12, 140); tone(150, .35, "sawtooth", .1, 90, .2); },
@@ -44,7 +44,7 @@ export const SFX = {
 };
 
 /* ───────── thanh công cụ nổi ───────── */
-export function tools(extra = "") {
+function tools(extra = "") {
   const d = document.createElement("div"); d.className = "ot-tools";
   d.innerHTML = `${extra}<button id="otSnd" title="Âm thanh">${SOUND ? "🔊" : "🔇"}</button><button id="otFs" title="Toàn màn hình">⛶</button><a href="../dashboard.html" title="Về EduTeacher Hub">🏠 <span class="l">Hub</span></a>`;
   document.body.appendChild(d);
@@ -65,7 +65,7 @@ function parseOwn(txt) {
   return txt.split(/\r?\n/).map(l => l.split(/\s*[|\t]\s*/).map(s => s.trim())).filter(p => p.length >= 3 && p[0] && p[1])
     .map(p => ({ q: p[0], a: p[1], w: p.slice(2, 5) }));
 }
-export function getQuestions(cfg) {
+function getQuestions(cfg) {
   let raw = [];
   if (cfg.src === "bank") (cfg.lessons.length ? cfg.lessons : LESSONS.map(b => b.bai)).forEach(b => raw.push(...(BANK_T6[b] || [])));
   else if (cfg.src === "custom") raw = (store.get("tp_custom_q", []) || []).filter(x => x && x.q && x.a);
@@ -90,7 +90,7 @@ function lastGroups() {
 
 /* ───────── màn hình thiết lập ─────────
    o = {id, icon, title, desc, teams:{min,max,def}|null, count:{def,opts}, timer:true, extra:html, bg} → Promise<cfg>  */
-export function setup(o) {
+function setup(o) {
   const K = "ot_cfg_" + o.id;
   const cfg = Object.assign({ src: "bank", lessons: [], count: o.count?.def ?? 10, own: "", timer: 0, nTeams: o.teams?.def || 0, teamNames: [], members: [] }, store.get(K, {}));
   if (o.fixedCount) cfg.count = o.fixedCount;
@@ -184,7 +184,7 @@ function reveal(ov, q, choice) {
   ok ? SFX.ok() : SFX.bad();
   return ok;
 }
-export function ask(q, o = {}) {
+function ask(q, o = {}) {
   return new Promise(res => {
     const ov = document.createElement("div"); ov.className = "ot-q"; ov.innerHTML = qHTML(q, o.title, o.team, o.timer); document.body.appendChild(ov);
     let done = false, sel = null;
@@ -210,7 +210,7 @@ export function ask(q, o = {}) {
     if (o.lifelines) o.lifelines(ov, q);
   });
 }
-export function askAll(q, o = {}) {
+function askAll(q, o = {}) {
   return new Promise(res => {
     const ov = document.createElement("div"); ov.className = "ot-q"; ov.innerHTML = qHTML(q, o.title, null, o.timer); document.body.appendChild(ov);
     $$(".ot-opt", ov).forEach(b => b.style.cursor = "default");
@@ -231,20 +231,20 @@ export function askAll(q, o = {}) {
 }
 
 /* ───────── bảng điểm ───────── */
-export function board(teams) {
+function board(teams) {
   let el = $(".ot-board"); if (!el) { el = document.createElement("div"); el.className = "ot-board"; document.body.appendChild(el); }
   const draw = (turn = -1, bump = -1) => {
     el.innerHTML = teams.map((t, i) => `<div class="ot-sc${i === turn ? " turn" : ""}${i === bump ? " bump" : ""}" style="--c:${t.color}"><i>${i + 1}</i><span class="n" title="${esc(t.name)}">${esc(t.name)}</span><span class="p">${t.score}</span></div>`).join("");
   };
   draw(); return { draw, el };
 }
-export function toast(html, color = "#0f172a") { const d = document.createElement("div"); d.className = "ot-toast"; d.style.color = color; d.innerHTML = html; document.body.appendChild(d); setTimeout(() => d.remove(), 1900); }
-export function confetti(n = 120) {
+function toast(html, color = "#0f172a") { const d = document.createElement("div"); d.className = "ot-toast"; d.style.color = color; d.innerHTML = html; document.body.appendChild(d); setTimeout(() => d.remove(), 1900); }
+function confetti(n = 120) {
   const C = ["#f43f5e", "#f59e0b", "#10b981", "#3b82f6", "#a855f7", "#fde047"];
   for (let i = 0; i < n; i++) { const c = document.createElement("i"); c.className = "ot-conf"; c.style.left = Math.random() * 100 + "vw"; c.style.background = C[i % 6]; c.style.animationDuration = rnd(1.8, 3.6) + "s"; c.style.animationDelay = rnd(0, .6) + "s"; document.body.appendChild(c); setTimeout(() => c.remove(), 4400); }
 }
 /* bục vinh quang: teams đã có score; unit = "điểm" */
-export function podium(teams, o = {}) {
+function podium(teams, o = {}) {
   const order = teams.slice().sort((a, b) => b.score - a.score);
   const top = order.slice(0, 3), arr = top.length === 3 ? [top[1], top[0], top[2]] : top.length === 2 ? [top[1], top[0]] : top;
   const H = { 0: 200, 1: 140, 2: 100 }, M = ["🥇", "🥈", "🥉"];
@@ -259,10 +259,13 @@ export function podium(teams, o = {}) {
   return d;
 }
 /* tên học sinh (để "gọi bạn trợ giúp", chọn người chơi) */
-export function classNames() {
+function classNames() {
   const cn = (store.get("cn_students", []) || []).map(x => (x.hoTen || "").trim()).filter(Boolean);
   if (cn.length) return cn;
   const sd = store.get("etv1_sodiem_v2", { books: [] }) || { books: [] };
   for (const b of sd.books || []) { const n = ((b.hk1 && b.hk1.students) || []).map(s => (s.ten || "").trim()).filter(Boolean); if (n.length) return n; }
   return [];
 }
+
+window.OT = { $, $$, esc, wait, rnd, pick, shuffle, store, COLORS, L4, tone, SFX, tools, getQuestions, setup, ask, askAll, board, toast, confetti, podium, classNames };
+})();

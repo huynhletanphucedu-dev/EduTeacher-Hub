@@ -138,12 +138,12 @@
   <section data-p="print" hidden>
     <div class="card">
       <div class="row">
-        <div class="f s"><label>Khổ</label><select id="perPage"><option value="2">2 thẻ / trang A4 (mã to – lớp rộng, quét xa)</option><option value="4">4 thẻ / trang A4 (tiết kiệm giấy)</option></select></div>
+        <div class="f s"><label>Khổ</label><select id="perPage"><option value="1">1 thẻ / trang A4 – mã rất to (quét xa ~5,5 m)</option><option value="2" selected>2 thẻ / trang A4 – khuyên dùng (quét ~4 m)</option><option value="4">4 thẻ / trang A4 – tiết kiệm giấy (quét ~2,5 m)</option></select></div>
         <div class="f s"><label>&nbsp;</label><button class="btn" id="printAll">🖨️ In thẻ cả lớp</button></div>
         <div class="f"><label>In lại thẻ của 1 em</label><div class="btns"><select id="printOne" style="flex:1"></select><button class="btn l" id="printOneBtn">🖨️ In</button></div></div>
       </div>
       <div class="cardprev" id="cardPrev"></div>
-      <div class="hint">📌 Mỗi em một mã <b>cố định theo STT</b> trong lớp – dùng cả năm học. Giơ thẻ sao cho <b>chữ đáp án em chọn nằm ở cạnh trên</b>. In trên giấy trắng, dày càng tốt (bìa cứng 180–250 g/m²), không ép plastic bóng (dễ lóa đèn).</div>
+      <div class="hint">📌 Mỗi em một mã <b>cố định theo STT</b> trong lớp – dùng cả năm học. Giơ thẻ sao cho <b>chữ đáp án em chọn nằm ở cạnh trên</b>. In trên giấy trắng, dày càng tốt (bìa cứng 180–250 g/m²), không ép plastic bóng (dễ lóa đèn).<br>📷 <b>Khoảng cách quét</b> ghi trong ô Khổ là với camera Full HD (điện thoại, webcam 1080p), lớp đủ sáng. Webcam laptop 720p chỉ được khoảng 2/3. Lớp sâu thì thầy/cô <b>cầm điện thoại đi dọc lối giữa</b> mà quét (giống Plickers) – mở trang này trên điện thoại, camera sau tự bật.</div>
     </div>
   </section>
 
@@ -221,7 +221,8 @@ function fromBank(b){
   ord.forEach((src,pos)=>{if(src===0)return;const h=b.h&&b.h[all[src]];if(h){const t=String(h[1]||'').split(/(?<=[.!?])\s/)[0];errors[L4[pos]]=(t||h[0]).replace(/\s*(em|nhé|nha)\s*[.!]?$/i,'').trim();}});
   return {text:b.q,opts,correct,errors,explain:b.g||''};
 }
-import('./tienphong/js/bank-toan6.js').then(m=>{BANK=m.BANK_T6;return import('./tienphong/js/lessons.js');}).then(m=>{LESSONS=((m.SUBJECTS||[])[0]||{}).bai||[];EDS.forEach(e=>e.fillLessons());}).catch(e=>console.warn('Không tải được ngân hàng',e));
+(()=>{const sc=document.createElement('script');sc.src='tienphong/js/bank-classic.js'; // script thường: chạy được cả khi mở file trực tiếp
+  sc.onload=()=>{BANK=window.BANK_T6||null;LESSONS=((window.SUBJECTS||[])[0]||{}).bai||[];EDS.forEach(e=>e.fillLessons());};sc.onerror=()=>console.warn('Không tải được ngân hàng');document.head.appendChild(sc);})();
 const EDS=[];
 
 /* ═════════════ CHẾ ĐỘ QUÉT ═════════════ */
@@ -333,19 +334,30 @@ function colorFor(s,l){
   if(s.mode==='tudanhgia')return TDGC[L4.indexOf(l)];
   return LC[L4.indexOf(l)];
 }
+function seatFor(s){ // sơ đồ chỗ ngồi từ Chủ nhiệm → Sơ đồ lớp; lớp sổ điểm thì khớp theo họ tên
+  const seat=ED.get('cn_curSeating',{})||{},cn=ED.get('cn_students',[])||[];if(!Object.keys(seat).length)return null;
+  const N=t=>String(t||'').normalize('NFC').toLowerCase().replace(/\s+/g,' ').trim();
+  const byName={};Object.entries(s.names).forEach(([id,v])=>{byName[N(v.split('|').slice(1).join('|'))]=id;});
+  const out={};let n=0;
+  Object.entries(seat).forEach(([k,sid])=>{let id=null;if(s.cls==='cn'&&s.names[String(sid)])id=String(sid);else{const st=cn.find(x=>String(x.id)===String(sid));if(st)id=byName[N(st.hoTen)];}if(id){out[k]=id;n++;}});
+  return n>=Math.max(3,Object.keys(s.names).length*.5)?out:null;
+}
 function mapHTML(s,hideNames){
-  // Sơ đồ chỗ ngồi (lớp chủ nhiệm) – nếu chưa có thì xếp theo STT, 8 chỗ/hàng
-  const ids=Object.keys(s.names);let rows=[];const seat=s.cls==='cn'?ED.get('cn_curSeating',{}):{};
-  const keys=Object.keys(seat||{}).filter(k=>ids.includes(String(seat[k])));
+  // Sơ đồ chỗ ngồi (Chủ nhiệm → Sơ đồ lớp). Chưa có sơ đồ thì xếp theo STT, 8 chỗ/hàng
+  const ids=Object.keys(s.names);let rows=[];const seat=seatFor(s);
   const cell=id=>{const l=s.resp[id];const lab=hideNames?sttOf(s,id):(nameOf(s,id).split(/\s+/).pop());
     return `<div class="seat" style="background:${colorFor(s,l)}" title="${esc(sttOf(s,id)+'. '+nameOf(s,id))}${l?' – '+l:''}">${esc(lab)}${l&&s.mode!=='diemdanh'&&!hideNames?`<span class="a">${l}</span>`:''}</div>`};
-  if(keys.length){
-    let R=0,C=0;keys.forEach(k=>{const [r,c]=k.split('_').map(Number);R=Math.max(R,r);C=Math.max(C,c);});C++;
-    const aisles=C===8?[2,4,6]:[Math.ceil(C/2)];
-    for(let r=0;r<=R;r++){let h='';for(let c=0;c<C;c++){if(aisles.includes(c))h+='<div class="gap"></div>';const id=seat[r+'_'+c];h+=id&&ids.includes(String(id))?cell(String(id)):'<div class="seat e"></div>';}rows.push(h);}
-    const placed=new Set(keys.map(k=>String(seat[k])));const rest=ids.filter(i=>!placed.has(i));
-    if(rest.length)rows.push('<div style="flex-basis:100%;font-size:.75rem;color:var(--muted)">Chưa xếp chỗ:</div>'),rest.reduce((a,id,i)=>{(a[Math.floor(i/8)]=a[Math.floor(i/8)]||[]).push(id);return a;},[]).forEach(g=>rows.push(g.map(cell).join('')));
-  } else ids.sort((a,b)=>sttOf(s,a)-sttOf(s,b)).reduce((a,id,i)=>{(a[Math.floor(i/8)]=a[Math.floor(i/8)]||[]).push(id);return a;},[]).forEach(g=>rows.push(g.map(cell).join('')));
+  const byStt=list=>list.sort((a,b)=>sttOf(s,a)-sttOf(s,b)).reduce((a,id,i)=>{(a[Math.floor(i/8)]=a[Math.floor(i/8)]||[]).push(id);return a;},[]);
+  if(seat){
+    const keys=Object.keys(seat);let R=0,C=0;keys.forEach(k=>{const [r,c]=k.split('_').map(Number);R=Math.max(R,r);C=Math.max(C,c);});
+    const L=ED.get('cn_seatLayout',null)||{};let aisles;
+    if(L.layout==='4day'){C=8;aisles=[2,4,6];}
+    else{const ds=L.ds||(C>=8?5:4);C=Math.max(C+1,ds*2);aisles=[ds];}
+    if(L.rows)R=Math.max(R,L.rows-1);
+    for(let r=0;r<=R;r++){let h='';for(let c=0;c<C;c++){if(aisles.includes(c))h+='<div class="gap"></div>';const id=seat[r+'_'+c];h+=id?cell(id):'<div class="seat e"></div>';}rows.push(h);}
+    const placed=new Set(Object.values(seat));const rest=ids.filter(i=>!placed.has(i));
+    if(rest.length){rows.push('<div style="flex-basis:100%;font-size:.75rem;color:var(--muted)">Chưa xếp chỗ:</div>');byStt(rest).forEach(g=>rows.push(g.map(cell).join('')));}
+  } else byStt(ids.slice()).forEach(g=>rows.push(g.map(cell).join('')));
   return `<div class="map"><div class="board">🎓 BẢNG</div>${rows.map(r=>`<div class="mrow">${r}</div>`).join('')}</div>`;
 }
 function barsHTML(s){
@@ -471,7 +483,7 @@ function cardSVG(s,clsName){ // thẻ vuông 100×100: mã ở giữa, chữ A/B
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#fff"/>
     <g transform="translate(18 18) scale(8)">${markerRects(s.stt)}</g>
     ${L('A',50,7,0)}${L('B',93,50,90)}${L('C',50,93,180)}${L('D',7,50,270)}
-    <text x="4" y="97" font-size="3.2" font-family="Arial" fill="#475569">${esc(clsName)} · ${s.stt}. ${esc(s.hoTen)}</text>
+    <text x="3.5" y="93.6" font-size="3" font-family="Arial" fill="#475569">${esc(String(clsName).slice(0,10))} · số ${s.stt}</text><text x="3.5" y="97.6" font-size="3" font-family="Arial" font-weight="700" fill="#475569">${esc(s.hoTen.trim().split(/\s+/).slice(-2).join(' '))}</text>
     <text x="96" y="5.5" font-size="3.4" font-family="Arial" font-weight="700" text-anchor="end" fill="#475569">#${s.stt}</text></svg>`;
 }
 function renderPrint(){
@@ -480,11 +492,11 @@ function renderPrint(){
   $('#cardPrev').innerHTML=cardSVG(CLS.students[0],CLS.short||'');
 }
 function printCards(list){
-  const per=+$('#perPage').value,sz=per===2?'17cm':'9.4cm';
+  const per=+$('#perPage').value,sz=per===1?'19cm':per===2?'13.4cm':'9.4cm';
   const html=list.map(s=>`<div class="c">${cardSVG(s,CLS.short||'')}</div>`).join('');
-  ED.printHTML(`<div class="pg p${per}">${html}</div>`,`@page{size:A4;margin:8mm}.pg{display:grid;justify-content:center;gap:6mm}.p2{grid-template-columns:${sz}}.p4{grid-template-columns:${sz} ${sz}}
+  ED.printHTML(`<div class="pg p${per}">${html}</div>`,`@page{size:A4;margin:8mm}.pg{display:grid;justify-content:center;gap:6mm}.p1,.p2{grid-template-columns:${sz}}.p4{grid-template-columns:${sz} ${sz}}
     .c{width:${sz};height:${sz};break-inside:avoid;outline:0.3mm dashed #bbb;outline-offset:1.5mm}.c svg{width:100%;height:100%}
-    ${per===2?'.c:nth-child(2n){break-after:page}':'.c:nth-child(4n){break-after:page}'}`,'The Hiep Si '+(CLS.short||''));
+    ${per===1?'.c{break-after:page}':per===2?'.c:nth-child(2n){break-after:page}':'.c:nth-child(4n){break-after:page}'}`,'The Hiep Si '+(CLS.short||''));
 }
 $('#printAll').onclick=()=>CLS&&printCards(CLS.students);
 $('#printOneBtn').onclick=()=>{const s=CLS&&CLS.students.find(x=>x.id===$('#printOne').value);if(s)printCards([s]);};
