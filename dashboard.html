@@ -969,6 +969,46 @@ body.dark .sd-table tr:hover td{background:#162032;}
 .gt-btn-close-modal:hover{border-color:#64748b;}
 .gt-copy-ok{color:#10b981;font-size:.8rem;margin-top:6px;display:none;text-align:center;font-weight:700;}
 
+
+/* ── Gọi Tên Vui Nhộn ── */
+.vn-wrap{display:flex;flex-direction:column;height:100%}
+.vn-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 14px;background:var(--white);border-bottom:1px solid var(--border);font-size:.85rem;font-weight:700}
+.vn-bar select,.vn-mtools select{border:1.5px solid var(--border);border-radius:8px;padding:5px 8px;font:inherit;font-weight:600;background:var(--white);color:var(--text);max-width:260px}
+.vn-ck{display:flex;align-items:center;gap:5px;font-weight:600;cursor:pointer}
+.vn-info{font-weight:600;color:var(--muted);font-size:.78rem}
+.vn-b{padding:6px 12px!important;font-size:.82rem!important}
+.vn-manual{display:flex;gap:10px;padding:8px 14px;background:var(--white);border-bottom:1px solid var(--border)}
+.vn-manual[hidden]{display:none}
+.vn-manual textarea{flex:1;min-height:90px;border:1.5px solid var(--border);border-radius:10px;padding:8px;font:inherit;font-size:.85rem;resize:vertical;background:var(--white);color:var(--text)}
+.vn-hint{font-size:.76rem;color:var(--muted);margin-top:6px;line-height:1.4}
+.vn-frame{flex:1;position:relative;background:#111;min-height:0}
+.vn-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.vn-load[hidden]{display:none}
+.vn-load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-weight:700;pointer-events:none}
+.vn-modal{position:fixed;inset:0;z-index:9500;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.vn-modal[hidden]{display:none}
+.vn-mbox{background:var(--white);border-radius:16px;width:min(1000px,100%);max-height:92vh;display:flex;flex-direction:column;padding:16px 18px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.vn-mhead{display:flex;align-items:center;justify-content:space-between}
+.vn-mhead h3{font-size:1.05rem}
+.vn-mtools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:10px;font-size:.84rem;font-weight:700}
+.vn-tbl{overflow:auto;margin-top:10px;border:1px solid var(--border);border-radius:10px}
+.vn-tbl table{width:100%;border-collapse:collapse;font-size:.83rem}
+.vn-tbl th,.vn-tbl td{padding:6px 8px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
+.vn-tbl th{background:var(--bg);position:sticky;top:0}
+.vn-tbl td.r{white-space:normal;min-width:160px;color:var(--muted)}
+/* ghi chú trong Sổ điểm */
+.sd-note-dot{display:inline-block;margin-left:6px;font-size:.7rem;font-weight:800;background:#fef3c7;color:#92400e;border:1px solid #fcd34d;border-radius:999px;padding:0 6px;cursor:pointer;vertical-align:middle}
+.sd-notes-panel{margin-top:14px;border:1px solid var(--border);border-radius:12px;background:var(--white);overflow:hidden}
+.sd-notes-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;background:var(--bg);font-weight:800;font-size:.86rem}
+.sd-notes-head label{font-weight:600;font-size:.78rem;display:flex;gap:4px;align-items:center;cursor:pointer}
+.sd-notes-list{max-height:300px;overflow:auto}
+.sd-note{display:grid;grid-template-columns:minmax(120px,1.4fr) 54px 60px minmax(120px,1.6fr) 90px auto;gap:8px;align-items:center;padding:7px 14px;border-top:1px solid var(--border);font-size:.82rem}
+.sd-note.done{opacity:.5}.sd-note.done .nm{text-decoration:line-through}
+.sd-note .nm{font-weight:700}
+.sd-note .ok{color:var(--green);font-weight:800}.sd-note .no{color:var(--red);font-weight:800}
+.sd-note .why{color:var(--muted);font-size:.76rem}
+.sd-note button{border:1px solid var(--border);background:var(--white);border-radius:8px;padding:3px 8px;font-size:.75rem;cursor:pointer;color:var(--text)}
+@media(max-width:700px){.sd-note{grid-template-columns:1fr auto;}.sd-note .why,.sd-note .tm{display:none}}
 </style>
 <script src="lib/xlsx.full.min.js"></script>
 </head>
@@ -1005,6 +1045,9 @@ body.dark .sd-table tr:hover td{background:#162032;}
       </div>
       <div class="nav-sub-item" onclick="showPage('gd-giaobai',this,'Giảng Dạy','Giao Bài Tập')">
         <span class="si-dot"></span>Giao Bài Tập
+      </div>
+      <div class="nav-sub-item" onclick="showPage('gd-vuinhon',this,'Giảng Dạy','Gọi Tên Vui Nhộn')">
+        <span class="si-dot"></span>Gọi Tên Vui Nhộn
       </div>
     </div>
   </div>
@@ -1265,6 +1308,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
               <button class="sd-hk-btn" id="hk2-btn" onclick="switchHK(2)">Học Kỳ 2</button>
             </div>
             <button class="sd-undo-btn" id="sd-undo-btn" onclick="undoScore()" title="Hoàn tác (Ctrl+Z)" disabled>↩ Hoàn tác</button>
+            <button class="btn btn-ghost sd-btn" onclick="sdToggleNotes()" id="sd-notes-btn">📝 Ghi chú</button>
             <button class="btn btn-ghost sd-btn" onclick="showHistory()">📋 Lịch sử</button>
             <button class="btn btn-ghost sd-btn" onclick="exportExcel()">📤 Xuất Excel</button>
             <button class="btn btn-ghost sd-btn" style="color:var(--red)" onclick="openDeleteStudents()">👤 Xóa học sinh</button>
@@ -1289,6 +1333,13 @@ body.dark .sd-table tr:hover td{background:#162032;}
           <button class="btn btn-blue sd-btn" onclick="addStudent()">＋ Thêm học sinh</button>
         </div>
 
+        <!-- Ghi chú từ Gọi tên vui nhộn -->
+        <div class="sd-notes-panel" id="sd-notes-panel" style="display:none">
+          <div class="sd-notes-head"><span>📝 Ghi chú để cộng điểm</span><span style="flex:1"></span>
+            <label><input type="checkbox" id="sd-notes-hide" onchange="sdRenderNotes()" checked> Ẩn ghi chú đã xử lý</label>
+            <button class="btn btn-ghost sd-btn" onclick="sdClearDoneNotes()">🧹 Xóa ghi chú đã xử lý</button></div>
+          <div class="sd-notes-list" id="sd-notes-list"></div>
+        </div>
         <!-- History panel -->
         <div class="sd-history-panel" id="sd-history-panel" style="display:none">
           <div class="sd-history-head" onclick="toggleHistory()">
@@ -1335,16 +1386,6 @@ body.dark .sd-table tr:hover td{background:#162032;}
         <button class="gt-game-btn" data-mode="wheel" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🎡</span>Vòng Quay</button>
         <button class="gt-game-btn" data-mode="ball" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🎱</span>Lồng Cầu</button>
         <button class="gt-game-btn" data-mode="gift" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🎁</span>Hộp Quà</button>
-      </div>
-      <div class="gt-game-label" style="margin-top:10px">🎉 Gọi tên vui <span style="font-weight:600;opacity:.6">(hoạt hình toàn màn hình)</span></div>
-      <div class="gt-game-grid">
-        <button class="gt-game-btn" data-mode="vui:ufo" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🛸</span>UFO Bắt Cóc</button>
-        <button class="gt-game-btn" data-mode="vui:cop" onclick="GT2_selectGame(this)"><span class="gt-game-icon">👮</span>Công An Kiểm Tra</button>
-        <button class="gt-game-btn" data-mode="vui:fish" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🎣</span>Câu Cá</button>
-        <button class="gt-game-btn" data-mode="vui:ball" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🎈</span>Bắn Bóng Bay</button>
-        <button class="gt-game-btn" data-mode="vui:hen" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🐔</span>Gà Đẻ Trứng</button>
-        <button class="gt-game-btn" data-mode="vui:claw" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🧸</span>Máy Gắp Thú</button>
-        <button class="gt-game-btn" data-mode="vui:rocket" onclick="GT2_selectGame(this)"><span class="gt-game-icon">🚀</span>Phóng Tên Lửa</button>
       </div>
     </div>
 
@@ -1674,6 +1715,38 @@ body.dark .sd-table tr:hover td{background:#162032;}
     </div>
   </div>
 </div>
+
+    <!-- ── GD: Gọi Tên Vui Nhộn ── -->
+    <div class="page" id="gd-vuinhon" style="padding:0;height:calc(100vh - var(--top-h));overflow:hidden;">
+      <div class="vn-wrap">
+        <div class="vn-bar">
+          <label>📋 Danh sách <select id="vn-src"></select></label>
+          <label>🪑 Chỗ ngồi <select id="vn-seat"><option value="rand">Ngẫu nhiên</option><option value="map">Theo Sơ đồ lớp</option></select></label>
+          <label class="vn-ck" title="Dùng khi chỗ ngồi trong trò chơi bị ngược trái/phải so với lớp thật"><input type="checkbox" id="vn-flip"> ↔ Đảo trái/phải</label>
+          <span class="vn-info" id="vn-info"></span>
+          <span style="flex:1"></span>
+          <button class="btn btn-ghost vn-b" id="vn-res">📝 Kết quả phiên <b id="vn-cnt">0</b></button>
+          <button class="btn btn-ghost vn-b" id="vn-full">⛶ Toàn màn hình</button>
+        </div>
+        <div class="vn-manual" id="vn-manual" hidden>
+          <textarea id="vn-names" placeholder="Dán danh sách học sinh – mỗi dòng một em (dán thẳng từ Excel được). Tối đa 48 em."></textarea>
+          <div><button class="btn btn-blue vn-b" id="vn-save-names">✔ Dùng danh sách này</button><div class="vn-hint">Danh sách được lưu lại trên máy cho lần sau.</div></div>
+        </div>
+        <div class="vn-frame" id="vn-box"><iframe id="vn-frame" title="Gọi tên vui nhộn" allow="fullscreen; autoplay" allowfullscreen></iframe><div class="vn-load" id="vn-load">⏳ Đang tải trò chơi (lần đầu hơi lâu, các lần sau sẽ nhanh)…</div></div>
+      </div>
+      <div class="vn-modal" id="vn-modal" hidden><div class="vn-mbox">
+        <div class="vn-mhead"><h3>📝 Kết quả phiên gọi tên</h3><button class="btn btn-ghost vn-b" id="vn-mclose">✕</button></div>
+        <div class="vn-mtools">
+          <label>Chuyển vào sổ <select id="vn-book"></select></label>
+          <label class="vn-ck"><input type="checkbox" id="vn-only" checked> Chỉ các em đã chấm ✔/✘ hoặc có điểm</label>
+          <button class="btn btn-blue vn-b" id="vn-move">📒 Chuyển sang Sổ điểm (ghi chú)</button>
+          <button class="btn btn-ghost vn-b" id="vn-xls">⬇️ Xuất Excel</button>
+          <button class="btn btn-ghost vn-b" id="vn-clear" style="color:var(--red)">🗑 Xóa kết quả phiên</button>
+        </div>
+        <div class="vn-hint">Kết quả <b>không tự ghi điểm</b>. Khi chuyển sang Sổ điểm, mỗi em được thêm một <b>ghi chú</b> (mở Sổ điểm → 📝 Ghi chú) để thầy/cô xem và tự cộng điểm.</div>
+        <div class="vn-tbl"><table><thead><tr><th>#</th><th>Học sinh</th><th>Trò chơi</th><th>Kết quả</th><th>Điểm</th><th>Lý do</th><th>Giờ</th></tr></thead><tbody id="vn-tbody"></tbody></table></div>
+      </div></div>
+    </div>
     <!-- ── GD: Giao Bài ── -->
     <div class="page" id="gd-giaobai" style="padding:0;height:calc(100vh - var(--top-h));overflow:hidden;">
       <iframe src="giaobai.html" style="width:100%;height:100%;border:none;display:block;" allowfullscreen></iframe>
@@ -4252,6 +4325,7 @@ function renderTable(){
   }
 
   // TBODY
+  const NOTE = sdNoteMap(book);
   document.getElementById('sd-tbody').innerHTML = students.map((s,i)=>{
     const hkData = s[hkKey];
     const thuong = s.thuong || 0;
@@ -4283,7 +4357,7 @@ function renderTable(){
     const thuongColor = thuong>0?'var(--orange)':'var(--muted)';
     return `<tr>
       <td class="td-stt">${i+1}</td>
-      <td class="td-ten">${escHtml(s.ten)}</td>
+      <td class="td-ten">${escHtml(s.ten)}${sdNoteBadge(NOTE,s)}</td>
       <td>
         <div class="thuong-cell">
           <span class="thuong-val" style="color:${thuongColor}">${thuong}</span>
@@ -4297,6 +4371,7 @@ function renderTable(){
   }).join('');
 
   renderStats(students, nTX, hkKey, qual);
+  sdRenderNotes();
 }
 
 /* Toggle button Đ / CĐ */
@@ -4872,8 +4947,6 @@ function GT2_play(){
 
   if(GT2.gameMode === 'fast'){
     GT2_callStudent(student, students);
-  } else if(String(GT2.gameMode).startsWith('vui:')){
-    GT2_runVui(GT2.gameMode.slice(4), student, students);
   } else {
     GT2_runAnimation(GT2.gameMode, student, students);
   }
@@ -5943,35 +6016,139 @@ function saveAskName(e){
 window.addEventListener('load',()=>{ if(needAskName()){ const o=document.getElementById('ask-name'); o.hidden=false; setTimeout(()=>document.getElementById('askn-name').focus(),50);} });
 </script>
 <script>
-/* Gọi tên vui (UFO, Công an, Máy gắp thú…) chạy ngay trong trang Gọi tên học sinh:
-   dùng chung danh sách sổ điểm, "đã gọi", thẻ nhận xét của Gọi tên nhanh. */
+/* nhớ kiểu gọi tên đã chọn */
 (function(){
   const m=(()=>{try{return localStorage.getItem('gt_mode')}catch(e){return null}})();
   const pick=document.querySelector(`.gt-game-btn[data-mode="${m||'fast'}"]`)||document.querySelector('.gt-game-btn[data-mode="fast"]');
   if(pick){document.querySelectorAll('.gt-game-btn').forEach(b=>b.classList.remove('sel'));pick.classList.add('sel');GT2.gameMode=pick.dataset.mode;}
 })();
-function GT2_vuiLabels(all){const c={};all.forEach(s=>c[s.ten]=(c[s.ten]||0)+1);const L={};all.forEach((s,i)=>L[s.id]=c[s.ten]>1?`${s.ten} (${i+1})`:s.ten);return L;}
-function GT2_runVui(kind,winner,all){
-  let ov=document.getElementById('gt-vui-ov');
-  if(!ov){ov=document.createElement('div');ov.id='gt-vui-ov';
-    ov.style.cssText='position:fixed;inset:0;z-index:9000;background:#0f172a;display:none';
-    ov.innerHTML='<iframe title="Gọi tên vui" allow="fullscreen" allowfullscreen style="width:100%;height:100%;border:0;display:block"></iframe><button type="button" style="position:absolute;top:8px;right:8px;z-index:2;border:0;border-radius:10px;padding:8px 14px;font-weight:800;background:#ef4444;color:#fff;cursor:pointer">✕ Đóng</button>';
-    document.body.appendChild(ov);
-    ov.querySelector('button').onclick=()=>{const v=GT2.vui;if(v&&!GT2.calledIds.has(v.winner.id))GT2.queue.unshift(v.winner.id);GT2.vui=null;GT2.animating=false;ov.style.display='none';const f=ov.querySelector('iframe');f.removeAttribute('src');f.dataset.ready='';};
-  }
-  const fr=ov.querySelector('iframe'),L=GT2_vuiLabels(all);
-  GT2.animating=true;GT2.vui={winner,all,kind};ov.style.display='block';
-  const msg={type:'gtv-run',mode:kind,names:all.map(s=>L[s.id]),used:all.filter(s=>GT2.calledIds.has(s.id)).map(s=>L[s.id]),pick:L[winner.id]};
-  if(fr.dataset.ready==='1')fr.contentWindow.postMessage(msg,'*');
-  else{GT2.vuiPending=msg;fr.src='goiten_vui.html?remote=1';}
+</script>
+
+<script>
+/* thông báo nhỏ dùng chung (trước đây chưa định nghĩa) */
+if(typeof window.showToast!=='function')window.showToast=function(m){let t=document.getElementById('hub-toast');
+  if(!t){t=document.createElement('div');t.id='hub-toast';t.style.cssText='position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:99999;background:#0f172a;color:#fff;padding:10px 18px;border-radius:12px;font-weight:700;font-size:.88rem;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:90vw;text-align:center;transition:opacity .3s';document.body.appendChild(t);}
+  t.textContent=m;t.style.opacity='1';clearTimeout(t._h);t._h=setTimeout(()=>{t.style.opacity='0';},3000);};
+/* ═════ Ghi chú trong Sổ điểm (từ Gọi tên vui nhộn) ═════ */
+const vnNorm=t=>String(t||'').normalize('NFC').toLowerCase().replace(/\s+/g,' ').trim();
+function sdNoteMap(book){const m={};(book.notes||[]).forEach(n=>{if(n.done)return;const k=n.sid||('n:'+vnNorm(n.ten));(m[k]=m[k]||[]).push(n);});return m;}
+function sdNoteBadge(M,s){const L=M[s.id]||M['n:'+vnNorm(s.ten)];if(!L||!L.length)return '';
+  const t=L.map(n=>(n.result==='ok'?'✔ Đúng':n.result==='no'?'✘ Sai':'•')+(n.score!==''?' – điểm '+n.score:'')+' ('+new Date(n.time).toLocaleDateString('vi-VN')+')').join('\n');
+  return `<span class="sd-note-dot" title="${escHtml(t)}" onclick="sdShowNotes()">📝${L.length}</span>`;}
+function sdShowNotes(){document.getElementById('sd-notes-panel').style.display='';sdRenderNotes();document.getElementById('sd-notes-panel').scrollIntoView({behavior:'smooth',block:'nearest'});}
+function sdToggleNotes(){const p=document.getElementById('sd-notes-panel');p.style.display=p.style.display==='none'?'':'none';sdRenderNotes();}
+function sdRenderNotes(){
+  const data=sdLoad(),book=data.books.find(b=>b.id===SD.bookId),btn=document.getElementById('sd-notes-btn');if(!book||!btn)return;
+  const all=book.notes||[],pend=all.filter(n=>!n.done).length;btn.innerHTML='📝 Ghi chú'+(pend?` <b style="color:var(--orange)">(${pend})</b>`:'');
+  const box=document.getElementById('sd-notes-list');if(document.getElementById('sd-notes-panel').style.display==='none')return;
+  const hide=document.getElementById('sd-notes-hide').checked,L=all.filter(n=>!hide||!n.done).sort((a,b)=>b.time<a.time?-1:1);
+  box.innerHTML=L.length?L.map(n=>`<div class="sd-note${n.done?' done':''}"><span class="nm">${escHtml(n.ten)}</span>
+    <span class="${n.result==='ok'?'ok':n.result==='no'?'no':''}">${n.result==='ok'?'✔ Đúng':n.result==='no'?'✘ Sai':'—'}</span>
+    <span>${n.score!==''?'<b>'+escHtml(n.score)+'</b> đ':''}</span>
+    <span class="why">${escHtml(n.game||'')}${n.reason?' · '+escHtml(n.reason):''}</span>
+    <span class="tm why">${new Date(n.time).toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>
+    <span style="white-space:nowrap"><button onclick="sdNoteDone('${n.uid}')">${n.done?'↩ Chưa xử lý':'✓ Đã cộng điểm'}</button> <button onclick="sdNoteDel('${n.uid}')">🗑</button></span></div>`).join('')
+    :'<div class="vn-hint" style="padding:12px 14px">Chưa có ghi chú. Ghi chú được chuyển sang từ <b>Gọi Tên Vui Nhộn → 📝 Kết quả phiên → Chuyển sang Sổ điểm</b>.</div>';
 }
-window.addEventListener('message',e=>{
-  const ov=document.getElementById('gt-vui-ov'),fr=ov&&ov.querySelector('iframe');if(!fr||e.source!==fr.contentWindow)return;const d=e.data||{};
-  if(d.type==='gtv-ready'){fr.dataset.ready='1';if(GT2.vuiPending){fr.contentWindow.postMessage(GT2.vuiPending,'*');GT2.vuiPending=null;}}
-  if(d.type==='gtv-done'&&GT2.vui){const v=GT2.vui;GT2.vui=null;GT2.animating=false;GT2_callStudent(v.winner,v.all);
-    if(d.next)GT2_play();else ov.style.display='none';}
-});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){const ov=document.getElementById('gt-vui-ov');if(ov&&ov.style.display==='block')ov.querySelector('button').click();}});
+function sdNoteEdit(fn){const data=sdLoad(),book=data.books.find(b=>b.id===SD.bookId);if(!book)return;book.notes=book.notes||[];fn(book);sdSave(data);renderTable();}
+function sdNoteDone(uid){sdNoteEdit(b=>{const n=b.notes.find(x=>x.uid===uid);if(n)n.done=!n.done;});}
+function sdNoteDel(uid){if(!confirm('Xóa ghi chú này?'))return;sdNoteEdit(b=>{b.notes=b.notes.filter(x=>x.uid!==uid);});}
+function sdClearDoneNotes(){sdNoteEdit(b=>{const n=b.notes.filter(x=>x.done).length;if(!n){showToast('Không có ghi chú đã xử lý');return;}if(confirm('Xóa '+n+' ghi chú đã xử lý?'))b.notes=b.notes.filter(x=>!x.done);});}
+
+/* ═════ Gọi Tên Vui Nhộn (games/GoiTen_VuiNhon.html, nối qua cổng goiten:*) ═════ */
+const VN={src:null,ready:false,loaded:false,ses:{}};
+try{VN.ses=JSON.parse(sessionStorage.getItem('gtvn_session')||'{}')||{};}catch(e){}
+const vnGet=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}};
+const vnSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
+function VN_sources(){const out=[];
+  const cn=(vnGet('cn_students',[])||[]).filter(s=>s&&s.hoTen),cl=vnGet('cn_className','');
+  if(cn.length)out.push({id:'cn',label:'Lớp chủ nhiệm'+(cl?' '+cl:'')+' ('+cn.length+')'});
+  ((vnGet('etv1_sodiem_v2',{books:[]})||{}).books||[]).forEach(b=>{const n=((b.hk1&&b.hk1.students)||[]).length;if(n)out.push({id:'b:'+b.id,label:`Sổ điểm: ${b.mon} – ${b.lop} (${n})`});});
+  out.push({id:'manual',label:'✍️ Nhập danh sách tay'});return out;}
+function VN_fill(){const L=VN_sources(),sel=document.getElementById('vn-src'),cfg=vnGet('gtvn_cfg',{})||{};
+  if(!VN.src)VN.src=cfg.src;if(!L.some(x=>x.id===VN.src))VN.src=L[0].id;
+  sel.innerHTML=L.map(x=>`<option value="${x.id}"${x.id===VN.src?' selected':''}>${escHtml(x.label)}</option>`).join('');
+  document.getElementById('vn-seat').value=cfg.seat||'map';document.getElementById('vn-flip').checked=!!cfg.flip;
+  document.getElementById('vn-manual').hidden=VN.src!=='manual';document.getElementById('vn-names').value=(vnGet('gtvn_manual',[])||[]).join('\n');}
+function VN_cfg(){vnSet('gtvn_cfg',{src:VN.src,seat:document.getElementById('vn-seat').value,flip:document.getElementById('vn-flip').checked});}
+/* sơ đồ lớp của Hub (Chủ nhiệm → Sơ đồ lớp) → 6 hàng × 8 chỗ, hàng 0 = bàn đầu, trái→phải nhìn từ bàn giáo viên */
+function VN_seating(students){
+  const seat=vnGet('cn_curSeating',{})||{};if(!Object.keys(seat).length)return null;
+  const cn=vnGet('cn_students',[])||[],byName={};students.forEach(s=>{byName[vnNorm(s.name)]=s.id;});
+  const L=vnGet('cn_seatLayout',null)||{};let C=0,R=0;Object.keys(seat).forEach(k=>{const[r,c]=k.split('_').map(Number);R=Math.max(R,r);C=Math.max(C,c);});
+  C=L.layout==='4day'?8:Math.max(C+1,(L.ds||(C>=8?5:4))*2);
+  const flip=!document.getElementById('vn-flip').checked; // Sơ đồ lớp vẽ bảng ở trên (nhìn từ cuối lớp) → lật trái/phải
+  const grid=[];let placed=0;
+  for(let r=0;r<=Math.min(R,5);r++){const row=[];for(let c=0;c<C;c++){const sid=seat[r+'_'+(flip?C-1-c:c)];let id=null;
+      if(sid!=null){const st=cn.find(x=>String(x.id)===String(sid));if(st)id=byName[vnNorm(st.hoTen)]||null;}
+      row.push(id);if(id)placed++;}
+    while(row.length<8)row.push(null);grid.push(row.slice(0,8));}
+  while(grid.length<6)grid.push(Array(8).fill(null));
+  return placed>=Math.min(3,students.length)?grid:null;}
+function VN_data(){
+  const gm={};(vnGet('cn_students',[])||[]).forEach(s=>{if(s&&s.hoTen&&s.gioiTinh)gm[vnNorm(s.hoTen)]=/^n[ữư]/i.test(String(s.gioiTinh).trim())?'f':'m';});
+  let className='',students=[];
+  if(VN.src==='cn'){className=vnGet('cn_className','')||'Lớp chủ nhiệm';students=(vnGet('cn_students',[])||[]).filter(s=>s&&s.hoTen).map(s=>({id:'cn_'+s.id,name:s.hoTen.trim()}));}
+  else if(VN.src&&VN.src.startsWith('b:')){const b=((vnGet('etv1_sodiem_v2',{books:[]})||{}).books||[]).find(x=>'b:'+x.id===VN.src);
+    if(b){className=b.lop;students=((b.hk1&&b.hk1.students)||[]).map(s=>({id:'sd_'+b.id+'_'+s.id,name:String(s.ten||'').trim()})).filter(s=>s.name);}}
+  else{className='Danh sách tự nhập';students=(vnGet('gtvn_manual',[])||[]).map(n=>({id:null,name:n}));}
+  students.forEach(s=>{const g=gm[vnNorm(s.name)];if(g)s.gender=g;});
+  const d={className,scoreColumns:[],students:students.slice(0,48)};
+  const seatMode=document.getElementById('vn-seat').value,sg=seatMode==='map'?VN_seating(d.students):null;if(sg)d.seating=sg;
+  const info=[];if(students.length>48)info.push('⚠️ Trò chơi hiển thị tối đa 48 em');
+  if(seatMode==='map')info.push(sg?'🪑 Đã xếp theo Sơ đồ lớp':'🪑 Chưa có Sơ đồ lớp khớp danh sách → xếp ngẫu nhiên');
+  document.getElementById('vn-info').textContent=info.join(' · ');
+  return d;}
+function VN_send(){const fr=document.getElementById('vn-frame');if(!VN.ready||!fr.contentWindow)return;
+  const d=VN_data();if(!d.students.length){showToast(VN.src==='manual'?'Hãy dán danh sách rồi bấm “Dùng danh sách này”':'Danh sách trống');return;}
+  fr.contentWindow.postMessage({type:'goiten:setClass',payload:d},'*');}
+function VN_init(){VN_fill();const fr=document.getElementById('vn-frame');
+  if(!VN.loaded){VN.loaded=true;fr.onload=VN_fix;fr.src='games/GoiTen_VuiNhon.html';}else VN_send();VN_count();}
+/* Khung trò chơi 1600×900 bị co lại (flex-shrink) khi cửa sổ hẹp hơn 1600px → bị cắt hai bên. Thêm 1 dòng CSS từ ngoài, không sửa file trò chơi. */
+function VN_fix(){try{const d=document.getElementById('vn-frame').contentDocument;if(!d||d.getElementById('hub-fix'))return;
+  const st=d.createElement('style');st.id='hub-fix';st.textContent='#stage{flex-shrink:0}';d.head.appendChild(st);document.getElementById('vn-frame').contentWindow.dispatchEvent(new Event('resize'));}catch(e){}}
+window.addEventListener('message',e=>{const fr=document.getElementById('vn-frame');if(!fr||e.source!==fr.contentWindow)return;const m=e.data||{};
+  if(m.type==='goiten:ready'){VN.ready=true;document.getElementById('vn-load').hidden=true;VN_send();}
+  if(m.type==='goiten:result'&&m.payload&&m.payload.uid){VN.ses[m.payload.uid]=m.payload;try{sessionStorage.setItem('gtvn_session',JSON.stringify(VN.ses));}catch(_){}VN_count();
+    if(!document.getElementById('vn-modal').hidden)VN_table();}});
+function VN_list(){return Object.values(VN.ses).sort((a,b)=>a.time<b.time?1:-1);}
+function VN_count(){document.getElementById('vn-cnt').textContent=Object.keys(VN.ses).length;}
+function VN_table(){const L=VN_list();
+  document.getElementById('vn-tbody').innerHTML=L.length?L.map((e,i)=>`<tr><td>${L.length-i}</td><td><b>${escHtml(e.name)}</b></td><td>${escHtml(e.game||'')}</td>
+    <td>${e.result==='ok'?'<b style="color:var(--green)">✔ Đúng</b>':e.result==='no'?'<b style="color:var(--red)">✘ Sai</b>':'—'}</td><td>${e.score!==''?'<b>'+escHtml(e.score)+'</b>':''}</td>
+    <td class="r">${escHtml(e.reason||'')}</td><td>${new Date(e.time).toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})}</td></tr>`).join('')
+    :'<tr><td colspan="7" class="r" style="padding:14px">Chưa có bạn nào được gọi trong phiên này. Chấm ✔/✘ và nhập điểm ở bảng “📋 Kết quả” bên trong trò chơi.</td></tr>';
+  const books=((vnGet('etv1_sodiem_v2',{books:[]})||{}).books||[]),sel=document.getElementById('vn-book');
+  let def=VN.src&&VN.src.startsWith('b:')?VN.src.slice(2):'';if(!def&&VN.src==='cn'){const cl=vnNorm(vnGet('cn_className',''));const b=books.find(x=>vnNorm(x.lop)===cl);if(b)def=b.id;}
+  sel.innerHTML=books.length?books.map(b=>`<option value="${b.id}"${b.id===def?' selected':''}>${escHtml(b.mon+' – '+b.lop)}</option>`).join(''):'<option value="">(Chưa có sổ điểm)</option>';}
+function VN_move(){const data=sdLoad(),book=data.books.find(b=>b.id===document.getElementById('vn-book').value);if(!book){showToast('Chưa có sổ điểm để chuyển');return;}
+  const only=document.getElementById('vn-only').checked,L=VN_list().filter(e=>!only||e.result||e.score!=='');if(!L.length){showToast('Chưa có kết quả nào đã chấm ✔/✘ hoặc có điểm');return;}
+  const st=(book.hk1&&book.hk1.students)||[];book.notes=book.notes||[];let ok=0,miss=[];
+  L.forEach(e=>{const sid=e.studentId&&String(e.studentId).startsWith('sd_'+book.id+'_')?String(e.studentId).slice(('sd_'+book.id+'_').length):null;
+    const s=st.find(x=>x.id===sid)||st.find(x=>vnNorm(x.ten)===vnNorm(e.name));if(!s){miss.push(e.name);return;}
+    const n={uid:e.uid,sid:s.id,ten:s.ten,game:e.game||'',result:e.result||'',score:e.score||'',reason:e.reason||'',time:e.time,done:false};
+    const old=book.notes.find(x=>x.uid===e.uid);if(old)Object.assign(old,n,{done:old.done});else book.notes.push(n);ok++;});
+  sdSave(data);if(SD.bookId===book.id&&typeof renderTable==='function')renderTable();
+  showToast(`📒 Đã chuyển ${ok} ghi chú sang sổ ${book.mon} – ${book.lop}`+(miss.length?` · ${miss.length} em không có trong sổ`:''));
+  if(miss.length)alert('Các em sau không tìm thấy trong sổ '+book.mon+' – '+book.lop+':\n• '+miss.join('\n• '));}
+function VN_xls(){const L=VN_list().slice().reverse();if(!L.length){showToast('Chưa có kết quả để xuất');return;}
+  const aoa=[['STT','Lớp','Họ và tên','Trò chơi','Lý do','Kết quả','Điểm','Thời gian']];
+  L.forEach((e,i)=>aoa.push([i+1,e.className||'',e.name,e.game||'',e.reason||'',e.result==='ok'?'Đúng':e.result==='no'?'Sai':'',e.score===''?'':(isNaN(+e.score)?e.score:+e.score),new Date(e.time).toLocaleString('vi-VN')]));
+  const ws=XLSX.utils.aoa_to_sheet(aoa);ws['!cols']=[{wch:5},{wch:10},{wch:26},{wch:22},{wch:30},{wch:9},{wch:7},{wch:20}];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Ket qua');XLSX.writeFile(wb,'GoiTenVuiNhon_'+new Date().toISOString().slice(0,10)+'.xlsx');}
+document.getElementById('vn-src').onchange=e=>{VN.src=e.target.value;VN_cfg();document.getElementById('vn-manual').hidden=VN.src!=='manual';VN_send();};
+document.getElementById('vn-seat').onchange=()=>{VN_cfg();VN_send();};
+document.getElementById('vn-flip').onchange=()=>{VN_cfg();VN_send();};
+document.getElementById('vn-save-names').onclick=()=>{const n=[...new Set(document.getElementById('vn-names').value.split(/\r?\n/).map(s=>s.replace(/\t.*/,'').replace(/^\s*\d+[\.\)\s]+/,'').trim()).filter(Boolean))];
+  if(!n.length){showToast('Chưa có tên nào');return;}vnSet('gtvn_manual',n);VN_send();showToast('Đã nạp '+Math.min(48,n.length)+' em vào trò chơi');};
+document.getElementById('vn-full').onclick=()=>{const b=document.getElementById('vn-box');if(!document.fullscreenElement)(b.requestFullscreen||b.webkitRequestFullscreen).call(b);else document.exitFullscreen();};
+document.getElementById('vn-res').onclick=()=>{VN_table();document.getElementById('vn-modal').hidden=false;};
+document.getElementById('vn-mclose').onclick=()=>{document.getElementById('vn-modal').hidden=true;};
+document.getElementById('vn-modal').onclick=e=>{if(e.target.id==='vn-modal')e.target.hidden=true;};
+document.getElementById('vn-move').onclick=VN_move;document.getElementById('vn-xls').onclick=VN_xls;
+document.getElementById('vn-clear').onclick=()=>{if(!Object.keys(VN.ses).length)return;if(confirm('Xóa toàn bộ kết quả của phiên này (bảng “Kết quả” trong trò chơi vẫn giữ)?')){VN.ses={};try{sessionStorage.removeItem('gtvn_session');}catch(_){}VN_count();VN_table();}};
+(function(){const _sp=showPage;showPage=function(id){_sp.apply(this,arguments);if(id==='gd-vuinhon')VN_init();};})();
+VN_count();
 </script>
 <script src="eduhub_demo.js"></script>
 <script>EHDemo.box(document.getElementById('ehd-box'));</script>

@@ -57,10 +57,10 @@
     var NOTE_V = ['Nói chuyện riêng', 'Không làm bài tập', 'Đi học trễ', 'Quên mang sách vở', 'Sai đồng phục'], NOTE_K = ['Phát biểu tốt', 'Giúp đỡ bạn', 'Điểm 10 kiểm tra miệng', 'Nhặt được của rơi trả lại', 'Trực nhật sạch sẽ'];
     var disc = []; for (var i = 0; i < 22; i++) { var s = pick(stu), v = R() < .45; disc.push({ id: 900000 + i, date: pick(days), studentId: String(s.id), type: v ? 'violation' : 'commend', points: v ? -1 : 1, note: v ? pick(NOTE_V) : pick(NOTE_K) }); }
     data.cn_discipline = disc;
-    // sơ đồ lớp: 2 dãy, 5 hàng, 4 em/bàn
+    // sơ đồ lớp: 4 dãy, 5 hàng, 2 em/bàn
     var seat = {}, order = stu.map(function (s) { return s.id; }).sort(function () { return R() - .5; });
     order.forEach(function (id, k) { seat[Math.floor(k / 8) + '_' + (k % 8)] = String(id); });
-    data.cn_curSeating = seat; data.cn_seatLayout = { layout: '2day', rows: 5, ds: 4 };
+    data.cn_curSeating = seat; data.cn_seatLayout = { layout: '4day', rows: 5, ds: 4 };
     // sổ điểm: lớp chủ nhiệm + 1 lớp dạy bộ môn (cũng là học sinh giả)
     function book(id, lop, list, ab) {
       var sts = list.map(function (s, i) { var b = ab(s, i); return { id: 'd' + id + '_' + i, ten: s.hoTen, thuong: 0, hk1: { tx: [sc(b), sc(b), sc(b), sc(b)], gk: sc(b), ck: sc(b - .3) }, hk2: { tx: [null, null, null, null], gk: null, ck: null } }; });
@@ -79,7 +79,7 @@
     return data;
   }
 
-  var PREFIX = ['cn_', 'cnhom_', 'gtv_used_'], KEYS = ['etv1_sodiem_v2', 'td_v1', 'ths_v1', 'ths_class', 'etv1_gt_stats', 'cnhom_paste'];
+  var PREFIX = ['cn_', 'cnhom_', 'gtv_used_'], KEYS = ['etv1_sodiem_v2', 'td_v1', 'ths_v1', 'ths_class', 'etv1_gt_stats', 'cnhom_paste', 'goiten_vuinhon_v3', 'goiten_vuinhon_v2', 'gtvn_manual', 'gtvn_cfg'];
   var EHDemo = {
     active: function () { return !!get('etv1_demo', null); },
     hasReal: function () {
