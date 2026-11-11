@@ -18,7 +18,7 @@ html,body{margin:0;height:100%;overflow:hidden;font-family:system-ui,-apple-syst
 /* Thanh công cụ */
 .tb{position:fixed;left:0;right:0;margin:0 auto;width:max-content;top:10px;z-index:30;display:flex;flex-wrap:wrap;align-items:center;gap:2px;background:rgba(255,255,255,.97);border:1px solid #cbd5e1;border-radius:16px;padding:5px 7px;box-shadow:0 8px 30px rgba(15,23,42,.18);max-width:calc(100vw - 20px);justify-content:center}
 .tb.min>*:not(.keep){display:none}
-.tb button{border:0;background:transparent;border-radius:10px;min-width:34px;height:36px;padding:0 6px;font:inherit;font-size:1.05rem;cursor:pointer;color:#0f172a;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.tb button{border:0;background:transparent;border-radius:10px;min-width:31px;height:36px;padding:0 5px;font:inherit;font-size:1.05rem;cursor:pointer;color:#0f172a;display:inline-flex;align-items:center;justify-content:center;gap:4px}
 .tb button:hover{background:#f1f5f9}
 .tb button.on{background:#0f766e;color:#fff}
 .tb button small{font-size:.7rem;font-weight:700}
@@ -26,7 +26,7 @@ html,body{margin:0;height:100%;overflow:hidden;font-family:system-ui,-apple-syst
 .sw{width:22px!important;min-width:22px!important;height:22px!important;margin:0 1px!important;border-radius:50%!important;padding:0!important;border:2px solid #fff!important;box-shadow:0 0 0 1.5px #cbd5e1}
 .sw.on{box-shadow:0 0 0 2.5px #0f766e!important}
 .tb input[type=color]{width:28px;height:28px;border:0;padding:0;background:none;cursor:pointer}
-.tb select{font:inherit;font-size:.8rem;border:1px solid #cbd5e1;border-radius:8px;padding:6px 4px;background:#fff;color:#0f172a}
+.tb select{font:inherit;font-size:.76rem;max-width:118px;border:1px solid #cbd5e1;border-radius:8px;padding:6px 4px;background:#fff;color:#0f172a}
 .wdot{display:inline-block;border-radius:50%;background:#0f172a}
 
 /* Thanh trang */
@@ -53,6 +53,33 @@ html,body{margin:0;height:100%;overflow:hidden;font-family:system-ui,-apple-syst
 .selbox .d{position:absolute;right:-12px;top:-12px;width:24px;height:24px;border-radius:50%;background:#ef4444;color:#fff;border:2px solid #fff;pointer-events:auto;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center}
 
 .txt{position:absolute;z-index:26;min-width:120px;border:2px dashed #0ea5e9;background:rgba(255,255,255,.6);outline:0;padding:2px 4px;font-family:system-ui,sans-serif;white-space:pre}
+#ovl{position:fixed;inset:0;width:100%;height:100%;z-index:21;pointer-events:none;overflow:visible}
+#ovl .h{pointer-events:auto;cursor:grab}
+#ovl .mv{pointer-events:auto;cursor:move}
+#ovl text{pointer-events:none;font-family:system-ui,sans-serif}
+.gdlg{position:fixed;inset:0;z-index:45;background:rgba(15,23,42,.35);display:flex;align-items:flex-start;justify-content:flex-end;padding:70px 16px 16px}
+.gdlg[hidden]{display:none}
+.gbox{background:#fff;border-radius:16px;width:min(420px,100%);box-shadow:0 12px 40px rgba(15,23,42,.3);color:#0f172a;font-size:.88rem;max-height:calc(100vh - 90px);display:flex;flex-direction:column}
+.ghd{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #e2e8f0}
+.ghd button{border:0;background:none;font-size:1.1rem;cursor:pointer;color:#64748b}
+.gtabs{display:flex;gap:6px;padding:10px 16px 0}
+.gtabs button{flex:1;border:1.5px solid #cbd5e1;background:#fff;border-radius:10px;padding:7px;font:inherit;font-weight:700;cursor:pointer}
+.gtabs button.on{background:#0f766e;border-color:#0f766e;color:#fff}
+.gbody{padding:12px 16px;display:flex;flex-direction:column;gap:8px;overflow:auto}
+.gbody>label{font-weight:700;font-size:.78rem;color:#475569}
+.grow{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.grow[hidden],#gAbc [hidden],.gbody [hidden]{display:none!important}
+.grow input:not([type=checkbox]),.grow select{font:inherit;border:1px solid #cbd5e1;border-radius:8px;padding:7px 9px;min-width:0}
+.grow select{flex:1}
+#gAbc input{width:64px;text-align:center}
+.grow label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.gfx{font:italic 700 1.15rem Georgia,"Times New Roman",serif;color:#0f766e;background:#f0fdfa;border-radius:10px;padding:8px 12px;text-align:center}
+.hint2{font-size:.76rem;color:#64748b}
+.gerr{color:#dc2626;font-size:.8rem;font-weight:700;min-height:1em}
+.gtbl{overflow:auto}.gtbl table{border-collapse:collapse;font-size:.85rem;margin:auto}.gtbl td{border:1px solid #94a3b8;padding:4px 9px;text-align:center;min-width:34px}.gtbl td:first-child{font-weight:700;background:#f1f5f9}
+.gft{padding:10px 16px 14px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end}
+.gok{border:0;background:#0f766e;color:#fff;border-radius:10px;padding:9px 18px;font:inherit;font-weight:800;cursor:pointer}
+#stage.t-place{cursor:copy}
 .info{position:fixed;z-index:27;pointer-events:none;background:#0f172a;color:#fff;font-size:12px;font-weight:700;border-radius:6px;padding:3px 8px;display:none}
 .toast{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:9px 16px;border-radius:10px;font-size:13px;opacity:0;transition:.2s;pointer-events:none;z-index:40}
 .toast.show{opacity:1}
@@ -92,9 +119,12 @@ html,body{margin:0;height:100%;overflow:hidden;font-family:system-ui,-apple-syst
   <span class="sep"></span>
   <button id="bRuler" title="Thước kẻ – vẽ dọc mép thước sẽ ra đường thẳng">📏</button>
   <button id="bProt" title="Thước đo góc">📐</button>
+  <button id="bCompa" title="Compa – kéo chân bút để mở compa, kéo núm trên để xoay vẽ cung tròn">🧭</button>
+  <button id="bPara" title="Thước parabol y = ax²">⌒</button>
+  <button id="bGraph" title="Đồ thị hàm số & bảng giá trị">📈</button>
   <select id="bgSel" title="Nền bảng">
     <option value="white">⬜ Nền trắng</option><option value="grid">▦ Lưới ô vuông</option><option value="oly">▤ Giấy ô ly</option><option value="lines">☰ Kẻ ngang</option>
-    <option value="axes">✛ Trục tọa độ Oxy</option><option value="dots">⁘ Lưới chấm</option><option value="black">⬛ Bảng đen</option><option value="green">🟩 Bảng xanh</option>
+    <option value="axes">✛ Trục Oxy</option><option value="dots">⁘ Lưới chấm</option><option value="black">⬛ Bảng đen</option><option value="green">🟩 Bảng xanh</option>
   </select>
   <button id="bImg" title="Chèn ảnh đề bài (hoặc Ctrl+V để dán ảnh)">🖼️</button>
   <span class="sep"></span>
@@ -116,6 +146,33 @@ html,body{margin:0;height:100%;overflow:hidden;font-family:system-ui,-apple-syst
 <div class="tool ruler" id="ruler" hidden><div class="ang" id="rAng">0°</div><div class="rot" id="rRot" title="Kéo để xoay thước">⟳</div><button class="closeT" id="rX" title="Cất thước">✕</button></div>
 <div class="tool prot" id="prot" hidden><div class="ang" id="pAng">0°</div><div class="rot" id="pRot" title="Kéo để xoay">⟳</div><button class="closeT" id="pX" title="Cất thước đo góc">✕</button></div>
 
+<svg id="ovl"></svg>
+<div class="gdlg" id="gdlg" hidden><div class="gbox">
+  <div class="ghd"><b>📈 Đồ thị hàm số & bảng giá trị</b><button id="gX">✕</button></div>
+  <div class="gtabs"><button data-gt="g" class="on">Vẽ đồ thị</button><button data-gt="t">Bảng giá trị</button></div>
+  <div class="gbody">
+    <label>Hàm số</label>
+    <div class="grow"><select id="gType">
+      <option value="lin">y = ax + b (bậc nhất)</option><option value="sq">y = ax² (parabol)</option><option value="quad">y = ax² + bx + c</option>
+      <option value="inv">y = a / x (tỉ lệ nghịch)</option><option value="cus">Tự nhập biểu thức…</option></select></div>
+    <div class="grow" id="gAbc"><span>a =</span><input id="gA" value="2"><span id="gBl">b =</span><input id="gB" value="-1"><span id="gCl">c =</span><input id="gC" value="0"></div>
+    <div class="grow" id="gCusW" hidden><span>y =</span><input id="gCus" placeholder="VD: 0,5x^2 - 2x + 1   |   sqrt(x)   |   abs(x-1)" style="flex:1"></div>
+    <div class="gfx" id="gFx">y = 2x − 1</div>
+    <div id="gPaneG">
+      <div class="grow"><label><input type="checkbox" id="gLbl" checked> Ghi công thức cạnh đồ thị</label></div>
+      <div class="hint2">Đồ thị vẽ trên nền <b>Trục tọa độ Oxy</b> (tự chuyển nền nếu đang dùng nền khác). Màu & độ dày theo bút đang chọn.</div>
+    </div>
+    <div id="gPaneT" hidden>
+      <label>Các giá trị của x</label>
+      <div class="grow"><input id="tX" value="-2 -1 0 1 2" style="flex:1"></div>
+      <div class="grow"><label><input type="checkbox" id="tBlank"> Để trống hàng y (học sinh điền)</label></div>
+      <div class="grow"><label><input type="checkbox" id="tPts"> Chấm các điểm (x; y) lên mặt phẳng tọa độ</label></div>
+      <div class="gtbl" id="tPrev"></div>
+    </div>
+    <div class="gerr" id="gErr"></div>
+  </div>
+  <div class="gft"><button id="gGo" class="gok">✏️ Vẽ đồ thị</button></div>
+</div></div>
 <div class="info" id="info"></div>
 <div class="toast" id="toast"></div>
 <input type="file" id="fImg" accept="image/*" hidden>
@@ -129,6 +186,9 @@ html,body{margin:0;height:100%;overflow:hidden;font-family:system-ui,-apple-syst
     <li><b>⊙ Compa</b>: bấm vào tâm, kéo ra bán kính – có hiện độ dài bán kính theo ô lưới.</li>
     <li><b>／ Đoạn thẳng</b>: hiện độ dài (đơn vị = 1 ô lưới) và góc; giữ <kbd>Shift</kbd> để bắt góc 15°.</li>
     <li><b>△ Tam giác</b>: bấm lần lượt 3 đỉnh.</li>
+    <li><b>🧭 Compa thật</b>: kéo chấm đỏ (mũi kim) để đặt tâm, kéo chấm xanh (đầu bút) để mở compa, kéo núm trên đầu để xoay – vẽ cung hoặc cả đường tròn.</li>
+    <li><b>⌒ Thước parabol</b>: kéo thân thước để di chuyển (trên nền Oxy sẽ tự bắt vào điểm lưới), kéo chấm xanh để đổi độ mở a, ⇅ để lật, ✏️ Vẽ để in nét lên bảng.</li>
+    <li><b>📈 Đồ thị & bảng giá trị</b>: chọn hàm số (bậc nhất, parabol, tỉ lệ nghịch hoặc tự nhập), vẽ đồ thị trên trục Oxy; lập bảng giá trị (có thể để trống hàng y cho học sinh điền) và chấm điểm lên mặt phẳng tọa độ.</li>
     <li><b>🖼️ Ảnh</b>: chèn ảnh chụp đề bài hoặc dán bằng <kbd>Ctrl</kbd>+<kbd>V</kbd>, dùng 🖐️ để kéo / thu phóng.</li>
     <li><b>Trang</b>: góc dưới phải – thêm nhiều trang, chuyển trang bằng <kbd>PageUp</kbd>/<kbd>PageDown</kbd>.</li>
   </ul>
@@ -231,6 +291,10 @@ function drawAct(ctx, a) {
     case 'circle': ctx.beginPath(); ctx.arc(p[0][0], p[0][1], a.r, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.arc(p[0][0], p[0][1], Math.max(2, a.w * .8), 0, 7); ctx.fill(); break;
     case 'poly': ctx.beginPath(); ctx.moveTo(...p[0]); p.slice(1).forEach(q => ctx.lineTo(...q)); if (a.closed) ctx.closePath(); ctx.stroke(); break;
     case 'text': ctx.font = `${a.fs}px system-ui,"Segoe UI",sans-serif`; ctx.textBaseline = 'top'; a.t.split('\n').forEach((ln, i) => ctx.fillText(ln, p[0][0], p[0][1] + i * a.fs * 1.25)); break;
+    case 'arc': ctx.beginPath(); if (Math.abs(a.sw) >= Math.PI * 2 - 1e-3) ctx.arc(a.cx, a.cy, a.r, 0, Math.PI * 2); else ctx.arc(a.cx, a.cy, a.r, a.a0, a.a0 + a.sw, a.sw < 0); ctx.stroke(); break;
+    case 'graph': drawGraph(ctx, a); break;
+    case 'table': drawTable(ctx, a); break;
+    case 'pts': drawPts(ctx, a); break;
   }
   ctx.restore();
 }
@@ -356,6 +420,7 @@ stage.addEventListener('pointerdown', e => {
   const p = pos(e);
   if (txtEl) { finishText(); return; }
   if (tool === 'text') { e.preventDefault(); startText(p); return; }
+  if (tool === 'place') { e.preventDefault(); placeTable(p); return; }
   if (tool === 'sel') { pickImg(e, p); return; }
   if (tool === 'tri') {
     triPts.push(p);
@@ -416,6 +481,198 @@ function laserLoop() {
   const l = laser[laser.length - 1]; if (l && drawing) { xTmp.fillStyle = '#ef4444'; xTmp.shadowColor = '#ef4444'; xTmp.shadowBlur = 16; xTmp.beginPath(); xTmp.arc(l[0], l[1], 7, 0, 7); xTmp.fill(); xTmp.shadowBlur = 0; }
   requestAnimationFrame(laserLoop);
 }
+
+/* ---------- biểu thức hàm số (bộ phân tích an toàn, không dùng eval) ---------- */
+function parseFx(src) {
+  let s = String(src || '').toLowerCase().replace(/\s+/g, '').replace(/^y=/, '').replace(/[−–]/g, '-').replace(/[×·]/g, '*').replace(/:/g, '/').replace(/,/g, '.').replace(/²/g, '^2').replace(/³/g, '^3').replace(/√/g, 'sqrt');
+  if (!s) throw 'Chưa nhập biểu thức';
+  let i = 0; const FN = { sqrt: Math.sqrt, abs: Math.abs, sin: Math.sin, cos: Math.cos, tan: Math.tan, ln: Math.log, log: Math.log10, exp: Math.exp };
+  const peek = () => s[i], eat = c => { if (s[i] === c) { i++; return true; } return false; };
+  const startsPrimary = () => i < s.length && /[0-9.x(a-z|]/.test(s[i]);
+  function expr() { let f = term(); for (;;) { if (eat('+')) { const a = f, b = term(); f = x => a(x) + b(x); } else if (eat('-')) { const a = f, b = term(); f = x => a(x) - b(x); } else return f; } }
+  function term() { let f = unary(); for (;;) { if (eat('*')) { const a = f, b = unary(); f = x => a(x) * b(x); } else if (eat('/')) { const a = f, b = unary(); f = x => a(x) / b(x); } else if (startsPrimary() && peek() !== '|') { const a = f, b = power(); f = x => a(x) * b(x); } else return f; } }
+  function unary() { if (eat('-')) { const a = unary(); return x => -a(x); } if (eat('+')) return unary(); return power(); }
+  function power() { const b = primary(); if (eat('^')) { const e = unary(); return x => Math.pow(b(x), e(x)); } return b; }
+  function primary() {
+    const c = peek(); if (c === undefined) throw 'Biểu thức chưa đủ';
+    if (/[0-9.]/.test(c)) { const m = s.slice(i).match(/^\d*\.?\d+/); if (!m) throw 'Số không hợp lệ'; i += m[0].length; const v = +m[0]; return () => v; }
+    if (c === 'x') { i++; return x => x; }
+    if (eat('(')) { const f = expr(); if (!eat(')')) throw 'Thiếu dấu )'; return f; }
+    if (eat('|')) { const f = expr(); if (!eat('|')) throw 'Thiếu dấu |'; return x => Math.abs(f(x)); }
+    const m = s.slice(i).match(/^[a-z]+/); if (!m) throw 'Ký tự không hợp lệ: ' + c;
+    const w = m[0]; i += w.length;
+    if (w === 'pi') return () => Math.PI;
+    if (w === 'e') return () => Math.E;
+    if (FN[w]) { const g = FN[w], a = eat('(') ? (() => { const f = expr(); if (!eat(')')) throw 'Thiếu dấu )'; return f; })() : power(); return x => g(a(x)); }
+    throw 'Không hiểu “' + w + '”';
+  }
+  const f = expr(); if (i < s.length) throw 'Thừa ký tự: ' + s.slice(i);
+  return f;
+}
+const axesO = () => [Math.round(W / 2 / U) * U, Math.round(H / 2 / U) * U];
+function drawGraph(ctx, a) {
+  let f; try { f = parseFx(a.fx); } catch (e) { return; }
+  ctx.beginPath(); let pen = false, last = null, lab = null;
+  for (let px = -2; px <= W + 2; px += 1.5) {
+    const X = (px - a.ox) / U, Y = f(X), py = a.oy - Y * U;
+    if (!isFinite(py) || Math.abs(py) > 1e5 || (last != null && Math.abs(py - last) > H)) { pen = false; last = isFinite(py) ? py : null; continue; }
+    if (pen) ctx.lineTo(px, py); else { ctx.moveTo(px, py); pen = true; }
+    last = py; if (py > 140 && py < H - 70 && px < W - 90 && px > 120) lab = [px, py];
+  }
+  ctx.stroke();
+  if (a.lbl && lab) { ctx.font = 'italic bold 20px Georgia,"Times New Roman",serif'; ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.textAlign = 'right'; ctx.textBaseline = 'bottom'; ctx.strokeText(a.lbl, lab[0] - 6, lab[1] - 8); ctx.fillText(a.lbl, lab[0] - 6, lab[1] - 8); }
+}
+function drawTable(ctx, a) {
+  const cw = 56, hw = Math.max(70, a.lbl.length * 10 + 20), rh = 40, n = a.xs.length;
+  ctx.font = '600 19px system-ui,"Segoe UI",sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineWidth = 1.6;
+  ctx.fillStyle = 'rgba(255,255,255,.92)'; ctx.fillRect(a.x, a.y, hw + cw * n, rh * 2);
+  ctx.fillStyle = 'rgba(15,118,110,.12)'; ctx.fillRect(a.x, a.y, hw, rh * 2);
+  ctx.strokeStyle = a.c; ctx.fillStyle = a.c; ctx.strokeRect(a.x, a.y, hw + cw * n, rh * 2);
+  ctx.beginPath(); ctx.moveTo(a.x, a.y + rh); ctx.lineTo(a.x + hw + cw * n, a.y + rh); for (let k = 0; k <= n; k++) { const xx = a.x + hw + k * cw; ctx.moveTo(xx, a.y); ctx.lineTo(xx, a.y + rh * 2); } ctx.stroke();
+  ctx.font = 'italic 700 19px Georgia,"Times New Roman",serif'; ctx.fillText('x', a.x + hw / 2, a.y + rh / 2); ctx.fillText(a.lbl, a.x + hw / 2, a.y + rh * 1.5);
+  ctx.font = '600 18px system-ui,"Segoe UI",sans-serif';
+  a.xs.forEach((v, k) => { const cx = a.x + hw + k * cw + cw / 2; ctx.fillText(v, cx, a.y + rh / 2); if (!a.blank) ctx.fillText(a.ys[k], cx, a.y + rh * 1.5); });
+}
+function drawPts(ctx, a) {
+  ctx.font = '600 15px system-ui,sans-serif'; ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+  a.pts.forEach(([X, Y, t]) => { const px = a.ox + X * U, py = a.oy - Y * U; if (!isFinite(py)) return;
+    ctx.save(); ctx.setLineDash([4, 4]); ctx.lineWidth = 1.2; ctx.globalAlpha = .7; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px, a.oy); ctx.moveTo(px, py); ctx.lineTo(a.ox, py); ctx.stroke(); ctx.restore();
+    ctx.beginPath(); ctx.arc(px, py, 5.5, 0, 7); ctx.fill(); ctx.fillText(t, px + 7, py - 4); });
+}
+const fmtV = v => { if (!isFinite(v)) return '∄'; const r = Math.round(v * 1000) / 1000; return String(r).replace('-', '−').replace('.', ','); };
+
+/* ---------- hộp thoại đồ thị / bảng giá trị ---------- */
+let gTab = 'g', pendingTable = null;
+const nv = id => { const v = parseFloat(String($(id).value).replace(',', '.').replace(/[−–]/g, '-')); return isNaN(v) ? 0 : v; };
+function coefTerm(k, v, first) { if (k === 0) return ''; const sg = k < 0 ? (first ? '−' : ' − ') : (first ? '' : ' + '); const ak = Math.abs(k); const ks = (ak === 1 && v) ? '' : String(ak).replace('.', ','); return sg + ks + v; }
+function gSpec() {
+  const t = $('gType').value, a = nv('gA'), b = nv('gB'), c = nv('gC');
+  if (t === 'cus') { const raw = $('gCus').value.trim(); return { fx: raw, lbl: 'y = ' + raw.replace(/\*/g, '·').replace(/\^2/g, '²').replace(/\^3/g, '³').replace(/-/g, '−') }; }
+  if (t === 'lin') { const l = (coefTerm(a, 'x', true) + coefTerm(b, '', !a)) || '0'; return { fx: `${a}*x+(${b})`, lbl: 'y = ' + l }; }
+  if (t === 'sq') return { fx: `${a}*x^2`, lbl: 'y = ' + (coefTerm(a, 'x²', true) || '0') };
+  if (t === 'quad') { const l = (coefTerm(a, 'x²', true) + coefTerm(b, 'x', !a) + coefTerm(c, '', !a && !b)) || '0'; return { fx: `${a}*x^2+(${b})*x+(${c})`, lbl: 'y = ' + l }; }
+  return { fx: `${a}/x`, lbl: 'y = ' + (a < 0 ? '−' : '') + String(Math.abs(a)).replace('.', ',') + '/x' };
+}
+function gUpdate() {
+  const t = $('gType').value; $('gAbc').hidden = t === 'cus'; $('gCusW').hidden = t !== 'cus';
+  $('gB').hidden = $('gBl').hidden = !(t === 'lin' || t === 'quad'); $('gC').hidden = $('gCl').hidden = t !== 'quad';
+  const sp = gSpec(); $('gFx').textContent = sp.lbl; $('gErr').textContent = '';
+  let f = null; try { f = parseFx(sp.fx); } catch (e) { $('gErr').textContent = '⚠️ ' + e; }
+  if (gTab === 't') {
+    const xs = $('tX').value.replace(/;/g, ' ').split(/\s+/).filter(Boolean).slice(0, 12);
+    const vals = xs.map(x => parseFloat(x.replace(',', '.').replace(/[−–]/g, '-')));
+    $('tPrev').innerHTML = f ? `<table><tr><td><i>x</i></td>${xs.map(x => `<td>${x.replace('-', '−')}</td>`).join('')}</tr><tr><td><i>${sp.lbl}</i></td>${vals.map(v => `<td>${$('tBlank').checked ? '' : fmtV(f(v))}</td>`).join('')}</tr></table>` : '';
+  }
+  try { localStorage.setItem('bt_graph', JSON.stringify({ t, a: $('gA').value, b: $('gB').value, c: $('gC').value, cus: $('gCus').value, xs: $('tX').value })); } catch (e) { }
+}
+['gType', 'gA', 'gB', 'gC', 'gCus', 'tX', 'tBlank'].forEach(id => $(id).addEventListener('input', gUpdate));
+$('gType').addEventListener('change', gUpdate);
+document.querySelectorAll('[data-gt]').forEach(b => b.onclick = () => { gTab = b.dataset.gt; document.querySelectorAll('[data-gt]').forEach(x => x.classList.toggle('on', x === b)); $('gPaneG').hidden = gTab !== 'g'; $('gPaneT').hidden = gTab !== 't'; $('gGo').textContent = gTab === 'g' ? '✏️ Vẽ đồ thị' : '📋 Chèn bảng (bấm vào bảng để đặt)'; gUpdate(); });
+$('bGraph').onclick = () => { $('gdlg').hidden = !$('gdlg').hidden; if (!$('gdlg').hidden) gUpdate(); };
+$('gX').onclick = () => $('gdlg').hidden = true;
+$('gdlg').addEventListener('click', e => { if (e.target.id === 'gdlg') $('gdlg').hidden = true; });
+try { const g = JSON.parse(localStorage.getItem('bt_graph')); if (g) { $('gType').value = g.t; $('gA').value = g.a; $('gB').value = g.b; $('gC').value = g.c; $('gCus').value = g.cus || ''; $('tX').value = g.xs || $('tX').value; } } catch (e) { }
+function ensureAxes() { if (P().bg !== 'axes') { P().bg = 'axes'; paintSwatches._custom = false; if (isDark('axes') !== isDark(color)) { } redrawAll(); toast('Đã chuyển nền sang Trục tọa độ Oxy'); } }
+$('gGo').onclick = () => {
+  const sp = gSpec(); let f; try { f = parseFx(sp.fx); } catch (e) { $('gErr').textContent = '⚠️ ' + e; return; }
+  const [ox, oy] = axesO();
+  if (gTab === 'g') { ensureAxes(); commit({ k: 'graph', fx: sp.fx, lbl: $('gLbl').checked ? sp.lbl : '', c: color, w: Math.max(2, width - 1), ox, oy }); $('gdlg').hidden = true; toast('Đã vẽ ' + sp.lbl + ' – bấm ↶ nếu muốn vẽ lại'); return; }
+  const xs = $('tX').value.replace(/;/g, ' ').split(/\s+/).filter(Boolean).slice(0, 12);
+  if (!xs.length) { $('gErr').textContent = '⚠️ Nhập các giá trị x'; return; }
+  const vals = xs.map(x => parseFloat(x.replace(',', '.').replace(/[−–]/g, '-')));
+  if (vals.some(isNaN)) { $('gErr').textContent = '⚠️ Giá trị x không hợp lệ'; return; }
+  pendingTable = { xs: xs.map(x => x.replace('-', '−')), ys: vals.map(v => fmtV(f(v))), lbl: sp.lbl, blank: $('tBlank').checked, pts: $('tPts').checked ? vals.map(v => [v, f(v), '(' + fmtV(v) + '; ' + fmtV(f(v)) + ')']) : null };
+  $('gdlg').hidden = true; setTool('place'); toast('Bấm vào chỗ muốn đặt bảng giá trị');
+};
+function placeTable(p) {
+  if (!pendingTable) { setTool('pen'); return; }
+  const t = pendingTable; pendingTable = null;
+  commit({ k: 'table', x: Math.round(p[0]), y: Math.round(p[1]), xs: t.xs, ys: t.ys, lbl: t.lbl, blank: t.blank, c: isDark(P().bg) ? '#0f172a' : color });
+  if (t.pts) { ensureAxes(); const [ox, oy] = axesO(); commit({ k: 'pts', pts: t.pts, ox, oy, c: color }); }
+  setTool('pen');
+}
+
+/* ---------- lớp phủ: compa & thước parabol ---------- */
+const NS = 'http://www.w3.org/2000/svg', ovl = $('ovl');
+const CP = { on: false, cx: 0, cy: 0, r: 120, a: 0 };
+const PB = { on: false, x: 0, y: 0, A: .5, w: 200, up: true };
+function svgEl(tag, attrs, parent) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); (parent || ovl).appendChild(e); return e; }
+let cpPrev = null;
+function drawOvl() {
+  ovl.innerHTML = '';
+  if (CP.on) {
+    const tx = CP.cx + CP.r * Math.cos(CP.a), ty = CP.cy + CP.r * Math.sin(CP.a);
+    const l = Math.max(150, CP.r / 2 + 40), h = Math.sqrt(Math.max(0, l * l - (CP.r / 2) ** 2));
+    const mx = (CP.cx + tx) / 2, my = (CP.cy + ty) / 2, nx = Math.sin(CP.a), ny = -Math.cos(CP.a), hx = mx + nx * h, hy = my + ny * h;
+    const g = svgEl('g', {});
+    if (cpPrev) svgEl('path', { d: cpPrev, fill: 'none', stroke: color, 'stroke-width': width, 'stroke-linecap': 'round' }, g);
+    svgEl('circle', { cx: CP.cx, cy: CP.cy, r: CP.r, fill: 'none', stroke: '#0f766e', 'stroke-width': 1, 'stroke-dasharray': '4 6', opacity: .5 }, g);
+    svgEl('line', { x1: CP.cx, y1: CP.cy, x2: tx, y2: ty, stroke: '#64748b', 'stroke-width': 1.2, 'stroke-dasharray': '5 4' }, g);
+    svgEl('line', { x1: hx, y1: hy, x2: CP.cx, y2: CP.cy, stroke: '#475569', 'stroke-width': 9, 'stroke-linecap': 'round' }, g);
+    svgEl('line', { x1: hx, y1: hy, x2: tx, y2: ty, stroke: '#94a3b8', 'stroke-width': 9, 'stroke-linecap': 'round' }, g);
+    svgEl('line', { x1: tx + (hx - tx) * .12, y1: ty + (hy - ty) * .12, x2: tx, y2: ty, stroke: color === '#ffffff' ? '#e2e8f0' : color, 'stroke-width': 6, 'stroke-linecap': 'round' }, g);
+    svgEl('circle', { cx: hx, cy: hy, r: 11, fill: '#0f766e', stroke: '#fff', 'stroke-width': 2 }, g);
+    svgEl('text', { x: (CP.cx + tx) / 2, y: (CP.cy + ty) / 2 - 8, 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 800, fill: '#0f172a', stroke: '#fff', 'stroke-width': 4, 'paint-order': 'stroke' }, g).textContent = 'R = ' + fmtU(CP.r) + ' ô';
+    // tay cầm
+    const needle = svgEl('circle', { cx: CP.cx, cy: CP.cy, r: 13, fill: 'rgba(239,68,68,.25)', stroke: '#ef4444', 'stroke-width': 2, class: 'mv' }, g); needle.dataset.h = 'cpMove';
+    svgEl('circle', { cx: CP.cx, cy: CP.cy, r: 2.5, fill: '#ef4444' }, g);
+    const tip = svgEl('circle', { cx: tx, cy: ty, r: 13, fill: 'rgba(14,165,233,.25)', stroke: '#0ea5e9', 'stroke-width': 2, class: 'h' }, g); tip.dataset.h = 'cpOpen';
+    const knob = svgEl('g', { class: 'h' }, g); knob.dataset.h = 'cpRot';
+    svgEl('rect', { x: hx - 9, y: hy - 38, width: 18, height: 30, rx: 6, fill: '#0f766e', stroke: '#fff', 'stroke-width': 2, transform: `rotate(${CP.a * 180 / Math.PI} ${hx} ${hy})` }, knob);
+    svgEl('text', { x: hx, y: hy - 44, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: '#0f766e', stroke: '#fff', 'stroke-width': 3, 'paint-order': 'stroke', transform: `rotate(${CP.a * 180 / Math.PI} ${hx} ${hy})` }, g).textContent = 'xoay để vẽ';
+    const x = svgEl('g', { class: 'h' }, g); x.dataset.h = 'cpClose'; svgEl('circle', { cx: CP.cx - 22, cy: CP.cy + 22, r: 11, fill: '#ef4444' }, x); svgEl('text', { x: CP.cx - 22, y: CP.cy + 26, 'text-anchor': 'middle', 'font-size': 12, fill: '#fff' }, x).textContent = '✕';
+  }
+  if (PB.on) {
+    const s = PB.up ? 1 : -1, N = 80, pts = [];
+    for (let k = 0; k <= N; k++) { const dx = -PB.w + 2 * PB.w * k / N; pts.push([PB.x + dx, PB.y - s * PB.A * (dx / U) ** 2 * U]); }
+    const band = pts.map(p => p.join(',')).join(' ') + ' ' + pts.slice().reverse().map(p => [p[0], p[1] + s * 30].join(',')).join(' ');
+    const g = svgEl('g', {});
+    const body = svgEl('polygon', { points: band, fill: 'rgba(254,240,138,.8)', stroke: '#a16207', 'stroke-width': 1.5, class: 'mv' }, g); body.dataset.h = 'pbMove';
+    svgEl('polyline', { points: pts.map(p => p.join(',')).join(' '), fill: 'none', stroke: '#713f12', 'stroke-width': 1.5 }, g);
+    svgEl('circle', { cx: PB.x, cy: PB.y, r: 4, fill: '#dc2626' }, g);
+    const last = pts[N]; const hd = svgEl('circle', { cx: last[0], cy: last[1], r: 12, fill: '#0f766e', stroke: '#fff', 'stroke-width': 2, class: 'h' }, g); hd.dataset.h = 'pbShape';
+    const [ox, oy] = axesO(), atO = P().bg === 'axes' && Math.abs(PB.x - ox) < .5 && Math.abs(PB.y - oy) < .5;
+    const lbX = PB.x, lbY = PB.y + s * 50;
+    svgEl('text', { x: lbX, y: lbY, 'text-anchor': 'middle', 'font-size': 15, 'font-weight': 800, fill: '#713f12', stroke: '#fff', 'stroke-width': 4, 'paint-order': 'stroke' }, g).textContent = (atO ? 'y = ' : 'a = ') + (PB.up ? '' : '−') + String(PB.A).replace('.', ',') + (atO ? 'x²' : '');
+    const bts = [['pbDraw', '✏️ Vẽ', '#0f766e'], ['pbFlip', '⇅', '#475569'], ['pbClose', '✕', '#ef4444']];
+    bts.forEach(([h, t, c], k) => { const b = svgEl('g', { class: 'h' }, g); b.dataset.h = h; const bx = PB.x - 70 + k * 58, by = lbY + s * 30 - 14; svgEl('rect', { x: bx, y: by, width: k ? 34 : 58, height: 28, rx: 8, fill: c }, b); svgEl('text', { x: bx + (k ? 17 : 29), y: by + 19, 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 700, fill: '#fff' }, b).textContent = t; });
+  }
+}
+function snapPB(x, y) {
+  if (P().bg !== 'axes') return [x, y];
+  const [ox, oy] = axesO(), h = U / 2, sx = ox + Math.round((x - ox) / h) * h, sy = oy + Math.round((y - oy) / h) * h;
+  return [Math.abs(sx - x) < 12 ? sx : x, Math.abs(sy - y) < 12 ? sy : y];
+}
+ovl.addEventListener('pointerdown', e => {
+  const t = e.target.closest('[data-h]'); if (!t) return; const h = t.dataset.h;
+  e.preventDefault(); e.stopPropagation();
+  if (h === 'cpClose') { CP.on = false; $('bCompa').classList.remove('on'); drawOvl(); return; }
+  if (h === 'pbClose') { PB.on = false; $('bPara').classList.remove('on'); drawOvl(); return; }
+  if (h === 'pbFlip') { PB.up = !PB.up; drawOvl(); return; }
+  if (h === 'pbDraw') { const s = PB.up ? 1 : -1, pts = []; for (let k = 0; k <= 120; k++) { const dx = -PB.w + 2 * PB.w * k / 120; pts.push([Math.round((PB.x + dx) * 10) / 10, Math.round((PB.y - s * PB.A * (dx / U) ** 2 * U) * 10) / 10]); } commit({ k: 'poly', c: color, w: width, p: pts }); toast('Đã vẽ parabol theo thước'); return; }
+  ovl.setPointerCapture(e.pointerId);
+  const sx = e.clientX, sy = e.clientY, o = { ...CP }, ob = { ...PB };
+  let acc = 0, prevA = CP.a; cpPrev = null;
+  const mv = ev => {
+    const x = ev.clientX, y = ev.clientY;
+    if (h === 'cpMove') { CP.cx = o.cx + x - sx; CP.cy = o.cy + y - sy; }
+    else if (h === 'cpOpen') { CP.r = Math.max(10, Math.hypot(x - CP.cx, y - CP.cy)); CP.a = Math.atan2(y - CP.cy, x - CP.cx); if (P().bg !== 'white') { const st = U / 4, rr = Math.round(CP.r / st) * st; if (Math.abs(rr - CP.r) < 5) CP.r = rr; } }
+    else if (h === 'cpRot') { const a = Math.atan2(y - CP.cy, x - CP.cx) + Math.PI / 2; let d = a - prevA; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; acc += d; prevA = a; CP.a = o.a + acc; acc = Math.max(-2 * Math.PI, Math.min(2 * Math.PI, acc));
+      if (Math.abs(acc) >= 2 * Math.PI - 1e-3) cpPrev = `M${CP.cx + CP.r} ${CP.cy} A${CP.r} ${CP.r} 0 1 1 ${CP.cx - CP.r} ${CP.cy} A${CP.r} ${CP.r} 0 1 1 ${CP.cx + CP.r} ${CP.cy}`;
+      else { const a0 = o.a, a1 = o.a + acc, large = Math.abs(acc) > Math.PI ? 1 : 0, sw = acc > 0 ? 1 : 0; cpPrev = `M${CP.cx + CP.r * Math.cos(a0)} ${CP.cy + CP.r * Math.sin(a0)} A${CP.r} ${CP.r} 0 ${large} ${sw} ${CP.cx + CP.r * Math.cos(a1)} ${CP.cy + CP.r * Math.sin(a1)}`; } }
+    else if (h === 'pbMove') { [PB.x, PB.y] = snapPB(ob.x + x - sx, ob.y + y - sy); }
+    else if (h === 'pbShape') { const dx = Math.abs(x - PB.x), dy = Math.abs(y - PB.y); PB.w = Math.max(40, Math.min(W, dx)); let A = dy / U / ((PB.w / U) ** 2); A = Math.max(.05, Math.min(5, A)); const st = A < 1 ? .05 : .25; PB.A = Math.round(A / st) * st; PB.A = Math.round(PB.A * 100) / 100; }
+    drawOvl();
+  };
+  const up = () => { ovl.removeEventListener('pointermove', mv); ovl.removeEventListener('pointerup', up); ovl.removeEventListener('pointercancel', up);
+    if (h === 'cpRot' && Math.abs(acc) > .02) commit({ k: 'arc', cx: Math.round(CP.cx * 10) / 10, cy: Math.round(CP.cy * 10) / 10, r: Math.round(CP.r * 10) / 10, a0: o.a, sw: acc, c: color, w: width });
+    cpPrev = null; drawOvl(); };
+  // ghi nhận góc ban đầu khi xoay
+  if (h === 'cpRot') prevA = Math.atan2(sy - CP.cy, sx - CP.cx) + Math.PI / 2;
+  ovl.addEventListener('pointermove', mv); ovl.addEventListener('pointerup', up); ovl.addEventListener('pointercancel', up);
+});
+$('bCompa').onclick = () => { CP.on = !CP.on; if (CP.on) { if (!CP.cx) { CP.cx = W / 2; CP.cy = H / 2 + 40; } if (P().bg === 'axes') { const [ox, oy] = axesO(); CP.cx = ox; CP.cy = oy; } } $('bCompa').classList.toggle('on', CP.on); drawOvl(); if (CP.on) toast('Kéo chấm xanh để mở compa, kéo núm trên đầu để xoay vẽ'); };
+$('bPara').onclick = () => { PB.on = !PB.on; if (PB.on) { if (P().bg === 'axes') { const [ox, oy] = axesO(); PB.x = ox; PB.y = oy; } else if (!PB.x) { PB.x = W / 2; PB.y = H * .6; } } $('bPara').classList.toggle('on', PB.on); drawOvl(); if (PB.on) toast('Kéo thân thước để di chuyển, kéo chấm xanh để đổi độ mở, bấm ✏️ Vẽ'); };
 
 /* ---------- chữ ---------- */
 let txtEl = null;

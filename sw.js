@@ -1,7 +1,7 @@
 /* EduTeacher Hub – Service Worker (tạo tự động bằng tools/tao_sw.py – không sửa tay)
    • Mở một lần khi có mạng → các trang đã mở dùng được khi mất mạng.
    • Nút “Tải sẵn để dùng offline” → tải toàn bộ công cụ về máy. */
-const VERSION = '147e4b8364';
+const VERSION = '8e41849ffd';
 const CACHE = 'eduhub-' + VERSION;
 const CORE = ["./", "index.html", "dashboard.html", "manifest.webmanifest", "eduhub_backup.js", "eduhub_search.js", "eduhub_pwa.js", "icons/icon-192.png"];
 const FILES = [
