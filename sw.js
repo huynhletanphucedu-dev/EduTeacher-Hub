@@ -1,7 +1,7 @@
 /* EduTeacher Hub – Service Worker (tạo tự động bằng tools/tao_sw.py – không sửa tay)
    • Mở một lần khi có mạng → các trang đã mở dùng được khi mất mạng.
    • Nút “Tải sẵn để dùng offline” → tải toàn bộ công cụ về máy. */
-const VERSION = '9dbf5a4582';
+const VERSION = '147e4b8364';
 const CACHE = 'eduhub-' + VERSION;
 const CORE = ["./", "index.html", "dashboard.html", "manifest.webmanifest", "eduhub_backup.js", "eduhub_search.js", "eduhub_pwa.js", "icons/icon-192.png"];
 const FILES = [
@@ -12,17 +12,22 @@ const FILES = [
 "cn_thidua.html",
 "cn_tinnhan.html",
 "cong_cu_anh.html",
+"cong_cu_bangtrang.html",
 "cong_cu_baocao.html",
 "cong_cu_bieumau.html",
+"cong_cu_chamtn.html",
 "cong_cu_congviec.html",
 "cong_cu_danhsach.html",
 "cong_cu_excel.html",
+"cong_cu_giaykhen.html",
 "cong_cu_lichbaogiang.html",
 "cong_cu_lichday.html",
 "cong_cu_matran.html",
 "cong_cu_ocr.html",
 "cong_cu_pdf.html",
 "cong_cu_pdf.js",
+"cong_cu_phanloaianh.html",
+"cong_cu_phieutoan.html",
 "cong_cu_phongthi.html",
 "cong_cu_qr.html",
 "cong_cu_rutgon.html",

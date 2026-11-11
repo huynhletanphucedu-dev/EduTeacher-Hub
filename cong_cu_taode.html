@@ -6,6 +6,8 @@
 <title>Công Cụ Tạo Đề Kiểm Tra</title>
 <script src="lib/docx.min.js"></script>
 <script src="lib/FileSaver.min.js"></script>
+<script src="tienphong/js/bank-classic.js"></script>
+<script src="eduhub_qbank.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -159,6 +161,25 @@
     .form-grid { grid-template-columns: 1fr; }
     .options-grid { grid-template-columns: 1fr; }
   }
+  .qb-btn{width:100%;padding:.7rem;border-radius:8px;border:1.5px solid #0ea5e9;background:#0c4a6e44;color:#7dd3fc;font-weight:700;font-size:.9rem;cursor:pointer;margin-bottom:.6rem;font-family:inherit}
+  .qb-btn:hover{background:#0c4a6e88}
+  .qb-ov{position:fixed;inset:0;background:rgba(2,6,23,.75);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+  .qb-ov[hidden]{display:none}
+  .qb-box{background:#1e293b;border:1px solid #334155;border-radius:14px;width:min(640px,100%);max-height:90vh;display:flex;flex-direction:column}
+  .qb-box h3{padding:14px 18px;border-bottom:1px solid #334155;color:#7dd3fc;font-size:1.02rem;display:flex;justify-content:space-between;align-items:center}
+  .qb-box h3 button{background:none;border:0;color:#94a3b8;font-size:1.2rem;cursor:pointer}
+  .qb-body{padding:14px 18px;overflow:auto;display:flex;flex-direction:column;gap:10px}
+  .qb-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .qb-row select{width:auto;flex:1;min-width:180px}
+  .qb-list{border:1px solid #334155;border-radius:8px;max-height:300px;overflow:auto}
+  .qb-list label{display:flex;gap:8px;align-items:center;padding:7px 10px;border-bottom:1px solid #1e293b;background:#0f172a;color:#e2e8f0;font-size:.86rem;cursor:pointer}
+  .qb-list label:hover{background:#172036}
+  .qb-list .ch{color:#64748b;font-size:.75rem;padding:6px 10px;background:#111a2e;font-weight:700}
+  .qb-list .n{margin-left:auto;color:#94a3b8;font-size:.75rem;white-space:nowrap}
+  .qb-foot{padding:12px 18px;border-top:1px solid #334155;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .qb-foot .sum{flex:1;color:#94a3b8;font-size:.82rem}
+  .qb-num{width:70px!important}
+  .qb-empty{color:#94a3b8;font-size:.86rem;padding:14px;text-align:center}
 </style>
 </head>
 <body>
@@ -208,6 +229,7 @@
     </div>
 
     <div id="tab-tn" class="tab-panel active">
+      <button class="qb-btn" onclick="qbOpen()">📚 Lấy câu hỏi từ Ngân hàng câu hỏi</button>
       <button class="add-btn" onclick="addTN()">+ Thêm câu trắc nghiệm</button>
       <div id="tn-list"></div>
     </div>
@@ -229,6 +251,25 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<div class="qb-ov" id="qbOv" hidden onclick="if(event.target===this)qbClose()">
+  <div class="qb-box">
+    <h3>📚 Lấy câu hỏi từ Ngân hàng <button onclick="qbClose()">✕</button></h3>
+    <div class="qb-body">
+      <div class="qb-row"><label style="white-space:nowrap">Nguồn câu hỏi</label><select id="qbSrc" onchange="qbRender()"></select></div>
+      <div class="qb-row" style="justify-content:space-between"><span style="font-size:.8rem;color:#94a3b8">Tick chọn các bài cần lấy câu hỏi:</span>
+        <span><a href="#" onclick="qbAll(true);return false" style="color:#7dd3fc;font-size:.8rem">Chọn hết</a> · <a href="#" onclick="qbAll(false);return false" style="color:#7dd3fc;font-size:.8rem">Bỏ hết</a></span></div>
+      <div class="qb-list" id="qbList"></div>
+      <div class="qb-row">
+        <label>Số câu lấy</label><input type="number" class="qb-num" id="qbN" min="1" value="10" style="background:#0f172a;border:1px solid #334155;border-radius:8px;color:#e2e8f0;padding:.45rem .6rem">
+        <label class="checkbox-row" style="gap:6px"><input type="checkbox" id="qbRand" checked> Chọn ngẫu nhiên</label>
+        <label class="checkbox-row" style="gap:6px"><input type="checkbox" id="qbMix" checked> Xáo vị trí A/B/C/D</label>
+        <label class="checkbox-row" style="gap:6px"><input type="checkbox" id="qbClear"> Xóa câu trắc nghiệm đang có</label>
+      </div>
+    </div>
+    <div class="qb-foot"><span class="sum" id="qbSum"></span><button class="primary-btn" style="width:auto;padding:.6rem 1.2rem" onclick="qbApply()">➕ Thêm vào đề</button></div>
+  </div>
+</div>
 
 <script>
 let tnCount = 0, tlCount = 0;
@@ -353,6 +394,61 @@ function getFormData() {
   }).filter(Boolean);
 
   return { truong, mon, lop, thoigian, ngayStr, showHoten, tnData, tlData };
+}
+
+
+/* ══ Lấy câu từ Ngân hàng câu hỏi (QB + Toán 6 có sẵn) ══ */
+function qbSources(){
+  const out=[]; let db=null;
+  try{ db=window.QB?QB.load():null; }catch(e){}
+  if(db) QB.subjects(db).filter(m=>m.soCau).forEach(m=>out.push({id:'qb:'+m.id,ten:'📝 '+m.ten+' – câu hỏi của tôi ('+m.soCau+' câu)',kind:'qb',mon:m.id}));
+  if(window.BANK_T6&&window.SUBJECTS&&SUBJECTS[0]) out.push({id:'t6',ten:'📗 Toán 6 (KNTT) – ngân hàng có sẵn',kind:'t6'});
+  return {out,db};
+}
+function qbOpen(){
+  const {out}=qbSources(); const sel=document.getElementById('qbSrc');
+  const last=localStorage.getItem('taode_qbsrc');
+  sel.innerHTML=out.map(o=>`<option value="${o.id}"${o.id===last?' selected':''}>${esc(o.ten)}</option>`).join('')||'<option value="">(chưa có câu hỏi)</option>';
+  document.getElementById('qbOv').hidden=false; qbRender();
+}
+function qbClose(){ document.getElementById('qbOv').hidden=true; }
+function esc(t){ return String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function qbLessons(){
+  const v=document.getElementById('qbSrc').value; const {out,db}=qbSources(); const src=out.find(o=>o.id===v);
+  if(!src) return [];
+  if(src.kind==='t6') return SUBJECTS[0].bai.filter(b=>(BANK_T6[b.bai]||[]).length).map(b=>({id:'t6:'+b.bai,ten:b.ten,ch:b.chuong,qs:BANK_T6[b.bai]}));
+  return QB.lessons(src.mon,db).filter(b=>b.soCau).map(b=>({id:b.id,ten:b.ten,ch:b.khoi?'Khối '+b.khoi:'',qs:QB.questions([b.id],db)}));
+}
+function qbRender(){
+  localStorage.setItem('taode_qbsrc',document.getElementById('qbSrc').value);
+  const L=qbLessons(); let ch=null;
+  document.getElementById('qbList').innerHTML=L.length?L.map(b=>{let h='';if(b.ch&&b.ch!==ch){ch=b.ch;h=`<div class="ch">${esc(ch)}</div>`;}
+    return h+`<label><input type="checkbox" value="${esc(b.id)}" onchange="qbSum()"> ${esc(b.ten)}<span class="n">${b.qs.length} câu</span></label>`;}).join('')
+    :'<div class="qb-empty">Chưa có câu hỏi. Thầy/cô vào <b>Quản lý câu hỏi trò chơi</b> (phần Giảng dạy) để tạo bài và soạn câu hỏi trước nhé.</div>';
+  qbSum();
+}
+function qbAll(v){ document.querySelectorAll('#qbList input').forEach(i=>i.checked=v); qbSum(); }
+function qbPicked(){ const ids=[...document.querySelectorAll('#qbList input:checked')].map(i=>i.value); return qbLessons().filter(b=>ids.includes(b.id)).flatMap(b=>b.qs); }
+function qbSum(){ const n=qbPicked().length; const N=document.getElementById('qbN'); if(n&&(+N.value>n||!+N.value)) N.value=Math.min(n,Math.max(+N.value||10,1)); N.max=n||1;
+  document.getElementById('qbSum').textContent=n?`Đang chọn ${n} câu trong kho`:'Chưa chọn bài nào'; }
+function qbShuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; }
+function qbApply(){
+  let qs=qbPicked(); if(!qs.length) return showToast('Thầy/cô tick chọn ít nhất 1 bài nhé');
+  const n=Math.max(1,Math.min(qs.length,+document.getElementById('qbN').value||qs.length));
+  qs=(document.getElementById('qbRand').checked?qbShuffle(qs):qs).slice(0,n);
+  if(document.getElementById('qbClear').checked){ document.getElementById('tn-list').innerHTML=''; tnItems=[]; }
+  const mix=document.getElementById('qbMix').checked;
+  qs.forEach(q=>{
+    let opts=[q.a,...(q.w||[]).filter(Boolean).slice(0,3)]; while(opts.length<4) opts.push('');
+    const order=mix?qbShuffle([0,1,2,3].filter(i=>opts[i]!=='')).concat([0,1,2,3].filter(i=>opts[i]==='')):[0,1,2,3];
+    addTN(); const el=document.getElementById(tnItems[tnItems.length-1]);
+    el.querySelector('.q-text').value=q.q;
+    ['a','b','c','d'].forEach((k,i)=>el.querySelector('.opt-'+k).value=opts[order[i]]);
+    const ans='ABCD'[order.indexOf(0)]; el.querySelector(`input[value="${ans}"]`).checked=true;
+  });
+  const mon=document.getElementById('mon'); const v=document.getElementById('qbSrc').value;
+  if(!mon.value.trim()){ mon.value=v==='t6'?'Toán':(QB.monName(v.replace('qb:',''))||''); }
+  qbClose(); switchTab('tn'); showToast(`Đã thêm ${qs.length} câu trắc nghiệm vào đề`);
 }
 
 function showToast(msg) {

@@ -498,6 +498,10 @@ async function generateVersions() {
     await new Promise(r => setTimeout(r, 10));
 
     const ansKey = buildAnswerKeyText(answerMatrix);
+    try { // cho công cụ Chấm trắc nghiệm lấy đáp án vừa trộn
+      const keys = {}; answerMatrix.forEach(v => { keys[v.code] = v.questions.map(q => /^[A-D]$/.test(q.answer || '') ? q.answer : '-').join(''); });
+      localStorage.setItem('omr_tronde_keys', JSON.stringify({ t: Date.now(), keys }));
+    } catch (e) {}
     zip.file('Bang_dap_an.txt', ansKey);
 
     progLabel.textContent = 'Đang nén file ZIP...';

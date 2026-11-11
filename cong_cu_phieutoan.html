@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Phiếu bài tập Toán tự động – EduTeacher Hub</title>
+<link rel="stylesheet" href="eduhub_ui.css">
+<script src="eduhub_data.js"></script>
+<style>
+.layout{display:grid;grid-template-columns:400px 1fr;gap:16px;max-width:1400px;margin:0 auto;padding:16px}
+.panel{display:flex;flex-direction:column;gap:12px}.panel .card{margin:0}
+.card h2{font-size:.98rem;margin-bottom:10px}
+.types{display:flex;flex-direction:column;gap:2px;max-height:420px;overflow:auto}
+.types .grp{font-size:.72rem;font-weight:800;color:var(--muted);text-transform:uppercase;margin:8px 0 2px}
+.types label{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:.86rem}
+.types label:hover{background:var(--card2)}
+.types label small{margin-left:auto;color:var(--muted);font-size:.72rem;white-space:nowrap}
+.lv{display:flex;gap:6px}.lv button{flex:1}
+.prevwrap{position:sticky;top:70px;align-self:start;min-width:0}
+.prevbar{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}.prevbar .sp{flex:1}
+#prev{background:#cbd5e1;border-radius:12px;padding:16px;overflow:auto;max-height:calc(100vh - 150px)}
+#prevIn{transform-origin:top left}
+@media(max-width:980px){.layout{grid-template-columns:1fr}.prevwrap{position:static}}
+
+/* ===== PHIẾU ===== */
+.ph{width:210mm;min-height:297mm;background:#fff;color:#111;font-family:"Times New Roman",Times,serif;font-size:13.5pt;padding:12mm 14mm;box-sizing:border-box;margin:0 auto 10px;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.ph.half{min-height:148.5mm;height:148.5mm;overflow:hidden;font-size:11.5pt;padding:8mm 11mm}
+.ph .h{display:flex;justify-content:space-between;gap:10px;font-size:.86em;border-bottom:.4mm solid #111;padding-bottom:2mm;margin-bottom:3mm}
+.ph .h b{font-size:1.05em}
+.ph .t{text-align:center;font-weight:700;font-size:1.25em;margin:1mm 0 .5mm}
+.ph .t2{text-align:center;font-style:italic;font-size:.88em;margin-bottom:3mm}
+.ph .grp{font-weight:700;margin:2.5mm 0 1.5mm}
+.ph .qs{display:grid;grid-template-columns:1fr 1fr;column-gap:8mm;row-gap:3.2mm}
+.ph .qs.one{grid-template-columns:1fr}
+.ph .q{display:flex;gap:2mm;align-items:center;line-height:1.5;break-inside:avoid}
+.ph .q .n{font-weight:700;min-width:7mm}
+.ph .q .dots{flex:1;border-bottom:.25mm dotted #555;min-width:14mm;height:1.1em;margin-left:1mm}
+.ph .ans{margin-top:4mm;border-top:.3mm dashed #555;padding-top:2mm;font-size:.8em}
+.ph .ans b{margin-right:2mm}
+.fr{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.05;margin:0 .5mm;font-size:.92em}
+.fr>span:first-child{border-bottom:.25mm solid currentColor;padding:0 .8mm}
+.fr>span{padding:0 .8mm}
+.key{width:210mm;background:#fff;color:#111;font-family:"Times New Roman",serif;font-size:11pt;padding:12mm 14mm;box-sizing:border-box;margin:0 auto 10px;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.key h3{text-align:center;margin-bottom:4mm}
+.key .d{border:.3mm solid #999;border-radius:2mm;padding:2mm 3mm;margin-bottom:2.5mm;break-inside:avoid}
+.key .d b{display:block;margin-bottom:1mm}
+.key .d span{display:inline-block;margin-right:4mm;white-space:nowrap}
+@media print{
+  body>*:not(#printArea){display:none!important}#printArea{display:block!important}
+  @page{size:A4 portrait;margin:0}
+  .ph,.key{box-shadow:none;margin:0}
+  .ph:not(.half),.key{page-break-after:always;break-after:page}
+  .ph.half:nth-of-type(2n){page-break-after:always;break-after:page}
+}
+#printArea{display:none}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>🧮 Phiếu bài tập Toán <small>tự sinh đề – mỗi học sinh một đề khác, kèm đáp án</small></h1>
+  <div class="right"><a class="back" href="dashboard.html">← Trang chính</a></div>
+</div>
+<div class="layout">
+  <div class="panel">
+    <div class="card">
+      <h2>1️⃣ Chọn dạng bài</h2>
+      <div class="types" id="types"></div>
+    </div>
+    <div class="card">
+      <h2>2️⃣ Thiết lập</h2>
+      <div class="f"><label>Độ khó</label><div class="lv" id="lv"><button class="btn l" data-l="1">🟢 Dễ</button><button class="btn l" data-l="2">🟡 Vừa</button><button class="btn l" data-l="3">🔴 Khó</button></div></div>
+      <div class="row">
+        <div class="f s"><label>Số câu mỗi dạng</label><select id="per"></select></div>
+        <div class="f s"><label>Khổ phiếu</label><select id="half"><option value="0">A4 (1 phiếu/tờ)</option><option value="1">A5 (2 phiếu/tờ A4)</option></select></div>
+      </div>
+      <div class="f"><label>Tiêu đề phiếu</label><input type="text" id="title" value="PHIẾU BÀI TẬP"></div>
+      <div class="f"><label>Ghi chú dưới tiêu đề</label><input type="text" id="note" placeholder="VD: Thời gian làm bài 15 phút"></div>
+      <div class="f"><label>Đáp án</label><select id="ansMode"><option value="sep">In riêng trang đáp án (cho giáo viên)</option><option value="foot">In ở cuối mỗi phiếu (gấp lại / cắt rời)</option><option value="none">Không in đáp án</option></select></div>
+    </div>
+    <div class="card">
+      <h2>3️⃣ Học sinh</h2>
+      <div class="tabs" style="margin-bottom:8px"><button class="tab on" data-m="num">Theo số đề</button><button class="tab" data-m="cls">Theo danh sách lớp</button></div>
+      <div id="mNum" class="row"><div class="f s"><label>Số đề khác nhau</label><input type="number" id="nDe" min="1" max="60" value="4"></div><div class="f s"><label>Bộ số (đổi để ra đề mới)</label><input type="number" id="seed" min="1" value="1"></div></div>
+      <div id="mCls" hidden><div class="f"><select id="cls"></select></div><div class="hint">Mỗi em một đề riêng, có in sẵn họ tên.</div>
+        <div class="f" style="margin-top:8px"><label>Bộ số (đổi để ra đề mới)</label><input type="number" id="seed2" min="1" value="1"></div></div>
+    </div>
+  </div>
+  <div class="prevwrap">
+    <div class="prevbar"><b id="pvT">Xem trước</b><span class="sp"></span><button class="btn l" id="reroll" title="Đổi bộ số">🎲 Đề mới</button><button class="btn" id="print" style="background:#7c3aed">🖨️ In phiếu</button></div>
+    <div id="prev"><div id="prevIn"></div></div>
+  </div>
+</div>
+<div id="printArea"></div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id), esc = ED.esc;
+
+/* ---------- ngẫu nhiên có hạt giống ---------- */
+function rng(seed) { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+let R = Math.random;
+const ri = (a, b) => a + Math.floor(R() * (b - a + 1));
+const nz = (a, b) => { let x; do x = ri(a, b); while (x === 0); return x; };
+const pick = a => a[Math.floor(R() * a.length)];
+const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a || 1; };
+const lcm = (a, b) => a / gcd(a, b) * b;
+const neg = x => x < 0 ? '(' + fmtN(x) + ')' : fmtN(x);
+const fmtN = x => String(x).replace('-', '−').replace('.', ',');
+const fr = (a, b) => `<span class="fr"><span>${fmtN(a)}</span><span>${fmtN(b)}</span></span>`;
+function frS(n, d) { // phân số tối giản dạng HTML
+  if (d < 0) { n = -n; d = -d; } const g = gcd(n, d); n /= g; d /= g;
+  if (d === 1) return fmtN(n); return (n < 0 ? '−' : '') + fr(Math.abs(n), d);
+}
+const frQ = (n, d) => n < 0 ? '(' + '−' + fr(-n, d) + ')' : fr(n, d);
+const dec = (x, k) => fmtN(+x.toFixed(k));
+
+/* ---------- các dạng bài ---------- */
+const T = [
+  { g: 'Số tự nhiên – số nguyên', id: 'cong_nguyen', t: 'Cộng, trừ số nguyên', k: '6', f: L => { const m = [20, 60, 200][L - 1]; const a = nz(-m, m), b = nz(-m, m), op = pick(['+', '−']); return { q: `${fmtN(a)} ${op} ${neg(b)}`, a: fmtN(op === '+' ? a + b : a - b) }; } },
+  { g: 'Số tự nhiên – số nguyên', id: 'nhan_nguyen', t: 'Nhân, chia số nguyên', k: '6', f: L => { const m = [9, 15, 30][L - 1]; const a = nz(-m, m), b = nz(-m, m); if (R() < .5) return { q: `${fmtN(a)} · ${neg(b)}`, a: fmtN(a * b) }; return { q: `${fmtN(a * b)} : ${neg(b)}`, a: fmtN(a) }; } },
+  { g: 'Số tự nhiên – số nguyên', id: 'thutu', t: 'Thứ tự thực hiện phép tính', k: '6', f: L => {
+      if (L === 1) { const a = ri(2, 20), b = ri(2, 9), c = ri(2, 9); return { q: `${a} + ${b} · ${c}`, a: fmtN(a + b * c) }; }
+      if (L === 2) { const a = ri(10, 60), b = ri(2, 9), c = ri(2, 9), d = ri(1, 20); return { q: `${a} − ${b} · ${c} + ${d}`, a: fmtN(a - b * c + d) }; }
+      const b = ri(2, 6), c = ri(2, 9), d = ri(2, 5), k = ri(2, 3), e = ri(1, 9); return { q: `${b * d} · (${c} − ${d})<sup>${k}</sup> : ${d} + ${e}`, a: fmtN(b * d * Math.pow(c - d, k) / d + e) }; } },
+  { g: 'Số tự nhiên – số nguyên', id: 'luythua', t: 'Lũy thừa', k: '6', f: L => {
+      if (L === 1) { const a = ri(2, 9), n = ri(2, 3); return { q: `${a}<sup>${n}</sup>`, a: fmtN(Math.pow(a, n)) }; }
+      if (L === 2) { const a = ri(2, 5), m = ri(2, 6), n = ri(1, 4); return R() < .5 ? { q: `${a}<sup>${m}</sup> · ${a}<sup>${n}</sup> (viết dưới dạng một lũy thừa)`, a: `${a}<sup>${m + n}</sup>` } : { q: `${a}<sup>${m + n}</sup> : ${a}<sup>${n}</sup> (viết dưới dạng một lũy thừa)`, a: `${a}<sup>${m}</sup>` }; }
+      const a = ri(2, 4), n = ri(2, 4), b = ri(2, 5); return { q: `${a}<sup>${n}</sup> + ${b}<sup>2</sup> − ${a}<sup>${n - 1}</sup>`, a: fmtN(Math.pow(a, n) + b * b - Math.pow(a, n - 1)) }; } },
+  { g: 'Số tự nhiên – số nguyên', id: 'timx', t: 'Tìm x (phương trình bậc nhất)', k: '6–8', w: 1, f: L => {
+      const x = L === 1 ? ri(1, 20) : nz(-15, 15);
+      if (L === 1) { const b = ri(1, 30); return R() < .5 ? { q: `x + ${b} = ${x + b}`, a: 'x = ' + fmtN(x) } : { q: `${ri(2, 9) * 0 + x + b} − x = ${b}`, a: 'x = ' + fmtN(x) }; }
+      const a = nz(-9, 9), b = nz(-20, 20); if (L === 2) return { q: `${fmtN(a)}x ${b < 0 ? '−' : '+'} ${Math.abs(b)} = ${fmtN(a * x + b)}`, a: 'x = ' + fmtN(x) };
+      const c = nz(-6, 6); return { q: `${fmtN(a)}(x ${c < 0 ? '−' : '+'} ${Math.abs(c)}) ${b < 0 ? '−' : '+'} ${Math.abs(b)} = ${fmtN(a * (x + c) + b)}`, a: 'x = ' + fmtN(x) }; } },
+  { g: 'Số tự nhiên – số nguyên', id: 'ucln', t: 'ƯCLN và BCNN', k: '6', w: 1, f: L => {
+      const g = [ri(2, 6), ri(2, 12), ri(3, 15)][L - 1]; let p, q; do { p = ri(1, [5, 9, 12][L - 1]); q = ri(1, [5, 9, 12][L - 1]); } while (p === q || gcd(p, q) !== 1);
+      const a = g * p, b = g * q; if (L === 3) { const r = ri(2, 5); const c = g * r; return { q: `ƯCLN(${a}, ${b}, ${c}) và BCNN(${a}, ${b}, ${c})`, a: `ƯCLN = ${gcd(gcd(a, b), c)}; BCNN = ${lcm(lcm(a, b), c)}` }; }
+      return { q: `ƯCLN(${a}, ${b}) và BCNN(${a}, ${b})`, a: `ƯCLN = ${g}; BCNN = ${lcm(a, b)}` }; } },
+  { g: 'Số tự nhiên – số nguyên', id: 'nguyento', t: 'Phân tích ra thừa số nguyên tố', k: '6', w: 1, f: L => {
+      const P = [2, 3, 5, 7, 11, 13], n = [3, 4, 5][L - 1]; let x = 1; const fs = {}; for (let i = 0; i < n; i++) { const p = pick(L === 1 ? [2, 3, 5] : P.slice(0, L === 2 ? 4 : 6)); if (x * p > [200, 1000, 5000][L - 1]) continue; x *= p; fs[p] = (fs[p] || 0) + 1; }
+      if (x < 6) { x *= 6; fs[2] = (fs[2] || 0) + 1; fs[3] = (fs[3] || 0) + 1; }
+      return { q: `${x}`, a: Object.keys(fs).sort((a, b) => a - b).map(p => p + (fs[p] > 1 ? `<sup>${fs[p]}</sup>` : '')).join(' · ') }; } },
+  { g: 'Phân số – số thập phân', id: 'rutgon', t: 'Rút gọn phân số', k: '6', f: L => { let n, d; do { n = ri(1, [9, 15, 30][L - 1]); d = ri(2, [10, 20, 40][L - 1]); } while (gcd(n, d) !== 1 || n === d); const k = ri(2, [5, 9, 15][L - 1]); const s = L === 3 && R() < .5 ? -1 : 1; return { q: `${s < 0 ? '−' : ''}${fr(n * k, d * k)}`, a: frS(s * n, d) }; } },
+  { g: 'Phân số – số thập phân', id: 'sosanh', t: 'So sánh phân số (điền >, <, =)', k: '6', f: L => {
+      const m = [9, 15, 25][L - 1]; const a = ri(1, m), b = ri(2, m), c = ri(1, m), d = ri(2, m); let s1 = 1, s2 = 1; if (L === 3) { s1 = pick([1, -1]); s2 = pick([1, -1]); }
+      const v = s1 * a / b - s2 * c / d; const sg = Math.abs(v) < 1e-9 ? '=' : v > 0 ? '>' : '<';
+      return { q: `${s1 < 0 ? '−' : ''}${fr(a, b)} &nbsp;…&nbsp; ${s2 < 0 ? '−' : ''}${fr(c, d)}`, a: sg, nodots: 1 }; } },
+  { g: 'Phân số – số thập phân', id: 'phanso', t: 'Cộng, trừ, nhân, chia phân số', k: '6', f: L => {
+      const m = [6, 10, 12][L - 1]; const a = L === 3 ? nz(-9, 9) : ri(1, 9), b = ri(2, m), c = L === 3 ? nz(-9, 9) : ri(1, 9), d = ri(2, m); const op = pick(L === 1 ? ['+', '−'] : ['+', '−', '·', ':']);
+      const A = L === 3 ? frQ(a, b) : fr(a, b), B = L === 3 ? frQ(c, d) : fr(c, d);
+      let n, dd; if (op === '+') { n = a * d + c * b; dd = b * d; } else if (op === '−') { n = a * d - c * b; dd = b * d; } else if (op === '·') { n = a * c; dd = b * d; } else { n = a * d; dd = b * c; }
+      return { q: `${A} ${op} ${B}`, a: frS(n, dd) }; } },
+  { g: 'Phân số – số thập phân', id: 'thapphan', t: 'Phép tính với số thập phân', k: '6', f: L => {
+      const k = L === 1 ? 1 : 2; const a = ri(1, [99, 999, 9999][L - 1]) / Math.pow(10, k), b = ri(1, [99, 999, 999][L - 1]) / Math.pow(10, k), op = pick(L === 1 ? ['+', '−'] : ['+', '−', '·']);
+      const s = L === 3 && R() < .5 ? -1 : 1; const A = s * a; const v = op === '+' ? A + b : op === '−' ? A - b : A * b;
+      return { q: `${fmtN(+A.toFixed(k))} ${op} ${fmtN(+b.toFixed(k))}`, a: dec(v, op === '·' ? 2 * k : k) }; } },
+  { g: 'Phân số – số thập phân', id: 'phantram', t: 'Tỉ số phần trăm', k: '6', w: 1, f: L => {
+      const p = pick(L === 1 ? [10, 20, 25, 50] : L === 2 ? [5, 15, 30, 40, 60, 75] : [12, 35, 45, 120, 2.5]); const base = ri(2, [20, 40, 80][L - 1]) * (L === 3 ? 8 : 20);
+      if (L < 3 || R() < .5) return { q: `${fmtN(p)}% của ${base}`, a: dec(base * p / 100, 2) };
+      const part = base * p / 100; return { q: `Tìm một số biết ${fmtN(p)}% của nó bằng ${dec(part, 2)}`, a: fmtN(base) }; } },
+  { g: 'Lớp 7 – 9', id: 'lamtron', t: 'Làm tròn số thập phân', k: '7', f: L => { const x = ri(1000, 99999) / 1000; const d = pick(L === 1 ? [0, 1] : [0, 1, 2]); const lab = ['hàng đơn vị', 'hàng phần mười', 'hàng phần trăm'][d]; return { q: `Làm tròn ${fmtN(x)} đến ${lab}`, a: fmtN(+x.toFixed(d)), w: 1 }; }, w: 1 },
+  { g: 'Lớp 7 – 9', id: 'tile', t: 'Tìm x trong tỉ lệ thức', k: '7', w: 1, f: L => { const a = ri(1, 9) * (L === 3 ? pick([1, -1]) : 1), b = ri(2, 9), k = ri(2, [4, 6, 9][L - 1]); const x = a * k, d = b * k; return R() < .5 ? { q: `${fr(a, b)} = ${fr('x', d)}`, a: 'x = ' + fmtN(x) } : { q: `${fr('x', d)} = ${fr(a, b)}`, a: 'x = ' + fmtN(x) }; } },
+  { g: 'Lớp 7 – 9', id: 'dathuc', t: 'Thu gọn đa thức / đơn thức đồng dạng', k: '7–8', w: 1, f: L => { const a = nz(-9, 9), b = nz(-9, 9), c = nz(-9, 9), v = pick(['x', 'y', 'a']); const t = (k, s) => (k < 0 ? ' − ' : ' + ') + (Math.abs(k) === 1 ? '' : Math.abs(k)) + s;
+      const c1 = k => (k === 1 ? '' : k === -1 ? '−' : fmtN(k));
+      if (L === 1) { const s = a + b; return { q: c1(a) + v + t(b, v), a: s === 0 ? '0' : c1(s) + v }; }
+      const d = nz(-9, 9), e = nz(-9, 9); const q = (`${a}${v}²` + t(b, v) + t(c, v + '²') + t(d, v) + (L === 3 ? t(e, '') : '')).replace(/^(-?)1(?=[a-z])/, '$1').replace(/^-/, '−');
+      const A2 = a + c, A1 = b + d; let r = ''; if (A2) r += (A2 === 1 ? '' : A2 === -1 ? '−' : fmtN(A2)) + v + '²'; if (A1) r += (r ? (A1 < 0 ? ' − ' : ' + ') + (Math.abs(A1) === 1 ? '' : Math.abs(A1)) : (A1 === 1 ? '' : A1 === -1 ? '−' : fmtN(A1))) + v; if (L === 3) r += r ? (e < 0 ? ' − ' : ' + ') + Math.abs(e) : fmtN(e); return { q, a: r || '0' }; } },
+  { g: 'Lớp 7 – 9', id: 'hdt', t: 'Hằng đẳng thức – tính nhanh', k: '8', w: 1, f: L => {
+      if (L === 1) { const n = pick([21, 31, 41, 51, 99, 101, 19, 29, 49]); return { q: `${n}<sup>2</sup> (tính nhanh)`, a: fmtN(n * n) }; }
+      if (L === 2) { const a = ri(30, 90), b = ri(1, 9); return { q: `${a + b} · ${a - b} (tính nhanh)`, a: fmtN((a + b) * (a - b)) }; }
+      const a = ri(2, 9), b = ri(1, 9), v = pick(['x', 'y']); const f = pick([1, 2, 3]);
+      if (f === 1) return { q: `Khai triển (${a}${v} + ${b})<sup>2</sup>`, a: `${a * a}${v}² + ${2 * a * b}${v} + ${b * b}` };
+      if (f === 2) return { q: `Khai triển (${a}${v} − ${b})<sup>2</sup>`, a: `${a * a}${v}² − ${2 * a * b}${v} + ${b * b}` };
+      return { q: `Phân tích thành nhân tử: ${a * a}${v}² − ${b * b}`, a: `(${a}${v} − ${b})(${a}${v} + ${b})` }; } },
+  { g: 'Lớp 7 – 9', id: 'can', t: 'Căn bậc hai', k: '9', f: L => {
+      if (L === 1) { const a = ri(1, 20); return { q: `√${a * a}`, a: fmtN(a) }; }
+      if (L === 2) { const a = ri(2, 12), b = ri(2, 12); return { q: `√${a * a} + √${b * b}`, a: fmtN(a + b) }; }
+      const k = pick([2, 3, 5, 6, 7]), a = ri(2, 6), b = ri(1, 5); return { q: `√${a * a * k} − √${b * b * k}`, a: (a - b === 0 ? '0' : (a - b === 1 ? '' : a - b === -1 ? '−' : fmtN(a - b)) + '√' + k) }; } }
+];
+const byId = Object.fromEntries(T.map(t => [t.id, t]));
+
+/* ---------- cấu hình ---------- */
+const K = 'pt_cfg';
+let C = Object.assign({ types: ['cong_nguyen', 'phanso'], L: 2, per: 4, half: 0, title: 'PHIẾU BÀI TẬP', note: '', ansMode: 'sep', mode: 'num', nDe: 4, seed: 1 }, ED.get(K, {}));
+const save = () => ED.set(K, C);
+let grp = null;
+$('types').innerHTML = T.map(t => { let h = ''; if (t.g !== grp) { grp = t.g; h = `<div class="grp">${esc(grp)}</div>`; } return h + `<label><input type="checkbox" value="${t.id}"> ${esc(t.t)}<small>Lớp ${t.k}</small></label>`; }).join('');
+$('types').querySelectorAll('input').forEach(i => { i.checked = C.types.includes(i.value); i.onchange = () => { C.types = [...$('types').querySelectorAll('input:checked')].map(x => x.value); save(); render(); }; });
+$('per').innerHTML = [2, 3, 4, 5, 6, 8, 10, 12].map(n => `<option>${n}</option>`).join('');
+const bind = (id, k, num) => { const el = $(id); el.value = C[k]; el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => { C[k] = num ? +el.value : el.value; save(); render(); }); };
+bind('per', 'per', 1); bind('half', 'half', 1); bind('title', 'title'); bind('note', 'note'); bind('ansMode', 'ansMode'); bind('nDe', 'nDe', 1); bind('seed', 'seed', 1);
+$('seed2').value = C.seed; $('seed2').oninput = () => { C.seed = +$('seed2').value || 1; $('seed').value = C.seed; save(); render(); };
+function paintLv() { document.querySelectorAll('#lv button').forEach(b => b.classList.toggle('on', +b.dataset.l === C.L)); document.querySelectorAll('#lv button').forEach(b => { b.className = 'btn' + (+b.dataset.l === C.L ? '' : ' l'); }); }
+document.querySelectorAll('#lv button').forEach(b => b.onclick = () => { C.L = +b.dataset.l; save(); paintLv(); render(); });
+document.querySelectorAll('[data-m]').forEach(b => b.onclick = () => { C.mode = b.dataset.m; save(); paintMode(); render(); });
+function paintMode() { document.querySelectorAll('[data-m]').forEach(b => b.classList.toggle('on', b.dataset.m === C.mode)); $('mNum').hidden = C.mode !== 'num'; $('mCls').hidden = C.mode !== 'cls'; }
+let CLS = null; ED.classSelect($('cls'), 'pt_cls', c => { CLS = c; render(); }); CLS = ED.classById($('cls').value);
+$('reroll').onclick = () => { C.seed = (C.seed || 1) + 1; $('seed').value = $('seed2').value = C.seed; save(); render(); };
+
+/* ---------- sinh đề ---------- */
+function makeDe(no) {
+  R = rng(C.seed * 100003 + no * 7919);
+  const groups = C.types.map(id => byId[id]).filter(Boolean).map(t => {
+    const seen = new Set(), items = [];
+    for (let i = 0, tries = 0; i < C.per && tries < C.per * 30; tries++) { const it = t.f(C.L); if (seen.has(it.q)) continue; seen.add(it.q); items.push(it); i++; }
+    return { t, items };
+  });
+  R = Math.random; return groups;
+}
+function people() {
+  if (C.mode === 'cls') return CLS ? CLS.students.map((s, i) => ({ no: i + 1, ten: s.hoTen, lop: CLS.short || '' })) : [];
+  return Array.from({ length: Math.max(1, Math.min(60, C.nDe || 1)) }, (_, i) => ({ no: i + 1, ten: '', lop: '' }));
+}
+const LVN = ['', 'Dễ', 'Vừa', 'Khó'];
+function sheet(p, G) {
+  let n = 0;
+  const body = G.map((g, gi) => `<div class="grp">Bài ${gi + 1}. ${esc(g.t.t)}${g.t.id === 'sosanh' ? '' : g.t.id === 'timx' || g.t.id === 'tile' ? ': Tìm x, biết' : g.t.id === 'nguyento' ? ' các số sau' : g.t.id === 'rutgon' ? ' các phân số sau' : ': Tính'}</div>
+    <div class="qs${g.t.w ? ' one' : ''}">${g.items.map((it, k) => `<div class="q"><span class="n">${String.fromCharCode(97 + k)})</span><span>${it.q}${it.nodots ? '' : (g.t.id === 'timx' || g.t.id === 'tile' || /Tìm một số|Làm tròn|ƯCLN|Khai triển|Phân tích/.test(it.q) ? '' : ' =')}</span>${it.nodots ? '' : '<span class="dots"></span>'}</div>`).join('')}</div>`).join('');
+  const ans = C.ansMode === 'foot' ? `<div class="ans">✂ <b>Đáp án đề ${p.no}:</b>${G.map((g, gi) => ` <b>Bài ${gi + 1}:</b> ` + g.items.map((it, k) => String.fromCharCode(97 + k) + ') ' + it.a).join('; ')).join(' ·')}</div>` : '';
+  return `<div class="ph${C.half ? ' half' : ''}"><div class="h"><span>Họ tên: <b>${p.ten ? esc(p.ten) : '……………………………………'}</b></span><span>Lớp: <b>${p.lop ? esc(p.lop) : '…………'}</b></span><span><b>Đề số ${String(p.no).padStart(2, '0')}</b></span></div>
+    <div class="t">${esc(C.title || 'PHIẾU BÀI TẬP')}</div><div class="t2">${esc(C.note || ('Mức độ: ' + LVN[C.L]))}</div>${body}${ans}</div>`;
+}
+function keyPage(P, D) {
+  return `<div class="key"><h3>ĐÁP ÁN – ${esc(C.title || 'PHIẾU BÀI TẬP')} (${P.length} đề · mức ${LVN[C.L]})</h3>` + P.map((p, i) => `<div class="d"><b>Đề số ${String(p.no).padStart(2, '0')}${p.ten ? ' – ' + esc(p.ten) : ''}</b>${D[i].map((g, gi) => `<div><i>Bài ${gi + 1}:</i> ` + g.items.map((it, k) => `<span>${String.fromCharCode(97 + k)}) ${it.a}</span>`).join('') + '</div>').join('')}</div>`).join('') + '</div>';
+}
+function build(all) {
+  const P = people(); if (!C.types.length) return '<div style="padding:40px;text-align:center;color:#334155">Chọn ít nhất một dạng bài ở bên trái.</div>';
+  if (!P.length) return '<div style="padding:40px;text-align:center;color:#334155">Chưa có danh sách lớp.</div>';
+  const list = all ? P : P.slice(0, 2), D = list.map(p => makeDe(p.no));
+  let h = list.map((p, i) => sheet(p, D[i])).join('');
+  if (C.half && all && list.length % 2) h += `<div class="ph half" style="visibility:hidden"></div>`;
+  if (C.ansMode === 'sep') h += keyPage(list, D);
+  return h;
+}
+function render() {
+  $('prevIn').innerHTML = build(false); const P = people();
+  $('pvT').textContent = 'Xem trước' + (P.length > 2 ? ` (2/${P.length} phiếu)` : '');
+  const box = $('prev'), w = 210 * 3.7795 + 4, s = Math.min(1, (box.clientWidth - 32) / w);
+  $('prevIn').style.transform = `scale(${s})`; $('prevIn').style.width = w + 'px';
+}
+addEventListener('resize', render);
+$('print').onclick = () => { if (!C.types.length) return ED.toast('Chọn ít nhất một dạng bài'); $('printArea').innerHTML = build(true); setTimeout(() => print(), 200); };
+paintLv(); paintMode(); render();
+window.__pt = { T, makeDe: no => makeDe(no), C: () => C };
+})();
+</script>
+</body>
+</html>

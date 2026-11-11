@@ -874,6 +874,47 @@ body.dark .sd-table tr:hover td{background:#162032;}
 @keyframes tfadeout{from{bottom:30px;opacity:1}to{bottom:0;opacity:0}}
 
 
+
+/* Công Cụ Khác: tìm kiếm · nhóm · yêu thích */
+.cck-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:-12px 0 22px}
+.cck-search{display:flex;align-items:center;gap:8px;background:var(--white);border:1.5px solid var(--border);border-radius:12px;padding:0 12px;flex:1;min-width:240px;max-width:420px}
+.cck-search:focus-within{border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,.12)}
+.cck-search input{border:0;outline:0;background:transparent;font:inherit;font-size:.88rem;padding:10px 0;flex:1;color:var(--text);min-width:0}
+.cck-chips{display:flex;flex-wrap:wrap;gap:6px}
+.cck-chip{border:1.5px solid var(--border);background:var(--white);color:var(--text);border-radius:999px;padding:6px 12px;font:inherit;font-size:.78rem;font-weight:700;cursor:pointer}
+.cck-chip:hover{border-color:#a78bfa}
+.cck-chip.on{background:#7c3aed;border-color:#7c3aed;color:#fff}
+.cck-chip small{opacity:.7;font-weight:600;margin-left:3px}
+.cck-empty{text-align:center;color:var(--muted);padding:30px 10px;font-size:.88rem}
+#cong-cu-khac .tool-card.cck-hide{display:none}
+#cong-cu-khac .tool-card.cck-fav{border-color:#f59e0b}
+
+/* Đếm ngược sự kiện (trang chủ) */
+.cd-box{width:100%;max-width:720px;margin:-14px 0 30px;text-align:left}
+.cd-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;color:#cbd5e1;font-weight:800;font-size:.9rem}
+.cd-head .sp{flex:1}
+.cd-head button,.cd-add button,.cd-sug button{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#e2e8f0;border-radius:999px;padding:5px 12px;font:inherit;font-size:.76rem;font-weight:700;cursor:pointer}
+.cd-head button:hover,.cd-sug button:hover{background:rgba(255,255,255,.14)}
+.cd-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.cd-it{position:relative;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 14px}
+.cd-it.soon{border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.08)}
+.cd-it.today{border-color:rgba(52,211,153,.6);background:rgba(52,211,153,.1)}
+.cd-it.past{opacity:.5}
+.cd-it .n{font-size:1.9rem;font-weight:900;color:#38bdf8;line-height:1}
+.cd-it.soon .n{color:#fbbf24}.cd-it.today .n{color:#34d399;font-size:1.25rem}
+.cd-it .u{font-size:.72rem;color:#94a3b8;font-weight:700;margin-left:3px}
+.cd-it .t{color:#e2e8f0;font-weight:700;font-size:.84rem;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cd-it .d{color:#64748b;font-size:.72rem;margin-top:2px}
+.cd-it .x{position:absolute;top:6px;right:6px;border:0;background:none;color:#64748b;cursor:pointer;font-size:.8rem;opacity:0;padding:2px 5px}
+.cd-it:hover .x{opacity:1}.cd-it .x:hover{color:#f87171}
+@media(hover:none){.cd-it .x{opacity:1}}
+.cd-add{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.15);border-radius:12px;padding:10px}
+.cd-add[hidden]{display:none}
+.cd-add input{background:rgba(15,23,42,.7);border:1px solid rgba(255,255,255,.15);color:#e2e8f0;border-radius:8px;padding:7px 10px;font:inherit;font-size:.82rem;color-scheme:dark}
+.cd-add input[type=text]{flex:1;min-width:160px}
+.cd-add .ok{background:#0ea5e9;border-color:#0ea5e9;color:#fff}
+.cd-sug{display:flex;gap:6px;flex-wrap:wrap;width:100%}
+.cd-empty{color:#64748b;font-size:.82rem}
 /* ══ TOOL HUB ══ */
 .tool-hub-wrap { padding:32px 28px; max-width:1100px; }
 .tool-hub-header { margin-bottom:28px; }
@@ -1203,6 +1244,9 @@ body.dark .sd-table tr:hover td{background:#162032;}
           <p style="margin:0;color:#e2e8f0;font-size:1.05rem;">Xin chào, <strong style="color:#38bdf8;" id="welcomeName">Thầy/Cô</strong> 👋</p>
           <p style="margin:8px 0 0;color:#64748b;font-size:.88rem;" id="welcomeDate"></p>
         </div>
+
+        <!-- Đếm ngược sự kiện -->
+        <div id="cd-box" class="cd-box"></div>
 
         <!-- Lớp mẫu (dữ liệu giả) cho người mới -->
         <div id="ehd-box" style="width:100%"></div>
@@ -2574,8 +2618,13 @@ body.dark .sd-table tr:hover td{background:#162032;}
       <div class="tool-hub-wrap">
         <div class="tool-hub-header">
           <h2 class="tool-hub-title">⚙️ Công Cụ Khác</h2>
-          <p class="tool-hub-sub">Bộ công cụ hỗ trợ giáo viên</p>
+          <p class="tool-hub-sub">Bộ công cụ hỗ trợ giáo viên · bấm ☆ trên thẻ để ghim công cụ hay dùng lên đầu</p>
         </div>
+        <div class="cck-bar" id="cck-bar">
+          <div class="cck-search"><span>🔍</span><input id="cck-q" type="search" placeholder="Tìm công cụ… (vd: pdf, đề, ảnh, excel)" autocomplete="off"></div>
+          <div class="cck-chips" id="cck-chips"></div>
+        </div>
+        <div class="cck-empty" id="cck-empty" hidden>Không tìm thấy công cụ phù hợp. Thầy/cô thử từ khóa khác nhé.</div>
         <div class="tool-hub-grid">
 
           <!-- 01 Tạo QR Code -->
@@ -2831,94 +2880,114 @@ body.dark .sd-table tr:hover td{background:#162032;}
             <div class="tool-card-desc">Ma trận & bản đặc tả theo CV 7991, tự tính điểm, xuất Word</div>
           </div>
 
-          <!-- 15 Nhận xét học sinh TT22 -->
-          <div class="tool-card" onclick="window.open('cn_nhanxet.html','_blank')">
-            <div class="tool-card-title">Nhận xét học sinh TT22</div>
-            <div class="tool-thumb-wrap">
-              <span class="tool-num" style="background:#0d9488;">15</span>
-              <div class="tool-thumb" style="background:#f0fdfa;font-size:2.6rem">🧾</div>
-            </div>
-            <div class="tool-card-desc">Xếp loại học tập, rèn luyện & soạn nhận xét học bạ</div>
-          </div>
-
-          <!-- 16 Thi đua tổ – cá nhân -->
-          <div class="tool-card" onclick="window.open('cn_thidua.html','_blank')">
-            <div class="tool-card-title">Thi đua tổ – cá nhân</div>
-            <div class="tool-thumb-wrap">
-              <span class="tool-num" style="background:#d97706;">16</span>
-              <div class="tool-thumb" style="background:#fffbeb;font-size:2.6rem">🏆</div>
-            </div>
-            <div class="tool-card-desc">Chấm điểm thi đua tuần, bảng vàng trình chiếu</div>
-          </div>
-
-          <!-- 17 Tin nhắn phụ huynh -->
-          <div class="tool-card" onclick="window.open('cn_tinnhan.html','_blank')">
-            <div class="tool-card-title">Tin nhắn phụ huynh</div>
-            <div class="tool-thumb-wrap">
-              <span class="tool-num" style="background:#0068ff;">17</span>
-              <div class="tool-thumb" style="background:#eff6ff;font-size:2.6rem">💬</div>
-            </div>
-            <div class="tool-card-desc">Soạn tin Zalo cá nhân hóa cho từng phụ huynh</div>
-          </div>
-
-          <!-- 18 Quét tài liệu bằng điện thoại -->
+          <!-- 15 Quét tài liệu bằng điện thoại -->
           <div class="tool-card" onclick="window.open('cong_cu_scan.html','_blank')">
             <div class="tool-card-title">Quét tài liệu bằng điện thoại</div>
             <div class="tool-thumb-wrap">
-              <span class="tool-num" style="background:#0891b2;">18</span>
+              <span class="tool-num" style="background:#0891b2;">15</span>
               <div class="tool-thumb" style="background:#ecfeff;font-size:2.6rem">📷</div>
             </div>
             <div class="tool-card-desc">Chụp → tự cắt mép, nắn thẳng, làm trắng → PDF</div>
           </div>
 
-          <!-- 19 Nhận dạng chữ (OCR) -->
+          <!-- 16 Nhận dạng chữ (OCR) -->
           <div class="tool-card" onclick="window.open('cong_cu_ocr.html','_blank')">
             <div class="tool-card-title">Nhận dạng chữ (OCR)</div>
             <div class="tool-thumb-wrap">
-              <span class="tool-num" style="background:#9333ea;">19</span>
+              <span class="tool-num" style="background:#9333ea;">16</span>
               <div class="tool-thumb" style="background:#faf5ff;font-size:2.6rem">🔠</div>
             </div>
             <div class="tool-card-desc">Ảnh chụp / PDF scan → chữ tiếng Việt để dán vào Word</div>
           </div>
 
-          <!-- 20 Chuẩn hóa & xếp ABC danh sách -->
+          <!-- 17 Chuẩn hóa & xếp ABC danh sách -->
           <div class="tool-card" onclick="window.open('cong_cu_danhsach.html','_blank')">
             <div class="tool-card-title">Chuẩn hóa & xếp ABC danh sách</div>
             <div class="tool-thumb-wrap">
-              <span class="tool-num" style="background:#16a34a;">20</span>
+              <span class="tool-num" style="background:#16a34a;">17</span>
               <div class="tool-thumb" style="background:#f0fdf4;font-size:2.6rem">🔤</div>
             </div>
             <div class="tool-card-desc">Sửa họ tên, ngày sinh, SĐT; xếp ABC kiểu Việt Nam</div>
           </div>
 
-          <!-- 21 Gộp · tách · đối chiếu Excel -->
+          <!-- 18 Gộp · tách · đối chiếu Excel -->
           <div class="tool-card" onclick="window.open('cong_cu_excel.html','_blank')">
             <div class="tool-card-title">Gộp · tách · đối chiếu Excel</div>
             <div class="tool-thumb-wrap">
-              <span class="tool-num" style="background:#15803d;">21</span>
+              <span class="tool-num" style="background:#15803d;">18</span>
               <div class="tool-thumb" style="background:#f0fdf4;font-size:2.6rem">📑</div>
             </div>
             <div class="tool-card-desc">Gộp bảng các lớp, tách theo lớp, tìm ai thiếu / thừa</div>
           </div>
 
-          <!-- 22 Số báo danh & phòng thi -->
+          <!-- 19 Số báo danh & phòng thi -->
           <div class="tool-card" onclick="window.open('cong_cu_phongthi.html','_blank')">
             <div class="tool-card-title">Số báo danh & phòng thi</div>
             <div class="tool-thumb-wrap">
-              <span class="tool-num" style="background:#be123c;">22</span>
+              <span class="tool-num" style="background:#be123c;">19</span>
               <div class="tool-thumb" style="background:#fff1f2;font-size:2.6rem">🎫</div>
             </div>
             <div class="tool-card-desc">Đánh SBD, chia phòng, in DS ký tên, thẻ dự thi</div>
           </div>
 
-          <!-- 23 Lịch báo giảng tự động -->
+          <!-- 20 Lịch báo giảng tự động -->
           <div class="tool-card" onclick="window.open('cong_cu_lichbaogiang.html','_blank')">
             <div class="tool-card-title">Lịch báo giảng tự động</div>
             <div class="tool-thumb-wrap">
-              <span class="tool-num" style="background:#0369a1;">23</span>
+              <span class="tool-num" style="background:#0369a1;">20</span>
               <div class="tool-thumb" style="background:#f0f9ff;font-size:2.6rem">🗓️</div>
             </div>
             <div class="tool-card-desc">PPCT + thời khóa biểu → lịch từng tuần, tự dời ngày nghỉ</div>
+          </div>
+
+          <!-- 21 Phân loại ảnh -->
+          <div class="tool-card" onclick="window.open('cong_cu_phanloaianh.html','_blank')">
+            <div class="tool-card-title">Phân loại ảnh</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#b4536a;">21</span>
+              <div class="tool-thumb" style="background:#fdf2f4;font-size:2.6rem">🗂️</div>
+            </div>
+            <div class="tool-card-desc">Chọn thư mục ảnh, gán nhanh vào thư mục con bằng phím số rồi xuất ra máy</div>
+          </div>
+
+          <!-- 22 Chấm trắc nghiệm -->
+          <div class="tool-card" onclick="window.open('cong_cu_chamtn.html','_blank')">
+            <div class="tool-card-title">Chấm trắc nghiệm</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#dc2626;">22</span>
+              <div class="tool-thumb" style="background:#fef2f2;font-size:2.6rem">📷</div>
+            </div>
+            <div class="tool-card-desc">In phiếu tô, quét bằng camera điện thoại là có điểm – xuất Excel, đưa vào Sổ điểm</div>
+          </div>
+
+          <!-- 23 Bảng trắng trình chiếu -->
+          <div class="tool-card" onclick="window.open('cong_cu_bangtrang.html','_blank')">
+            <div class="tool-card-title">Bảng trắng trình chiếu</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#0f766e;">23</span>
+              <div class="tool-thumb" style="background:#f0fdfa;font-size:2.6rem">🖍️</div>
+            </div>
+            <div class="tool-card-desc">Viết vẽ trên TV: ô ly, trục tọa độ, thước, compa, thước đo góc, chèn ảnh đề bài</div>
+          </div>
+
+          <!-- 24 Giấy khen hàng loạt -->
+          <div class="tool-card" onclick="window.open('cong_cu_giaykhen.html','_blank')">
+            <div class="tool-card-title">Giấy khen hàng loạt</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#ca8a04;">24</span>
+              <div class="tool-thumb" style="background:#fefce8;font-size:2.6rem">🏅</div>
+            </div>
+            <div class="tool-card-desc">Chọn mẫu, dán danh sách hoặc lấy từ lớp chủ nhiệm – in giấy khen, giấy chứng nhận</div>
+          </div>
+
+          <!-- 25 Phiếu bài tập Toán -->
+          <div class="tool-card" onclick="window.open('cong_cu_phieutoan.html','_blank')">
+            <div class="tool-card-title">Phiếu bài tập Toán</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#7c3aed;">25</span>
+              <div class="tool-thumb" style="background:#f5f3ff;font-size:2.6rem">🧮</div>
+            </div>
+            <div class="tool-card-desc">Chọn dạng toán và độ khó – máy sinh phiếu, mỗi học sinh một đề khác, kèm đáp án</div>
           </div>
 
         </div>
@@ -6154,6 +6223,100 @@ VN_count();
 <script>EHDemo.box(document.getElementById('ehd-box'));</script>
 <script src="eduhub_backup.js"></script>
 <script src="eduhub_search.js"></script>
+<script>
+/* Công Cụ Khác – tìm kiếm, nhóm, ghim yêu thích (dùng chung ☆ ehs_favs của Tìm kiếm nhanh) */
+(function(){
+  var page=document.getElementById('cong-cu-khac'); if(!page) return;
+  var grid=page.querySelector('.tool-hub-grid');
+  var G=[['kt','📝 Kiểm tra & đánh giá',['taode','tronde','matran','chamtn','thongke','phongthi','phieutoan']],
+         ['vb','📄 Văn bản & in ấn',['baocao','bieumau','tronthu','thetenban','giaykhen']],
+         ['lich','🗓️ Lịch & công việc',['lichday','lichbaogiang','congviec']],
+         ['anh','🖼️ Ảnh & tài liệu',['pdf','anh','scan','ocr','phanloaianh']],
+         ['dl','📊 Danh sách & Excel',['danhsach','excel']],
+         ['ti','🧰 Tiện ích trên lớp',['bangtrang','qr','rutgon']]];
+  var cur='all';
+  function norm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d');}
+  function favs(){try{return JSON.parse(localStorage.getItem('ehs_favs'))||[];}catch(e){return [];}}
+  var cards=[].slice.call(grid.querySelectorAll('.tool-card')).map(function(c,i){
+    var url=((c.getAttribute('onclick')||'').match(/window\.open\('([^']+)'/)||[])[1]||'';
+    var k=url.replace(/^cong_cu_|\.html$/g,''); var g=(G.filter(function(x){return x[2].indexOf(k)>=0;})[0]||['ti'])[0];
+    c.dataset.cck=g; return {el:c,url:url,g:g,i:i,key:norm(c.textContent+' '+k)};
+  });
+  function chips(){
+    var f=favs(), nf=cards.filter(function(c){return f.indexOf(c.url)>=0;}).length;
+    var list=[['all','Tất cả',cards.length],['fav','⭐ Yêu thích',nf]].concat(G.map(function(g){return [g[0],g[1],cards.filter(function(c){return c.g===g[0];}).length];}));
+    document.getElementById('cck-chips').innerHTML=list.map(function(x){return '<button class="cck-chip'+(x[0]===cur?' on':'')+'" data-g="'+x[0]+'">'+x[1]+'<small>'+x[2]+'</small></button>';}).join('');
+  }
+  function apply(){
+    var q=norm(document.getElementById('cck-q').value).trim().split(/\s+/).filter(Boolean), f=favs(), n=0;
+    cards.forEach(function(c){
+      var fav=f.indexOf(c.url)>=0;
+      var ok=(cur==='all'||(cur==='fav'?fav:c.g===cur))&&q.every(function(w){return c.key.indexOf(w)>=0;});
+      c.el.classList.toggle('cck-hide',!ok); c.el.classList.toggle('cck-fav',fav);
+      c.el.style.order=fav?(f.indexOf(c.url)-1000):c.i; if(ok)n++;
+    });
+    grid.style.display='grid'; document.getElementById('cck-empty').hidden=n>0;
+    try{localStorage.setItem('cck_group',cur);}catch(e){}
+  }
+  document.getElementById('cck-chips').onclick=function(e){var b=e.target.closest('.cck-chip');if(!b)return;cur=b.dataset.g;chips();apply();};
+  document.getElementById('cck-q').oninput=function(){if(this.value&&cur!=='all'){cur='all';chips();}apply();};
+  document.getElementById('cck-q').onkeydown=function(e){if(e.key==='Enter'){var v=cards.filter(function(c){return !c.el.classList.contains('cck-hide');});if(v.length===1)v[0].el.click();}if(e.key==='Escape'){this.value='';apply();}};
+  document.addEventListener('click',function(e){if(e.target.closest('.ehs-star'))setTimeout(function(){chips();apply();},0);},true);
+  try{cur=localStorage.getItem('cck_group')||'all';}catch(e){}
+  if(cur==='fav'&&!favs().length)cur='all';
+  chips();apply();
+})();
+</script>
+<script>
+/* Đếm ngược sự kiện – lưu trên máy (ehub_countdown) */
+(function(){
+  var K='ehub_countdown', box=document.getElementById('cd-box'); if(!box) return;
+  function get(){try{return JSON.parse(localStorage.getItem(K))||[];}catch(e){return [];}}
+  function set(v){try{localStorage.setItem(K,JSON.stringify(v));}catch(e){}}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function day0(d){var x=new Date(d);x.setHours(0,0,0,0);return x;}
+  function iso(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+  function left(s){return Math.round((day0(s+'T00:00:00')-day0(new Date()))/864e5);}
+  function next(m,dd){var t=day0(new Date()),y=t.getFullYear(),x=new Date(y,m-1,dd);if(x<t)x=new Date(y+1,m-1,dd);return iso(x);}
+  var TET={2027:'2027-02-06',2028:'2028-01-26',2029:'2029-02-13',2030:'2030-02-03'};
+  function tet(){var t=iso(day0(new Date()));for(var y in TET)if(TET[y]>=t)return TET[y];return '';}
+  function sug(){var a=[['🎓 Ngày Nhà giáo Việt Nam',next(11,20)],['🧧 Tết Nguyên đán',tet()],['🎆 Tết Dương lịch',next(1,1)],['☀️ Ngày bế giảng (dự kiến)',next(5,31)]];
+    return a.filter(function(x){return x[1]&&!get().some(function(e){return e.t===x[0]&&e.d===x[1];});});}
+  function fmt(s){var p=s.split('-');var w=['CN','T2','T3','T4','T5','T6','T7'][new Date(s+'T00:00:00').getDay()];return w+', '+p[2]+'/'+p[1]+'/'+p[0];}
+  var adding=false;
+  function render(){
+    var ev=get().map(function(e){e.l=left(e.d);return e;}).sort(function(a,b){return (a.l<0)-(b.l<0)||(a.l<0?b.l-a.l:a.l-b.l);});
+    var up=ev.filter(function(e){return e.l>=0;}), past=ev.filter(function(e){return e.l<0;});
+    var h='<div class="cd-head">⏳ Đếm ngược sự kiện<span class="sp"></span>'+(past.length?'<button data-a="clean" title="Xóa các sự kiện đã qua">🧹 Dọn '+past.length+' sự kiện đã qua</button>':'')+'<button data-a="add">＋ Thêm</button></div>';
+    if(ev.length){h+='<div class="cd-list">'+up.concat(past.slice(0,2)).map(function(e){
+      var cls=e.l===0?'today':e.l<0?'past':e.l<=7?'soon':'';
+      var n=e.l===0?'Hôm nay! 🎉':e.l<0?(-e.l)+'<span class="u">ngày trước</span>':e.l+'<span class="u">ngày nữa</span>';
+      return '<div class="cd-it '+cls+'"><button class="x" data-del="'+e.id+'" title="Xóa">✕</button><div class="n">'+n+'</div><div class="t" title="'+esc(e.t)+'">'+esc(e.t)+'</div><div class="d">'+fmt(e.d)+'</div></div>';}).join('')+'</div>';}
+    else h+='<div class="cd-empty">Thêm các mốc quan trọng như ngày thi học kỳ, hạn nộp hồ sơ, hội giảng… để luôn biết còn bao nhiêu ngày.</div>';
+    var S=sug();
+    if(!ev.length&&!adding&&S.length) h+='<div class="cd-sug" style="margin-top:8px"><span class="cd-empty" style="align-self:center">Thêm nhanh:</span>'+S.map(function(x,i){return '<button data-s="'+i+'">'+esc(x[0])+'</button>';}).join('')+'</div>';
+    h+='<div class="cd-add"'+(adding?'':' hidden')+'><input type="text" id="cd-t" maxlength="60" placeholder="Tên sự kiện, vd: Thi học kỳ I"><input type="date" id="cd-d"><button class="ok" data-a="save">Lưu</button>'+'<button data-a="cancel">Hủy</button>'+
+      (S.length?'<div class="cd-sug"><span class="cd-empty" style="align-self:center">Gợi ý:</span>'+S.map(function(x,i){return '<button data-s="'+i+'">'+esc(x[0])+'</button>';}).join('')+'</div>':'')+'</div>';
+    box.innerHTML=h; box._sug=S;
+    var t=document.getElementById('cd-t'); if(t)t.onkeydown=function(e){if(e.key==='Enter')save();};
+  }
+  function save(){var t=document.getElementById('cd-t').value.trim(),dd=document.getElementById('cd-d').value;
+    if(!t){document.getElementById('cd-t').focus();return;} if(!dd){document.getElementById('cd-d').focus();return;}
+    var v=get();v.push({id:Date.now().toString(36),t:t,d:dd});set(v);adding=false;render();}
+  box.addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    if(b.dataset.del){set(get().filter(function(x){return x.id!==b.dataset.del;}));render();return;}
+    if(b.dataset.s!=null){var x=box._sug[+b.dataset.s];var v=get();v.push({id:Date.now().toString(36),t:x[0],d:x[1]});set(v);render();return;}
+    var a=b.dataset.a;
+    if(a==='add'){adding=!adding;render();if(adding)document.getElementById('cd-t').focus();}
+    else if(a==='cancel'){adding=false;render();}
+    else if(a==='save')save();
+    else if(a==='clean'){set(get().filter(function(x){return left(x.d)>=0;}));render();}
+  });
+  render();
+  setInterval(render,36e5);
+})();
+</script>
 <script src="eduhub_pwa.js"></script>
 </body>
 </html>

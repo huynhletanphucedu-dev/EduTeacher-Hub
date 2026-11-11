@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Phân loại ảnh – EduTeacher Hub</title>
+<style>
+:root{
+  --bg:#faf7f4; --panel:#ffffff; --ink:#2b2420; --muted:#7a6f68; --line:#e8e0d9;
+  --accent:#b4536a; --accent-soft:#f6e6ea; --sel:#2f6fde; --tile:#efe9e4;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:7px 12px}
+button:hover{border-color:#cdbfb4}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.primary:hover{filter:brightness(1.07)}
+button:disabled{opacity:.5;cursor:default}
+input,select{font:inherit;border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:#fff;color:var(--ink)}
+kbd{font:12px ui-monospace,Consolas,monospace;background:#f1ece8;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px}
+
+/* Start screen */
+#start{min-height:100%;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:32px;max-width:520px;width:100%;text-align:center;box-shadow:0 10px 30px rgba(80,50,40,.06)}
+.card h1{margin:0 0 6px;font-size:24px}
+.card p{color:var(--muted);margin:0 0 20px}
+.card .btns{display:flex;flex-direction:column;gap:10px}
+.card .warn{color:#a33;margin-top:16px;font-size:13px}
+
+/* App layout */
+#app{height:100%;display:grid;grid-template-columns:280px 1fr;grid-template-rows:auto 1fr}
+header{grid-column:1/3;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line)}
+header .title{font-weight:700;font-size:16px;margin-right:4px}
+header .stats{color:var(--muted)}
+header .spacer{flex:1}
+aside{background:var(--panel);border-right:1px solid var(--line);overflow:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+aside h2{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:4px 0 0}
+.addrow{display:flex;gap:6px}
+.addrow input{flex:1;min-width:0}
+#folders{display:flex;flex-direction:column;gap:6px}
+.folder{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:8px 8px 8px 10px;cursor:pointer;user-select:none;background:#fff}
+.folder:hover{border-color:#cdbfb4;background:#fffaf8}
+.folder.on{border-color:var(--c);box-shadow:inset 4px 0 0 var(--c);background:color-mix(in srgb,var(--c) 9%,#fff)}
+.folder.part{box-shadow:inset 4px 0 0 color-mix(in srgb,var(--c) 45%,#fff)}
+.folder .dot{width:12px;height:12px;border-radius:50%;background:var(--c);flex:none}
+.folder .key{font:12px ui-monospace,Consolas,monospace;color:var(--muted);width:14px;text-align:center;flex:none}
+.folder .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}
+.folder .cnt{color:var(--muted);font-size:12px}
+.folder .ic{border:none;background:none;padding:2px 4px;color:var(--muted);border-radius:5px}
+.folder .ic:hover{background:#f1ece8;color:var(--ink)}
+.hint{color:var(--muted);font-size:12.5px}
+.help{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;margin-top:auto}
+.help div{margin:3px 0}
+.selbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+
+/* Grid */
+main{overflow:auto;padding:14px}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.tile{position:relative;background:var(--panel);border:2px solid transparent;border-radius:10px;overflow:hidden;cursor:pointer;user-select:none;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.tile.hidden{display:none}
+.tile .img{aspect-ratio:1/1;background:var(--tile);display:flex;align-items:center;justify-content:center}
+.tile img{width:100%;height:100%;object-fit:contain;display:block}
+.tile .ph{color:var(--muted);font-size:12px;padding:8px;text-align:center}
+.tile .name{font-size:11.5px;color:var(--muted);padding:4px 8px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .chips{position:absolute;left:6px;bottom:28px;display:flex;flex-wrap:wrap;gap:3px;max-width:calc(100% - 12px)}
+.chip{font-size:11px;color:#fff;background:var(--c);padding:1px 7px;border-radius:999px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.tile .check{position:absolute;top:6px;left:6px;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.85);border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;color:transparent;font-weight:700;font-size:14px}
+.tile.sel{border-color:var(--sel)}
+.tile.sel .check{background:var(--sel);color:#fff}
+.tile.focus{outline:3px solid #f0b429;outline-offset:1px}
+.empty{color:var(--muted);text-align:center;padding:60px 20px;grid-column:1/-1}
+
+/* Modal */
+#modal{position:fixed;inset:0;background:rgba(30,20,15,.45);display:flex;align-items:center;justify-content:center;padding:20px;z-index:10}
+#modal[hidden]{display:none}
+#modal .card{text-align:left}
+.bar{height:10px;background:#f1ece8;border-radius:99px;overflow:hidden;margin:14px 0 8px}
+.bar>div{height:100%;width:0;background:var(--accent);transition:width .15s}
+#exLog{font-size:12.5px;color:var(--muted);max-height:160px;overflow:auto;white-space:pre-wrap}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#2b2420;color:#fff;padding:9px 16px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.show{opacity:1}
+
+/* Cỡ ảnh */
+.sizes{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.sizes button{border:none;border-radius:0;padding:7px 11px;border-right:1px solid var(--line)}
+.sizes button:last-child{border-right:none}
+.sizes button.on{background:var(--accent-soft);color:var(--accent);font-weight:700}
+#grid.s1{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))}
+#grid.s2{grid-template-columns:repeat(auto-fill,minmax(200px,1fr))}
+#grid.s3{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+#grid.s4{grid-template-columns:repeat(auto-fill,minmax(440px,1fr))}
+#grid.s3 .chip,#grid.s4 .chip{font-size:13px;padding:2px 9px}
+#grid.s3 .tile .name,#grid.s4 .tile .name{font-size:13px}
+
+/* Xem to từng tấm */
+#lb{position:fixed;inset:0;background:#141110;color:#f3ece7;z-index:15;display:grid;grid-template-rows:auto 1fr auto}
+#lb[hidden]{display:none}
+#lb .top{display:flex;align-items:center;gap:12px;padding:10px 16px}
+#lb .top .nm{font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#lb .top .pos{color:#b9aea7}
+#lb button.dk{background:#2a2422;border-color:#3d3431;color:#f3ece7}
+#lb button.dk:hover{background:#3a3230}
+#lb .stage{position:relative;min-height:0;display:flex;align-items:center;justify-content:center;padding:0 70px}
+#lb .stage img{max-width:100%;max-height:100%;object-fit:contain;display:block;box-shadow:0 6px 30px rgba(0,0,0,.5)}
+#lb .nav{position:absolute;top:50%;transform:translateY(-50%);width:52px;height:52px;border-radius:50%;font-size:22px;padding:0;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:#fff}
+#lb .nav:hover{background:rgba(255,255,255,.22)}
+#lb .nav.prev{left:10px} #lb .nav.next{right:10px}
+#lb .bottom{padding:10px 16px 14px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center}
+#lb .fb{display:inline-flex;align-items:center;gap:7px;background:#2a2422;border:2px solid #3d3431;color:#f3ece7;border-radius:999px;padding:7px 14px;font-weight:600}
+#lb .fb .k{font:12px ui-monospace,Consolas,monospace;opacity:.7}
+#lb .fb .d{width:11px;height:11px;border-radius:50%;background:var(--c)}
+#lb .fb.on{background:var(--c);border-color:var(--c);color:#fff}
+#lb .fb.on .d{background:#fff}
+body:has(#lb:not([hidden])) .toast{bottom:auto;top:64px}
+#lb .tip{width:100%;text-align:center;color:#9c918a;font-size:12.5px}
+
+@media (max-width:760px){
+  #lb .stage{padding:0 8px}
+  #lb .nav{width:40px;height:40px;font-size:18px}
+  #app{grid-template-columns:1fr;grid-template-rows:auto auto 1fr}
+  header{grid-column:1}
+  aside{border-right:none;border-bottom:1px solid var(--line);max-height:40vh}
+  #grid{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+}
+</style>
+</head>
+<body>
+
+<div id="start">
+  <div class="card">
+    <h1>🗂️ Phân loại ảnh</h1>
+    <p>Chọn thư mục chứa ảnh (ảnh hoạt động, ngoại khóa, sự kiện lớp…), tạo các thư mục con, bấm chọn ảnh rồi gán vào thư mục. Một ảnh có thể nằm trong nhiều thư mục. Ảnh không tải lên mạng – mọi thứ xử lý ngay trên máy.</p>
+    <div class="btns">
+      <button id="btnResume" class="primary" hidden></button>
+      <button id="btnOpen" class="primary">📂 Chọn thư mục ảnh</button>
+    </div>
+    <div id="noApi" class="warn" hidden>Trình duyệt này chưa hỗ trợ. Thầy/cô hãy mở file bằng <b>Google Chrome</b> hoặc <b>Microsoft Edge</b> trên máy tính nhé.</div>
+  </div>
+</div>
+
+<div id="app" hidden>
+  <header>
+    <a href="dashboard.html" style="text-decoration:none;color:var(--muted)" title="Về EduTeacher Hub">🏠</a><span class="title">🗂️ Phân loại ảnh</span>
+    <span class="stats" id="stats"></span>
+    <span class="spacer"></span>
+    <span class="sizes" title="Cỡ ảnh trong lưới">
+      <button data-s="1">Nhỏ</button><button data-s="2">Vừa</button><button data-s="3">To</button><button data-s="4">Rất to</button>
+    </span>
+    <button id="btnLb" title="Xem to từng tấm (phím Enter)">🔍 Xem từng tấm</button>
+    <label>Lọc:
+      <select id="filter"></select>
+    </label>
+    <button id="btnExport" class="primary">📤 Xuất ra thư mục</button>
+  </header>
+
+  <aside>
+    <h2>Thư mục</h2>
+    <div class="addrow">
+      <input id="newName" placeholder="Tên thư mục mới, vd: Văn nghệ" maxlength="60">
+      <button id="btnAdd" class="primary">+ Thêm</button>
+    </div>
+    <div id="folders"></div>
+    <div class="hint" id="folderHint">Chọn ảnh ở bên phải, rồi bấm vào thư mục (hoặc phím số) để gán. Bấm lần nữa để gỡ ra.</div>
+
+    <h2>Đang chọn</h2>
+    <div class="selbar">
+      <span id="selInfo">0 ảnh</span>
+      <button id="btnSelAll">Chọn tất cả</button>
+      <button id="btnSelNone">Bỏ chọn</button>
+    </div>
+
+    <div class="help">
+      <div><kbd>1</kbd>…<kbd>9</kbd>, <kbd>0</kbd> gán / gỡ thư mục tương ứng</div>
+      <div><kbd>←</kbd><kbd>↑</kbd><kbd>→</kbd><kbd>↓</kbd> di chuyển ô vàng</div>
+      <div><kbd>Space</kbd> chọn / bỏ chọn ảnh ở ô vàng</div>
+      <div><kbd>Shift</kbd> + bấm: chọn cả dãy ảnh</div>
+      <div><kbd>Ctrl</kbd>+<kbd>A</kbd> chọn tất cả · <kbd>Esc</kbd> bỏ chọn</div>
+      <div><kbd>Enter</kbd> hoặc nhấp đúp: xem to từng tấm</div>
+      <div><kbd>U</kbd> bật/tắt lọc “Chưa phân loại”</div>
+      <div style="margin-top:8px">Tiến độ được tự lưu trên máy này.</div>
+    </div>
+  </aside>
+
+  <main><div id="grid"></div></main>
+</div>
+
+<div id="modal" hidden>
+  <div class="card">
+    <h1 id="exTitle" style="font-size:20px">Đang xuất ảnh…</h1>
+    <div class="bar"><div id="exBar"></div></div>
+    <div id="exText"></div>
+    <div id="exLog"></div>
+    <div style="text-align:right;margin-top:14px"><button id="exClose" hidden>Đóng</button></div>
+  </div>
+</div>
+
+<div id="lb" hidden>
+  <div class="top">
+    <span class="pos" id="lbPos"></span>
+    <span class="nm" id="lbName"></span>
+    <button class="dk" id="lbClose">✕ Về lưới ảnh (Esc)</button>
+  </div>
+  <div class="stage">
+    <img id="lbImg" alt="">
+    <button class="nav prev" id="lbPrev" title="Ảnh trước (←)">‹</button>
+    <button class="nav next" id="lbNext" title="Ảnh sau (→)">›</button>
+  </div>
+  <div class="bottom">
+    <div id="lbFolders" style="display:contents"></div>
+    <div class="tip">Bấm thư mục hoặc phím số để gán / gỡ · <kbd>←</kbd> <kbd>→</kbd> qua ảnh · <kbd>U</kbd> lọc chưa phân loại · <kbd>Esc</kbd> thoát</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+const OUT_DIR = 'Đã phân loại';
+const IMG_RE = /\.(jpe?g|png|webp|gif|bmp|avif|heic|heif|tiff?)$/i;
+const COLORS = ['#d9485f','#2f80ed','#27ae60','#f2994a','#9b51e0','#16a5a5','#e05fa8','#8d6e63','#c2a000','#5a6acf','#e2574c','#3a9d8f'];
+const KEYS = ['1','2','3','4','5','6','7','8','9','0'];
+const $ = id => document.getElementById(id);
+
+let srcHandle = null;
+let photos = [];          // {path, name, handle, el}
+let folders = [];         // {id, name, color}
+let assign = {};          // path -> [folderId]
+let nextId = 1;
+let selected = new Set(); // indices
+let sticky = new Set();   // tạm giữ hiển thị khi đang lọc
+let focusIdx = -1, anchorIdx = -1;
+let filter = 'all';
+
+/* ---------- lưu trữ ---------- */
+const storeKey = () => 'wedsort:v1:' + (srcHandle ? srcHandle.name : '');
+let saveTimer = null;
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try { localStorage.setItem(storeKey(), JSON.stringify({folders, assign, nextId})); } catch(e){}
+  }, 200);
+}
+function load(){
+  try {
+    const d = JSON.parse(localStorage.getItem(storeKey()) || 'null');
+    if (d){ folders = d.folders || []; assign = d.assign || {}; nextId = d.nextId || (folders.length + 1); }
+  } catch(e){}
+}
+function idb(){
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('wedsort', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('kv');
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+}
+async function idbSet(k, v){ try{ const db = await idb(); db.transaction('kv','readwrite').objectStore('kv').put(v, k); }catch(e){} }
+async function idbGet(k){
+  try{ const db = await idb(); return await new Promise(res => { const q = db.transaction('kv').objectStore('kv').get(k); q.onsuccess = () => res(q.result); q.onerror = () => res(null); }); }catch(e){ return null; }
+}
+
+/* ---------- tiện ích ---------- */
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1800); }
+function safeName(s){ return s.replace(/[\\/:*?"<>|]/g, '-').replace(/[. ]+$/,'').trim() || 'Thu muc'; }
+const folderById = id => folders.find(f => f.id === id);
+const getA = p => assign[p.path] || [];
+function esc(s){ return s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ---------- mở thư mục ---------- */
+async function scan(dir, prefix){
+  for await (const [name, h] of dir.entries()){
+    if (h.kind === 'file' && IMG_RE.test(name)) photos.push({path: prefix + name, name, handle: h});
+    else if (h.kind === 'directory' && name !== OUT_DIR && !name.startsWith('.')) await scan(h, prefix + name + '/');
+  }
+}
+async function openDir(handle){
+  srcHandle = handle;
+  photos = [];
+  $('btnOpen').disabled = true; $('btnOpen').textContent = 'Đang đọc ảnh…';
+  await scan(handle, '');
+  photos.sort((a, b) => a.path.localeCompare(b.path, 'vi', {numeric: true}));
+  if (!photos.length){
+    alert('Không tìm thấy ảnh nào trong thư mục này.');
+    $('btnOpen').disabled = false; $('btnOpen').textContent = '📂 Chọn thư mục ảnh';
+    return;
+  }
+  idbSet('lastDir', handle);
+  load();
+  $('start').hidden = true; $('app').hidden = false;
+  buildGrid(); renderFolders(); renderFilter(); applyFilter(); updateStats();
+  setFocus(firstVisible());
+}
+$('btnOpen').onclick = async () => {
+  try { const h = await window.showDirectoryPicker({id: 'wedsort-src', mode: 'read'}); await openDir(h); }
+  catch(e){ if (e.name !== 'AbortError') alert('Không mở được thư mục: ' + e.message); }
+};
+
+if (!window.showDirectoryPicker){ $('noApi').hidden = false; $('btnOpen').disabled = true; }
+else idbGet('lastDir').then(h => {
+  if (!h) return;
+  const b = $('btnResume'); b.hidden = false; b.textContent = '▶ Tiếp tục với thư mục “' + h.name + '”';
+  b.onclick = async () => {
+    try {
+      let perm = await h.queryPermission({mode: 'read'});
+      if (perm !== 'granted') perm = await h.requestPermission({mode: 'read'});
+      if (perm === 'granted') await openDir(h); else toast('Chưa được cấp quyền đọc thư mục');
+    } catch(e){ alert('Không mở lại được, thầy/cô chọn lại thư mục nhé. (' + e.message + ')'); b.hidden = true; }
+  };
+});
+
+/* ---------- lưới ảnh ---------- */
+const io = new IntersectionObserver(es => es.forEach(e => {
+  if (e.isIntersecting){ io.unobserve(e.target); queueThumb(+e.target.dataset.i); }
+}), {root: null, rootMargin: '800px'});
+let tq = [], running = 0;
+function queueThumb(i){ tq.push(i); pump(); }
+function pump(){
+  while (running < 4 && tq.length){
+    const p = photos[tq.shift()]; running++;
+    makeThumb(p).finally(() => { running--; pump(); });
+  }
+}
+async function makeThumb(p){
+  const box = p.el.querySelector('.img');
+  try {
+    const f = await p.handle.getFile();
+    let bmp;
+    try { bmp = await createImageBitmap(f, {resizeWidth: 720, resizeQuality: 'high'}); }
+    catch(e){ bmp = await createImageBitmap(f); }
+    const c = document.createElement('canvas'); c.width = bmp.width; c.height = bmp.height;
+    c.getContext('2d').drawImage(bmp, 0, 0); bmp.close && bmp.close();
+    const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', .82));
+    const img = new Image(); img.src = URL.createObjectURL(blob); img.alt = p.name;
+    box.innerHTML = ''; box.appendChild(img);
+  } catch(e){
+    box.innerHTML = '<div class="ph">Không xem trước được<br>' + esc(p.name) + '</div>';
+  }
+}
+function buildGrid(){
+  const g = $('grid'); g.innerHTML = '';
+  photos.forEach((p, i) => {
+    const el = document.createElement('div');
+    el.className = 'tile'; el.dataset.i = i; el.title = p.path;
+    el.innerHTML = '<div class="img"><div class="ph">…</div></div><div class="chips"></div><div class="check">✓</div><div class="name">' + esc(p.name) + '</div>';
+    p.el = el; g.appendChild(el); io.observe(el);
+    renderChips(i);
+  });
+  const em = document.createElement('div'); em.className = 'empty'; em.id = 'emptyMsg'; em.hidden = true; g.appendChild(em);
+}
+function renderChips(i){
+  const p = photos[i];
+  p.el.querySelector('.chips').innerHTML = getA(p).map(id => {
+    const f = folderById(id); return f ? '<span class="chip" style="--c:' + f.color + '">' + esc(f.name) + '</span>' : '';
+  }).join('');
+}
+$('grid').addEventListener('click', e => {
+  const t = e.target.closest('.tile'); if (!t) return;
+  const i = +t.dataset.i;
+  if (e.shiftKey && anchorIdx >= 0){
+    const vis = visibleList(), a = vis.indexOf(anchorIdx), b = vis.indexOf(i);
+    if (a >= 0 && b >= 0){ const [s, en] = a < b ? [a, b] : [b, a]; for (let k = s; k <= en; k++) selected.add(vis[k]); }
+  } else {
+    selected.has(i) ? selected.delete(i) : selected.add(i);
+    anchorIdx = i;
+  }
+  setFocus(i, false); refreshSel();
+});
+
+/* ---------- lọc ---------- */
+function passes(i){
+  const a = getA(photos[i]);
+  if (filter === 'all') return true;
+  if (filter === 'none') return a.length === 0;
+  return a.includes(+filter);
+}
+function visibleList(){ const r = []; photos.forEach((p, i) => { if (!p.el.classList.contains('hidden')) r.push(i); }); return r; }
+function firstVisible(){ const v = visibleList(); return v.length ? v[0] : -1; }
+function applyFilter(){
+  let n = 0;
+  photos.forEach((p, i) => { const show = passes(i) || sticky.has(i); p.el.classList.toggle('hidden', !show); if (show) n++; });
+  const em = $('emptyMsg');
+  em.hidden = n > 0;
+  em.textContent = filter === 'none' ? '🎉 Tất cả ảnh đều đã được phân loại!' : 'Không có ảnh nào ở đây.';
+  if (focusIdx >= 0 && photos[focusIdx].el.classList.contains('hidden')) setFocus(firstVisible(), false);
+}
+function renderFilter(){
+  const s = $('filter');
+  const opts = [['all', 'Tất cả ảnh'], ['none', 'Chưa phân loại']].concat(folders.map(f => [String(f.id), '📁 ' + f.name]));
+  if (!opts.some(o => o[0] === filter)) filter = 'all';
+  s.innerHTML = opts.map(o => '<option value="' + o[0] + '"' + (o[0] === filter ? ' selected' : '') + '>' + esc(o[1]) + '</option>').join('');
+}
+$('filter').onchange = e => { filter = e.target.value; sticky.clear(); applyFilter(); };
+
+/* ---------- chọn ---------- */
+function setFocus(i, scroll = true){
+  if (focusIdx >= 0 && photos[focusIdx]) photos[focusIdx].el.classList.remove('focus');
+  focusIdx = i;
+  if (i >= 0){ photos[i].el.classList.add('focus'); if (scroll) photos[i].el.scrollIntoView({block: 'nearest'}); }
+  renderFolders();
+}
+function targets(){ return selected.size ? [...selected] : (focusIdx >= 0 ? [focusIdx] : []); }
+function refreshSel(){
+  photos.forEach((p, i) => p.el.classList.toggle('sel', selected.has(i)));
+  $('selInfo').textContent = selected.size + ' ảnh';
+  if (!selected.size && sticky.size){ sticky.clear(); applyFilter(); }
+  renderFolders();
+}
+function clearSel(){ selected.clear(); refreshSel(); }
+$('btnSelAll').onclick = () => { visibleList().forEach(i => selected.add(i)); refreshSel(); };
+$('btnSelNone').onclick = clearSel;
+
+/* ---------- thư mục ---------- */
+function renderFolders(){
+  const box = $('folders');
+  const tg = targets();
+  box.innerHTML = '';
+  folders.forEach((f, k) => {
+    const cnt = photos.reduce((s, p) => s + (getA(p).includes(f.id) ? 1 : 0), 0);
+    const have = tg.filter(i => getA(photos[i]).includes(f.id)).length;
+    const el = document.createElement('div');
+    el.className = 'folder' + (tg.length && have === tg.length ? ' on' : have ? ' part' : '');
+    el.style.setProperty('--c', f.color);
+    el.innerHTML = '<span class="key">' + (KEYS[k] || '') + '</span><span class="dot"></span><span class="nm"></span><span class="cnt">' + cnt + '</span>' +
+      '<button class="ic" data-act="ren" title="Đổi tên">✎</button><button class="ic" data-act="del" title="Xóa thư mục">✕</button>';
+    el.querySelector('.nm').textContent = f.name;
+    el.onclick = e => {
+      const act = e.target.dataset.act;
+      if (act === 'ren') return renameFolder(f);
+      if (act === 'del') return deleteFolder(f);
+      toggleFolder(f.id);
+    };
+    box.appendChild(el);
+  });
+  $('folderHint').textContent = folders.length ? 'Chọn ảnh bên phải, rồi bấm vào thư mục (hoặc phím số) để gán. Bấm lần nữa để gỡ ra.' : 'Thầy/cô hãy tạo thư mục đầu tiên ở ô phía trên, ví dụ “Văn nghệ”, “Thể thao”, “Trải nghiệm”…';
+}
+function addFolder(){
+  const inp = $('newName'); const name = inp.value.trim();
+  if (!name) return inp.focus();
+  if (folders.some(f => safeName(f.name).toLowerCase() === safeName(name).toLowerCase())) return toast('Đã có thư mục tên này');
+  folders.push({id: nextId++, name, color: COLORS[(folders.length) % COLORS.length]});
+  inp.value = ''; save(); renderFolders(); renderFilter();
+  toast('Đã tạo “' + name + '”' + (folders.length <= 10 ? ' — phím ' + KEYS[folders.length - 1] : ''));
+}
+$('btnAdd').onclick = addFolder;
+$('newName').addEventListener('keydown', e => { if (e.key === 'Enter') addFolder(); });
+function renameFolder(f){
+  const n = prompt('Tên mới cho thư mục:', f.name);
+  if (!n || !n.trim()) return;
+  if (folders.some(o => o !== f && safeName(o.name).toLowerCase() === safeName(n.trim()).toLowerCase())) return toast('Đã có thư mục tên này');
+  f.name = n.trim(); save(); renderFolders(); renderFilter();
+  photos.forEach((p, i) => { if (getA(p).includes(f.id)) renderChips(i); });
+}
+function deleteFolder(f){
+  const cnt = photos.filter(p => getA(p).includes(f.id)).length;
+  if (!confirm('Xóa thư mục “' + f.name + '”?' + (cnt ? '\n' + cnt + ' ảnh sẽ được gỡ khỏi thư mục này (ảnh gốc không bị ảnh hưởng).' : ''))) return;
+  folders = folders.filter(o => o !== f);
+  for (const k in assign){ assign[k] = assign[k].filter(id => id !== f.id); if (!assign[k].length) delete assign[k]; }
+  photos.forEach((p, i) => renderChips(i));
+  save(); renderFolders(); renderFilter(); applyFilter(); updateStats();
+}
+function toggleFolder(id, only){
+  const tg = only != null ? [only] : targets();
+  if (!tg.length) return toast('Thầy/cô chọn ảnh trước đã nhé');
+  const allHave = tg.every(i => getA(photos[i]).includes(id));
+  tg.forEach(i => {
+    const p = photos[i]; let a = getA(p).slice();
+    if (allHave) a = a.filter(x => x !== id); else if (!a.includes(id)) a.push(id);
+    if (a.length) assign[p.path] = a; else delete assign[p.path];
+    renderChips(i);
+  });
+  if (filter !== 'all') tg.forEach(i => sticky.add(i));
+  const f = folderById(id);
+  toast((allHave ? 'Đã gỡ ' : 'Đã gán ') + tg.length + ' ảnh ' + (allHave ? 'khỏi' : 'vào') + ' “' + f.name + '”');
+  save(); renderFolders(); updateStats();
+  if (lbIdx >= 0) renderLbFolders();
+}
+
+/* ---------- cỡ ảnh ---------- */
+function setSize(s){
+  $('grid').className = 's' + s;
+  document.querySelectorAll('.sizes button').forEach(b => b.classList.toggle('on', b.dataset.s === String(s)));
+  try { localStorage.setItem('wedsort:size', s); } catch(e){}
+}
+document.querySelectorAll('.sizes button').forEach(b => b.onclick = () => setSize(b.dataset.s));
+let initSize = '2'; try { initSize = localStorage.getItem('wedsort:size') || '2'; } catch(e){}
+setSize(initSize);
+
+/* ---------- xem to từng tấm ---------- */
+let lbIdx = -1, lbUrl = null, lbToken = 0;
+async function lbShow(i){
+  lbIdx = i; const p = photos[i]; const token = ++lbToken;
+  setFocus(i);
+  const v = visibleList();
+  $('lbPos').textContent = (v.indexOf(i) + 1) + ' / ' + v.length;
+  $('lbName').textContent = p.path;
+  const th = p.el.querySelector('img');
+  const img = $('lbImg');
+  img.src = th ? th.src : '';
+  renderLbFolders();
+  try {
+    const f = await p.handle.getFile();
+    if (token !== lbToken) return;
+    if (lbUrl) URL.revokeObjectURL(lbUrl);
+    lbUrl = URL.createObjectURL(f);
+    img.src = lbUrl;
+  } catch(e){}
+}
+function renderLbFolders(){
+  const box = $('lbFolders'); box.innerHTML = '';
+  if (!folders.length){ box.innerHTML = '<span style="color:#b9aea7">Chưa có thư mục nào — thầy/cô thoát ra lưới để tạo thư mục trước nhé.</span>'; return; }
+  const a = getA(photos[lbIdx]);
+  folders.forEach((f, k) => {
+    const b = document.createElement('button');
+    b.className = 'fb' + (a.includes(f.id) ? ' on' : '');
+    b.style.setProperty('--c', f.color);
+    b.innerHTML = '<span class="k">' + (KEYS[k] || '') + '</span><span class="d"></span><span></span>';
+    b.lastChild.textContent = f.name;
+    b.onclick = () => toggleFolder(f.id, lbIdx);
+    box.appendChild(b);
+  });
+}
+function openLb(i){
+  if (i == null || i < 0) i = focusIdx >= 0 ? focusIdx : firstVisible();
+  if (i < 0) return toast('Không có ảnh nào để xem');
+  $('lb').hidden = false; lbShow(i);
+}
+function closeLb(){
+  $('lb').hidden = true; lbIdx = -1; lbToken++;
+  if (lbUrl){ URL.revokeObjectURL(lbUrl); lbUrl = null; }
+  $('lbImg').src = '';
+  if (!selected.size){ sticky.clear(); applyFilter(); }
+  if (focusIdx >= 0) setFocus(focusIdx);
+}
+function lbGo(d){
+  const v = visibleList(), pos = v.indexOf(lbIdx);
+  const t = v[pos + d];
+  if (t == null) return toast(d > 0 ? 'Đây là ảnh cuối rồi' : 'Đây là ảnh đầu tiên');
+  if (!selected.has(lbIdx) && sticky.delete(lbIdx)) applyFilter();
+  lbShow(t);
+}
+$('btnLb').onclick = () => openLb();
+$('lbClose').onclick = closeLb;
+$('lbPrev').onclick = () => lbGo(-1);
+$('lbNext').onclick = () => lbGo(1);
+$('grid').addEventListener('dblclick', e => { const t = e.target.closest('.tile'); if (t) openLb(+t.dataset.i); });
+function lbKey(e){
+  const k = e.key;
+  if (k === 'Escape' || k === 'Enter'){ e.preventDefault(); closeLb(); return; }
+  if (k === 'ArrowRight' || k === 'ArrowDown' || k === ' '){ e.preventDefault(); lbGo(1); return; }
+  if (k === 'ArrowLeft' || k === 'ArrowUp'){ e.preventDefault(); lbGo(-1); return; }
+  const fi = KEYS.indexOf(k);
+  if (fi >= 0){ e.preventDefault(); if (folders[fi]) toggleFolder(folders[fi].id, lbIdx); else toast('Chưa có thư mục số ' + k); return; }
+  if (k === 'u' || k === 'U'){
+    filter = filter === 'none' ? 'all' : 'none'; sticky.clear(); sticky.add(lbIdx); renderFilter(); applyFilter();
+    toast(filter === 'none' ? 'Đang xem: Chưa phân loại' : 'Đang xem: Tất cả ảnh');
+    lbShow(lbIdx);
+  }
+}
+function updateStats(){
+  const done = photos.filter(p => getA(p).length).length;
+  $('stats').textContent = 'Đã phân loại ' + done + '/' + photos.length + ' ảnh';
+}
+
+/* ---------- phím tắt ---------- */
+function cols(){
+  const v = visibleList(); if (v.length < 2) return 1;
+  const top = photos[v[0]].el.offsetTop; let c = 0;
+  for (const i of v){ if (photos[i].el.offsetTop !== top) break; c++; }
+  return c || 1;
+}
+document.addEventListener('keydown', e => {
+  if ($('app').hidden || !$('modal').hidden) return;
+  if (e.target.matches('input,select,textarea')) return;
+  if (e.ctrlKey || e.metaKey || e.altKey){ if (lbIdx < 0 && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a'){ e.preventDefault(); $('btnSelAll').click(); } return; }
+  if (lbIdx >= 0) return lbKey(e);
+  const k = e.key;
+  if (k === 'Enter'){ e.preventDefault(); openLb(); return; }
+  if ((e.ctrlKey || e.metaKey) && k.toLowerCase() === 'a'){ e.preventDefault(); $('btnSelAll').click(); return; }
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const fi = KEYS.indexOf(k);
+  if (fi >= 0){ e.preventDefault(); if (folders[fi]) toggleFolder(folders[fi].id); else toast('Chưa có thư mục số ' + k); return; }
+  if (k === 'Escape'){ clearSel(); return; }
+  if (k === 'u' || k === 'U'){ filter = filter === 'none' ? 'all' : 'none'; sticky.clear(); renderFilter(); applyFilter(); toast(filter === 'none' ? 'Đang xem: Chưa phân loại' : 'Đang xem: Tất cả ảnh'); return; }
+  if (k === ' '){ e.preventDefault(); if (focusIdx >= 0){ selected.has(focusIdx) ? selected.delete(focusIdx) : selected.add(focusIdx); anchorIdx = focusIdx; refreshSel(); } return; }
+  const moves = {ArrowLeft: -1, ArrowRight: 1, ArrowUp: -cols(), ArrowDown: cols()};
+  if (k in moves){
+    e.preventDefault();
+    const v = visibleList(); if (!v.length) return;
+    let pos = v.indexOf(focusIdx); if (pos < 0) pos = 0; else pos = Math.max(0, Math.min(v.length - 1, pos + moves[k]));
+    setFocus(v[pos]);
+    if (e.shiftKey){ selected.add(v[pos]); refreshSel(); }
+  }
+});
+
+/* ---------- xuất ---------- */
+$('btnExport').onclick = async () => {
+  const used = folders.filter(f => photos.some(p => getA(p).includes(f.id)));
+  if (!used.length) return alert('Chưa có ảnh nào được gán vào thư mục.');
+  const left = photos.filter(p => !getA(p).length).length;
+  if (left && !confirm('Còn ' + left + ' ảnh chưa phân loại. Vẫn xuất luôn chứ ạ?')) return;
+  alert('Bước tiếp theo: thầy/cô chọn NƠI LƯU kết quả (có thể chọn chính thư mục ảnh).\nCông cụ sẽ tạo thư mục “' + OUT_DIR + '” bên trong, chứa các thư mục con.');
+  let dest;
+  try { dest = await window.showDirectoryPicker({id: 'wedsort-out', mode: 'readwrite', startIn: srcHandle}); }
+  catch(e){ if (e.name !== 'AbortError') alert('Không mở được nơi lưu: ' + e.message); return; }
+
+  const modal = $('modal'); modal.hidden = false;
+  $('exTitle').textContent = 'Đang xuất ảnh…'; $('exClose').hidden = true; $('exLog').textContent = ''; $('exBar').style.width = '0';
+  const log = s => { $('exLog').textContent += s + '\n'; };
+  let ok = 0, skip = 0, fail = 0, total = 0;
+  try {
+    const root = await dest.getDirectoryHandle(OUT_DIR, {create: true});
+    const jobs = [];
+    for (const f of used){
+      const dir = await root.getDirectoryHandle(safeName(f.name), {create: true});
+      const names = new Set();
+      photos.filter(p => getA(p).includes(f.id)).forEach(p => {
+        let nm = p.name, n = 2;
+        while (names.has(nm.toLowerCase())){ nm = p.name.replace(/(\.[^.]+)$/, ' (' + n++ + ')$1'); }
+        names.add(nm.toLowerCase());
+        jobs.push({dir, p, nm, folder: f.name});
+      });
+    }
+    total = jobs.length;
+    for (let j = 0; j < jobs.length; j++){
+      const {dir, p, nm, folder} = jobs[j];
+      $('exText').textContent = (j + 1) + '/' + total + ' · ' + folder + ' / ' + nm;
+      try {
+        const sf = await p.handle.getFile();
+        let exists = false;
+        try { const ef = await (await dir.getFileHandle(nm)).getFile(); exists = ef.size === sf.size; } catch(e){}
+        if (exists){ skip++; }
+        else {
+          const fh = await dir.getFileHandle(nm, {create: true});
+          const w = await fh.createWritable();
+          await sf.stream().pipeTo(w);
+          ok++;
+        }
+      } catch(e){ fail++; log('Lỗi: ' + folder + '/' + nm + ' — ' + e.message); }
+      $('exBar').style.width = ((j + 1) / total * 100) + '%';
+    }
+    $('exTitle').textContent = fail ? 'Xuất xong (có lỗi)' : '✅ Xuất xong!';
+    $('exText').innerHTML = 'Đã copy <b>' + ok + '</b> ảnh' + (skip ? ', bỏ qua ' + skip + ' ảnh đã có sẵn' : '') + (fail ? ', lỗi ' + fail + ' ảnh' : '') +
+      '.<br>Kết quả nằm trong thư mục <b>' + esc(dest.name) + ' / ' + OUT_DIR + '</b>.';
+    log(used.map(f => '📁 ' + f.name + ': ' + photos.filter(p => getA(p).includes(f.id)).length + ' ảnh').join('\n'));
+  } catch(e){
+    $('exTitle').textContent = 'Không xuất được'; $('exText').textContent = e.message;
+  }
+  $('exClose').hidden = false;
+};
+$('exClose').onclick = () => { $('modal').hidden = true; };
+})();
+</script>
+</body>
+</html>

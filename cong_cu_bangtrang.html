@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Bảng trắng trình chiếu – EduTeacher Hub</title>
+<script src="lib/pdf-lib.min.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#e2e8f0;touch-action:none;user-select:none;-webkit-user-select:none}
+#stage{position:fixed;inset:0}
+#stage canvas{position:absolute;inset:0;width:100%;height:100%}
+#cvBg{z-index:1}#cvImg{z-index:2}#cvInk{z-index:3}#cvTmp{z-index:4}
+#stage.t-pan,#stage.t-sel{cursor:default}
+#stage.t-pen,#stage.t-hl,#stage.t-line,#stage.t-arrow,#stage.t-rect,#stage.t-ell,#stage.t-compa,#stage.t-tri{cursor:crosshair}
+#stage.t-eraser{cursor:cell}#stage.t-text{cursor:text}#stage.t-laser{cursor:none}
+
+/* Thanh công cụ */
+.tb{position:fixed;left:0;right:0;margin:0 auto;width:max-content;top:10px;z-index:30;display:flex;flex-wrap:wrap;align-items:center;gap:2px;background:rgba(255,255,255,.97);border:1px solid #cbd5e1;border-radius:16px;padding:5px 7px;box-shadow:0 8px 30px rgba(15,23,42,.18);max-width:calc(100vw - 20px);justify-content:center}
+.tb.min>*:not(.keep){display:none}
+.tb button{border:0;background:transparent;border-radius:10px;min-width:34px;height:36px;padding:0 6px;font:inherit;font-size:1.05rem;cursor:pointer;color:#0f172a;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.tb button:hover{background:#f1f5f9}
+.tb button.on{background:#0f766e;color:#fff}
+.tb button small{font-size:.7rem;font-weight:700}
+.tb .sep{width:1px;height:26px;background:#e2e8f0;margin:0 2px}
+.sw{width:22px!important;min-width:22px!important;height:22px!important;margin:0 1px!important;border-radius:50%!important;padding:0!important;border:2px solid #fff!important;box-shadow:0 0 0 1.5px #cbd5e1}
+.sw.on{box-shadow:0 0 0 2.5px #0f766e!important}
+.tb input[type=color]{width:28px;height:28px;border:0;padding:0;background:none;cursor:pointer}
+.tb select{font:inherit;font-size:.8rem;border:1px solid #cbd5e1;border-radius:8px;padding:6px 4px;background:#fff;color:#0f172a}
+.wdot{display:inline-block;border-radius:50%;background:#0f172a}
+
+/* Thanh trang */
+.pg{position:fixed;right:12px;bottom:12px;z-index:30;display:flex;align-items:center;gap:4px;background:rgba(255,255,255,.97);border:1px solid #cbd5e1;border-radius:14px;padding:5px 6px;box-shadow:0 6px 20px rgba(15,23,42,.15)}
+.pg button{border:0;background:transparent;border-radius:9px;height:34px;min-width:34px;font:inherit;font-size:.95rem;cursor:pointer;color:#0f172a}
+.pg button:hover{background:#f1f5f9}
+.pg span{font-weight:800;font-size:.85rem;color:#334155;min-width:52px;text-align:center}
+.home{position:fixed;left:12px;bottom:12px;z-index:30;text-decoration:none;background:rgba(255,255,255,.97);border:1px solid #cbd5e1;border-radius:12px;padding:8px 11px;font-size:.85rem;color:#334155;font-weight:700;box-shadow:0 6px 20px rgba(15,23,42,.12)}
+
+/* Thước kẻ, thước đo góc */
+.tool{position:absolute;z-index:20;transform-origin:0 0;touch-action:none}
+.tool[hidden]{display:none}
+.ruler{height:64px;background:rgba(254,240,138,.82);border:1.5px solid #a16207;border-radius:4px;box-shadow:0 4px 14px rgba(0,0,0,.22);cursor:move}
+.ruler svg{position:absolute;left:0;top:0;pointer-events:none}
+.rot{position:absolute;width:30px;height:30px;border-radius:50%;background:#0f766e;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;cursor:grab;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.ang{position:absolute;left:50%;top:-30px;transform:translateX(-50%);background:#0f172a;color:#fff;font-size:12px;font-weight:700;border-radius:6px;padding:2px 7px;pointer-events:none;white-space:nowrap}
+.prot{cursor:move}
+.prot svg{display:block;filter:drop-shadow(0 4px 10px rgba(0,0,0,.25))}
+.closeT{position:absolute;width:24px;height:24px;border-radius:50%;background:#ef4444;color:#fff;border:0;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* Ảnh đang chọn */
+.selbox{position:absolute;z-index:25;border:2px dashed #0ea5e9;pointer-events:none}
+.selbox .h{position:absolute;right:-9px;bottom:-9px;width:18px;height:18px;border-radius:50%;background:#0ea5e9;border:2px solid #fff;pointer-events:auto;cursor:nwse-resize}
+.selbox .d{position:absolute;right:-12px;top:-12px;width:24px;height:24px;border-radius:50%;background:#ef4444;color:#fff;border:2px solid #fff;pointer-events:auto;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center}
+
+.txt{position:absolute;z-index:26;min-width:120px;border:2px dashed #0ea5e9;background:rgba(255,255,255,.6);outline:0;padding:2px 4px;font-family:system-ui,sans-serif;white-space:pre}
+.info{position:fixed;z-index:27;pointer-events:none;background:#0f172a;color:#fff;font-size:12px;font-weight:700;border-radius:6px;padding:3px 8px;display:none}
+.toast{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:#0f172a;color:#fff;padding:9px 16px;border-radius:10px;font-size:13px;opacity:0;transition:.2s;pointer-events:none;z-index:40}
+.toast.show{opacity:1}
+.help{position:fixed;inset:0;z-index:50;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.help[hidden]{display:none}
+.help>div{background:#fff;border-radius:16px;padding:22px 26px;max-width:560px;width:100%;max-height:90vh;overflow:auto;font-size:.88rem;line-height:1.6;color:#0f172a}
+.help h3{margin:0 0 8px}.help kbd{font:12px ui-monospace,monospace;background:#f1f5f9;border:1px solid #cbd5e1;border-bottom-width:2px;border-radius:5px;padding:0 5px}
+.help button{margin-top:10px;border:0;background:#0f766e;color:#fff;border-radius:10px;padding:8px 18px;font:inherit;font-weight:700;cursor:pointer}
+@media(max-width:700px){.tb button{min-width:32px;height:32px;font-size:.95rem;padding:0 5px}.tb .hide-sm{display:none}}
+</style>
+</head>
+<body>
+<div id="stage" class="t-pen">
+  <canvas id="cvBg"></canvas><canvas id="cvImg"></canvas><canvas id="cvInk"></canvas><canvas id="cvTmp"></canvas>
+</div>
+
+<div class="tb" id="tb">
+  <button class="keep" id="bMin" title="Thu gọn / mở rộng thanh công cụ">☰</button>
+  <span class="sep"></span>
+  <button data-t="pen" title="Bút (P)">✏️</button>
+  <button data-t="hl" title="Bút dạ quang (H)">🖍️</button>
+  <button data-t="eraser" title="Tẩy (E)">🧽</button>
+  <button data-t="laser" title="Bút laze chỉ bảng (L)">🔴</button>
+  <span class="sep"></span>
+  <button data-t="line" title="Đoạn thẳng – hiện độ dài & góc (giữ Shift: bắt góc 15°)">／</button>
+  <button data-t="arrow" title="Mũi tên / tia">➝</button>
+  <button data-t="rect" title="Hình chữ nhật (giữ Shift: hình vuông)">▭</button>
+  <button data-t="ell" title="Hình elip (giữ Shift: hình tròn)">⬭</button>
+  <button data-t="tri" title="Tam giác: bấm 3 đỉnh">△</button>
+  <button data-t="compa" title="Compa: bấm tâm rồi kéo bán kính">⊙</button>
+  <button data-t="text" title="Chữ (T)"><b>T</b></button>
+  <button data-t="sel" title="Chọn / di chuyển ảnh (V)">🖐️</button>
+  <span class="sep"></span>
+  <span id="swatches" style="display:contents"></span>
+  <input type="color" id="cPick" title="Màu khác" value="#0f172a">
+  <select id="wSel" title="Độ dày nét"><option value="2">Mảnh</option><option value="4" selected>Vừa</option><option value="7">Đậm</option><option value="12">Rất đậm</option></select>
+  <span class="sep"></span>
+  <button id="bRuler" title="Thước kẻ – vẽ dọc mép thước sẽ ra đường thẳng">📏</button>
+  <button id="bProt" title="Thước đo góc">📐</button>
+  <select id="bgSel" title="Nền bảng">
+    <option value="white">⬜ Nền trắng</option><option value="grid">▦ Lưới ô vuông</option><option value="oly">▤ Giấy ô ly</option><option value="lines">☰ Kẻ ngang</option>
+    <option value="axes">✛ Trục tọa độ Oxy</option><option value="dots">⁘ Lưới chấm</option><option value="black">⬛ Bảng đen</option><option value="green">🟩 Bảng xanh</option>
+  </select>
+  <button id="bImg" title="Chèn ảnh đề bài (hoặc Ctrl+V để dán ảnh)">🖼️</button>
+  <span class="sep"></span>
+  <button id="bUndo" title="Hoàn tác (Ctrl+Z)">↶</button>
+  <button id="bRedo" title="Làm lại (Ctrl+Y)">↷</button>
+  <button id="bClear" title="Xóa trang này">🗑️</button>
+  <button id="bSave" title="Lưu trang này thành ảnh PNG">💾</button>
+  <button id="bPdf" title="Lưu tất cả trang thành PDF">📄</button>
+  <button id="bFull" class="keep" title="Toàn màn hình (F11)">⛶</button>
+  <button id="bHelp" title="Hướng dẫn">❔</button>
+</div>
+
+<div class="pg">
+  <button id="pPrev" title="Trang trước (PageUp)">◀</button><span id="pInfo">1/1</span><button id="pNext" title="Trang sau (PageDown)">▶</button>
+  <button id="pAdd" title="Thêm trang mới">＋</button><button id="pDel" title="Xóa trang này">✕</button>
+</div>
+<a class="home" href="dashboard.html" title="Về EduTeacher Hub">🏠 Hub</a>
+
+<div class="tool ruler" id="ruler" hidden><div class="ang" id="rAng">0°</div><div class="rot" id="rRot" title="Kéo để xoay thước">⟳</div><button class="closeT" id="rX" title="Cất thước">✕</button></div>
+<div class="tool prot" id="prot" hidden><div class="ang" id="pAng">0°</div><div class="rot" id="pRot" title="Kéo để xoay">⟳</div><button class="closeT" id="pX" title="Cất thước đo góc">✕</button></div>
+
+<div class="info" id="info"></div>
+<div class="toast" id="toast"></div>
+<input type="file" id="fImg" accept="image/*" hidden>
+
+<div class="help" id="help" hidden><div>
+  <h3>🖍️ Bảng trắng trình chiếu</h3>
+  <div>Dùng trên TV / máy chiếu, bảng tương tác, máy tính bảng hoặc máy tính có chuột.</div>
+  <ul style="padding-left:18px;margin:8px 0">
+    <li><b>📏 Thước kẻ</b>: kéo để di chuyển, kéo nút ⟳ để xoay. Vẽ bút sát mép trên của thước sẽ ra đường thẳng tắp.</li>
+    <li><b>📐 Thước đo góc</b>: đặt tâm thước vào đỉnh góc, xoay cho khớp một cạnh để đọc số đo.</li>
+    <li><b>⊙ Compa</b>: bấm vào tâm, kéo ra bán kính – có hiện độ dài bán kính theo ô lưới.</li>
+    <li><b>／ Đoạn thẳng</b>: hiện độ dài (đơn vị = 1 ô lưới) và góc; giữ <kbd>Shift</kbd> để bắt góc 15°.</li>
+    <li><b>△ Tam giác</b>: bấm lần lượt 3 đỉnh.</li>
+    <li><b>🖼️ Ảnh</b>: chèn ảnh chụp đề bài hoặc dán bằng <kbd>Ctrl</kbd>+<kbd>V</kbd>, dùng 🖐️ để kéo / thu phóng.</li>
+    <li><b>Trang</b>: góc dưới phải – thêm nhiều trang, chuyển trang bằng <kbd>PageUp</kbd>/<kbd>PageDown</kbd>.</li>
+  </ul>
+  <div>Phím tắt: <kbd>P</kbd> bút · <kbd>H</kbd> dạ quang · <kbd>E</kbd> tẩy · <kbd>L</kbd> laze · <kbd>T</kbd> chữ · <kbd>V</kbd> chọn ảnh · <kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd> hoàn tác/làm lại · <kbd>Delete</kbd> xóa ảnh đang chọn.</div>
+  <div style="margin-top:6px;color:#64748b">Bài vẽ được tự lưu trên máy này, mở lại vẫn còn.</div>
+  <button onclick="document.getElementById('help').hidden=true">Đã hiểu</button>
+</div></div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const U = 40; // 1 đơn vị = 1 ô lưới = 40px
+const stage = $('stage'), cvBg = $('cvBg'), cvImg = $('cvImg'), cvInk = $('cvInk'), cvTmp = $('cvTmp');
+const xBg = cvBg.getContext('2d'), xImg = cvImg.getContext('2d'), xInk = cvInk.getContext('2d'), xTmp = cvTmp.getContext('2d');
+let W = 0, H = 0, DPR = 1;
+const LIGHT = ['#0f172a', '#dc2626', '#2563eb', '#16a34a', '#ea580c', '#9333ea', '#db2777', '#ffffff'];
+const DARK = ['#ffffff', '#fde047', '#f87171', '#7dd3fc', '#86efac', '#fdba74', '#f0abfc', '#0f172a'];
+let tool = 'pen', color = '#0f172a', width = 4;
+let pages = [{ bg: 'white', acts: [], redo: [] }], cur = 0;
+let selImg = null;
+const imgCache = new Map();
+const P = () => pages[cur];
+const isDark = bg => bg === 'black' || bg === 'green';
+
+function toast(m) { const t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 1800); }
+
+/* ---------- kích thước ---------- */
+function resize() {
+  DPR = window.devicePixelRatio || 1; W = innerWidth; H = innerHeight;
+  [cvBg, cvImg, cvInk, cvTmp].forEach(c => { c.width = Math.round(W * DPR); c.height = Math.round(H * DPR); c.getContext('2d').setTransform(DPR, 0, 0, DPR, 0, 0); });
+  redrawAll();
+}
+
+/* ---------- nền ---------- */
+function drawBg(ctx, bg, w, h) {
+  const col = { white: '#ffffff', grid: '#ffffff', oly: '#ffffff', lines: '#ffffff', axes: '#ffffff', dots: '#ffffff', black: '#1f2937', green: '#14532d' }[bg] || '#fff';
+  ctx.fillStyle = col; ctx.fillRect(0, 0, w, h);
+  const line = (x1, y1, x2, y2) => { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); };
+  if (bg === 'grid' || bg === 'axes') {
+    ctx.strokeStyle = '#dbe3ee'; ctx.lineWidth = 1;
+    const ox = bg === 'axes' ? Math.round(w / 2 / U) * U : 0, oy = bg === 'axes' ? Math.round(h / 2 / U) * U : 0;
+    for (let x = ox % U; x < w; x += U) line(x + .5, 0, x + .5, h);
+    for (let y = oy % U; y < h; y += U) line(0, y + .5, w, y + .5);
+    if (bg === 'axes') {
+      ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2; ctx.fillStyle = '#0f172a';
+      line(0, oy, w - 4, oy); line(ox, h, ox, 4);
+      ctx.beginPath(); ctx.moveTo(w - 2, oy); ctx.lineTo(w - 14, oy - 6); ctx.lineTo(w - 14, oy + 6); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(ox, 2); ctx.lineTo(ox - 6, 14); ctx.lineTo(ox + 6, 14); ctx.fill();
+      ctx.font = 'bold 13px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      for (let x = ox + U, n = 1; x < w - 20; x += U, n++) { line(x, oy - 4, x, oy + 4); ctx.fillText(n, x, oy + 6); }
+      for (let x = ox - U, n = -1; x > 10; x -= U, n--) { line(x, oy - 4, x, oy + 4); ctx.fillText(n, x, oy + 6); }
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      for (let y = oy - U, n = 1; y > 20; y -= U, n++) { line(ox - 4, y, ox + 4, y); ctx.fillText(n, ox - 7, y); }
+      for (let y = oy + U, n = -1; y < h - 10; y += U, n--) { line(ox - 4, y, ox + 4, y); ctx.fillText(n, ox - 7, y); }
+      ctx.font = 'italic bold 16px Georgia,serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+      ctx.fillText('x', w - 8, oy + 10); ctx.textAlign = 'left'; ctx.fillText('y', ox + 10, 4);
+      ctx.textAlign = 'right'; ctx.fillText('O', ox - 6, oy + 4);
+    }
+  } else if (bg === 'oly') {
+    const s = U / 4;
+    ctx.lineWidth = 1;
+    for (let x = 0, i = 0; x < w; x += s, i++) { ctx.strokeStyle = i % 4 ? '#e9d5ff' : '#a78bfa'; line(x + .5, 0, x + .5, h); }
+    for (let y = 0, i = 0; y < h; y += s, i++) { ctx.strokeStyle = i % 4 ? '#e9d5ff' : '#a78bfa'; line(0, y + .5, w, y + .5); }
+  } else if (bg === 'lines') {
+    ctx.strokeStyle = '#bfdbfe'; ctx.lineWidth = 1;
+    for (let y = U * 1.5; y < h; y += U) line(0, y + .5, w, y + .5);
+    ctx.strokeStyle = '#fca5a5'; line(80.5, 0, 80.5, h);
+  } else if (bg === 'dots') {
+    ctx.fillStyle = '#94a3b8';
+    for (let x = U; x < w; x += U) for (let y = U; y < h; y += U) { ctx.beginPath(); ctx.arc(x, y, 1.6, 0, 7); ctx.fill(); }
+  }
+}
+
+/* ---------- vẽ một nét ---------- */
+function strokePath(ctx, pts) {
+  ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+  if (pts.length < 3) { const q = pts[pts.length - 1]; ctx.lineTo(q[0] + .01, q[1]); }
+  for (let i = 1; i < pts.length - 1; i++) { const a = pts[i], b = pts[i + 1]; ctx.quadraticCurveTo(a[0], a[1], (a[0] + b[0]) / 2, (a[1] + b[1]) / 2); }
+  if (pts.length >= 3) { const q = pts[pts.length - 1]; ctx.lineTo(q[0], q[1]); }
+  ctx.stroke();
+}
+function arrowHead(ctx, a, b, w) {
+  const ang = Math.atan2(b[1] - a[1], b[0] - a[0]), L = 10 + w * 2.2;
+  ctx.beginPath(); ctx.moveTo(b[0], b[1]);
+  ctx.lineTo(b[0] - L * Math.cos(ang - .45), b[1] - L * Math.sin(ang - .45));
+  ctx.lineTo(b[0] - L * Math.cos(ang + .45), b[1] - L * Math.sin(ang + .45)); ctx.closePath(); ctx.fill();
+}
+function drawAct(ctx, a) {
+  ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.strokeStyle = a.c; ctx.fillStyle = a.c; ctx.lineWidth = a.w;
+  if (a.k === 'hl') { ctx.globalAlpha = .35; ctx.lineWidth = a.w * 4; ctx.lineCap = 'butt'; }
+  if (a.k === 'eraser') { ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = a.w * 6; ctx.strokeStyle = '#000'; }
+  const p = a.p;
+  switch (a.k) {
+    case 'pen': case 'hl': case 'eraser': strokePath(ctx, p); break;
+    case 'line': ctx.beginPath(); ctx.moveTo(...p[0]); ctx.lineTo(...p[1]); ctx.stroke(); break;
+    case 'arrow': ctx.beginPath(); ctx.moveTo(...p[0]); ctx.lineTo(...p[1]); ctx.stroke(); arrowHead(ctx, p[0], p[1], a.w); break;
+    case 'rect': ctx.strokeRect(Math.min(p[0][0], p[1][0]), Math.min(p[0][1], p[1][1]), Math.abs(p[1][0] - p[0][0]), Math.abs(p[1][1] - p[0][1])); break;
+    case 'ell': ctx.beginPath(); ctx.ellipse((p[0][0] + p[1][0]) / 2, (p[0][1] + p[1][1]) / 2, Math.abs(p[1][0] - p[0][0]) / 2 || .1, Math.abs(p[1][1] - p[0][1]) / 2 || .1, 0, 0, 7); ctx.stroke(); break;
+    case 'circle': ctx.beginPath(); ctx.arc(p[0][0], p[0][1], a.r, 0, Math.PI * 2); ctx.stroke(); ctx.beginPath(); ctx.arc(p[0][0], p[0][1], Math.max(2, a.w * .8), 0, 7); ctx.fill(); break;
+    case 'poly': ctx.beginPath(); ctx.moveTo(...p[0]); p.slice(1).forEach(q => ctx.lineTo(...q)); if (a.closed) ctx.closePath(); ctx.stroke(); break;
+    case 'text': ctx.font = `${a.fs}px system-ui,"Segoe UI",sans-serif`; ctx.textBaseline = 'top'; a.t.split('\n').forEach((ln, i) => ctx.fillText(ln, p[0][0], p[0][1] + i * a.fs * 1.25)); break;
+  }
+  ctx.restore();
+}
+function getImg(src) {
+  if (imgCache.has(src)) return imgCache.get(src);
+  const im = new Image(); im.onload = () => drawImgs(); im.src = src; imgCache.set(src, im); return im;
+}
+function drawImgsOn(ctx, page) {
+  page.acts.forEach(a => { if (a.k === 'img' && !a.gone) { const im = getImg(a.src); if (im.complete && im.naturalWidth) ctx.drawImage(im, a.x, a.y, a.w2, a.h2); } });
+}
+function drawImgs() { xImg.clearRect(0, 0, W, H); drawImgsOn(xImg, P()); placeSel(); }
+function redrawInk() { xInk.clearRect(0, 0, W, H); P().acts.forEach(a => { if (a.k !== 'img' && a.k !== 'imgmove' && a.k !== 'imgdel') drawAct(xInk, a); }); }
+function redrawAll() { drawBg(xBg, P().bg, W, H); rebuildImgState(); drawImgs(); redrawInk(); $('bgSel').value = P().bg; paintSwatches(); $('pInfo').textContent = (cur + 1) + '/' + pages.length; }
+
+/* trạng thái ảnh: các thao tác di chuyển/xóa ảnh được ghi thành act để hoàn tác được */
+function rebuildImgState() {
+  const page = P(), base = {};
+  page.acts.forEach(a => {
+    if (a.k === 'img') { base[a.id] = a; a.x = a.x0; a.y = a.y0; a.w2 = a.w0; a.h2 = a.h0; a.gone = false; }
+    else if (a.k === 'imgmove' && base[a.id]) Object.assign(base[a.id], { x: a.x, y: a.y, w2: a.w2, h2: a.h2 });
+    else if (a.k === 'imgdel' && base[a.id]) base[a.id].gone = true;
+  });
+  if (selImg && (!base[selImg.id] || base[selImg.id].gone)) selImg = null;
+  else if (selImg) selImg = base[selImg.id];
+}
+
+/* ---------- màu & công cụ ---------- */
+function paintSwatches() {
+  const arr = isDark(P().bg) ? DARK : LIGHT;
+  if (!arr.includes(color) && !paintSwatches._custom) color = arr[0];
+  $('swatches').innerHTML = arr.map(c => `<button class="sw${c === color ? ' on' : ''}" data-c="${c}" style="background:${c}" title="${c}"></button>`).join('');
+}
+$('swatches').addEventListener('click', e => { const b = e.target.closest('[data-c]'); if (!b) return; color = b.dataset.c; paintSwatches._custom = false; paintSwatches(); if (tool === 'eraser' || tool === 'sel' || tool === 'laser') setTool('pen'); });
+$('cPick').oninput = e => { color = e.target.value; paintSwatches._custom = true; paintSwatches(); };
+$('wSel').onchange = e => width = +e.target.value;
+function setTool(t) {
+  tool = t; stage.className = 't-' + t;
+  document.querySelectorAll('.tb [data-t]').forEach(b => b.classList.toggle('on', b.dataset.t === t));
+  triPts = []; xTmp.clearRect(0, 0, W, H); hideInfo();
+  if (t !== 'sel') { selImg = null; placeSel(); }
+}
+document.querySelectorAll('.tb [data-t]').forEach(b => b.onclick = () => setTool(b.dataset.t));
+$('bgSel').onchange = e => { const old = P().bg; P().bg = e.target.value; if (isDark(old) !== isDark(P().bg)) { paintSwatches._custom = false; color = (isDark(P().bg) ? DARK : LIGHT)[0]; } redrawAll(); save(); };
+$('bMin').onclick = () => $('tb').classList.toggle('min');
+
+/* ---------- thông tin đo ---------- */
+function showInfo(x, y, t) { const i = $('info'); i.textContent = t; i.style.display = 'block'; i.style.left = Math.min(W - 160, x + 16) + 'px'; i.style.top = Math.max(4, y - 34) + 'px'; }
+function hideInfo() { $('info').style.display = 'none'; }
+const fmtU = px => (Math.round(px / U * 10) / 10).toString().replace('.', ',');
+
+/* ---------- thước kẻ ---------- */
+const R = { x: 0, y: 0, a: 0, L: 640 }, PR = { x: 0, y: 0, a: 0, r: 190 };
+function buildRuler() {
+  const el = $('ruler'); el.style.width = R.L + 'px';
+  let s = `<svg width="${R.L}" height="64">`;
+  for (let i = 0; i * U / 10 <= R.L - 4; i++) {
+    const x = 4 + i * U / 10, h = i % 10 === 0 ? 20 : i % 5 === 0 ? 13 : 7;
+    s += `<line x1="${x}" y1="0" x2="${x}" y2="${h}" stroke="#713f12" stroke-width="${i % 10 ? 1 : 1.6}"/>`;
+    if (i % 10 === 0) s += `<text x="${x}" y="34" font-size="12" font-weight="700" text-anchor="middle" fill="#713f12" font-family="system-ui">${i / 10}</text>`;
+  }
+  s += `<text x="${R.L / 2}" y="56" font-size="10" text-anchor="middle" fill="#a16207" font-family="system-ui">đơn vị: ô lưới</text></svg>`;
+  el.insertAdjacentHTML('afterbegin', s);
+  $('rRot').style.cssText = `right:-15px;top:17px`; $('rX').style.cssText = 'left:-12px;top:-12px';
+}
+function placeRuler() { const el = $('ruler'); el.style.left = R.x + 'px'; el.style.top = R.y + 'px'; el.style.transform = `rotate(${R.a}rad)`; let d = Math.round(-R.a * 180 / Math.PI) % 360; if (d < 0) d += 360; $('rAng').textContent = d + '°'; $('rAng').style.transform = `translateX(-50%) rotate(${-R.a}rad)`; }
+function buildProt() {
+  const r = PR.r, el = $('prot');
+  let s = `<svg width="${2 * r + 20}" height="${r + 30}" viewBox="${-r - 10} ${-r - 10} ${2 * r + 20} ${r + 30}">`;
+  s += `<path d="M${-r} 0 A${r} ${r} 0 0 1 ${r} 0 Z" fill="rgba(186,230,253,.78)" stroke="#0369a1" stroke-width="1.5"/>`;
+  s += `<path d="M${-r * .42} 0 A${r * .42} ${r * .42} 0 0 1 ${r * .42} 0" fill="none" stroke="#0369a1" stroke-width="1"/>`;
+  for (let d = 0; d <= 180; d++) {
+    const t = Math.PI - d * Math.PI / 180, c = Math.cos(t), sn = -Math.sin(t), L = d % 10 === 0 ? 16 : d % 5 === 0 ? 11 : 6;
+    s += `<line x1="${c * r}" y1="${sn * r}" x2="${c * (r - L)}" y2="${sn * (r - L)}" stroke="#0c4a6e" stroke-width="${d % 10 ? .8 : 1.4}"/>`;
+    if (d % 10 === 0) {
+      s += `<text x="${c * (r - 27)}" y="${sn * (r - 27) + 4}" font-size="10.5" font-weight="700" text-anchor="middle" fill="#0c4a6e" font-family="system-ui">${d}</text>`;
+      s += `<text x="${c * (r - 42)}" y="${sn * (r - 42) + 4}" font-size="9" text-anchor="middle" fill="#dc2626" font-family="system-ui">${180 - d}</text>`;
+    }
+  }
+  s += `<line x1="${-r}" y1="0" x2="${r}" y2="0" stroke="#0c4a6e" stroke-width="1.5"/><line x1="0" y1="0" x2="0" y2="${-r * .42}" stroke="#0c4a6e" stroke-width="1"/><circle r="4" fill="none" stroke="#dc2626" stroke-width="2"/><line x1="-8" y1="0" x2="8" y2="0" stroke="#dc2626" stroke-width="1.5"/></svg>`;
+  el.insertAdjacentHTML('afterbegin', s);
+  $('pRot').style.cssText = `left:${2 * r + 6}px;top:${r - 6}px`; $('pX').style.cssText = 'left:-4px;top:-4px';
+}
+function placeProt() { const el = $('prot'); const r = PR.r; el.style.left = (PR.x - (r + 10)) + 'px'; el.style.top = (PR.y - (r + 10)) + 'px'; el.style.transformOrigin = `${r + 10}px ${r + 10}px`; el.style.transform = `rotate(${PR.a}rad)`; let d = Math.round(-PR.a * 180 / Math.PI) % 360; if (d < 0) d += 360; $('pAng').textContent = 'xoay ' + d + '°'; $('pAng').style.cssText = `left:${r + 10}px;top:${r + 26}px;transform:translateX(-50%) rotate(${-PR.a}rad)`; }
+function dragTool(el, obj, place, rotEl, pivot) {
+  el.addEventListener('pointerdown', e => {
+    if (e.target.closest('.closeT')) return;
+    e.preventDefault(); e.stopPropagation(); el.setPointerCapture(e.pointerId);
+    const rot = e.target === rotEl, sx = e.clientX, sy = e.clientY, ox = obj.x, oy = obj.y, oa = obj.a;
+    const pv = pivot(); const a0 = Math.atan2(sy - pv[1], sx - pv[0]);
+    const mv = ev => {
+      if (rot) { let a = oa + Math.atan2(ev.clientY - pv[1], ev.clientX - pv[0]) - a0; const st = Math.PI / 12; const near = Math.round(a / st) * st; if (Math.abs(a - near) < .035) a = near; obj.a = a; }
+      else { obj.x = ox + ev.clientX - sx; obj.y = oy + ev.clientY - sy; }
+      place();
+    };
+    const up = () => { el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up); };
+    el.addEventListener('pointermove', mv); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+  });
+}
+buildRuler(); buildProt();
+dragTool($('ruler'), R, placeRuler, $('rRot'), () => [R.x, R.y]);
+dragTool($('prot'), PR, placeProt, $('pRot'), () => [PR.x, PR.y]);
+$('bRuler').onclick = () => { const el = $('ruler'); el.hidden = !el.hidden; if (!el.hidden && !R.x) { R.x = W / 2 - R.L / 2; R.y = H * .6; } placeRuler(); $('bRuler').classList.toggle('on', !el.hidden); };
+$('bProt').onclick = () => { const el = $('prot'); el.hidden = !el.hidden; if (!el.hidden && !PR.x) { PR.x = W / 2; PR.y = H * .55; } placeProt(); $('bProt').classList.toggle('on', !el.hidden); };
+$('rX').onclick = () => $('bRuler').click(); $('pX').onclick = () => $('bProt').click();
+// bắt dính bút vào mép thước
+function rulerSnap(pt) {
+  if ($('ruler').hidden) return null;
+  const c = Math.cos(R.a), s = Math.sin(R.a), dx = pt[0] - R.x, dy = pt[1] - R.y;
+  const t = dx * c + dy * s, n = -dx * s + dy * c;
+  if (t < -10 || t > R.L + 10 || n < -26 || n > 14) return null;
+  return t;
+}
+const rulerPt = (t, off) => [R.x + Math.cos(R.a) * t - Math.sin(R.a) * off, R.y + Math.sin(R.a) * t + Math.cos(R.a) * off];
+
+/* ---------- vẽ bằng con trỏ ---------- */
+let drawing = null, triPts = [], laser = [];
+function pos(e) { return [e.clientX, e.clientY]; }
+function snapAngle(a, b) { const dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy); const st = Math.PI / 12; const ang = Math.round(Math.atan2(dy, dx) / st) * st; return [a[0] + L * Math.cos(ang), a[1] + L * Math.sin(ang)]; }
+function commit(a) { P().acts.push(a); P().redo = []; if (a.k === 'img' || a.k === 'imgmove' || a.k === 'imgdel') { rebuildImgState(); drawImgs(); } else drawAct(xInk, a); save(); }
+
+stage.addEventListener('pointerdown', e => {
+  if (e.button && e.button !== 0) return;
+  const p = pos(e);
+  if (txtEl) { finishText(); return; }
+  if (tool === 'text') { e.preventDefault(); startText(p); return; }
+  if (tool === 'sel') { pickImg(e, p); return; }
+  if (tool === 'tri') {
+    triPts.push(p);
+    if (triPts.length === 3) { commit({ k: 'poly', c: color, w: width, p: triPts.slice(), closed: true }); triPts = []; xTmp.clearRect(0, 0, W, H); hideInfo(); }
+    return;
+  }
+  stage.setPointerCapture(e.pointerId);
+  if (tool === 'laser') { drawing = { k: 'laser' }; laser.push([p[0], p[1], performance.now()]); laserLoop(); return; }
+  const snapT = (tool === 'pen' || tool === 'hl') ? rulerSnap(p) : null;
+  drawing = { k: tool === 'compa' ? 'circle' : tool, c: color, w: width, p: [p], snapT };
+});
+stage.addEventListener('pointermove', e => {
+  const p = pos(e);
+  if (tool === 'tri' && triPts.length) { xTmp.clearRect(0, 0, W, H); drawAct(xTmp, { k: 'poly', c: color, w: width, p: triPts.concat([p]), closed: triPts.length === 2 }); return; }
+  if (!drawing) return;
+  if (drawing.k === 'laser') { laser.push([p[0], p[1], performance.now()]); return; }
+  const d = drawing; xTmp.clearRect(0, 0, W, H);
+  if (d.k === 'pen' || d.k === 'hl' || d.k === 'eraser') {
+    const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+    if (d.snapT != null) {
+      const t2 = rulerSnap(p) ?? (Math.cos(R.a) * (p[0] - R.x) + Math.sin(R.a) * (p[1] - R.y));
+      const off = -d.w / 2 - 1; d.p = [rulerPt(d.snapT, off), rulerPt(Math.max(0, Math.min(R.L, t2)), off)];
+    } else evs.forEach(ev => d.p.push(pos(ev)));
+    if (d.k === 'eraser') { drawAct(xInk, { k: 'eraser', w: d.w, p: d.p.slice(-3) }); return; }
+    drawAct(xTmp, d); return;
+  }
+  let b = p; if (e.shiftKey && (d.k === 'line' || d.k === 'arrow')) b = snapAngle(d.p[0], p);
+  if (e.shiftKey && (d.k === 'rect' || d.k === 'ell')) { const s = Math.max(Math.abs(p[0] - d.p[0][0]), Math.abs(p[1] - d.p[0][1])); b = [d.p[0][0] + Math.sign(p[0] - d.p[0][0]) * s, d.p[0][1] + Math.sign(p[1] - d.p[0][1]) * s]; }
+  d.p[1] = b;
+  if (d.k === 'circle') {
+    d.r = Math.hypot(b[0] - d.p[0][0], b[1] - d.p[0][1]);
+    drawAct(xTmp, d);
+    xTmp.save(); xTmp.setLineDash([6, 5]); xTmp.strokeStyle = '#64748b'; xTmp.lineWidth = 1.5; xTmp.beginPath(); xTmp.moveTo(...d.p[0]); xTmp.lineTo(...b); xTmp.stroke(); xTmp.restore();
+    showInfo(p[0], p[1], 'R = ' + fmtU(d.r) + ' ô');
+  } else {
+    drawAct(xTmp, d);
+    const dx = b[0] - d.p[0][0], dy = b[1] - d.p[0][1];
+    if (d.k === 'line' || d.k === 'arrow') { let ang = Math.round(-Math.atan2(dy, dx) * 180 / Math.PI); if (ang < 0) ang += 360; showInfo(p[0], p[1], 'Dài ' + fmtU(Math.hypot(dx, dy)) + ' ô · ' + ang + '°'); }
+    else if (d.k === 'rect') showInfo(p[0], p[1], fmtU(Math.abs(dx)) + ' × ' + fmtU(Math.abs(dy)) + ' ô');
+  }
+});
+function endDraw() {
+  if (!drawing) return;
+  const d = drawing; drawing = null; xTmp.clearRect(0, 0, W, H); hideInfo();
+  if (d.k === 'laser') return;
+  if ((d.k === 'line' || d.k === 'arrow' || d.k === 'rect' || d.k === 'ell') && (!d.p[1] || Math.hypot(d.p[1][0] - d.p[0][0], d.p[1][1] - d.p[0][1]) < 3)) return;
+  if (d.k === 'circle' && !(d.r > 3)) return;
+  delete d.snapT;
+  d.p = d.p.map(q => [Math.round(q[0] * 10) / 10, Math.round(q[1] * 10) / 10]);
+  commit(d); if (d.k === 'eraser') redrawInk();
+}
+stage.addEventListener('pointerup', endDraw); stage.addEventListener('pointercancel', endDraw);
+function laserLoop() {
+  const now = performance.now(); laser = laser.filter(q => now - q[2] < 700);
+  if (tool !== 'laser' || (!drawing && !laser.length)) { if (tool === 'laser' || !drawing) xTmp.clearRect(0, 0, W, H); return; }
+  xTmp.clearRect(0, 0, W, H); xTmp.lineCap = 'round'; xTmp.lineJoin = 'round';
+  for (let i = 1; i < laser.length; i++) { const a = laser[i - 1], b = laser[i], al = 1 - (now - b[2]) / 700; xTmp.strokeStyle = `rgba(239,68,68,${al})`; xTmp.lineWidth = 6; xTmp.beginPath(); xTmp.moveTo(a[0], a[1]); xTmp.lineTo(b[0], b[1]); xTmp.stroke(); }
+  const l = laser[laser.length - 1]; if (l && drawing) { xTmp.fillStyle = '#ef4444'; xTmp.shadowColor = '#ef4444'; xTmp.shadowBlur = 16; xTmp.beginPath(); xTmp.arc(l[0], l[1], 7, 0, 7); xTmp.fill(); xTmp.shadowBlur = 0; }
+  requestAnimationFrame(laserLoop);
+}
+
+/* ---------- chữ ---------- */
+let txtEl = null;
+function startText(p) {
+  const el = document.createElement('div'); el.className = 'txt'; el.contentEditable = 'true';
+  const fs = 14 + width * 4; el.style.cssText = `left:${p[0]}px;top:${p[1]}px;font-size:${fs}px;color:${color};line-height:1.25`;
+  el.dataset.fs = fs; document.body.appendChild(el); txtEl = el; el.focus(); setTimeout(() => el.focus(), 0);
+  el.addEventListener('keydown', e => { e.stopPropagation(); if (e.key === 'Escape') { el.textContent = ''; finishText(); } if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); finishText(); } });
+}
+function finishText() {
+  if (!txtEl) return; const el = txtEl; txtEl = null;
+  const t = el.innerText.replace(/\n$/, '');
+  if (t.trim()) commit({ k: 'text', c: el.style.color ? color : color, t, fs: +el.dataset.fs, p: [[parseFloat(el.style.left) + 6, parseFloat(el.style.top) + 4]] });
+  el.remove();
+}
+
+/* ---------- ảnh ---------- */
+function addImage(src) {
+  const im = new Image();
+  im.onload = () => {
+    const sc = Math.min(1, (W * .6) / im.naturalWidth, (H * .6) / im.naturalHeight);
+    const w = Math.round(im.naturalWidth * sc), h = Math.round(im.naturalHeight * sc);
+    imgCache.set(src, im);
+    const a = { k: 'img', id: 'i' + Date.now().toString(36), src, x0: Math.round((W - w) / 2), y0: Math.round((H - h) / 2), w0: w, h0: h };
+    commit(a); setTool('sel'); selImg = a; placeSel(); toast('Đã chèn ảnh – kéo để di chuyển, kéo chấm xanh để phóng to/thu nhỏ');
+  };
+  im.src = src;
+}
+function shrink(file) {
+  return new Promise(res => {
+    const r = new FileReader(); r.onload = () => {
+      const im = new Image(); im.onload = () => {
+        const M = 1800, sc = Math.min(1, M / Math.max(im.naturalWidth, im.naturalHeight));
+        if (sc >= 1 && file.size < 900000) return res(r.result);
+        const c = document.createElement('canvas'); c.width = Math.round(im.naturalWidth * sc); c.height = Math.round(im.naturalHeight * sc);
+        c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); res(c.toDataURL('image/jpeg', .85));
+      }; im.src = r.result;
+    }; r.readAsDataURL(file);
+  });
+}
+$('bImg').onclick = () => $('fImg').click();
+$('fImg').onchange = async e => { const f = e.target.files[0]; if (f) addImage(await shrink(f)); e.target.value = ''; };
+document.addEventListener('paste', async e => { const it = [...(e.clipboardData?.items || [])].find(i => i.type.startsWith('image/')); if (it) { e.preventDefault(); addImage(await shrink(it.getAsFile())); } });
+stage.addEventListener('dragover', e => e.preventDefault());
+stage.addEventListener('drop', async e => { e.preventDefault(); const f = [...e.dataTransfer.files].find(f => f.type.startsWith('image/')); if (f) addImage(await shrink(f)); });
+let selBox = null;
+function placeSel() {
+  if (!selImg || tool !== 'sel') { if (selBox) selBox.remove(); selBox = null; return; }
+  if (!selBox) {
+    selBox = document.createElement('div'); selBox.className = 'selbox'; selBox.innerHTML = '<div class="h" title="Kéo để phóng to / thu nhỏ"></div><button class="d" title="Xóa ảnh (Delete)">✕</button>'; document.body.appendChild(selBox);
+    selBox.querySelector('.d').onclick = () => delImg();
+    selBox.querySelector('.h').addEventListener('pointerdown', e => {
+      e.preventDefault(); e.stopPropagation(); const h = e.target; h.setPointerCapture(e.pointerId);
+      const s = selImg, sx = e.clientX, w0 = s.w2, h0 = s.h2;
+      const mv = ev => { const w = Math.max(40, w0 + ev.clientX - sx); s.w2 = w; s.h2 = w * h0 / w0; drawImgs(); };
+      const up = () => { h.removeEventListener('pointermove', mv); h.removeEventListener('pointerup', up); commit({ k: 'imgmove', id: s.id, x: s.x, y: s.y, w2: s.w2, h2: s.h2 }); };
+      h.addEventListener('pointermove', mv); h.addEventListener('pointerup', up);
+    });
+  }
+  Object.assign(selBox.style, { left: selImg.x + 'px', top: selImg.y + 'px', width: selImg.w2 + 'px', height: selImg.h2 + 'px' });
+}
+function pickImg(e, p) {
+  const imgs = P().acts.filter(a => a.k === 'img' && !a.gone);
+  const hit = imgs.reverse().find(a => p[0] >= a.x && p[0] <= a.x + a.w2 && p[1] >= a.y && p[1] <= a.y + a.h2);
+  selImg = hit || null; placeSel();
+  if (!hit) return;
+  stage.setPointerCapture(e.pointerId);
+  const sx = p[0], sy = p[1], ox = hit.x, oy = hit.y; let moved = false;
+  const mv = ev => { hit.x = ox + ev.clientX - sx; hit.y = oy + ev.clientY - sy; moved = true; drawImgs(); };
+  const up = () => { stage.removeEventListener('pointermove', mv); stage.removeEventListener('pointerup', up); if (moved) commit({ k: 'imgmove', id: hit.id, x: hit.x, y: hit.y, w2: hit.w2, h2: hit.h2 }); };
+  stage.addEventListener('pointermove', mv); stage.addEventListener('pointerup', up);
+}
+function delImg() { if (!selImg) return; const id = selImg.id; selImg = null; commit({ k: 'imgdel', id }); }
+
+/* ---------- hoàn tác, trang ---------- */
+function undo() { const a = P().acts.pop(); if (!a) return toast('Không còn gì để hoàn tác'); P().redo.push(a); rebuildImgState(); drawImgs(); redrawInk(); save(); }
+function redo() { const a = P().redo.pop(); if (!a) return; P().acts.push(a); rebuildImgState(); drawImgs(); redrawInk(); save(); }
+$('bUndo').onclick = undo; $('bRedo').onclick = redo;
+$('bClear').onclick = () => { if (!P().acts.length) return; if (!confirm('Xóa toàn bộ nội dung trang này?')) return; P().redo = P().acts.slice().reverse(); P().acts = []; selImg = null; redrawAll(); save(); toast('Đã xóa trang – bấm ↶ để lấy lại'); };
+function goPage(i) { finishText(); cur = Math.max(0, Math.min(pages.length - 1, i)); selImg = null; triPts = []; redrawAll(); save(); }
+$('pPrev').onclick = () => cur > 0 ? goPage(cur - 1) : toast('Đây là trang đầu');
+$('pNext').onclick = () => cur < pages.length - 1 ? goPage(cur + 1) : (pages.splice(cur + 1, 0, { bg: P().bg, acts: [], redo: [] }), goPage(cur + 1), toast('Đã thêm trang ' + (cur + 1)));
+$('pAdd').onclick = () => { pages.splice(cur + 1, 0, { bg: P().bg, acts: [], redo: [] }); goPage(cur + 1); toast('Đã thêm trang ' + (cur + 1)); };
+$('pDel').onclick = () => {
+  if (pages.length === 1) { if (P().acts.length) $('bClear').click(); return; }
+  if (P().acts.length && !confirm('Xóa trang ' + (cur + 1) + '?')) return;
+  pages.splice(cur, 1); goPage(Math.min(cur, pages.length - 1));
+};
+
+/* ---------- lưu ảnh / PDF ---------- */
+function renderPage(page, scale) {
+  const c = document.createElement('canvas'); c.width = Math.round(W * scale); c.height = Math.round(H * scale);
+  const x = c.getContext('2d'); x.setTransform(scale, 0, 0, scale, 0, 0);
+  drawBg(x, page.bg, W, H);
+  const keep = cur; const idx = pages.indexOf(page); cur = idx; rebuildImgState(); drawImgsOn(x, page);
+  const ink = document.createElement('canvas'); ink.width = c.width; ink.height = c.height; const xi = ink.getContext('2d'); xi.setTransform(scale, 0, 0, scale, 0, 0);
+  page.acts.forEach(a => { if (!/^img/.test(a.k)) drawAct(xi, a); });
+  x.setTransform(1, 0, 0, 1, 0, 0); x.drawImage(ink, 0, 0);
+  cur = keep; rebuildImgState();
+  return c;
+}
+function stamp() { const d = new Date(); return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0') + '_' + String(d.getHours()).padStart(2, '0') + String(d.getMinutes()).padStart(2, '0'); }
+function dl(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); }
+$('bSave').onclick = () => { finishText(); renderPage(P(), 2).toBlob(b => dl(b, 'BangTrang_trang' + (cur + 1) + '_' + stamp() + '.png'), 'image/png'); };
+$('bPdf').onclick = async () => {
+  finishText();
+  if (!window.PDFLib) return toast('Chưa tải được thư viện PDF');
+  toast('Đang tạo PDF…');
+  const doc = await PDFLib.PDFDocument.create();
+  for (const pg of pages) {
+    const c = renderPage(pg, 1.5); const bytes = await new Promise(r => c.toBlob(b => b.arrayBuffer().then(r), 'image/jpeg', .9));
+    const im = await doc.embedJpg(bytes); const page = doc.addPage([W * .75, H * .75]); page.drawImage(im, { x: 0, y: 0, width: W * .75, height: H * .75 });
+  }
+  dl(new Blob([await doc.save()], { type: 'application/pdf' }), 'BangTrang_' + pages.length + 'trang_' + stamp() + '.pdf');
+};
+$('bFull').onclick = () => { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.(); else document.exitFullscreen(); };
+$('bHelp').onclick = () => $('help').hidden = false;
+
+/* ---------- phím tắt ---------- */
+document.addEventListener('keydown', e => {
+  if (txtEl || e.target.matches('input,select,textarea')) return;
+  const k = e.key.toLowerCase();
+  if ((e.ctrlKey || e.metaKey) && k === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
+  if ((e.ctrlKey || e.metaKey) && k === 'y') { e.preventDefault(); redo(); return; }
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  const m = { p: 'pen', h: 'hl', e: 'eraser', l: 'laser', t: 'text', v: 'sel' }[k];
+  if (m) { setTool(m); return; }
+  if ((e.key === 'Delete' || e.key === 'Backspace') && selImg) { delImg(); return; }
+  if (e.key === 'PageDown') { e.preventDefault(); $('pNext').click(); }
+  if (e.key === 'PageUp') { e.preventDefault(); $('pPrev').click(); }
+  if (e.key === 'Escape') { triPts = []; xTmp.clearRect(0, 0, W, H); selImg = null; placeSel(); }
+});
+
+/* ---------- tự lưu (IndexedDB) ---------- */
+function idb() { return new Promise((res, rej) => { const r = indexedDB.open('ehub_bangtrang', 1); r.onupgradeneeded = () => r.result.createObjectStore('kv'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
+let sT = null;
+function save() {
+  clearTimeout(sT);
+  sT = setTimeout(async () => {
+    try { const db = await idb(); db.transaction('kv', 'readwrite').objectStore('kv').put({ pages: pages.map(p => ({ bg: p.bg, acts: p.acts })), cur }, 'data'); } catch (e) { }
+    try { localStorage.setItem('bt_tool', JSON.stringify({ width })); } catch (e) { }
+  }, 400);
+}
+async function load() {
+  try {
+    const db = await idb();
+    const d = await new Promise(res => { const q = db.transaction('kv').objectStore('kv').get('data'); q.onsuccess = () => res(q.result); q.onerror = () => res(null); });
+    if (d && d.pages && d.pages.length) { pages = d.pages.map(p => ({ bg: p.bg || 'white', acts: p.acts || [], redo: [] })); cur = Math.min(d.cur || 0, pages.length - 1); }
+  } catch (e) { }
+  try { const t = JSON.parse(localStorage.getItem('bt_tool')); if (t && t.width) { width = t.width; $('wSel').value = width; } } catch (e) { }
+  paintSwatches._custom = false; color = (isDark(P().bg) ? DARK : LIGHT)[0];
+  resize(); setTool('pen');
+  try { if (!localStorage.getItem('bt_help')) { $('help').hidden = false; localStorage.setItem('bt_help', '1'); } } catch (e) { }
+}
+addEventListener('resize', () => resize());
+load();
+})();
+</script>
+</body>
+</html>
