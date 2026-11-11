@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chuyển dữ liệu bằng mã QR – EduTeacher Hub</title>
+<link rel="stylesheet" href="eduhub_ui.css">
+<script src="eduhub_data.js"></script>
+<script src="lib/qrcode.min.js"></script>
+<script src="lib/jsQR.min.js"></script>
+<style>
+.wrap{max-width:980px;margin:0 auto;padding:18px 16px 60px}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
+.mode{background:var(--card);border:2px solid var(--border);border-radius:16px;padding:16px;cursor:pointer;text-align:left}
+.mode b{display:block;font-size:1.05rem;margin-bottom:4px}.mode span{color:var(--muted);font-size:.84rem}
+.mode.on{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+.qrbox{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start}
+.qrimg{background:#fff;padding:14px;border-radius:14px;border:1px solid var(--border);width:min(520px,100%);aspect-ratio:1;display:flex;align-items:center;justify-content:center}
+.qrimg img{width:100%;height:100%;image-rendering:pixelated}
+.info{flex:1;min-width:230px}
+.info .big{font-size:2rem;font-weight:900}
+.prog{height:14px;background:var(--border);border-radius:8px;overflow:hidden;margin:8px 0}
+.prog div{height:100%;background:linear-gradient(90deg,#22c55e,#16a34a);width:0;transition:width .2s}
+.cells{display:flex;flex-wrap:wrap;gap:2px;margin-top:6px}
+.cells i{width:9px;height:9px;border-radius:2px;background:var(--border)}.cells i.ok{background:#22c55e}
+.cam{position:relative;background:#0b1220;border-radius:14px;overflow:hidden;width:min(520px,100%);aspect-ratio:3/4;display:flex;align-items:center;justify-content:center;color:#cbd5e1}
+.cam video,.cam canvas{width:100%;height:100%;object-fit:cover}
+.cam .aim{position:absolute;inset:12%;border:3px dashed rgba(255,255,255,.6);border-radius:12px;pointer-events:none}
+.steps li{margin:6px 0}
+.sum{background:var(--card2);border-radius:12px;padding:12px 14px;margin:10px 0;font-size:.9rem;line-height:1.7}
+@media(max-width:700px){.modes{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>📱 Chuyển dữ liệu sang máy khác <small>bằng chuỗi mã QR – không cần mạng, cáp hay tài khoản</small></h1>
+  <div class="right"><span class="privacy">🔒 Dữ liệu chỉ đi từ màn hình máy này sang camera máy kia</span><a class="back" href="dashboard.html">← Trang chính</a></div>
+</div>
+<div class="wrap">
+  <div class="modes">
+    <button class="mode" data-m="send"><b>📤 Gửi từ máy này</b><span>Máy đang có dữ liệu: hiện chuỗi mã QR để máy kia quét</span></button>
+    <button class="mode" data-m="recv"><b>📥 Nhận vào máy này</b><span>Máy mới: mở camera quét chuỗi mã QR trên màn hình máy cũ</span></button>
+  </div>
+
+  <section id="send" class="card" hidden>
+    <div class="qrbox">
+      <div class="qrimg" id="qr"><span class="hint">Đang chuẩn bị…</span></div>
+      <div class="info">
+        <div class="hint">Đang phát khung</div><div class="big" id="sFrame">–</div>
+        <div class="sum" id="sSum"></div>
+        <div style="margin:8px 0"><div class="hint" style="font-weight:700">Tốc độ phát: <span id="speedV">5</span> khung/giây</div><input type="range" id="speed" min="2" max="10" value="5" style="width:100%"></div>
+        <div class="btns"><button class="btn l" id="sPause">⏸ Tạm dừng</button><button class="btn l" id="sBig">⛶ Phóng to</button></div>
+        <ol class="steps hint" style="margin-top:10px;padding-left:18px">
+          <li>Trên máy mới mở trang này → chọn <b>📥 Nhận vào máy này</b>.</li>
+          <li>Hướng camera máy mới vào mã QR, giữ yên cách 20–40 cm.</li>
+          <li>Chuỗi mã tự lặp lại – chờ thanh tiến độ máy mới đầy 100%.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <section id="recv" class="card" hidden>
+    <div class="qrbox">
+      <div class="cam" id="cam"><span>📷 Đang mở camera…</span><div class="aim"></div></div>
+      <div class="info">
+        <div class="hint">Đã nhận</div><div class="big" id="rCnt">0 / ?</div>
+        <div class="prog"><div id="rBar"></div></div>
+        <div class="cells" id="rCells"></div>
+        <div class="hint" id="rMsg" style="margin-top:8px">Hướng camera vào mã QR trên màn hình máy cũ.</div>
+        <div id="rDone"></div>
+        <div class="btns" style="margin-top:8px"><select id="camSel" class="btn l" hidden></select><button class="btn l" id="rReset">↺ Quét lại từ đầu</button></div>
+      </div>
+    </div>
+  </section>
+  <div class="hint" style="text-align:center">Dữ liệu nhiều có thể cần 1–3 phút. Cách khác: 💾 Sao lưu → tải file .json rồi khôi phục trên máy mới.</div>
+</div>
+<script src="eduhub_backup.js"></script>
+<script>
+(() => {
+const $ = id => document.getElementById(id), esc = ED.esc;
+const CH = 320; // ký tự mỗi khung
+const b64 = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 8192) s += String.fromCharCode.apply(null, u8.subarray(i, i + 8192)); return btoa(s); };
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function gzip(str) { const u = new TextEncoder().encode(str); if (!window.CompressionStream) return { z: 0, d: u }; const cs = new Blob([u]).stream().pipeThrough(new CompressionStream('gzip')); return { z: 1, d: new Uint8Array(await new Response(cs).arrayBuffer()) }; }
+async function gunzip(u8, z) { if (!z) return new TextDecoder().decode(u8); const ds = new Blob([u8]).stream().pipeThrough(new DecompressionStream('gzip')); return await new Response(ds).text(); }
+const fmtSize = n => n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.ceil(n / 1024) + ' KB';
+let mode = null, stopAll = () => {};
+document.querySelectorAll('.mode').forEach(b => b.onclick = () => setMode(b.dataset.m));
+function setMode(m) {
+  stopAll(); mode = m;
+  document.querySelectorAll('.mode').forEach(b => b.classList.toggle('on', b.dataset.m === m));
+  $('send').hidden = m !== 'send'; $('recv').hidden = m !== 'recv';
+  if (m === 'send') startSend(); else startRecv();
+}
+function summary(data) {
+  const n = Object.keys(data).length; let hs = 0, bk = 0;
+  try { hs = (JSON.parse(data.cn_students || '[]') || []).length; } catch (e) { }
+  try { bk = ((JSON.parse(data.etv1_sodiem_v2 || '{}') || {}).books || []).length; } catch (e) { }
+  let nm = ''; try { nm = (JSON.parse(data.etv1_settings || '{}') || {}).name || ''; } catch (e) { }
+  return { n, hs, bk, nm, demo: !!data.etv1_demo };
+}
+
+/* ---------- GỬI ---------- */
+async function startSend() {
+  const data = window.EHBackup ? EHBackup.collect() : {};
+  const sm = summary(data);
+  if (!sm.n) { $('qr').innerHTML = '<span class="hint">Máy này chưa có dữ liệu để gửi.</span>'; $('sSum').textContent = ''; return; }
+  const json = JSON.stringify({ app: 'EduTeacher Hub', v: 1, t: Date.now(), data });
+  const { z, d } = await gzip(json), s = b64(d), sid = Date.now().toString(36).slice(-5);
+  const parts = []; for (let i = 0; i < s.length; i += CH) parts.push(s.slice(i, i + CH));
+  const N = parts.length;
+  $('sSum').innerHTML = `${sm.nm ? '👤 ' + esc(sm.nm) + '<br>' : ''}📦 ${sm.n} mục dữ liệu${sm.hs ? ' · ' + sm.hs + ' học sinh chủ nhiệm' : ''}${sm.bk ? ' · ' + sm.bk + ' sổ điểm' : ''}${sm.demo ? ' <span class="badge">lớp mẫu</span>' : ''}<br>🗜️ ${fmtSize(json.length)} → nén còn ${fmtSize(d.length)} · <b>${N}</b> mã QR`;
+  // tạo sẵn ảnh các khung
+  const tmp = document.createElement('div'); tmp.style.cssText = 'position:fixed;left:-9999px'; document.body.appendChild(tmp);
+  const imgs = [];
+  for (let i = 0; i < N; i++) {
+    tmp.innerHTML = ''; new QRCode(tmp, { text: `EHQ1|${sid}|${i}|${N}|${z}|${parts[i]}`, width: 600, height: 600, correctLevel: QRCode.CorrectLevel.L });
+    imgs.push(tmp.querySelector('canvas').toDataURL());
+    if (i % 10 === 9) { $('qr').innerHTML = `<span class="hint">Đang tạo mã ${i + 1}/${N}…</span>`; await new Promise(r => setTimeout(r, 0)); }
+  }
+  tmp.remove();
+  window.__qrFrames = imgs;
+  $('qr').innerHTML = '<img id="qrI" alt="Mã QR">';
+  let k = 0, paused = false, timer = 0;
+  const tick = () => { if (!paused) { $('qrI').src = imgs[k]; $('sFrame').textContent = (k + 1) + ' / ' + N; k = (k + 1) % N; } timer = setTimeout(tick, 1000 / +$('speed').value); };
+  tick();
+  $('speed').oninput = () => $('speedV').textContent = $('speed').value;
+  $('sPause').onclick = () => { paused = !paused; $('sPause').textContent = paused ? '▶ Phát tiếp' : '⏸ Tạm dừng'; };
+  $('sBig').onclick = () => { const e = $('qr'); (e.requestFullscreen || e.webkitRequestFullscreen || (() => { })).call(e); };
+  stopAll = () => clearTimeout(timer);
+}
+
+/* ---------- NHẬN ---------- */
+async function startRecv() {
+  let stream = null, raf = 0, stopped = false, got = new Map(), sid = null, N = 0, z = 0, done = false, lastT = 0, video = null;
+  const cv = document.createElement('canvas'), ctx = cv.getContext('2d', { willReadFrequently: true });
+  const reset = () => { got = new Map(); sid = null; N = 0; done = false; $('rDone').innerHTML = ''; paint(); };
+  const paint = () => { $('rCnt').textContent = got.size + ' / ' + (N || '?'); $('rBar').style.width = (N ? got.size / N * 100 : 0) + '%';
+    $('rCells').innerHTML = N ? Array.from({ length: N }, (_, i) => `<i class="${got.has(i) ? 'ok' : ''}"></i>`).join('') : ''; };
+  $('rReset').onclick = reset; reset();
+  const finish = async () => {
+    done = true; $('rMsg').textContent = '✅ Đã nhận đủ – đang giải nén…';
+    try {
+      const s = Array.from({ length: N }, (_, i) => got.get(i)).join(''); const txt = await gunzip(unb64(s), z); const pk = JSON.parse(txt);
+      if (!pk || pk.app !== 'EduTeacher Hub' || !pk.data) throw new Error('Không phải dữ liệu EduTeacher Hub');
+      const sm = summary(pk.data);
+      $('rMsg').textContent = '✅ Nhận thành công!';
+      $('rDone').innerHTML = `<div class="sum">${sm.nm ? '👤 ' + esc(sm.nm) + '<br>' : ''}📦 ${sm.n} mục dữ liệu${sm.hs ? ' · ' + sm.hs + ' học sinh chủ nhiệm' : ''}${sm.bk ? ' · ' + sm.bk + ' sổ điểm' : ''}<br><small>Gửi lúc ${new Date(pk.t).toLocaleString('vi-VN')}</small></div>
+        <button class="btn" id="rApply" style="background:#16a34a">⬇️ Nhập vào máy này</button><div class="hint" style="margin-top:6px">Dữ liệu hiện có trên máy này sẽ được thay thế (hệ thống tự sao lưu bản cũ trước để có thể quay lại).</div>`;
+      $('rApply').onclick = () => { stopAll(); if (window.EHBackup && EHBackup.applyData) EHBackup.applyData(pk.data, 'máy khác (mã QR)'); };
+      stopAll();
+    } catch (e) { $('rMsg').textContent = '⚠️ Lỗi giải mã: ' + e.message + ' – bấm “Quét lại từ đầu”.'; done = false; }
+  };
+  const handle = txt => {
+    const m = /^EHQ1\|(\w+)\|(\d+)\|(\d+)\|([01])\|(.*)$/s.exec(txt || ''); if (!m) return;
+    if (m[1] !== sid) { got = new Map(); sid = m[1]; N = +m[3]; z = +m[4]; }
+    const i = +m[2]; if (!got.has(i)) { got.set(i, m[5]); paint(); if (got.size === N && !done) finish(); }
+  };
+  const loop = t => {
+    if (stopped) return; raf = requestAnimationFrame(loop);
+    if (done || t - lastT < 70) return; lastT = t;
+    const src = window.__qrFake || video; if (!src) return;
+    if (window.__qrFake && window.__qrFake.next) { handle(window.__qrFake.next()); return; }
+    const w0 = src.videoWidth || src.width, h0 = src.videoHeight || src.height; if (!w0) return;
+    const sc = Math.min(1, 900 / Math.max(w0, h0)); cv.width = Math.round(w0 * sc); cv.height = Math.round(h0 * sc);
+    ctx.drawImage(src, 0, 0, cv.width, cv.height);
+    const r = jsQR(ctx.getImageData(0, 0, cv.width, cv.height).data, cv.width, cv.height, { inversionAttempts: 'dontInvert' });
+    if (r) handle(r.data);
+  };
+  stopAll = () => { stopped = true; cancelAnimationFrame(raf); if (stream) stream.getTracks().forEach(t => t.stop()); };
+  if (!window.__qrFake) {
+    try {
+      const want = dev => ({ video: dev ? { deviceId: { exact: dev }, width: { ideal: 1280 }, height: { ideal: 1280 } } : { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 1280 } }, audio: false });
+      stream = await navigator.mediaDevices.getUserMedia(want(''));
+      video = document.createElement('video'); video.playsInline = true; video.muted = true; video.srcObject = stream; await video.play();
+      $('cam').innerHTML = ''; $('cam').appendChild(video); const aim = document.createElement('div'); aim.className = 'aim'; $('cam').appendChild(aim);
+      const all = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput'), sel = $('camSel');
+      if (all.length > 1) { sel.hidden = false; const cur = stream.getVideoTracks()[0].getSettings().deviceId; sel.innerHTML = all.map((d, i) => `<option value="${d.deviceId}" ${d.deviceId === cur ? 'selected' : ''}>📷 ${esc(d.label || 'Camera ' + (i + 1))}</option>`).join('');
+        sel.onchange = async () => { stream.getTracks().forEach(t => t.stop()); stream = await navigator.mediaDevices.getUserMedia(want(sel.value)); video.srcObject = stream; }; }
+    } catch (e) { $('cam').innerHTML = '<div style="padding:20px;text-align:center">⚠️ Không mở được camera.<br><small>' + esc(e.name === 'NotAllowedError' ? 'Hãy cho phép trình duyệt dùng camera (biểu tượng 🔒/📷 trên thanh địa chỉ).' : (e.message || e)) + '</small><br><br>Camera chỉ hoạt động ở bản online (https).</div>'; return; }
+  } else $('cam').innerHTML = '<span>🧪 Nguồn thử nghiệm</span>';
+  raf = requestAnimationFrame(loop);
+}
+const q = new URLSearchParams(location.search).get('m'); if (q === 'send' || q === 'recv') setMode(q);
+})();
+</script>
+</body>
+</html>

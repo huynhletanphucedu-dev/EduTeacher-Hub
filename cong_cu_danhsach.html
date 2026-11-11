@@ -106,5 +106,6 @@ $('#tocn').onclick=()=>{if(!FROMCN)return;if(!confirm('Cập nhật lại họ t
   OUT.slice(1).forEach(r=>{const s=list.find(x=>String(x.id)===r[ii]);if(s){s.hoTen=r[ni];s.stt=r[si]}});ED.set('cn_students',list);ED.toast('✅ Đã cập nhật danh sách lớp chủ nhiệm')};
 </script>
 <script src="eduhub_backup.js"></script>
+<script src="eduhub_help.js" defer></script>
 </body>
 </html>

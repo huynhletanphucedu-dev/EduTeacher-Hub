@@ -499,8 +499,10 @@ async function generateVersions() {
 
     const ansKey = buildAnswerKeyText(answerMatrix);
     try { // cho công cụ Chấm trắc nghiệm lấy đáp án vừa trộn
-      const keys = {}; answerMatrix.forEach(v => { keys[v.code] = v.questions.map(q => /^[A-D]$/.test(q.answer || '') ? q.answer : '-').join(''); });
-      localStorage.setItem('omr_tronde_keys', JSON.stringify({ t: Date.now(), keys }));
+      const keys = {}, qs = {}; answerMatrix.forEach(v => { keys[v.code] = v.questions.map(q => /^[A-D]$/.test(q.answer || '') ? q.answer : '-').join('');
+        qs[v.code] = v.questions.map(q => ({ t: String(q.text || '').slice(0, 400), o: Object.fromEntries((q.options || []).map(o => [o.letter, String(o.text || '').slice(0, 160)])) })); });
+      let pack = JSON.stringify({ t: Date.now(), keys, qs }); if (pack.length > 1500000) pack = JSON.stringify({ t: Date.now(), keys });
+      localStorage.setItem('omr_tronde_keys', pack);
     } catch (e) {}
     zip.file('Bang_dap_an.txt', ansKey);
 
@@ -678,5 +680,6 @@ function buildAnswerKeyText(answerMatrix) {
 </script>
 
 <div style="margin-top:32px;padding:14px 0;border-top:1px solid #e0e0e0;text-align:center;font-size:13px;color:#666;">📚 EduTeacher Hub được phát triển bởi <strong style="color:#333;font-weight:800;">ThS. Huỳnh Lê Tấn Phúc</strong> · Trường THCS Long Thọ</div>
+<script src="eduhub_help.js" defer></script>
 </body>
 </html>

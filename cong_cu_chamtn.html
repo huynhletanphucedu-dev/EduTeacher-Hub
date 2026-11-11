@@ -187,6 +187,7 @@
     <div class="card">
       <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
         <h2 style="margin:0;flex:1" id="resTitle">📊 Kết quả</h2>
+        <button class="btn l" id="rFix" title="In cho mỗi học sinh một phiếu ghi các câu làm sai và đáp án đúng để tự sửa">📝 Phiếu sửa bài</button>
         <button class="btn l" id="rXls">📥 Xuất Excel</button>
         <button class="btn" id="rSd" style="background:#16a34a">📒 Đưa điểm vào Sổ điểm</button>
         <button class="btn l" id="rClear">🗑️ Xóa kết quả</button>
@@ -384,7 +385,7 @@ function setMC(map) {
   save(); refresh(); ED.toast('Đã nạp đáp án Phần I của ' + codes.length + ' mã đề');
 }
 const tr = ED.get('omr_tronde_keys', null);
-if (tr && tr.keys && Object.keys(tr.keys).length) { $('kTron').hidden = false; $('kTron').title = 'Trộn lúc ' + new Date(tr.t).toLocaleString('vi-VN'); $('kTron').onclick = () => setMC(tr.keys); }
+if (tr && tr.keys && Object.keys(tr.keys).length) { $('kTron').hidden = false; $('kTron').title = 'Trộn lúc ' + new Date(tr.t).toLocaleString('vi-VN'); $('kTron').onclick = () => { S.qtext = tr.qs || null; setMC(tr.keys); }; }
 $('kFile').onchange = e => {
   const f = e.target.files[0]; if (!f) return; const r = new FileReader();
   r.onload = () => { const map = {}; let cur = null;
@@ -633,6 +634,47 @@ $('rXls').onclick = () => {
   const keys = S.keys.filter(k => k.mc || k.ds || k.tl); if (keys.length) XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['Mã đề', 'Phần I', 'Phần II', 'Phần III']].concat(keys.map(k => [k.code, cleanMC(k.mc), cleanDS(k.ds), splitTL(k.tl).join('; ')]))), 'Đáp án');
   XLSX.writeFile(wb, 'Ket_qua_' + (S.name || 'trac_nghiem').replace(/[\\/:*?"<>|]/g, '').replace(/\s+/g, '_') + '.xlsx');
 };
+/* phiếu sửa bài cá nhân + tổng hợp cho giáo viên */
+function qText(md, i) {
+  const Q = S.qtext; if (!Q) return null;
+  const code = Object.keys(Q).find(c => normCode(c) === normCode(md)) || (Object.keys(Q).length === 1 ? Object.keys(Q)[0] : null);
+  return code && Q[code] ? Q[code][i] : null;
+}
+$('rFix').onclick = () => {
+  const R = rows().filter(x => x.g.k); if (!R.length) return ED.toast('Chưa có bài nào chấm được (cần có đáp án)');
+  const e = t => esc(String(t == null ? '' : t));
+  // tổng hợp lớp
+  const wr = {}; let gr = 0;
+  R.forEach(({ r, g }) => { const k = g.k; gr++;
+    for (let i = 0; i < S.nMC; i++) if (k.mc[i] && k.mc[i] !== '-' && r.mc[i] !== k.mc[i]) wr['Phần I – Câu ' + (i + 1)] = (wr['Phần I – Câu ' + (i + 1)] || 0) + 1;
+    for (let i = 0; i < S.nDS * 4; i++) if (k.ds[i] && k.ds[i] !== '-' && r.ds[i] !== k.ds[i]) { const key = 'Phần II – Câu ' + (Math.floor(i / 4) + 1) + ' ý ' + 'abcd'[i % 4]; wr[key] = (wr[key] || 0) + 1; }
+    for (let i = 0; i < S.nTL; i++) if (k.tl[i] != null && !tlEq(r.tl[i], k.tl[i])) wr['Phần III – Câu ' + (i + 1)] = (wr['Phần III – Câu ' + (i + 1)] || 0) + 1; });
+  const top = Object.entries(wr).sort((a, b) => b[1] - a[1]);
+  const lvl = v => v / gr >= .5 ? '<b style="color:#b91c1c">Cần giảng lại</b>' : v / gr >= .3 ? '<b style="color:#b45309">Nên ôn thêm</b>' : 'Nhắc lại nhanh';
+  let h = `<div class="pg sum"><h2>TỔNG HỢP CÂU SAI – ${e(S.name || 'Bài kiểm tra')}</h2><p>${gr} bài đã chấm${CLS ? ' · lớp ' + e(CLS.short || CLS.name) : ''}</p>
+    <table><tr><th>Câu / ý</th><th>Số em sai</th><th>Tỉ lệ</th><th>Gợi ý</th></tr>${top.slice(0, 25).map(([k, v]) => `<tr><td>${k}</td><td style="text-align:center">${v}</td><td style="text-align:center">${Math.round(v / gr * 100)}%</td><td>${lvl(v)}</td></tr>`).join('') || '<tr><td colspan="4">Không có câu nào sai 🎉</td></tr>'}</table>
+    <p style="margin-top:10px;font-size:10.5pt;color:#444">💡 Muốn có thêm bài luyện tập cùng dạng: dùng công cụ <b>Phiếu bài tập Toán</b> (mỗi em một đề khác) hoặc soạn câu hỏi vào <b>Quản lý câu hỏi trò chơi</b> rồi gửi link trò chơi cho học sinh ôn.</p></div>`;
+  // phiếu từng em
+  h += R.map(({ r, g, nm }) => {
+    const k = g.k, items = [];
+    for (let i = 0; i < S.nMC; i++) { const c = k.mc[i]; if (!c || c === '-' || r.mc[i] === c) continue; const qt = qText(r.md, i);
+      items.push(`<li><b>Phần I – Câu ${i + 1}:</b> em chọn <b>${r.mc[i] === '·' ? '(bỏ trống)' : r.mc[i] === '*' ? '(tô nhiều ô)' : r.mc[i]}</b> → đáp án đúng <b>${c}</b>${qt ? `<div class="qt">${e(qt.t)}${qt.o && qt.o[c] ? `<br><i>Đáp án ${c}: ${e(qt.o[c])}</i>` : ''}</div>` : ''}</li>`); }
+    for (let i = 0; i < S.nDS; i++) { const bad = []; for (let j = 0; j < 4; j++) { const c = k.ds[i * 4 + j], a = r.ds[i * 4 + j]; if (c && c !== '-' && a !== c) bad.push(`ý ${'abcd'[j]}) em chọn ${a === '·' ? '(trống)' : a === 'Đ' ? 'Đúng' : a === 'S' ? 'Sai' : a} → đúng là <b>${c === 'Đ' ? 'Đúng' : 'Sai'}</b>`); } if (bad.length) items.push(`<li><b>Phần II – Câu ${i + 1}:</b> ${bad.join('; ')}</li>`); }
+    for (let i = 0; i < S.nTL; i++) { const c = k.tl[i]; if (c == null || tlEq(r.tl[i], c)) continue; items.push(`<li><b>Phần III – Câu ${i + 1}:</b> em ghi <b>${r.tl[i] ? e(r.tl[i].replace('.', ',')) : '(bỏ trống)'}</b> → đáp số đúng <b>${e(c)}</b></li>`); }
+    return `<div class="slip"><div class="sh"><b>PHIẾU SỬA BÀI${S.name ? ' · ' + e(S.name) : ''}</b><span>${r.stt !== '' ? 'STT ' + e(r.stt) + ' · ' : ''}<b>${e(nm || '……………………')}</b> · Mã đề ${e(r.md || '—')} · Điểm TN: <b>${fmtPt(g.tn)}</b></span></div>
+      ${items.length ? `<ol>${items.join('')}</ol><div class="redo">Em làm lại các câu sai vào đây:<br>……………………………………………………………………………………………………………<br>……………………………………………………………………………………………………………</div>` : '<p>🎉 Em làm đúng toàn bộ phần trắc nghiệm. Rất tốt!</p>'}</div>`;
+  }).join('');
+  const w = window.open('', '_blank'); if (!w) return ED.toast('Trình duyệt chặn cửa sổ mới – cho phép popup rồi thử lại');
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Phiếu sửa bài – ${e(S.name || '')}</title><style>
+    @page{size:A4;margin:12mm}body{font-family:"Times New Roman",serif;font-size:12pt;color:#000;margin:0 auto;max-width:190mm}
+    h2{text-align:center;font-size:15pt;margin:0 0 4px}.sum p{text-align:center}table{border-collapse:collapse;width:100%;margin-top:8px}td,th{border:1px solid #000;padding:3pt 6pt;font-size:11pt}
+    .pg{page-break-after:always}.slip{border:1.2px solid #000;border-radius:6px;padding:8px 12px;margin:0 0 10px;page-break-inside:avoid;break-inside:avoid}
+    .sh{display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;border-bottom:1px dashed #000;padding-bottom:4px;margin-bottom:4px;font-size:11.5pt}
+    ol{margin:4px 0 4px 18px;padding:0}li{margin:2px 0}.qt{font-size:10.5pt;color:#333;margin:1px 0 3px;padding-left:6px;border-left:2px solid #999}.redo{font-size:10.5pt;color:#333;margin-top:4px;line-height:1.7}
+    .bar{position:sticky;top:0;background:#f1f5f9;padding:8px;text-align:center;font-family:system-ui}.bar button{font-size:15px;padding:8px 18px;border-radius:8px;border:0;background:#2563eb;color:#fff;cursor:pointer}
+    @media print{.bar{display:none}}</style></head><body><div class="bar"><button onclick="print()">🖨️ In phiếu</button> &nbsp; <small>Trang đầu là bảng tổng hợp cho giáo viên; các trang sau là phiếu cắt rời cho từng em.</small></div>${h}</body></html>`);
+  w.document.close();
+};
 /* đưa vào sổ điểm */
 const QUAL = new Set(['HĐTN-HN', 'Nghệ thuật', 'GDTC', 'GDĐP']);
 const TXN = (mon, k) => ({ 'Toán': 4, 'Ngữ văn': 4, 'Tiếng Anh': 4, 'KHTN': 4, 'Lịch sử & Địa lý': 4, 'Công nghệ': [8, 9].includes(+k) ? 3 : 2 }[mon] || 2);
@@ -697,5 +739,6 @@ go(st0);
 window.__omr = { readSheet, sheetSVG, S: () => S, upsert, grade, layout };
 })();
 </script>
+<script src="eduhub_help.js" defer></script>
 </body>
 </html>

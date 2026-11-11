@@ -20,7 +20,21 @@ function customItems(){
 BANK_T6[0] = [];
 // Ngân hàng câu hỏi của giáo viên (Môn → Bài → Câu hỏi, soạn ở soan-cau-hoi.html, localStorage "etv1_qbank").
 // Mỗi bài của giáo viên được đánh số từ 1000 trở lên để chọn chung với các bài Toán 6 có sẵn.
+// Bộ câu hỏi giáo viên gửi kèm link chia sẻ (#gtq=… – base64url của JSON, chỉ nằm trong link, không lưu lên máy chủ)
+const SHARE = (() => {
+  try {
+    const m = (location.hash || "").match(/[#&]gtq=([A-Za-z0-9_-]+)/); if (!m) return null;
+    let b = m[1].replace(/-/g, "+").replace(/_/g, "/"); while (b.length % 4) b += "=";
+    const bin = atob(b), u8 = Uint8Array.from(bin, c => c.charCodeAt(0));
+    const d = JSON.parse(new TextDecoder().decode(u8));
+    if (!d || !Array.isArray(d.b) || !d.b.length) return null;
+    return d;
+  } catch (e) { console.warn("[journey] link câu hỏi lỗi", e); return null; }
+})();
 const TB = (() => {
+  if (SHARE) return { mon: [{ id: "share", ten: SHARE.m || "Câu hỏi của thầy/cô" }],
+    bai: SHARE.b.map((x, i) => ({ id: "s" + i, mon: "share", ten: String(x.t || "Bài " + (i + 1)), khoi: x.k || "" })),
+    cau: SHARE.b.flatMap((x, i) => (x.c || []).map(c => ({ bai: "s" + i, q: c[0], a: c[1], w: c[2] || [], g: c[3] || "" }))) };
   let db = null; try { db = JSON.parse(localStorage.getItem("etv1_qbank") || "null"); } catch (_) {}
   if (!db || !Array.isArray(db.mon)) {   // dữ liệu cũ: một danh sách câu hỏi tự soạn
     const old = customItems();
@@ -36,6 +50,7 @@ TB.bai.forEach((b, i) => {
 // Môn đang chọn trong trò chơi: "toan6" = Toán 6 có sẵn (+ bài Toán của giáo viên), hoặc một môn của giáo viên
 const MONS = [{ id: "toan6", ten: "Toán 6 – KNTT (có sẵn)" }].concat(TB.mon.filter(m => m.id !== "toan" && TL.some(l => l.mon === m.id)).map(m => ({ id: m.id, ten: m.ten })));
 let MON = "toan6"; try { MON = localStorage.getItem("tp_mon") || "toan6"; } catch (_) {}
+if (SHARE) MON = "share";
 if (!MONS.some(m => m.id === MON)) MON = "toan6";
 const byQ = new Map();          // nội dung câu hỏi → mục trong ngân hàng
 let player = null;
@@ -105,6 +120,7 @@ const PICK_KEY = "tp_chon_bai";
 function loadPick(open){
   let p = [];
   try { p = JSON.parse(localStorage.getItem(PICK_KEY) || "[]"); } catch (_) {}
+  if (SHARE) return open.slice();
   p = p.map(Number).filter(b => open.includes(b));
   if (p.length) return p;
   const d = MON === "toan6" ? open.filter(b => b >= 1 && b <= 7) : open.slice();
@@ -117,7 +133,7 @@ function lessonMenu(open){
     el.hidden = true; const l = el.previousElementSibling; if (l && l.classList.contains("lbl")) l.hidden = true;
   });
   const b = document.createElement("div"); b.className = "hanh-trinh";
-  b.innerHTML = `${MONS.length > 1 ? `<select class="mon-sel" aria-label="Chọn môn">${MONS.map(m => `<option value="${m.id}"${m.id === MON ? " selected" : ""}>📘 ${m.ten.replace(/[<>&]/g, "")}</option>`).join("")}</select>` : ""}<b>📚 Chọn bài muốn ôn (${MON === "toan6" ? "Toán 6 – KNTT" : (MONS.find(m => m.id === MON) || {}).ten})</b><span class="ht-note"></span><div class="bai-list"></div>`;
+  b.innerHTML = `${MONS.length > 1 && !SHARE ? `<select class="mon-sel" aria-label="Chọn môn">${MONS.map(m => `<option value="${m.id}"${m.id === MON ? " selected" : ""}>📘 ${m.ten.replace(/[<>&]/g, "")}</option>`).join("")}</select>` : ""}<b>📚 Chọn bài muốn ôn (${MON === "toan6" ? "Toán 6 – KNTT" : (MONS.find(m => m.id === MON) || {}).ten})</b><span class="ht-note"></span><div class="bai-list"></div>`;
   const ms = b.querySelector(".mon-sel");
   if (ms) ms.onchange = () => { try { localStorage.setItem("tp_mon", ms.value); localStorage.removeItem(PICK_KEY); } catch (_) {} location.reload(); };
   const h1 = g.closest(".card")?.querySelector("h1");
@@ -206,13 +222,13 @@ export async function initJourney(p){
   const box = lessonMenu(open);
   const set = list => {
     pick = list.length ? list : pick;
-    try { localStorage.setItem(PICK_KEY, JSON.stringify(pick)); } catch (_) {}
+    if (!SHARE) try { localStorage.setItem(PICK_KEY, JSON.stringify(pick)); } catch (_) {}
     try { applyBank(new Set(pick)); } catch (e) { console.warn("[journey] applyBank", e); }
     try { applyLessons(GAME, pick); } catch (e) { console.warn("[journey] applyLessons", e); }
     if (box) drawPick(box, open, pick, set);
   };
   set(pick);
   hookQuiz();
-  window.JOURNEY = { byQ, log, lessons: () => pick, lessonName: shortL, subject: () => (MONS.find(m => m.id === MON) || {}).ten, version: 5 };
+  window.JOURNEY = { byQ, log, lessons: () => pick, lessonName: shortL, subject: () => (MONS.find(m => m.id === MON) || {}).ten, version: 6, shared: !!SHARE };
   return { blocked: false };
 }

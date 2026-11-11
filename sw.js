@@ -1,19 +1,21 @@
 /* EduTeacher Hub – Service Worker (tạo tự động bằng tools/tao_sw.py – không sửa tay)
    • Mở một lần khi có mạng → các trang đã mở dùng được khi mất mạng.
    • Nút “Tải sẵn để dùng offline” → tải toàn bộ công cụ về máy. */
-const VERSION = '8e41849ffd';
+const VERSION = '587042f338';
 const CACHE = 'eduhub-' + VERSION;
 const CORE = ["./", "index.html", "dashboard.html", "manifest.webmanifest", "eduhub_backup.js", "eduhub_search.js", "eduhub_pwa.js", "icons/icon-192.png"];
 const FILES = [
 "bangdiem.html",
 "chianhom.html",
 "chunhiem.html",
+"chuyen_du_lieu.html",
 "cn_nhanxet.html",
 "cn_thidua.html",
 "cn_tinnhan.html",
 "cong_cu_anh.html",
 "cong_cu_bangtrang.html",
 "cong_cu_baocao.html",
+"cong_cu_baocaock.html",
 "cong_cu_bieumau.html",
 "cong_cu_chamtn.html",
 "cong_cu_congviec.html",
@@ -43,6 +45,7 @@ const FILES = [
 "eduhub_canvasfit.js",
 "eduhub_data.js",
 "eduhub_demo.js",
+"eduhub_help.js",
 "eduhub_pwa.js",
 "eduhub_qbank.js",
 "eduhub_search.js",
@@ -78,6 +81,7 @@ const FILES = [
 "goiten.html",
 "goiten_vui.html",
 "haihoa.html",
+"huongdan.html",
 "icons/apple-touch-icon.png",
 "icons/favicon-48.png",
 "icons/icon-192.png",
@@ -92,6 +96,7 @@ const FILES = [
 "lib/docx.min.js",
 "lib/fontkit.umd.min.js",
 "lib/html2canvas.min.js",
+"lib/jsQR.min.js",
 "lib/jszip.min.js",
 "lib/pdf-lib.min.js",
 "lib/pdf.min.js",

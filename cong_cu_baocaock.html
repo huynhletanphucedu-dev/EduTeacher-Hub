@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Báo cáo cuối kỳ – EduTeacher Hub</title>
+<link rel="stylesheet" href="eduhub_ui.css">
+<script src="eduhub_data.js"></script>
+<script src="lib/xlsx.full.min.js"></script>
+<style>
+.wrap{max-width:1200px;margin:0 auto;padding:18px 16px 60px}
+.src{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.src label{display:flex;gap:8px;align-items:center;border:1.5px solid var(--border);border-radius:10px;padding:8px 10px;cursor:pointer;background:var(--card2);font-size:.86rem}
+.src label small{display:block;color:var(--muted);font-size:.72rem}
+.src .ok{color:var(--green);font-weight:800}.src .no{color:var(--muted)}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.acts .btn{font-size:.92rem;white-space:normal;text-align:left;max-width:100%}
+.kpi{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.bar{display:flex;height:16px;border-radius:8px;overflow:hidden;background:var(--border)}
+.bar span{display:block;height:100%}
+.leg{display:flex;gap:10px;flex-wrap:wrap;font-size:.76rem;color:var(--muted);margin-top:4px}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mini{font-size:.74rem;color:var(--muted)}
+.tbl td.n,.tbl th.n{text-align:center}
+@media(max-width:820px){.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>📑 Báo cáo cuối kỳ <small>một chạm: sổ điểm · chuyên cần · thi đua · nhận xét → Word / Excel / phiếu báo PH</small></h1>
+  <div class="right"><span class="privacy">🔒 Dữ liệu chỉ xử lí trên máy này</span><a class="back" href="dashboard.html">← Trang chính</a></div>
+</div>
+<div class="wrap">
+  <div class="card">
+    <div class="row">
+      <div class="f s"><label>Kỳ báo cáo</label><select id="hk"><option value="hk1">Học kỳ I</option><option value="hk2">Học kỳ II</option><option value="cn">Cả năm</option></select></div>
+      <div class="f s"><label>Từ ngày</label><input type="date" id="from"></div>
+      <div class="f s"><label>Đến ngày</label><input type="date" id="to"></div>
+      <div class="f"><label>Lớp chủ nhiệm</label><input type="text" id="lop" placeholder="VD: 6A1"></div>
+    </div>
+    <h3 style="margin:14px 0 8px;font-size:.9rem">Nguồn dữ liệu sẽ gom vào báo cáo</h3>
+    <div class="src" id="src"></div>
+    <div class="hint" style="margin-top:8px">Sổ điểm được ghép với học sinh theo <b>họ tên</b>. Kết quả học tập / rèn luyện và lời nhận xét lấy từ <b>Chủ Nhiệm → Nhận xét TT22</b> (nếu đã soạn).</div>
+  </div>
+
+  <div class="card">
+    <div class="acts">
+      <button class="btn" id="bDoc" style="background:#2563eb">📄 Báo cáo lớp (Word)</button>
+      <button class="btn" id="bPh" style="background:#16a34a">👨‍👩‍👧 Phiếu báo phụ huynh (Word – mỗi em 1 trang)</button>
+      <button class="btn l" id="bPrint">🖨️ In phiếu báo phụ huynh</button>
+      <button class="btn l" id="bXls">📊 Bảng tổng hợp (Excel)</button>
+    </div>
+  </div>
+
+  <div id="out"></div>
+</div>
+
+<script>
+(() => {
+const $ = id => document.getElementById(id), esc = ED.esc;
+const LVN = { T: 'Tốt', K: 'Khá', D: 'Đạt', C: 'Chưa đạt' };
+const COL = { T: '#16a34a', K: '#2563eb', D: '#f59e0b', C: '#ef4444' };
+function schoolYear() { const d = new Date(); return d.getMonth() >= 7 ? d.getFullYear() : d.getFullYear() - 1; }
+function defRange(hk) { const y = schoolYear(); return hk === 'hk1' ? [y + '-09-01', (y + 1) + '-01-15'] : hk === 'hk2' ? [(y + 1) + '-01-16', (y + 1) + '-05-31'] : [y + '-09-01', (y + 1) + '-05-31']; }
+const K = 'bcck_cfg';
+let C = Object.assign({ hk: 'hk1', from: '', to: '', lop: '', off: [] }, ED.get(K, {}));
+const save = () => ED.set(K, C);
+const T = ED.teacher(), STU = ED.students();
+if (!C.lop) C.lop = ED.className() || ''; $('hk').value = C.hk; $('lop').value = C.lop;
+function setRange() { const [a, b] = defRange(C.hk); $('from').value = C.from || a; $('to').value = C.to || b; }
+setRange();
+$('hk').onchange = () => { C.hk = $('hk').value; C.from = C.to = ''; setRange(); save(); render(); };
+$('from').onchange = () => { C.from = $('from').value; save(); render(); };
+$('to').onchange = () => { C.to = $('to').value; save(); render(); };
+$('lop').oninput = () => { C.lop = $('lop').value; save(); };
+const hkLabel = () => ({ hk1: 'Học kỳ I', hk2: 'Học kỳ II', cn: 'Cả năm' })[C.hk];
+const yearLabel = () => { const y = schoolYear(); return y + ' – ' + (y + 1); };
+
+/* ---------- thu thập dữ liệu ---------- */
+function books() {
+  const names = new Set(STU.map(s => ED.norm(s.hoTen)));
+  return ED.books().map(b => { const list = ((b.hk1 && b.hk1.students) || []).filter(s => s && s.ten); const m = list.filter(s => names.has(ED.norm(s.ten))).length; return { b, m }; }).filter(x => x.m >= Math.max(1, STU.length * .3));
+}
+function collect() {
+  const from = $('from').value, to = $('to').value, cls = { kind: 'cn', students: STU };
+  const BK = books().filter(x => !C.off.includes('b:' + x.b.id));
+  const scores = BK.map(x => ({ mon: x.b.mon + (BK.filter(y => y.b.mon === x.b.mon).length > 1 ? ' (' + x.b.lop + ')' : ''), map: ED.scoreMap(cls, x.b.id, C.hk), qual: ['HĐTN-HN', 'Nghệ thuật', 'GDTC', 'GDĐP'].includes(x.b.mon) }));
+  const nx = C.off.includes('nx') ? { rows: {} } : (ED.get('nx_gvcn_' + C.hk, null) || { rows: {} });
+  const td = C.off.includes('td') ? null : ED.get('td_v1', null);
+  const tdPts = {}, toPts = {};
+  if (td && Array.isArray(td.events)) td.events.forEach(e => { if ((from && e.date < from) || (to && e.date > to)) return; if (e.sid != null) tdPts[e.sid] = (tdPts[e.sid] || 0) + (+e.pts || 0); const t = e.to != null ? e.to : (td.assign || {})[e.sid]; if (t != null) toPts[t] = (toPts[t] || 0) + (+e.pts || 0); });
+  const rows = STU.map(s => {
+    const st = C.off.includes('cc') ? { vang: '', tre: '', viPham: '', khen: '', notesV: [], notesC: [] } : ED.statsFor(s.id, from, to);
+    const r = nx.rows[s.id] || {};
+    return { s, st, sc: scores.map(x => x.map[s.id] ?? null), td: td ? (tdPts[s.id] || 0) : null, to: td && td.assign ? td.assign[s.id] : null, ht: r.ht || '', rl: r.rl || '', nx: r.nx || '',
+      dh: r.ht === 'T' && r.rl === 'T' ? 'Học sinh Giỏi' : '' };
+  });
+  return { from, to, scores, rows, td, toPts, nxHas: Object.keys(nx.rows || {}).some(k => nx.rows[k].ht || nx.rows[k].nx) };
+}
+
+/* ---------- giao diện nguồn ---------- */
+function renderSrc() {
+  const BK = books(), att = Object.keys(ED.attendance()).length, disc = ED.discipline().length, td = ED.get('td_v1', null), nx = ED.get('nx_gvcn_' + C.hk, null);
+  const item = (id, title, sub, ok) => `<label><input type="checkbox" data-id="${id}" ${C.off.includes(id) ? '' : 'checked'} ${ok ? '' : 'disabled'}><span>${title}<small class="${ok ? 'ok' : 'no'}">${sub}</small></span></label>`;
+  $('src').innerHTML = item('hs', '👥 Danh sách học sinh', STU.length ? STU.length + ' em – lớp chủ nhiệm' : 'chưa có', STU.length).replace('<input', '<input disabled') +
+    BK.map(x => item('b:' + x.b.id, '📒 Sổ điểm ' + esc(x.b.mon), 'Lớp ' + esc(x.b.lop) + ' · khớp ' + x.m + ' em', true)).join('') +
+    (BK.length ? '' : item('nob', '📒 Sổ điểm', 'chưa có sổ khớp lớp chủ nhiệm', false)) +
+    item('cc', '📅 Chuyên cần & nề nếp', att || disc ? att + ' buổi điểm danh · ' + disc + ' ghi nhận' : 'chưa có', att || disc) +
+    item('td', '🏆 Thi đua tuần', td && td.events ? td.events.length + ' lượt cộng/trừ điểm' : 'chưa có', td && td.events && td.events.length) +
+    item('nx', '📝 Nhận xét TT22 (GVCN)', nx && Object.keys(nx.rows || {}).length ? 'đã soạn ' + Object.values(nx.rows).filter(r => r.nx).length + ' lời nhận xét' : 'chưa soạn – vào Chủ Nhiệm → Nhận xét TT22', nx && Object.keys(nx.rows || {}).length);
+  $('src').querySelectorAll('input[data-id]').forEach(i => i.onchange = () => { const id = i.dataset.id; C.off = C.off.filter(x => x !== id); if (!i.checked) C.off.push(id); save(); render(); });
+}
+
+/* ---------- xem trước ---------- */
+const f1 = v => v == null || v === '' ? '—' : (+v).toFixed(1).replace('.', ',');
+function render() {
+  renderSrc();
+  if (!STU.length) { $('out').innerHTML = '<div class="card"><div class="empty">📋 Chưa có danh sách lớp chủ nhiệm. Vào <b>Chủ Nhiệm → Danh Sách HS</b> để nhập, rồi quay lại trang này.</div></div>'; return; }
+  const D = collect(), R = D.rows, n = R.length;
+  const nam = R.filter(r => /nam/i.test(r.s.gioiTinh)).length, nu = R.filter(r => /nữ/i.test(r.s.gioiTinh)).length;
+  const sum = k => R.reduce((a, r) => a + (+r.st[k] || 0), 0);
+  const cnt = k => { const c = { T: 0, K: 0, D: 0, C: 0, '': 0 }; R.forEach(r => c[r[k] || '']++); return c; };
+  const ht = cnt('ht'), rl = cnt('rl');
+  const bar = c => `<div class="bar">${['T', 'K', 'D', 'C'].map(l => c[l] ? `<span style="width:${c[l] / n * 100}%;background:${COL[l]}" title="${LVN[l]}: ${c[l]}"></span>` : '').join('')}</div><div class="leg">${['T', 'K', 'D', 'C'].map(l => `<span><i style="background:${COL[l]}"></i>${LVN[l]} ${c[l]}</span>`).join('')}${c[''] ? `<span>Chưa xếp ${c['']}</span>` : ''}</div>`;
+  const avgs = D.scores.map((x, i) => { const v = R.map(r => r.sc[i]).filter(v => v != null); return { mon: x.mon, avg: v.length ? v.reduce((a, b) => a + b, 0) / v.length : null, n: v.length, gioi: v.filter(x => x >= 8).length, yeu: v.filter(x => x < 5).length }; });
+  const topKhen = R.filter(r => +r.st.khen > 0).sort((a, b) => b.st.khen - a.st.khen).slice(0, 5), topVP = R.filter(r => +r.st.viPham > 0).sort((a, b) => b.st.viPham - a.st.viPham).slice(0, 5);
+  const teams = D.td && D.td.teams ? D.td.teams.map((t, i) => ({ name: t.name, pts: D.toPts[i] || 0 })).sort((a, b) => b.pts - a.pts) : [];
+  const dh = R.filter(r => r.dh);
+  $('out').innerHTML = `<div class="card"><h2>📊 Tổng quan lớp ${esc(C.lop || '')} – ${hkLabel()} (${yearLabel()})</h2>
+    <div class="kpi"><div class="stat"><span>Sĩ số</span><b>${n}</b><span style="text-transform:none">${nam} nam · ${nu} nữ</span></div>
+      <div class="stat"><span>Lượt vắng</span><b>${C.off.includes('cc') ? '—' : sum('vang')}</b><span style="text-transform:none">${C.off.includes('cc') ? '' : sum('tre') + ' lượt đi trễ'}</span></div>
+      <div class="stat"><span>Khen / vi phạm</span><b>${C.off.includes('cc') ? '—' : sum('khen') + ' / ' + sum('viPham')}</b></div>
+      <div class="stat"><span>HS Giỏi</span><b>${dh.length}</b><span style="text-transform:none">học tập & rèn luyện Tốt</span></div></div>
+    <div class="two"><div><b style="font-size:.86rem">Kết quả học tập</b>${D.nxHas ? bar(ht) : '<div class="mini">Chưa xếp loại (soạn ở Nhận xét TT22)</div>'}</div><div><b style="font-size:.86rem">Kết quả rèn luyện</b>${D.nxHas ? bar(rl) : '<div class="mini">Chưa xếp loại</div>'}</div></div>
+    <div class="two" style="margin-top:14px">
+      <div><b style="font-size:.86rem">Điểm trung bình môn của lớp</b>${avgs.length ? `<table class="tbl" style="margin-top:6px"><tr><th>Môn</th><th class="n">ĐTB lớp</th><th class="n">≥ 8</th><th class="n">&lt; 5</th></tr>${avgs.map(a => `<tr><td>${esc(a.mon)}</td><td class="n">${f1(a.avg)}</td><td class="n">${a.gioi}</td><td class="n">${a.yeu}</td></tr>`).join('')}</table>` : '<div class="mini">Không có sổ điểm</div>'}</div>
+      <div><b style="font-size:.86rem">Thi đua các tổ</b>${teams.length ? `<table class="tbl" style="margin-top:6px">${teams.map((t, i) => `<tr><td>${['🥇', '🥈', '🥉'][i] || i + 1}</td><td>${esc(t.name)}</td><td class="n"><b>${t.pts}</b> điểm</td></tr>`).join('')}</table>` : '<div class="mini">Không có dữ liệu thi đua</div>'}
+        ${topKhen.length ? `<div class="mini" style="margin-top:8px">⭐ Được khen nhiều: ${topKhen.map(r => esc(r.s.ten) + ' (' + r.st.khen + ')').join(', ')}</div>` : ''}
+        ${topVP.length ? `<div class="mini">⚠️ Cần nhắc nhở: ${topVP.map(r => esc(r.s.ten) + ' (' + r.st.viPham + ')').join(', ')}</div>` : ''}</div></div></div>
+  <div class="card"><h2>👥 Chi tiết từng học sinh</h2><div class="tbl-wrap"><table class="tbl"><thead><tr><th class="n">STT</th><th>Họ và tên</th>${D.scores.map(x => `<th class="n">${esc(x.mon)}</th>`).join('')}<th class="n">Vắng</th><th class="n">Khen</th><th class="n">VP</th>${D.td ? '<th class="n">Thi đua</th>' : ''}<th class="n">Học tập</th><th class="n">Rèn luyện</th><th>Nhận xét GVCN</th></tr></thead><tbody>
+    ${R.map(r => `<tr><td class="n">${r.s.stt}</td><td><b>${esc(r.s.hoTen)}</b>${r.dh ? ' <span class="badge lv-T">Giỏi</span>' : ''}</td>${r.sc.map(v => `<td class="n">${f1(v)}</td>`).join('')}<td class="n">${r.st.vang}${r.st.tre ? '<span class="mini"> (' + r.st.tre + ' trễ)</span>' : ''}</td><td class="n">${r.st.khen}</td><td class="n">${r.st.viPham}</td>${D.td ? `<td class="n">${r.td}</td>` : ''}<td class="n">${LVN[r.ht] || '—'}</td><td class="n">${LVN[r.rl] || '—'}</td><td style="min-width:260px;font-size:.8rem">${esc(r.nx) || '<span class="mini">—</span>'}</td></tr>`).join('')}</tbody></table></div></div>`;
+  render.D = D;
+}
+
+/* ---------- Word: báo cáo lớp ---------- */
+function headerHTML(title) {
+  return `<table style="width:100%;border:none"><tr><td style="border:none;width:50%;text-align:center;vertical-align:top"><b>${esc((T.school || 'TRƯỜNG ……………').toUpperCase())}</b><br><b>LỚP ${esc(C.lop || '……')}</b></td>
+    <td style="border:none;width:50%;text-align:center;vertical-align:top"><b>CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</b><br><b><u>Độc lập – Tự do – Hạnh phúc</u></b></td></tr></table>
+    <p style="text-align:center;font-size:15pt;margin:14pt 0 2pt"><b>${title}</b></p><p style="text-align:center;margin:0 0 10pt"><i>${hkLabel()} – Năm học ${yearLabel()}</i></p>`;
+}
+function signHTML(left) {
+  const d = new Date();
+  return `<table style="width:100%;border:none;margin-top:16pt"><tr><td style="border:none;width:50%;text-align:center">${left || ''}</td><td style="border:none;width:50%;text-align:center"><i>…………, ngày ${d.getDate()} tháng ${d.getMonth() + 1} năm ${d.getFullYear()}</i><br><b>GIÁO VIÊN CHỦ NHIỆM</b><br><br><br><br><b>${esc(T.name || '')}</b></td></tr></table>`;
+}
+$('bDoc').onclick = () => {
+  if (!STU.length) return ED.toast('Chưa có danh sách lớp');
+  const D = render.D, R = D.rows, n = R.length, sum = k => R.reduce((a, r) => a + (+r.st[k] || 0), 0);
+  const cnt = k => { const c = { T: 0, K: 0, D: 0, C: 0, '': 0 }; R.forEach(r => c[r[k] || '']++); return c; }, ht = cnt('ht'), rl = cnt('rl'), pct = v => n ? (v / n * 100).toFixed(1).replace('.', ',') + '%' : '';
+  const avgs = D.scores.map((x, i) => { const v = R.map(r => r.sc[i]).filter(v => v != null); return [x.mon, v.length ? f1(v.reduce((a, b) => a + b, 0) / v.length) : '—', v.filter(x => x >= 8).length, v.filter(x => x >= 6.5 && x < 8).length, v.filter(x => x >= 5 && x < 6.5).length, v.filter(x => x < 5).length]; });
+  const teams = D.td && D.td.teams ? D.td.teams.map((t, i) => [t.name, D.toPts[i] || 0]).sort((a, b) => b[1] - a[1]) : [];
+  let h = headerHTML('BÁO CÁO TỔNG KẾT LỚP ' + esc((C.lop || '').toUpperCase()));
+  h += `<p><b>I. TÌNH HÌNH CHUNG</b></p><p>– Sĩ số: ${n} học sinh (${R.filter(r => /nam/i.test(r.s.gioiTinh)).length} nam, ${R.filter(r => /nữ/i.test(r.s.gioiTinh)).length} nữ).</p>`;
+  if (!C.off.includes('cc')) h += `<p>– Chuyên cần (${ED.vnDate ? ED.vnDate(D.from) : D.from} – ${ED.vnDate ? ED.vnDate(D.to) : D.to}): ${sum('vang')} lượt vắng, ${sum('tre')} lượt đi trễ.</p><p>– Nề nếp: ${sum('khen')} lượt được tuyên dương, ${sum('viPham')} lượt vi phạm.</p>`;
+  if (D.nxHas) h += `<p><b>II. KẾT QUẢ HỌC TẬP VÀ RÈN LUYỆN</b></p><table style="width:100%"><tr><th>Mức</th><th>Tốt</th><th>Khá</th><th>Đạt</th><th>Chưa đạt</th></tr>
+    <tr><td>Kết quả học tập</td>${['T', 'K', 'D', 'C'].map(l => `<td style="text-align:center">${ht[l]} (${pct(ht[l])})</td>`).join('')}</tr><tr><td>Kết quả rèn luyện</td>${['T', 'K', 'D', 'C'].map(l => `<td style="text-align:center">${rl[l]} (${pct(rl[l])})</td>`).join('')}</tr></table>
+    <p>– Học sinh Giỏi: ${R.filter(r => r.dh).length} em${R.filter(r => r.dh).length ? ': ' + R.filter(r => r.dh).map(r => esc(r.s.hoTen)).join(', ') : ''}.</p>`;
+  if (avgs.length) h += `<p><b>${D.nxHas ? 'III' : 'II'}. ĐIỂM TRUNG BÌNH CÁC MÔN</b></p><table style="width:100%"><tr><th>Môn</th><th>ĐTB lớp</th><th>Từ 8,0</th><th>6,5 – dưới 8</th><th>5,0 – dưới 6,5</th><th>Dưới 5,0</th></tr>${avgs.map(a => `<tr>${a.map((v, i) => `<td style="text-align:${i ? 'center' : 'left'}">${esc(String(v))}</td>`).join('')}</tr>`).join('')}</table>`;
+  if (teams.length) h += `<p><b>THI ĐUA CÁC TỔ</b></p><table style="width:60%"><tr><th>Hạng</th><th>Tổ</th><th>Tổng điểm</th></tr>${teams.map((t, i) => `<tr><td style="text-align:center">${i + 1}</td><td>${esc(t[0])}</td><td style="text-align:center">${t[1]}</td></tr>`).join('')}</table>`;
+  h += `<p><b>DANH SÁCH CHI TIẾT</b></p><table style="width:100%"><tr><th>STT</th><th>Họ và tên</th>${D.scores.map(x => `<th>${esc(x.mon)}</th>`).join('')}<th>Vắng</th><th>Khen</th><th>VP</th><th>HT</th><th>RL</th></tr>${R.map(r => `<tr><td style="text-align:center">${r.s.stt}</td><td>${esc(r.s.hoTen)}</td>${r.sc.map(v => `<td style="text-align:center">${f1(v)}</td>`).join('')}<td style="text-align:center">${r.st.vang}</td><td style="text-align:center">${r.st.khen}</td><td style="text-align:center">${r.st.viPham}</td><td style="text-align:center">${LVN[r.ht] || ''}</td><td style="text-align:center">${LVN[r.rl] || ''}</td></tr>`).join('')}</table>`;
+  h += `<p><b>NHẬN XÉT, ĐỀ XUẤT CỦA GVCN</b></p><p>………………………………………………………………………………………………………………</p><p>………………………………………………………………………………………………………………</p>` + signHTML();
+  ED.exportDoc(h, 'BaoCao_' + ED.fileName(C.lop || 'lop') + '_' + C.hk, { landscape: D.scores.length > 3 });
+};
+
+/* ---------- phiếu báo phụ huynh ---------- */
+function phieu(r, D) {
+  return headerHTML('PHIẾU BÁO KẾT QUẢ HỌC TẬP VÀ RÈN LUYỆN') +
+    `<p>Kính gửi: Quý phụ huynh em <b>${esc(r.s.hoTen)}</b>${r.s.ngaySinh ? ' – ngày sinh: ' + esc(r.s.ngaySinh) : ''} – lớp ${esc(C.lop || '')}.</p><p>Giáo viên chủ nhiệm xin thông báo kết quả của em trong ${C.hk === 'cn' ? 'cả năm học' : 'học kỳ ' + (C.hk === 'hk1' ? 'I' : 'II')} như sau:</p>` +
+    (D.scores.length ? `<p><b>1. Điểm trung bình các môn</b></p><table style="width:100%"><tr>${D.scores.map(x => `<th>${esc(x.mon)}</th>`).join('')}</tr><tr>${r.sc.map(v => `<td style="text-align:center">${f1(v)}</td>`).join('')}</tr></table>` : '') +
+    (C.off.includes('cc') ? '' : `<p><b>2. Chuyên cần và nề nếp</b> (${ED.vnDate ? ED.vnDate(D.from) : D.from} – ${ED.vnDate ? ED.vnDate(D.to) : D.to})</p><p>– Số buổi vắng: <b>${r.st.vang}</b>; đi trễ: <b>${r.st.tre}</b>.</p><p>– Được tuyên dương: <b>${r.st.khen}</b> lần${r.st.notesC.length ? ' (' + esc([...new Set(r.st.notesC)].slice(0, 4).join('; ')) + ')' : ''}.</p><p>– Vi phạm: <b>${r.st.viPham}</b> lần${r.st.notesV.length ? ' (' + esc([...new Set(r.st.notesV)].slice(0, 4).join('; ')) + ')' : ''}.</p>`) +
+    (r.td != null ? `<p>– Điểm thi đua cá nhân: <b>${r.td}</b>.</p>` : '') +
+    `<p><b>3. Kết quả đánh giá</b></p><p>– Kết quả học tập: <b>${LVN[r.ht] || '…………'}</b>. – Kết quả rèn luyện: <b>${LVN[r.rl] || '…………'}</b>.${r.dh ? ' – Danh hiệu: <b>' + r.dh + '</b>.' : ''}</p>` +
+    `<p><b>4. Nhận xét của giáo viên chủ nhiệm</b></p><p>${esc(r.nx) || '………………………………………………………………………………………………………………<br>………………………………………………………………………………………………………………'}</p>` +
+    `<p><b>Ý kiến của phụ huynh:</b> ……………………………………………………………………………………</p><p>………………………………………………………………………………………………………………</p>` +
+    signHTML('<b>PHỤ HUYNH HỌC SINH</b><br><i>(Ký, ghi rõ họ tên)</i>');
+}
+$('bPh').onclick = () => {
+  if (!STU.length) return ED.toast('Chưa có danh sách lớp');
+  const D = render.D; ED.exportDoc(D.rows.map((r, i) => (i ? '<br clear="all" style="page-break-before:always">' : '') + phieu(r, D)).join(''), 'PhieuBao_' + ED.fileName(C.lop || 'lop') + '_' + C.hk);
+};
+$('bPrint').onclick = () => {
+  if (!STU.length) return ED.toast('Chưa có danh sách lớp');
+  const D = render.D;
+  ED.printHTML(D.rows.map(r => `<div class="pg">${phieu(r, D)}</div>`).join(''), '@page{size:A4;margin:16mm 16mm 14mm 20mm}.pg{page-break-after:always;font-size:12.5pt;line-height:1.35}.pg:last-child{page-break-after:auto}p{margin:4pt 0}table{border-collapse:collapse}td,th{border:1px solid #000;padding:3pt 5pt;font-size:11.5pt}', 'Phiếu báo phụ huynh');
+};
+$('bXls').onclick = () => {
+  if (!STU.length) return ED.toast('Chưa có danh sách lớp');
+  const D = render.D;
+  const aoa = [['STT', 'Họ và tên', 'Giới tính'].concat(D.scores.map(x => 'ĐTB ' + x.mon), ['Vắng', 'Đi trễ', 'Khen', 'Vi phạm'], D.td ? ['Điểm thi đua'] : [], ['Kết quả học tập', 'Kết quả rèn luyện', 'Danh hiệu', 'Nhận xét GVCN'])];
+  D.rows.forEach(r => aoa.push([r.s.stt, r.s.hoTen, r.s.gioiTinh].concat(r.sc.map(v => v == null ? '' : v), [r.st.vang, r.st.tre, r.st.khen, r.st.viPham], D.td ? [r.td] : [], [LVN[r.ht] || '', LVN[r.rl] || '', r.dh, r.nx])));
+  ED.exportXLSX([{ name: 'Tổng hợp', aoa }], 'TongHop_' + ED.fileName(C.lop || 'lop') + '_' + C.hk);
+};
+render();
+})();
+</script>
+<script src="eduhub_help.js" defer></script>
+</body>
+</html>

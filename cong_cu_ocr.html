@@ -101,5 +101,6 @@ let busyRun=false;
 async function go(f){if(busyRun){ED.toast('Đang xử lý, chờ một chút nhé…');return}busyRun=true;try{await run(f)}catch(e){console.error(e);status('❌ Lỗi: '+(e.message||e),0)}busyRun=false}
 </script>
 <script src="eduhub_backup.js"></script>
+<script src="eduhub_help.js" defer></script>
 </body>
 </html>

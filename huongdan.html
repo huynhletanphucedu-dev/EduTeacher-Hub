@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hướng dẫn sử dụng – EduTeacher Hub</title>
+<link rel="stylesheet" href="eduhub_ui.css">
+<script src="eduhub_data.js"></script>
+<style>
+.lay{display:grid;grid-template-columns:240px 1fr;gap:20px;max-width:1150px;margin:0 auto;padding:18px 16px 60px}
+.toc{position:sticky;top:70px;align-self:start;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px}
+.toc a{display:block;padding:7px 10px;border-radius:8px;color:var(--text);text-decoration:none;font-size:.86rem;font-weight:600}
+.toc a:hover{background:var(--card2)}
+.sec{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 22px;margin-bottom:16px;line-height:1.65;scroll-margin-top:70px}
+.sec h2{font-size:1.15rem;margin-bottom:10px}
+.sec h3{font-size:.95rem;margin:14px 0 6px}
+.sec ol,.sec ul{padding-left:22px}.sec li{margin:4px 0}
+.steps{counter-reset:s;list-style:none;padding:0!important}
+.steps li{counter-increment:s;position:relative;padding-left:40px;margin:10px 0}
+.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;background:#2563eb;color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:.85rem}
+.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:10px}
+.tool{border:1.5px solid var(--border);border-radius:12px;padding:12px;background:var(--card2)}
+.tool b{display:block;margin-bottom:2px}.tool p{font-size:.82rem;color:var(--muted);margin-bottom:6px}
+.tool details summary{cursor:pointer;font-size:.8rem;font-weight:700;color:var(--blue)}
+.tool ol{font-size:.82rem;padding-left:18px;margin-top:4px}
+.tool .m{font-size:.78rem;background:#fef9c3;color:#713f12;border-radius:8px;padding:6px 8px;margin-top:6px}
+.grp{font-size:.8rem;font-weight:800;color:var(--muted);text-transform:uppercase;margin:16px 0 8px}
+.faq details{border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:8px;background:var(--card2)}
+.faq summary{cursor:pointer;font-weight:700}
+.faq details p{margin-top:6px;color:var(--text2)}
+.callout{background:#eff6ff;border-left:4px solid #2563eb;border-radius:8px;padding:10px 14px;margin:10px 0;color:#1e3a8a}
+body.dark .callout{background:#1e3a5f;color:#dbeafe}
+@media(max-width:860px){.lay{grid-template-columns:1fr}.toc{position:static}}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>📖 Hướng dẫn sử dụng <small>EduTeacher Hub – bộ công cụ hỗ trợ giáo viên</small></h1>
+  <div class="right"><a class="back" href="dashboard.html">← Trang chính</a></div>
+</div>
+<div class="lay">
+  <nav class="toc">
+    <a href="#batdau">🚀 Bắt đầu trong 5 phút</a>
+    <a href="#dulieu">🔒 Dữ liệu & sao lưu</a>
+    <a href="#giangday">🎯 Giảng dạy</a>
+    <a href="#chunhiem">👨‍👩‍👧 Chủ nhiệm</a>
+    <a href="#trochoi">🎮 Trò chơi & link chia sẻ</a>
+    <a href="#congcu">🛠️ Công cụ khác</a>
+    <a href="#faq">❓ Câu hỏi thường gặp</a>
+    <a href="#lienhe">💬 Góp ý & liên hệ</a>
+  </nav>
+  <main>
+    <section class="sec" id="batdau">
+      <h2>🚀 Bắt đầu trong 5 phút</h2>
+      <div class="callout">EduTeacher Hub <b>miễn phí, không cần tài khoản</b>. Mọi dữ liệu (học sinh, điểm…) chỉ lưu trong trình duyệt trên máy của thầy/cô.</div>
+      <ol class="steps">
+        <li><b>Nhập hồ sơ</b>: bấm ⚙️ góc trên phải, điền họ tên, trường, lớp chủ nhiệm – thông tin này tự in lên báo cáo, giấy khen, phiếu.</li>
+        <li><b>Thử với lớp mẫu</b>: lần đầu vào, trang chính có <b>Lớp mẫu</b> 40 học sinh giả – bấm thử mọi tính năng thoải mái. Khi dùng thật bấm “Xóa lớp mẫu”.</li>
+        <li><b>Nhập danh sách lớp</b>: vào <b>Chủ Nhiệm → Danh sách HS</b>, gõ tay hoặc nhập từ Excel. Danh sách này dùng chung cho gọi tên, chia nhóm, sơ đồ lớp, chấm trắc nghiệm, giấy khen…</li>
+        <li><b>Tạo sổ điểm</b> cho các lớp dạy bộ môn ở <b>Giảng Dạy → Sổ Điểm Cá Nhân</b> (nhập danh sách từ Excel được).</li>
+        <li><b>Bật sao lưu</b>: bấm 💾 góc trên phải, chọn một thư mục để hệ thống tự ghi bản sao lưu mỗi ngày.</li>
+      </ol>
+      <p>Mẹo: nhấn <b>Ctrl + K</b> ở bất kỳ đâu để tìm nhanh công cụ. Bấm ☆ trên thẻ công cụ để ghim lên đầu. Mỗi công cụ có nút <b>?</b> ở góc dưới phải để xem cách dùng.</p>
+    </section>
+
+    <section class="sec" id="dulieu">
+      <h2>🔒 Dữ liệu & sao lưu</h2>
+      <ul>
+        <li>Dữ liệu được lưu trong <b>bộ nhớ của trình duyệt</b> (localStorage) trên máy đang dùng – <b>không gửi lên máy chủ nào</b>.</li>
+        <li>Mỗi trình duyệt / mỗi máy có dữ liệu riêng. Dùng chế độ ẩn danh, xóa lịch sử duyệt web hoặc đổi máy sẽ <b>không thấy dữ liệu cũ</b> nếu chưa sao lưu.</li>
+        <li><b>💾 Sao lưu</b>: xuất file sao lưu (.json) hoặc bật tự sao lưu vào một thư mục trên máy. Khôi phục bằng cách chọn lại file đó.</li>
+        <li><b>📱 Chuyển sang máy khác</b>: trong bảng 💾 chọn “Chuyển bằng mã QR” – máy cũ hiện chuỗi mã QR, máy mới quét bằng camera là nhận đủ dữ liệu, không cần cáp hay mạng.</li>
+        <li>Trang dùng được <b>khi không có mạng</b> sau lần mở đầu tiên (có thể “Cài như ứng dụng” ở trang chính).</li>
+      </ul>
+    </section>
+
+    <section class="sec" id="giangday">
+      <h2>🎯 Giảng dạy</h2>
+      <h3>📒 Sổ điểm cá nhân</h3>
+      <p>Tạo sổ cho từng lớp/môn, nhập điểm TX – GK – CK, tự tính ĐTB theo TT22, xuất Excel; có ghi chú, lịch sử sửa điểm và hoàn tác (Ctrl+Z).</p>
+      <h3>🎲 Gọi tên học sinh · 🛸 Gọi tên vui nhộn</h3>
+      <p>Gọi tên nhanh (quay số, vòng quay, quả bóng, hộp quà) hoặc gọi tên vui nhộn với 8 trò hoạt hình. Kết quả gọi tên vui có thể xuất Excel hoặc chuyển vào ghi chú Sổ điểm để cộng điểm sau.</p>
+      <h3>📚 Quản lý câu hỏi trò chơi</h3>
+      <p>Chọn môn → tạo bài → soạn câu hỏi. Câu hỏi dùng chung cho các trò chơi, đề kiểm tra và link chia sẻ cho học sinh. Xuất / nhập file để chia sẻ với đồng nghiệp.</p>
+      <h3>🎉 Trò chơi ôn tập – tổng kết bài</h3>
+      <p>Hái hoa dân chủ, Ai là triệu phú, Đào vàng, Bắt cá, Hái quả, Leo núi – chơi theo đội trên màn hình lớn, dùng câu hỏi có sẵn hoặc câu hỏi của thầy/cô.</p>
+    </section>
+
+    <section class="sec" id="chunhiem">
+      <h2>👨‍👩‍👧 Chủ nhiệm</h2>
+      <p>Danh sách học sinh, điểm danh, sơ đồ chỗ ngồi, nề nếp (khen / vi phạm), sinh nhật, trực nhật, liên lạc phụ huynh, nhật ký lớp, thi đua tuần, nhận xét TT22.</p>
+      <p>Cuối kỳ: dùng <b>Công cụ khác → Báo cáo cuối kỳ</b> để gom tất cả thành báo cáo lớp (Word) và phiếu báo kết quả cho từng phụ huynh.</p>
+    </section>
+
+    <section class="sec" id="trochoi">
+      <h2>🎮 Trò chơi & link chia sẻ cho học sinh</h2>
+      <ol>
+        <li>Ở trang <b>Trò Chơi Học Tập</b>, mở bảng <b>🔗 Chia sẻ game</b>, làm theo hướng dẫn tạo Google Sheet + Apps Script (chỉ làm một lần), dán URL Apps Script và đặt tên phiên (vd “6A1 – 11/11”).</li>
+        <li>Bấm <b>🔗 Tạo link chia sẻ</b> trên thẻ trò chơi. Với các trò Toán 6 / Tiên phong có thể chọn <b>“Câu hỏi của tôi – gửi kèm trong link”</b> để học sinh chơi với câu hỏi thầy/cô tự soạn.</li>
+        <li>Gửi link qua Zalo. Học sinh nhập tên tự do và chơi; mỗi lượt chơi tự ghi một dòng vào Google Sheet: thời gian, tên, điểm, số câu đúng, câu sai.</li>
+      </ol>
+      <div class="callout">Câu hỏi gửi kèm nằm ngay trong đường link (sau dấu #), không lưu lên máy chủ. Link dài khi chọn nhiều bài – có thể rút gọn bằng công cụ “Thu gọn Link”.</div>
+    </section>
+
+    <section class="sec" id="congcu">
+      <h2>🛠️ Công cụ khác</h2>
+      <p>Bấm “Cách dùng” trên từng thẻ để xem các bước.</p>
+      <div id="tools"></div>
+    </section>
+
+    <section class="sec faq" id="faq">
+      <h2>❓ Câu hỏi thường gặp</h2>
+      <details><summary>Mở trên máy khác không thấy dữ liệu?</summary><p>Dữ liệu nằm trong trình duyệt của máy cũ. Dùng 💾 Sao lưu → xuất file rồi khôi phục trên máy mới, hoặc dùng “Chuyển bằng mã QR”.</p></details>
+      <details><summary>Có mất dữ liệu khi trang được cập nhật phiên bản mới không?</summary><p>Không. Cập nhật chỉ thay mã nguồn của trang; dữ liệu trong trình duyệt vẫn giữ nguyên. Tuy vậy nên bật sao lưu tự động để phòng khi xóa lịch sử trình duyệt.</p></details>
+      <details><summary>Camera không mở được (Chấm trắc nghiệm, Thẻ Hiệp Sĩ, Quét tài liệu)?</summary><p>Trình duyệt chỉ cho dùng camera ở trang https (bản online) hoặc mở trực tiếp trên máy tính. Bấm biểu tượng 🔒/📷 trên thanh địa chỉ để cho phép camera. Trên điện thoại nên dùng Chrome hoặc Safari mới.</p></details>
+      <details><summary>Phân loại ảnh báo “trình duyệt chưa hỗ trợ”?</summary><p>Công cụ cần quyền đọc/ghi thư mục, chỉ có trên Google Chrome hoặc Microsoft Edge bản máy tính.</p></details>
+      <details><summary>In giấy khen / phiếu bị mất màu nền, lệch lề?</summary><p>Trong hộp thoại in chọn đúng khổ giấy, Lề: Không (None), bật “Đồ họa nền / Background graphics”.</p></details>
+      <details><summary>File Word xuất ra mở bị báo lỗi định dạng?</summary><p>Một số file xuất dạng .doc (tương thích Word 2010 trở lên). Word có thể hỏi “định dạng khác phần mở rộng” – bấm Yes để mở, sau đó Lưu thành .docx nếu cần.</p></details>
+      <details><summary>Học sinh có cần tài khoản để chơi trò chơi qua link không?</summary><p>Không. Học sinh chỉ cần mở link và gõ tên. Kết quả gửi về Google Sheet của thầy/cô.</p></details>
+    </section>
+
+    <section class="sec" id="lienhe">
+      <h2>💬 Góp ý & liên hệ</h2>
+      <p>Gặp lỗi hoặc muốn có thêm tính năng? Bấm <b>❔ → 💬 Góp ý / báo lỗi</b> ở trang chính, hoặc nhắn Zalo cho tác giả qua nút “Cần công cụ riêng?”.</p>
+      <p><button class="btn" onclick="EHFeedback.open()">💬 Gửi góp ý ngay</button></p>
+      <p style="color:var(--muted);font-size:.85rem">EduTeacher Hub – phát triển bởi ThS. Huỳnh Lê Tấn Phúc, Trường THCS Long Thọ.</p>
+    </section>
+  </main>
+</div>
+<script src="eduhub_help.js"></script>
+<script>
+(function () {
+  const H = window.EH_HELP || {}, G = window.EH_GROUPS || {}, esc = ED.esc;
+  const keys = Object.keys(H).filter(k => /^cong_cu_|^thehiepsi|^chianhom/.test(k));
+  const by = {}; keys.forEach(k => (by[H[k].g] = by[H[k].g] || []).push(k));
+  document.getElementById('tools').innerHTML = Object.keys(G).filter(g => by[g]).map(g => `<div class="grp">${G[g]}</div><div class="tools">${by[g].map(k => { const h = H[k];
+    return `<div class="tool"><b>${h.i} ${esc(h.t)}</b><p>${esc(h.d)}</p><details><summary>Cách dùng</summary><ol>${h.s.map(x => `<li>${esc(x)}</li>`).join('')}</ol>${h.m ? `<div class="m">💡 ${esc(h.m)}</div>` : ''}</details><a href="${k}" target="_blank" style="font-size:.8rem;font-weight:700">Mở công cụ →</a></div>`; }).join('')}</div>`).join('');
+})();
+</script>
+</body>
+</html>

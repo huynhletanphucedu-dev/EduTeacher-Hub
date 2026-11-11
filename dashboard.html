@@ -915,6 +915,11 @@ body.dark .sd-table tr:hover td{background:#162032;}
 .cd-add .ok{background:#0ea5e9;border-color:#0ea5e9;color:#fff}
 .cd-sug{display:flex;gap:6px;flex-wrap:wrap;width:100%}
 .cd-empty{color:#64748b;font-size:.82rem}
+.tb-help{position:relative}
+.tb-help-menu{display:none;position:absolute;right:0;top:calc(100% + 8px);background:var(--white,#fff);border:1px solid var(--border,#e2e8f0);border-radius:12px;box-shadow:0 12px 30px rgba(15,23,42,.15);min-width:230px;padding:6px;z-index:950}
+.tb-help.on .tb-help-menu{display:block}
+.tb-help-menu a{display:block;padding:9px 12px;border-radius:8px;color:var(--text,#0f172a);text-decoration:none;font-size:.84rem;font-weight:600}
+.tb-help-menu a:hover{background:var(--bg,#f1f5f9)}
 /* ══ TOOL HUB ══ */
 .tool-hub-wrap { padding:32px 28px; max-width:1100px; }
 .tool-hub-header { margin-bottom:28px; }
@@ -1002,6 +1007,14 @@ body.dark .sd-table tr:hover td{background:#162032;}
 .gt-link-modal-box{background:#1e293b;border-radius:18px;padding:2rem;max-width:520px;width:92%;box-shadow:0 24px 64px rgba(0,0,0,.5);border:1px solid rgba(56,189,248,.2);}
 .gt-link-modal-title{color:#38bdf8;font-size:1.1rem;font-weight:800;margin-bottom:.3rem;}
 .gt-link-modal-sub{color:#64748b;font-size:.8rem;margin-bottom:1rem;}
+.gtq-box{background:#0f172a;border:1px solid rgba(56,189,248,.25);border-radius:12px;padding:10px 12px;margin:10px 0;color:#cbd5e1;font-size:.8rem}
+.gtq-h{font-weight:800;color:#e2e8f0;margin-bottom:6px}
+.gtq-r{display:flex;gap:6px;align-items:center;margin:4px 0;cursor:pointer}
+.gtq-list{max-height:170px;overflow:auto;border-top:1px solid #1e293b;margin-top:6px;padding-top:4px}
+.gtq-list label{display:flex;gap:6px;align-items:center;padding:3px 4px;cursor:pointer}
+.gtq-list small,.gtq-r small{color:#64748b}
+.gtq-m{font-size:.7rem;font-weight:800;color:#38bdf8;text-transform:uppercase;margin:6px 0 2px}
+.gtq-info{margin-top:6px;color:#94a3b8;font-size:.76rem}
 .gt-link-url{width:100%;padding:.65rem .9rem;border-radius:9px;border:1.5px solid rgba(56,189,248,.3);background:#0f172a;color:#94a3b8;font-size:.75rem;box-sizing:border-box;word-break:break-all;resize:none;}
 .gt-modal-actions{display:flex;gap:8px;margin-top:12px;}
 .gt-btn-copy{flex:1;padding:.7rem;background:#0ea5e9;border:none;border-radius:9px;color:#fff;font-weight:800;cursor:pointer;font-size:.9rem;}
@@ -1221,6 +1234,8 @@ body.dark .sd-table tr:hover td{background:#162032;}
     <div class="tb-right">
       <div class="tb-date" id="tb-date"></div>
       <div class="tb-greeting" id="tb-greeting"></div>
+      <div class="tb-help"><button class="tb-setting-btn tb-help-btn" type="button" title="Hướng dẫn sử dụng" onclick="this.parentNode.classList.toggle('on')">❔</button>
+        <div class="tb-help-menu"><a href="huongdan.html" target="_blank">📖 Hướng dẫn sử dụng</a><a href="#" onclick="this.closest('.tb-help').classList.remove('on');EHTour.start();return false">🧭 Xem lại tour giới thiệu</a><a href="#" onclick="this.closest('.tb-help').classList.remove('on');EHFeedback&&EHFeedback.open();return false">💬 Góp ý / báo lỗi</a></div></div>
       <button class="tb-setting-btn" onclick="openDrawer()" title="Cài đặt hồ sơ">⚙️</button>
     </div>
   </div>
@@ -2988,6 +3003,16 @@ body.dark .sd-table tr:hover td{background:#162032;}
               <div class="tool-thumb" style="background:#f5f3ff;font-size:2.6rem">🧮</div>
             </div>
             <div class="tool-card-desc">Chọn dạng toán và độ khó – máy sinh phiếu, mỗi học sinh một đề khác, kèm đáp án</div>
+          </div>
+
+          <!-- 26 Báo cáo cuối kỳ -->
+          <div class="tool-card" onclick="window.open('cong_cu_baocaock.html','_blank')">
+            <div class="tool-card-title">Báo cáo cuối kỳ</div>
+            <div class="tool-thumb-wrap">
+              <span class="tool-num" style="background:#1d4ed8;">26</span>
+              <div class="tool-thumb" style="background:#eff6ff;font-size:2.6rem">📑</div>
+            </div>
+            <div class="tool-card-desc">Một chạm gom sổ điểm, chuyên cần, thi đua, nhận xét → báo cáo lớp & phiếu báo phụ huynh</div>
           </div>
 
         </div>
@@ -5892,18 +5917,37 @@ function TC_noiseLoop(){
       +'?gt_session='+encodeURIComponent(session)
       +'&gt_script='+encodeURIComponent(script)
       +'&gt_game='+encodeURIComponent(gameName);
-    gtShowLinkModal(url,gameName,session);
+    gtShowLinkModal(url,gameName,session,gameFile);
   };
 
-  window.gtShowLinkModal=function(url,gameName,session){
+  /* Gửi kèm câu hỏi của giáo viên trong link (phần #gtq=… – chỉ nằm trong link, không qua máy chủ) */
+  function gtQB(){ try{ const d=JSON.parse(localStorage.getItem('etv1_qbank')||'null'); if(d&&Array.isArray(d.mon)) return d; }catch(e){} return {mon:[],bai:[],cau:[]}; }
+  function gtB64(str){ const u8=new TextEncoder().encode(str); let bin=''; u8.forEach(c=>bin+=String.fromCharCode(c)); return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); }
+  function gtPack(ids){
+    const db=gtQB(), bai=db.bai.filter(b=>ids.includes(b.id));
+    const okQ=c=>c&&c.q&&c.a&&Array.isArray(c.w)&&c.w.filter(Boolean).length;
+    const mons=[...new Set(bai.map(b=>b.mon))].map(id=>(db.mon.find(m=>m.id===id)||{}).ten).filter(Boolean);
+    const pk={v:1,m:mons.length===1?mons[0]:'Câu hỏi của thầy/cô',b:bai.map(b=>({t:b.ten,k:b.khoi||'',c:db.cau.filter(c=>c.bai===b.id&&okQ(c)).map(c=>{const r=[c.q,c.a,c.w.filter(Boolean).slice(0,3)];if(c.g)r.push(String(c.g).slice(0,160));return r;})})).filter(x=>x.c.length)};
+    return pk.b.length?{hash:'#gtq='+gtB64(JSON.stringify(pk)),n:pk.b.reduce((a,x)=>a+x.c.length,0)}:null;
+  }
+  window.gtShowLinkModal=function(url,gameName,session,gameFile){
     let modal=document.getElementById('gt-link-modal');
     if(modal) modal.remove();
+    const tp=/^tienphong\//.test(gameFile||''), db=gtQB(), okQ=c=>c&&c.q&&c.a&&Array.isArray(c.w)&&c.w.filter(Boolean).length;
+    const lessons=db.bai.map(b=>({b,n:db.cau.filter(c=>c.bai===b.id&&okQ(c)).length})).filter(x=>x.n);
+    let saved=[]; try{saved=JSON.parse(localStorage.getItem('gt_link_bai')||'[]');}catch(e){}
+    const qsec=!tp?'':`<div class="gtq-box"><div class="gtq-h">📚 Câu hỏi trong trò chơi</div>
+      <label class="gtq-r"><input type="radio" name="gtq-src" value="t6" ${saved.length?'':'checked'}> Toán 6 có sẵn (học sinh tự chọn bài)</label>
+      <label class="gtq-r"><input type="radio" name="gtq-src" value="qb" ${saved.length?'checked':''} ${lessons.length?'':'disabled'}> Câu hỏi của tôi – gửi kèm trong link ${lessons.length?'':'<small>(chưa có – soạn ở <b>Quản lý câu hỏi trò chơi</b>)</small>'}</label>
+      <div class="gtq-list" id="gtq-list" ${saved.length?'':'hidden'}>${db.mon.map(m=>{const ls=lessons.filter(x=>x.b.mon===m.id);return ls.length?`<div class="gtq-m">${escH(m.ten)}</div>`+ls.map(x=>`<label><input type="checkbox" value="${escH(x.b.id)}" ${saved.includes(x.b.id)?'checked':''}> ${x.b.khoi?'K'+escH(x.b.khoi)+' · ':''}${escH(x.b.ten)} <small>${x.n} câu</small></label>`).join(''):'';}).join('')}</div>
+      <div class="gtq-info" id="gtq-info"></div></div>`;
     modal=document.createElement('div');
     modal.id='gt-link-modal';
     modal.innerHTML=`
       <div class="gt-link-modal-box">
         <div class="gt-link-modal-title">🔗 Link Chia Sẻ – ${escH(gameName)}</div>
         <div class="gt-link-modal-sub">Phiên: <strong style="color:#38bdf8;">${escH(session)}</strong> · Gửi link này cho học sinh</div>
+        ${qsec}
         <textarea class="gt-link-url" rows="4" readonly id="gt-link-text">${escH(url)}</textarea>
         <div class="gt-modal-actions">
           <button class="gt-btn-copy" onclick="gtCopyLink()">📋 Sao Chép Link</button>
@@ -5913,6 +5957,19 @@ function TC_noiseLoop(){
       </div>`;
     modal.addEventListener('click',function(e){if(e.target===modal)modal.remove();});
     document.body.appendChild(modal);
+    if(!tp) return;
+    const upd=()=>{
+      const src=(modal.querySelector('input[name=gtq-src]:checked')||{}).value, list=modal.querySelector('#gtq-list'), info=modal.querySelector('#gtq-info'), ta=modal.querySelector('#gt-link-text');
+      list.hidden=src!=='qb';
+      if(src!=='qb'){ta.value=url;info.textContent='';try{localStorage.removeItem('gt_link_bai');}catch(e){}return;}
+      const ids=[...list.querySelectorAll('input:checked')].map(i=>i.value);
+      try{localStorage.setItem('gt_link_bai',JSON.stringify(ids));}catch(e){}
+      if(!ids.length){ta.value='';info.innerHTML='👉 Tick chọn ít nhất 1 bài';return;}
+      const pk=gtPack(ids); if(!pk){ta.value='';info.textContent='Các bài đã chọn chưa có câu hỏi hợp lệ';return;}
+      ta.value=url+pk.hash;
+      info.innerHTML=`✅ Gửi kèm <b>${pk.n}</b> câu hỏi · link dài ${ta.value.length.toLocaleString('vi-VN')} ký tự`+(ta.value.length>6000?' – <span style="color:#fbbf24">link khá dài, nên chọn ít bài hơn hoặc rút gọn bằng công cụ “Thu gọn Link”</span>':'');
+    };
+    modal.querySelectorAll('input').forEach(i=>i.addEventListener('change',upd)); upd();
   };
 
   window.gtCopyLink=function(){
@@ -6072,7 +6129,7 @@ function needAskName(){
   try{ if(localStorage.getItem('etv1_name_asked')) return false;
        const s=JSON.parse(localStorage.getItem('etv1_settings')||'null'); return !(s&&s.name&&s.name.trim()); }catch(e){return false;}
 }
-function closeAskName(){document.getElementById('ask-name').hidden=true;try{localStorage.setItem('etv1_name_asked','1');}catch(e){}}
+function closeAskName(){document.getElementById('ask-name').hidden=true;try{localStorage.setItem('etv1_name_asked','1');}catch(e){}if(window.EHTour)EHTour.maybe();}
 function skipAskName(){closeAskName();}
 function saveAskName(e){
   e.preventDefault();
@@ -6082,7 +6139,8 @@ function saveAskName(e){
   const sc=document.getElementById('askn-school').value.trim(); if(sc) p.school=sc;
   localStorage.setItem(SKEY,JSON.stringify(p)); applySettings(p); closeAskName();
 }
-window.addEventListener('load',()=>{ if(needAskName()){ const o=document.getElementById('ask-name'); o.hidden=false; setTimeout(()=>document.getElementById('askn-name').focus(),50);} });
+window.addEventListener('load',()=>{ if(needAskName()){ const o=document.getElementById('ask-name'); o.hidden=false; setTimeout(()=>document.getElementById('askn-name').focus(),50);} else if(window.EHTour) EHTour.maybe(); });
+document.addEventListener('click',e=>{const h=document.querySelector('.tb-help.on');if(h&&!h.contains(e.target))h.classList.remove('on');});
 </script>
 <script>
 /* nhớ kiểu gọi tên đã chọn */
@@ -6223,13 +6281,14 @@ VN_count();
 <script>EHDemo.box(document.getElementById('ehd-box'));</script>
 <script src="eduhub_backup.js"></script>
 <script src="eduhub_search.js"></script>
+<script src="eduhub_help.js"></script>
 <script>
 /* Công Cụ Khác – tìm kiếm, nhóm, ghim yêu thích (dùng chung ☆ ehs_favs của Tìm kiếm nhanh) */
 (function(){
   var page=document.getElementById('cong-cu-khac'); if(!page) return;
   var grid=page.querySelector('.tool-hub-grid');
   var G=[['kt','📝 Kiểm tra & đánh giá',['taode','tronde','matran','chamtn','thongke','phongthi','phieutoan']],
-         ['vb','📄 Văn bản & in ấn',['baocao','bieumau','tronthu','thetenban','giaykhen']],
+         ['vb','📄 Văn bản & in ấn',['baocao','baocaock','bieumau','tronthu','thetenban','giaykhen']],
          ['lich','🗓️ Lịch & công việc',['lichday','lichbaogiang','congviec']],
          ['anh','🖼️ Ảnh & tài liệu',['pdf','anh','scan','ocr','phanloaianh']],
          ['dl','📊 Danh sách & Excel',['danhsach','excel']],

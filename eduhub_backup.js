@@ -254,7 +254,7 @@
     btn.className = 'ehb-btn'; btn.type = 'button'; btn.title = 'Sao lưu & Khôi phục dữ liệu';
     btn.innerHTML = '💾<span class="ehb-dot"></span>';
     btn.onclick = open;
-    var settings = host.querySelector('.tb-setting-btn');
+    var settings = host.querySelector(':scope > .tb-help') || host.querySelector(':scope > .tb-setting-btn');
     host.insertBefore(btn, settings || null);
     refreshBadge();
   }
@@ -299,7 +299,8 @@
         '<div class="ehb-b">' +
         '<div class="ehb-note">🔒 <b>Dữ liệu chỉ lưu trên máy này</b> – thông tin học sinh và điểm số không được gửi lên Internet. Hệ thống <b>tự sao lưu mỗi ngày</b> khi có thay đổi và giữ lại <b>' + KEEP_DAYS + ' ngày</b> gần nhất.</div>' +
         '<div class="ehb-card"><h4>📊 Dữ liệu hiện tại</h4><div>' + curN + ' mục dữ liệu · ' + fmtSize(curSize) + '</div><div class="ehb-muted">Bản sao lưu gần nhất: ' + (lsGet(OWN_PREFIX + 'last') ? fmtDate(lsGet(OWN_PREFIX + 'last')) : 'chưa có') + '</div>' +
-        '<div class="ehb-row" style="margin-top:10px"><button class="ehb-bt" data-a="now">💾 Sao lưu ngay</button><button class="ehb-bt g" data-a="export">⬇️ Tải file sao lưu (.json)</button><button class="ehb-bt o" data-a="import">⬆️ Khôi phục từ file…</button><input type="file" accept=".json,application/json" data-a="file" hidden></div></div>' +
+        '<div class="ehb-row" style="margin-top:10px"><button class="ehb-bt" data-a="now">💾 Sao lưu ngay</button><button class="ehb-bt g" data-a="export">⬇️ Tải file sao lưu (.json)</button><button class="ehb-bt o" data-a="import">⬆️ Khôi phục từ file…</button><input type="file" accept=".json,application/json" data-a="file" hidden></div>' +
+        '<div class="ehb-row" style="margin-top:8px"><a class="ehb-bt l" href="chuyen_du_lieu.html" target="_blank" style="text-decoration:none">📱 Chuyển sang máy khác bằng mã QR</a></div></div>' +
         '<div class="ehb-card"><h4>📁 Tự động sao lưu ra thư mục</h4>' + folderHTML + '</div>' +
         '<div class="ehb-card"><h4>🗂️ Các bản sao lưu trên máy</h4><div style="overflow-x:auto"><table class="ehb-tbl"><thead><tr><th>Thời gian</th><th>Loại</th><th>Nội dung</th><th></th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
         '<div class="ehb-muted" style="margin-top:8px">💡 Khi khôi phục, dữ liệu hiện tại được tự lưu thành bản “Trước khôi phục”, nên thầy/cô luôn quay lại được.</div></div>' +
@@ -349,5 +350,5 @@
   if (!('indexedDB' in window)) return;
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 
-  window.EHBackup = { open: open, snapshotNow: function () { return snapshot('manual', true); }, autoRun: autoRun, collect: collect };
+  window.EHBackup = { open: open, snapshotNow: function () { return snapshot('manual', true); }, autoRun: autoRun, collect: collect, applyData: applyData };
 })();
