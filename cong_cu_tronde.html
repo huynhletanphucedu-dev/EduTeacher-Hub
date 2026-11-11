@@ -10,9 +10,9 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    background: #0f172a;
-    color: #e2e8f0;
+    font-family:'Lexend','Segoe UI', system-ui, sans-serif;
+    background: #f7f8fa;
+    color: #21242c;
     min-height: 100vh;
     padding: 24px;
     font-size: 15px;
@@ -21,11 +21,11 @@
   h1 {
     font-size: 22px;
     font-weight: 600;
-    color: #f59e0b;
+    color: #0b6aa2;
     margin-bottom: 4px;
   }
   .subtitle {
-    color: #94a3b8;
+    color: #5b5f6b;
     font-size: 13px;
     margin-bottom: 24px;
   }
@@ -39,15 +39,15 @@
     .layout { grid-template-columns: 1fr; }
   }
   .panel {
-    background: #1e293b;
+    background: #ffffff;
     border-radius: 10px;
-    border: 1px solid #334155;
+    border: 1px solid #e3e5ea;
     padding: 20px;
   }
   .panel h2 {
     font-size: 14px;
     font-weight: 600;
-    color: #f59e0b;
+    color: #0b6aa2;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin-bottom: 14px;
@@ -55,10 +55,10 @@
   textarea {
     width: 100%;
     height: 360px;
-    background: #0f172a;
-    border: 1px solid #334155;
+    background: #f7f8fa;
+    border: 1px solid #e3e5ea;
     border-radius: 8px;
-    color: #e2e8f0;
+    color: #21242c;
     font-family: 'Consolas', monospace;
     font-size: 13px;
     padding: 12px;
@@ -66,8 +66,8 @@
     outline: none;
     transition: border-color 0.2s;
   }
-  textarea:focus { border-color: #f59e0b; }
-  textarea::placeholder { color: #475569; }
+  textarea:focus { border-color: #0b6aa2; }
+  textarea::placeholder { color: #8a909c; }
   .settings-row {
     display: flex;
     flex-wrap: wrap;
@@ -78,7 +78,7 @@
   .settings-group { display: flex; flex-direction: column; gap: 8px; }
   .settings-group label {
     font-size: 13px;
-    color: #94a3b8;
+    color: #5b5f6b;
     font-weight: 500;
     margin-bottom: 2px;
   }
@@ -93,12 +93,12 @@
     align-items: center;
     gap: 6px;
     cursor: pointer;
-    color: #cbd5e1;
+    color: #3a3f4b;
     font-size: 14px;
     font-weight: 400;
   }
   input[type=radio], input[type=checkbox] {
-    accent-color: #f59e0b;
+    accent-color: #0b6aa2;
     width: 16px;
     height: 16px;
     cursor: pointer;
@@ -106,21 +106,21 @@
   .btn-parse {
     margin-top: 16px;
     padding: 10px 22px;
-    background: #334155;
-    color: #e2e8f0;
-    border: 1px solid #475569;
+    background: #eef1f5;
+    color: #21242c;
+    border: 1px solid #d5d9e0;
     border-radius: 8px;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
   }
-  .btn-parse:hover { background: #3d4f65; border-color: #64748b; }
+  .btn-parse:hover { background: #e3e5ea; border-color: #c9ced6; }
   .btn-generate {
     margin-top: 16px;
     padding: 11px 26px;
-    background: #f59e0b;
-    color: #0f172a;
+    background: #0b6aa2;
+    color: #fff;
     border: none;
     border-radius: 8px;
     font-size: 14px;
@@ -131,22 +131,22 @@
     align-items: center;
     gap: 8px;
   }
-  .btn-generate:hover { background: #fbbf24; }
+  .btn-generate:hover { background: #095a8a; }
   .btn-generate:active { transform: scale(0.98); }
-  .btn-generate:disabled { background: #475569; color: #94a3b8; cursor: not-allowed; }
+  .btn-generate:disabled { background: #e3e5ea; color: #5b5f6b; cursor: not-allowed; }
   .error-msg {
-    background: #450a0a;
-    border: 1px solid #b91c1c;
-    color: #fca5a5;
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #dc2626;
     padding: 10px 14px;
     border-radius: 8px;
     font-size: 13px;
     margin-top: 12px;
   }
   .success-msg {
-    background: #052e16;
-    border: 1px solid #16a34a;
-    color: #86efac;
+    background: #dcfce7;
+    border: 1px solid #86efac;
+    color: #15803d;
     padding: 10px 14px;
     border-radius: 8px;
     font-size: 13px;
@@ -155,33 +155,33 @@
   .preview-area {
     height: 440px;
     overflow-y: auto;
-    background: #0f172a;
-    border: 1px solid #334155;
+    background: #f7f8fa;
+    border: 1px solid #e3e5ea;
     border-radius: 8px;
     padding: 14px;
     font-size: 13px;
   }
   .preview-area::-webkit-scrollbar { width: 6px; }
-  .preview-area::-webkit-scrollbar-track { background: #0f172a; }
-  .preview-area::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+  .preview-area::-webkit-scrollbar-track { background: #f7f8fa; }
+  .preview-area::-webkit-scrollbar-thumb { background: #eef1f5; border-radius: 3px; }
   .q-block {
     margin-bottom: 16px;
     padding-bottom: 16px;
-    border-bottom: 1px solid #1e293b;
+    border-bottom: 1px solid #e3e5ea;
   }
   .q-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
   .q-num {
     font-weight: 600;
-    color: #f59e0b;
+    color: #0b6aa2;
     margin-bottom: 4px;
     font-size: 13px;
   }
-  .q-text { color: #e2e8f0; margin-bottom: 6px; }
-  .q-opt { color: #94a3b8; padding-left: 8px; font-size: 12px; line-height: 1.8; }
+  .q-text { color: #21242c; margin-bottom: 6px; }
+  .q-opt { color: #5b5f6b; padding-left: 8px; font-size: 12px; line-height: 1.8; }
   .q-ans {
     margin-top: 4px;
     font-size: 12px;
-    color: #4ade80;
+    color: #15803d;
     font-weight: 600;
   }
   .stats-bar {
@@ -191,35 +191,36 @@
     flex-wrap: wrap;
   }
   .stat-pill {
-    background: #334155;
+    background: #eef1f5;
     border-radius: 999px;
     padding: 3px 12px;
     font-size: 12px;
-    color: #cbd5e1;
+    color: #3a3f4b;
   }
-  .stat-pill span { color: #f59e0b; font-weight: 600; }
+  .stat-pill span { color: #0b6aa2; font-weight: 600; }
   .empty-state {
-    color: #475569;
+    color: #8a909c;
     font-size: 13px;
     text-align: center;
     padding: 60px 0;
   }
   .progress-wrap { margin-top: 12px; }
-  .progress-label { font-size: 12px; color: #64748b; margin-bottom: 6px; }
+  .progress-label { font-size: 12px; color: #6b7280; margin-bottom: 6px; }
   .progress-bar-bg {
-    background: #0f172a;
+    background: #f7f8fa;
     border-radius: 999px;
     height: 6px;
     overflow: hidden;
   }
   .progress-bar-fill {
-    background: #f59e0b;
+    background: #0b6aa2;
     height: 100%;
     border-radius: 999px;
     transition: width 0.3s;
     width: 0%;
   }
 </style>
+<link rel="stylesheet" href="eduhub_fonts.css">
 </head>
 <body>
 

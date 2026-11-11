@@ -10,8 +10,8 @@
 
     body {
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      background: #0f172a;
-      color: #e2e8f0;
+      background: #f7f8fa;
+      color: #21242c;
       min-height: 100vh;
       display: flex;
       align-items: flex-start;
@@ -33,22 +33,22 @@
     .header h1 {
       font-size: 2rem;
       font-weight: 700;
-      color: #f8fafc;
+      color: #21242c;
       letter-spacing: -0.02em;
     }
     .header p {
       margin-top: 6px;
       font-size: 0.95rem;
-      color: #94a3b8;
+      color: #5b5f6b;
     }
 
     /* Panel */
     .panel {
-      background: #1e293b;
+      background: #ffffff;
       border-radius: 12px;
       padding: 24px;
       margin-bottom: 16px;
-      border: 1px solid #334155;
+      border: 1px solid #e3e5ea;
     }
 
     /* Input row */
@@ -59,21 +59,21 @@
     .url-input {
       flex: 1;
       min-width: 0;
-      background: #0f172a;
-      border: 1px solid #334155;
+      background: #f7f8fa;
+      border: 1px solid #e3e5ea;
       border-radius: 10px;
-      color: #f1f5f9;
+      color: #21242c;
       font-size: 0.95rem;
       padding: 12px 14px;
       outline: none;
       transition: border-color 0.2s;
       font-family: inherit;
     }
-    .url-input::placeholder { color: #475569; }
-    .url-input:focus { border-color: #10b981; }
+    .url-input::placeholder { color: #8a909c; }
+    .url-input:focus { border-color: #0b6aa2; }
 
     .btn-shorten {
-      background: #10b981;
+      background: #0b6aa2;
       color: #fff;
       border: none;
       border-radius: 10px;
@@ -88,7 +88,7 @@
       align-items: center;
       gap: 8px;
     }
-    .btn-shorten:hover:not(:disabled) { background: #059669; }
+    .btn-shorten:hover:not(:disabled) { background: #095a8a; }
     .btn-shorten:disabled { opacity: 0.55; cursor: not-allowed; }
 
     /* Spinner */
@@ -110,7 +110,7 @@
       background: rgba(239,68,68,0.12);
       border: 1px solid rgba(239,68,68,0.4);
       border-radius: 8px;
-      color: #fca5a5;
+      color: #dc2626;
       font-size: 0.88rem;
       padding: 10px 14px;
     }
@@ -118,11 +118,11 @@
     /* Result card */
     .result-card {
       display: none;
-      background: #1e293b;
+      background: #ffffff;
       border-radius: 12px;
       padding: 24px;
       margin-bottom: 16px;
-      border: 1px solid #10b981;
+      border: 1px solid #0b6aa2;
     }
 
     .label {
@@ -130,16 +130,16 @@
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: #64748b;
+      color: #6b7280;
       margin-bottom: 4px;
     }
 
     .original-url {
       font-size: 0.85rem;
-      color: #94a3b8;
+      color: #5b5f6b;
       word-break: break-all;
       margin-bottom: 16px;
-      background: #0f172a;
+      background: #f7f8fa;
       border-radius: 8px;
       padding: 8px 12px;
     }
@@ -154,9 +154,9 @@
       flex: 1;
       font-size: 1.3rem;
       font-weight: 700;
-      color: #10b981;
+      color: #0b6aa2;
       word-break: break-all;
-      background: #0f172a;
+      background: #f7f8fa;
       border-radius: 8px;
       padding: 10px 14px;
     }
@@ -167,10 +167,10 @@
     .short-url-text a:hover { text-decoration: underline; }
 
     .btn-copy {
-      background: #0f172a;
-      border: 1px solid #334155;
+      background: #f7f8fa;
+      border: 1px solid #e3e5ea;
       border-radius: 8px;
-      color: #cbd5e1;
+      color: #3a3f4b;
       font-size: 0.85rem;
       font-weight: 600;
       padding: 10px 14px;
@@ -179,8 +179,8 @@
       transition: all 0.2s;
       font-family: inherit;
     }
-    .btn-copy:hover { border-color: #10b981; color: #10b981; }
-    .btn-copy.copied { color: #10b981; border-color: #10b981; background: rgba(16,185,129,0.08); }
+    .btn-copy:hover { border-color: #0b6aa2; color: #0b6aa2; }
+    .btn-copy.copied { color: #0b6aa2; border-color: #0b6aa2; background: rgba(11,106,162,0.08); }
 
     /* QR */
     .qr-section { text-align: center; }
@@ -195,10 +195,10 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: #0f172a;
-      border: 1px solid #334155;
+      background: #f7f8fa;
+      border: 1px solid #e3e5ea;
       border-radius: 8px;
-      color: #cbd5e1;
+      color: #3a3f4b;
       font-size: 0.85rem;
       font-weight: 600;
       padding: 8px 16px;
@@ -207,7 +207,7 @@
       font-family: inherit;
       margin-top: 4px;
     }
-    .btn-download:hover { border-color: #10b981; color: #10b981; }
+    .btn-download:hover { border-color: #0b6aa2; color: #0b6aa2; }
 
     /* History */
     .history-section { display: none; }
@@ -216,16 +216,16 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.07em;
-      color: #64748b;
+      color: #6b7280;
       margin-bottom: 10px;
     }
 
     .history-item {
-      background: #0f172a;
+      background: #f7f8fa;
       border-radius: 8px;
       padding: 12px 14px;
       margin-bottom: 8px;
-      border: 1px solid #1e293b;
+      border: 1px solid #e3e5ea;
       display: flex;
       align-items: center;
       gap: 10px;
@@ -236,7 +236,7 @@
     }
     .history-original {
       font-size: 0.78rem;
-      color: #64748b;
+      color: #6b7280;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -244,16 +244,16 @@
     .history-short {
       font-size: 0.9rem;
       font-weight: 600;
-      color: #10b981;
+      color: #0b6aa2;
       margin-top: 2px;
     }
     .history-short a { color: inherit; text-decoration: none; }
     .history-short a:hover { text-decoration: underline; }
     .btn-copy-sm {
       background: transparent;
-      border: 1px solid #334155;
+      border: 1px solid #e3e5ea;
       border-radius: 6px;
-      color: #94a3b8;
+      color: #5b5f6b;
       font-size: 0.78rem;
       padding: 5px 10px;
       cursor: pointer;
@@ -261,9 +261,10 @@
       transition: all 0.2s;
       font-family: inherit;
     }
-    .btn-copy-sm:hover { border-color: #10b981; color: #10b981; }
-    .btn-copy-sm.copied { color: #10b981; border-color: #10b981; }
+    .btn-copy-sm:hover { border-color: #0b6aa2; color: #0b6aa2; }
+    .btn-copy-sm.copied { color: #0b6aa2; border-color: #0b6aa2; }
   </style>
+<link rel="stylesheet" href="eduhub_fonts.css">
 </head>
 <body>
 <div class="container">

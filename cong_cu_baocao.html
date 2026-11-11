@@ -10,29 +10,29 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #0f172a;
-    --panel: #1e293b;
-    --border: #334155;
-    --accent: #06b6d4;
-    --accent-hover: #0891b2;
-    --text: #e2e8f0;
-    --text-muted: #94a3b8;
+    --bg: #f7f8fa;
+    --panel: #ffffff;
+    --border: #e3e5ea;
+    --accent: #0b6aa2;
+    --accent-hover: #095a8a;
+    --text: #21242c;
+    --text-muted: #5b5f6b;
     --danger: #ef4444;
-    --input-bg: #0f172a;
-    --label: #cbd5e1;
+    --input-bg: #f7f8fa;
+    --label: #3a3f4b;
   }
 
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-family:'Lexend','Segoe UI', system-ui, sans-serif;
     font-size: 14px;
     min-height: 100vh;
   }
 
   /* HEADER */
   .app-header {
-    background: linear-gradient(135deg, #0c4a6e 0%, #164e63 50%, #0f172a 100%);
+    background: #ffffff;
     border-bottom: 2px solid var(--accent);
     padding: 18px 32px;
     display: flex;
@@ -41,7 +41,7 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    box-shadow: 0 4px 24px rgba(6,182,212,0.15);
+    box-shadow: none;
   }
 
   .app-header .logo {
@@ -56,7 +56,7 @@
   .app-header h1 {
     font-size: 20px;
     font-weight: 700;
-    color: #fff;
+    color: #0b4f7a;
     line-height: 1.2;
   }
   .app-header h1 span {
@@ -145,7 +145,7 @@
 
   input:focus, textarea:focus {
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(6,182,212,0.15);
+    box-shadow: 0 0 0 3px rgba(11,106,162,0.15);
   }
 
   textarea {
@@ -184,7 +184,7 @@
   .radio-group input[type="radio"] { display: none; }
 
   .radio-group label.active {
-    background: rgba(6,182,212,0.12);
+    background: rgba(11,106,162,0.12);
     color: var(--accent);
     font-weight: 700;
   }
@@ -209,12 +209,12 @@
 
   .btn-primary {
     background: var(--accent);
-    color: #0f172a;
+    color: #fff;
   }
   .btn-primary:hover {
     background: var(--accent-hover);
     transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(6,182,212,0.35);
+    box-shadow: 0 4px 16px rgba(11,106,162,0.35);
   }
 
   .btn-outline {
@@ -222,14 +222,14 @@
     color: var(--accent);
     border: 1.5px solid var(--accent);
   }
-  .btn-outline:hover { background: rgba(6,182,212,0.1); }
+  .btn-outline:hover { background: rgba(11,106,162,0.1); }
 
   .btn-ghost {
-    background: rgba(255,255,255,0.07);
+    background: rgba(15,23,42,0.07);
     color: var(--text-muted);
     border: 1px solid var(--border);
   }
-  .btn-ghost:hover { background: rgba(255,255,255,0.12); color: var(--text); }
+  .btn-ghost:hover { background: rgba(15,23,42,0.12); color: var(--text); }
 
   .btn-danger {
     background: transparent;
@@ -386,6 +386,7 @@
     .action-bar { padding: 14px 16px; }
   }
 </style>
+<link rel="stylesheet" href="eduhub_fonts.css">
 </head>
 <body>
 

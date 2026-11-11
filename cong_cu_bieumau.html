@@ -8,85 +8,85 @@
 <script src="lib/FileSaver.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:system-ui,-apple-system,sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;display:flex;flex-direction:column}
-a{color:#3b82f6}
+body{font-family:system-ui,-apple-system,sans-serif;background:#f7f8fa;color:#21242c;min-height:100vh;display:flex;flex-direction:column}
+a{color:#0b6aa2}
 
 /* ── HEADER ── */
-.top-bar{background:#1e293b;border-bottom:1px solid #334155;padding:12px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
-.top-bar h1{font-size:18px;font-weight:700;color:#f1f5f9}
-.top-bar .sub{font-size:12px;color:#64748b;margin-top:2px}
-.logo{width:36px;height:36px;background:linear-gradient(135deg,#3b82f6,#6366f1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.top-bar{background:#ffffff;border-bottom:1px solid #e3e5ea;padding:12px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.top-bar h1{font-size:18px;font-weight:700;color:#21242c}
+.top-bar .sub{font-size:12px;color:#6b7280;margin-top:2px}
+.logo{width:36px;height:36px;background:linear-gradient(135deg,#0b6aa2,#0b6aa2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
 
 /* ── LAYOUT ── */
 .main{display:flex;flex:1;overflow:hidden}
-.sidebar{width:260px;background:#1e293b;border-right:1px solid #334155;overflow-y:auto;flex-shrink:0;padding:12px}
+.sidebar{width:260px;background:#ffffff;border-right:1px solid #e3e5ea;overflow-y:auto;flex-shrink:0;padding:12px}
 .content{flex:1;overflow-y:auto;padding:24px}
 
 /* ── SIDEBAR CARDS ── */
-.sidebar-title{font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;padding:0 4px}
-.tpl-card{background:#0f172a;border:1px solid #334155;border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:10px}
-.tpl-card:hover{border-color:#3b82f6;background:#1a2744}
-.tpl-card.active{border-color:#3b82f6;background:#1a2744;box-shadow:0 0 0 1px #3b82f6}
+.sidebar-title{font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;padding:0 4px}
+.tpl-card{background:#f7f8fa;border:1px solid #e3e5ea;border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;transition:all .15s;display:flex;align-items:flex-start;gap:10px}
+.tpl-card:hover{border-color:#0b6aa2;background:#f3f6f9}
+.tpl-card.active{border-color:#0b6aa2;background:#f3f6f9;box-shadow:0 0 0 1px #0b6aa2}
 .tpl-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
 .tpl-info{flex:1;min-width:0}
-.tpl-name{font-size:13px;font-weight:600;color:#f1f5f9;line-height:1.3;margin-bottom:3px}
-.tpl-desc{font-size:11px;color:#64748b;line-height:1.4}
+.tpl-name{font-size:13px;font-weight:600;color:#21242c;line-height:1.3;margin-bottom:3px}
+.tpl-desc{font-size:11px;color:#6b7280;line-height:1.4}
 
 /* ── OVERVIEW GRID ── */
 .overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-top:8px}
-.overview-card{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;cursor:pointer;transition:all .15s;text-align:center}
-.overview-card:hover{border-color:#3b82f6;transform:translateY(-2px);box-shadow:0 4px 20px rgba(59,130,246,.15)}
+.overview-card{background:#ffffff;border:1px solid #e3e5ea;border-radius:12px;padding:20px;cursor:pointer;transition:all .15s;text-align:center}
+.overview-card:hover{border-color:#0b6aa2;transform:translateY(-2px);box-shadow:0 4px 20px rgba(11,106,162,.15)}
 .overview-card .ov-icon{font-size:32px;margin-bottom:10px}
-.overview-card .ov-name{font-size:14px;font-weight:600;color:#f1f5f9;margin-bottom:6px;line-height:1.3}
-.overview-card .ov-desc{font-size:12px;color:#64748b;line-height:1.4}
+.overview-card .ov-name{font-size:14px;font-weight:600;color:#21242c;margin-bottom:6px;line-height:1.3}
+.overview-card .ov-desc{font-size:12px;color:#6b7280;line-height:1.4}
 
 /* ── FORM PANEL ── */
 .form-panel{display:none;max-width:780px}
 .form-panel.active{display:block}
 .form-header{margin-bottom:24px}
-.form-header h2{font-size:20px;font-weight:700;color:#f1f5f9;margin-bottom:4px}
-.form-header p{font-size:13px;color:#64748b}
-.form-section{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;margin-bottom:16px}
-.form-section-title{font-size:12px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px}
+.form-header h2{font-size:20px;font-weight:700;color:#21242c;margin-bottom:4px}
+.form-header p{font-size:13px;color:#6b7280}
+.form-section{background:#ffffff;border:1px solid #e3e5ea;border-radius:12px;padding:20px;margin-bottom:16px}
+.form-section-title{font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px}
 .form-row{display:grid;gap:12px;margin-bottom:12px}
 .form-row.cols-2{grid-template-columns:1fr 1fr}
 .form-row.cols-3{grid-template-columns:1fr 1fr 1fr}
 .form-row.cols-4{grid-template-columns:1fr 1fr 1fr 1fr}
 .form-row:last-child{margin-bottom:0}
 .field{display:flex;flex-direction:column;gap:5px}
-.field label{font-size:12px;font-weight:500;color:#94a3b8}
-.field input,.field textarea,.field select{background:#0f172a;border:1px solid #334155;border-radius:7px;color:#f1f5f9;padding:8px 11px;font-size:13px;font-family:inherit;transition:border-color .15s;width:100%}
-.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.field label{font-size:12px;font-weight:500;color:#5b5f6b}
+.field input,.field textarea,.field select{background:#f7f8fa;border:1px solid #e3e5ea;border-radius:7px;color:#21242c;padding:8px 11px;font-size:13px;font-family:inherit;transition:border-color .15s;width:100%}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:#0b6aa2;box-shadow:0 0 0 3px rgba(11,106,162,.1)}
 .field textarea{resize:vertical;min-height:80px}
 .radio-group{display:flex;gap:16px;align-items:center;margin-top:4px}
-.radio-group label{display:flex;align-items:center;gap:6px;font-size:13px;color:#e2e8f0;cursor:pointer;font-weight:400}
-.radio-group input[type=radio]{width:auto;accent-color:#3b82f6}
+.radio-group label{display:flex;align-items:center;gap:6px;font-size:13px;color:#21242c;cursor:pointer;font-weight:400}
+.radio-group input[type=radio]{width:auto;accent-color:#0b6aa2}
 
 /* ── BUTTONS ── */
 .btn-row{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
 .btn{padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s;display:flex;align-items:center;gap:6px}
-.btn-primary{background:#3b82f6;color:#fff}
-.btn-primary:hover{background:#2563eb}
-.btn-secondary{background:#334155;color:#e2e8f0;border:1px solid #475569}
-.btn-secondary:hover{background:#475569}
-.btn-back{background:transparent;color:#64748b;border:1px solid #334155;padding:7px 14px;font-size:12px;margin-bottom:16px}
-.btn-back:hover{color:#e2e8f0;border-color:#64748b}
+.btn-primary{background:#0b6aa2;color:#fff}
+.btn-primary:hover{background:#095a8a}
+.btn-secondary{background:#eef1f5;color:#21242c;border:1px solid #d5d9e0}
+.btn-secondary:hover{background:#e3e5ea}
+.btn-back{background:transparent;color:#6b7280;border:1px solid #e3e5ea;padding:7px 14px;font-size:12px;margin-bottom:16px}
+.btn-back:hover{color:#21242c;border-color:#c9ced6}
 
 /* ── MODAL ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-overlay.open{display:flex}
-.modal{background:#1e293b;border:1px solid #334155;border-radius:14px;width:100%;max-width:680px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column}
-.modal-header{padding:16px 20px;border-bottom:1px solid #334155;display:flex;align-items:center;justify-content:space-between}
+.modal{background:#ffffff;border:1px solid #e3e5ea;border-radius:14px;width:100%;max-width:680px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column}
+.modal-header{padding:16px 20px;border-bottom:1px solid #e3e5ea;display:flex;align-items:center;justify-content:space-between}
 .modal-header h3{font-size:15px;font-weight:600}
-.modal-close{background:none;border:none;color:#64748b;font-size:20px;cursor:pointer;padding:2px 6px;border-radius:4px}
-.modal-close:hover{color:#f1f5f9;background:#334155}
+.modal-close{background:none;border:none;color:#6b7280;font-size:20px;cursor:pointer;padding:2px 6px;border-radius:4px}
+.modal-close:hover{color:#21242c;background:#eef1f5}
 .modal-body{padding:20px;overflow-y:auto;flex:1}
 .preview-doc{background:#fff;color:#000;padding:30px;border-radius:8px;font-family:"Times New Roman",serif;font-size:13pt;line-height:1.6;white-space:pre-wrap;min-height:300px}
 
 /* ── RESPONSIVE ── */
 @media(max-width:700px){
   .main{flex-direction:column}
-  .sidebar{width:100%;border-right:none;border-bottom:1px solid #334155;overflow-x:auto;white-space:nowrap;display:flex;gap:8px;padding:10px;flex-shrink:0}
+  .sidebar{width:100%;border-right:none;border-bottom:1px solid #e3e5ea;overflow-x:auto;white-space:nowrap;display:flex;gap:8px;padding:10px;flex-shrink:0}
   .sidebar-title{display:none}
   .tpl-card{flex-direction:column;text-align:center;min-width:100px;flex-shrink:0}
   .tpl-desc{display:none}
@@ -94,16 +94,17 @@ a{color:#3b82f6}
   .form-row.cols-2,.form-row.cols-3,.form-row.cols-4{grid-template-columns:1fr}
 }
 
-.hint{font-size:11px;color:#475569;margin-top:3px}
-.divider{border:none;border-top:1px dashed #334155;margin:8px 0}
+.hint{font-size:11px;color:#8a909c;margin-top:3px}
+.divider{border:none;border-top:1px dashed #e3e5ea;margin:8px 0}
 </style>
+<link rel="stylesheet" href="eduhub_fonts.css">
 </head>
 <body>
 
 <div class="top-bar">
   <div class="logo">📋</div>
   <div>
-    <div class="top-bar h1" style="font-size:17px;font-weight:700;color:#f1f5f9">Kho Biểu Mẫu — THCS Long Thọ</div>
+    <div class="top-bar h1" style="font-size:17px;font-weight:700;color:#21242c">Kho Biểu Mẫu — THCS Long Thọ</div>
     <div class="sub">Tạo và xuất biểu mẫu chuẩn Word cho giáo viên chủ nhiệm</div>
   </div>
 </div>
@@ -183,8 +184,8 @@ a{color:#3b82f6}
 
     <!-- OVERVIEW -->
     <div id="overview">
-      <h2 style="font-size:22px;font-weight:700;color:#f1f5f9;margin-bottom:6px">Chọn biểu mẫu</h2>
-      <p style="color:#64748b;font-size:13px;margin-bottom:20px">Nhấn vào biểu mẫu để điền thông tin và xuất file Word</p>
+      <h2 style="font-size:22px;font-weight:700;color:#21242c;margin-bottom:6px">Chọn biểu mẫu</h2>
+      <p style="color:#6b7280;font-size:13px;margin-bottom:20px">Nhấn vào biểu mẫu để điền thông tin và xuất file Word</p>
       <div class="overview-grid">
         <div class="overview-card" onclick="showTemplate(1)">
           <div class="ov-icon">⚖️</div>
@@ -257,7 +258,7 @@ a{color:#3b82f6}
           <div class="field"><label>Tên Lớp trưởng</label><input type="text" id="t1-loptuong" placeholder="Họ và tên Lớp trưởng"></div>
         </div>
         <div class="form-row">
-          <div class="field"><label>Thành viên khác <span style="color:#475569">(tuỳ chọn)</span></label><textarea id="t1-thanhvien" placeholder="Mỗi người một dòng, VD: Nguyễn Văn A — Lớp phó học tập" rows="2"></textarea></div>
+          <div class="field"><label>Thành viên khác <span style="color:#8a909c">(tuỳ chọn)</span></label><textarea id="t1-thanhvien" placeholder="Mỗi người một dòng, VD: Nguyễn Văn A — Lớp phó học tập" rows="2"></textarea></div>
         </div>
       </div>
 
@@ -317,8 +318,8 @@ a{color:#3b82f6}
           <div class="field"><label>Lớp GVCN</label><input type="text" id="t2-gvcn-lop" placeholder="VD: 6/3"></div>
         </div>
         <div class="form-row cols-2">
-          <div class="field"><label>GV khác 1 <span style="color:#475569">(tuỳ chọn)</span></label><input type="text" id="t2-gv1" placeholder="Họ tên — Chức vụ"></div>
-          <div class="field"><label>GV khác 2 <span style="color:#475569">(tuỳ chọn)</span></label><input type="text" id="t2-gv2" placeholder="Họ tên — Chức vụ"></div>
+          <div class="field"><label>GV khác 1 <span style="color:#8a909c">(tuỳ chọn)</span></label><input type="text" id="t2-gv1" placeholder="Họ tên — Chức vụ"></div>
+          <div class="field"><label>GV khác 2 <span style="color:#8a909c">(tuỳ chọn)</span></label><input type="text" id="t2-gv2" placeholder="Họ tên — Chức vụ"></div>
         </div>
         <div class="form-row cols-2">
           <div class="field"><label>Chủ tọa</label><input type="text" id="t2-chutoa" placeholder="Họ và tên chủ tọa"></div>
@@ -333,11 +334,11 @@ a{color:#3b82f6}
           <div class="field"><label>HS 1 — Lớp</label><input type="text" id="t2-hs1-lop" placeholder="Lớp"></div>
         </div>
         <div class="form-row cols-2">
-          <div class="field"><label>HS 2 — Họ tên <span style="color:#475569">(tuỳ chọn)</span></label><input type="text" id="t2-hs2-ten" placeholder="Họ và tên"></div>
+          <div class="field"><label>HS 2 — Họ tên <span style="color:#8a909c">(tuỳ chọn)</span></label><input type="text" id="t2-hs2-ten" placeholder="Họ và tên"></div>
           <div class="field"><label>HS 2 — Lớp</label><input type="text" id="t2-hs2-lop" placeholder="Lớp"></div>
         </div>
         <div class="form-row cols-2">
-          <div class="field"><label>HS 3 — Họ tên <span style="color:#475569">(tuỳ chọn)</span></label><input type="text" id="t2-hs3-ten" placeholder="Họ và tên"></div>
+          <div class="field"><label>HS 3 — Họ tên <span style="color:#8a909c">(tuỳ chọn)</span></label><input type="text" id="t2-hs3-ten" placeholder="Họ và tên"></div>
           <div class="field"><label>HS 3 — Lớp</label><input type="text" id="t2-hs3-lop" placeholder="Lớp"></div>
         </div>
       </div>
@@ -395,8 +396,8 @@ a{color:#3b82f6}
           <div class="field"><label>Lớp GVCN</label><input type="text" id="t3-gvcn-lop" placeholder="VD: 6/3"></div>
         </div>
         <div class="form-row cols-2">
-          <div class="field"><label>GV khác 1 <span style="color:#475569">(tuỳ chọn)</span></label><input type="text" id="t3-gv1" placeholder="Họ tên — Chức vụ"></div>
-          <div class="field"><label>GV khác 2 <span style="color:#475569">(tuỳ chọn)</span></label><input type="text" id="t3-gv2" placeholder="Họ tên — Chức vụ"></div>
+          <div class="field"><label>GV khác 1 <span style="color:#8a909c">(tuỳ chọn)</span></label><input type="text" id="t3-gv1" placeholder="Họ tên — Chức vụ"></div>
+          <div class="field"><label>GV khác 2 <span style="color:#8a909c">(tuỳ chọn)</span></label><input type="text" id="t3-gv2" placeholder="Họ tên — Chức vụ"></div>
         </div>
         <div class="form-row cols-2">
           <div class="field"><label>Chủ tọa</label><input type="text" id="t3-chutoa" placeholder="Họ và tên chủ tọa"></div>
@@ -411,7 +412,7 @@ a{color:#3b82f6}
           <div class="field"><label>PH 1 — Quan hệ với HS</label><input type="text" id="t3-ph1-quanhe" placeholder="VD: Cha / Mẹ của em ..."></div>
         </div>
         <div class="form-row cols-2">
-          <div class="field"><label>PH 2 — Họ tên <span style="color:#475569">(tuỳ chọn)</span></label><input type="text" id="t3-ph2-ten" placeholder="Họ và tên phụ huynh"></div>
+          <div class="field"><label>PH 2 — Họ tên <span style="color:#8a909c">(tuỳ chọn)</span></label><input type="text" id="t3-ph2-ten" placeholder="Họ và tên phụ huynh"></div>
           <div class="field"><label>PH 2 — Quan hệ với HS</label><input type="text" id="t3-ph2-quanhe" placeholder="Quan hệ với học sinh"></div>
         </div>
         <div class="form-row cols-2">
@@ -672,7 +673,7 @@ a{color:#3b82f6}
         </div>
         <div class="form-row cols-2">
           <div class="field"><label>Hoàn cảnh gia đình</label><textarea id="t8-hoancaph" placeholder="Mô tả hoàn cảnh gia đình..." rows="2"></textarea></div>
-          <div class="field"><label>Người chăm sóc trực tiếp <span style="color:#475569">(tuỳ chọn)</span></label><input type="text" id="t8-nguoichamsoc" placeholder="Nếu không phải cha/mẹ"></div>
+          <div class="field"><label>Người chăm sóc trực tiếp <span style="color:#8a909c">(tuỳ chọn)</span></label><input type="text" id="t8-nguoichamsoc" placeholder="Nếu không phải cha/mẹ"></div>
         </div>
       </div>
 
@@ -698,7 +699,7 @@ a{color:#3b82f6}
           <div class="field"><label>Đánh giá hiệu quả</label><textarea id="t8-danhgia" placeholder="Đánh giá kết quả sau quá trình tư vấn..." rows="3"></textarea></div>
         </div>
         <div class="form-row cols-2">
-          <div class="field"><label>Lịch hẹn tiếp theo <span style="color:#475569">(tuỳ chọn)</span></label><input type="date" id="t8-lichhennext"></div>
+          <div class="field"><label>Lịch hẹn tiếp theo <span style="color:#8a909c">(tuỳ chọn)</span></label><input type="date" id="t8-lichhennext"></div>
           <div class="field"><label>Ngày lập nhật ký</label><input type="date" id="t8-ngaylap"></div>
         </div>
         <div class="form-row">

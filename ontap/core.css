@@ -1,3 +1,4 @@
+@import url(../eduhub_fonts.css);
 /* EduTeacher Hub – bộ trò chơi ôn tập cả lớp (dùng chung) */
 :root{--ink:#0f172a;--muted:#64748b;--ok:#16a34a;--bad:#dc2626;--gold:#f59e0b;--A:#e11d48;--B:#2563eb;--C:#d97706;--D:#16a34a}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -104,3 +105,30 @@ button{cursor:pointer}
 .ot-toast{position:fixed;left:50%;top:44%;transform:translateX(-50%);z-index:80;background:#fff;border-radius:18px;padding:12px 24px;font-size:clamp(1.2rem,4vw,2rem);font-weight:900;box-shadow:0 20px 50px rgba(0,0,0,.4);animation:ottoast 1.8s forwards;pointer-events:none;white-space:nowrap}
 @keyframes ottoast{0%{opacity:0;transform:translate(-50%,20px) scale(.7)}15%{opacity:1;transform:translate(-50%,0) scale(1.05)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-20px)}}
 .ot-foot{position:fixed;bottom:4px;left:0;right:0;text-align:center;font-size:11px;color:rgba(255,255,255,.55);z-index:5;pointer-events:none}
+
+/* ===== GĐ3 giao diện: màn hình học sinh (Nunito, xanh #1597D8, vàng #F5A524, nút "nổi") ===== */
+body{font-family:'Nunito','Segoe UI',system-ui,-apple-system,sans-serif}
+.ot-card{border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.28)}
+.ot-head h1{font-weight:900;letter-spacing:-.01em}
+.ot-sec{border-top:1px solid #e3e5ea}
+.ot-sec>h3{font-weight:800;color:#5b5f6b}
+.ot-sel,.ot-in,.ot-ta{border:2px solid #e3e5ea;border-radius:12px}
+.ot-sel:focus,.ot-in:focus,.ot-ta:focus{outline:none;border-color:#1597d8}
+.ot-chip{border:2px solid #e3e5ea;background:#fff;color:#3a3f4b;box-shadow:0 2px 0 #e3e5ea}
+.ot-chip.on{background:#e6f4fc;border-color:#1597d8;color:#0b6aa2;box-shadow:0 2px 0 #1597d8}
+.ot-seg{border:2px solid #e3e5ea;border-radius:12px}
+.ot-seg button{color:#3a3f4b}
+.ot-seg button.on{background:#1597d8;color:#fff}
+.ot-btn{border:2px solid #e3e5ea;border-radius:12px;box-shadow:0 3px 0 #e3e5ea;color:#3a3f4b}
+.ot-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #e3e5ea}
+.ot-go{background:#1597d8;box-shadow:0 5px 0 #0e72a6;border-radius:14px;letter-spacing:.02em}
+.ot-go:hover{background:#1ba3e6}
+.ot-go:active{transform:translateY(4px);box-shadow:0 1px 0 #0e72a6}
+.ot-qbox{border-radius:20px}
+.ot-badge{background:var(--c,#1597d8)}
+.ot-timer{background:#21242c}
+.ot-opt{border-radius:16px}
+.ot-next{background:#1597d8;box-shadow:0 5px 0 #0e72a6}
+.ot-next:active{transform:translateY(4px);box-shadow:0 1px 0 #0e72a6}
+.ot-sc .p{font-variant-numeric:tabular-nums}
+.ot-end{background:#0d3b5c}

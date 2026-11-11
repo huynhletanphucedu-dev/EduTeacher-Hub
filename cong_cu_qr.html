@@ -10,8 +10,8 @@
 
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background: #0f172a;
-    color: #e2e8f0;
+    background: #f7f8fa;
+    color: #21242c;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -35,28 +35,28 @@
   .header h1 {
     font-size: 1.75rem;
     font-weight: 700;
-    color: #f1f5f9;
+    color: #21242c;
     letter-spacing: -0.5px;
   }
   .header p {
     margin-top: 6px;
     font-size: 0.875rem;
-    color: #94a3b8;
+    color: #5b5f6b;
   }
 
   /* Card */
   .card {
-    background: #1e293b;
+    background: #ffffff;
     border-radius: 12px;
     padding: 20px;
-    border: 1px solid #334155;
+    border: 1px solid #e3e5ea;
   }
 
   /* Tabs */
   .tabs {
     display: flex;
     gap: 4px;
-    background: #0f172a;
+    background: #f7f8fa;
     border-radius: 10px;
     padding: 4px;
   }
@@ -66,18 +66,18 @@
     border: none;
     border-radius: 8px;
     background: transparent;
-    color: #94a3b8;
+    color: #5b5f6b;
     font-size: 0.8rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
     white-space: nowrap;
   }
-  .tab-btn:hover { color: #e2e8f0; }
+  .tab-btn:hover { color: #21242c; }
   .tab-btn.active {
-    background: #3b82f6;
+    background: #0b6aa2;
     color: #fff;
-    box-shadow: 0 2px 8px rgba(59,130,246,0.4);
+    box-shadow: 0 2px 8px rgba(11,106,162,0.4);
   }
 
   /* Tab panels */
@@ -89,7 +89,7 @@
     display: block;
     font-size: 0.8rem;
     font-weight: 600;
-    color: #94a3b8;
+    color: #5b5f6b;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin-bottom: 6px;
@@ -100,10 +100,10 @@
   textarea,
   select {
     width: 100%;
-    background: #0f172a;
-    border: 1px solid #334155;
+    background: #f7f8fa;
+    border: 1px solid #e3e5ea;
     border-radius: 8px;
-    color: #f1f5f9;
+    color: #21242c;
     font-size: 0.9rem;
     font-family: inherit;
     padding: 10px 12px;
@@ -117,8 +117,8 @@
   input[type="password"]:focus,
   textarea:focus,
   select:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    border-color: #0b6aa2;
+    box-shadow: 0 0 0 3px rgba(11,106,162,0.15);
   }
   textarea {
     resize: vertical;
@@ -155,21 +155,21 @@
   .size-btn {
     flex: 1;
     padding: 8px 6px;
-    border: 1px solid #334155;
+    border: 1px solid #e3e5ea;
     border-radius: 8px;
-    background: #0f172a;
-    color: #94a3b8;
+    background: #f7f8fa;
+    color: #5b5f6b;
     font-size: 0.78rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
     text-align: center;
   }
-  .size-btn:hover { border-color: #3b82f6; color: #e2e8f0; }
+  .size-btn:hover { border-color: #0b6aa2; color: #21242c; }
   .size-btn.active {
-    background: #1e3a5f;
-    border-color: #3b82f6;
-    color: #93c5fd;
+    background: #e8f3fa;
+    border-color: #0b6aa2;
+    color: #0b6aa2;
   }
 
   /* Color picker */
@@ -177,14 +177,14 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #0f172a;
-    border: 1px solid #334155;
+    background: #f7f8fa;
+    border: 1px solid #e3e5ea;
     border-radius: 8px;
     padding: 8px 12px;
     cursor: pointer;
     transition: border-color 0.2s;
   }
-  .color-field:focus-within { border-color: #3b82f6; }
+  .color-field:focus-within { border-color: #0b6aa2; }
   input[type="color"] {
     width: 28px;
     height: 28px;
@@ -196,13 +196,13 @@
   }
   input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
   input[type="color"]::-webkit-color-swatch { border: none; border-radius: 4px; }
-  .color-label-text { font-size: 0.82rem; color: #94a3b8; }
+  .color-label-text { font-size: 0.82rem; color: #5b5f6b; }
 
   /* Generate button */
   .btn-generate {
     width: 100%;
     padding: 13px;
-    background: #3b82f6;
+    background: #0b6aa2;
     border: none;
     border-radius: 10px;
     color: #fff;
@@ -211,11 +211,11 @@
     font-family: inherit;
     cursor: pointer;
     transition: all 0.2s;
-    box-shadow: 0 4px 14px rgba(59,130,246,0.35);
+    box-shadow: 0 4px 14px rgba(11,106,162,0.35);
   }
   .btn-generate:hover {
-    background: #2563eb;
-    box-shadow: 0 6px 20px rgba(59,130,246,0.45);
+    background: #095a8a;
+    box-shadow: 0 6px 20px rgba(11,106,162,0.45);
     transform: translateY(-1px);
   }
   .btn-generate:active { transform: translateY(0); }
@@ -249,10 +249,10 @@
   .btn-action {
     flex: 1;
     padding: 11px;
-    border: 1px solid #334155;
+    border: 1px solid #e3e5ea;
     border-radius: 10px;
-    background: #1e293b;
-    color: #e2e8f0;
+    background: #ffffff;
+    color: #21242c;
     font-size: 0.875rem;
     font-weight: 500;
     font-family: inherit;
@@ -264,16 +264,16 @@
     gap: 6px;
   }
   .btn-action:hover {
-    background: #334155;
-    border-color: #475569;
+    background: #eef1f5;
+    border-color: #d5d9e0;
   }
   .btn-action.primary {
-    background: #1e3a5f;
-    border-color: #3b82f6;
-    color: #93c5fd;
+    background: #e8f3fa;
+    border-color: #0b6aa2;
+    color: #0b6aa2;
   }
   .btn-action.primary:hover {
-    background: #1d4ed8;
+    background: #0b6aa2;
     color: #fff;
   }
 
@@ -283,9 +283,9 @@
     bottom: 28px;
     left: 50%;
     transform: translateX(-50%) translateY(80px);
-    background: #1e293b;
-    border: 1px solid #334155;
-    color: #e2e8f0;
+    background: #ffffff;
+    border: 1px solid #e3e5ea;
+    color: #21242c;
     padding: 10px 20px;
     border-radius: 8px;
     font-size: 0.875rem;
@@ -300,10 +300,11 @@
   /* Divider */
   .divider {
     height: 1px;
-    background: #334155;
+    background: #eef1f5;
     margin: 4px 0;
   }
 </style>
+<link rel="stylesheet" href="eduhub_fonts.css">
 </head>
 <body>
 

@@ -4,16 +4,17 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Chủ Nhiệm – EduTeacher Hub</title>
+<link rel="stylesheet" href="eduhub_fonts.css">
 <script src="lib/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#0f172a;--sidebar:#1e293b;--card:#1e293b;--border:#334155;
-  --accent:#6366f1;--accent2:#8b5cf6;--text:#e2e8f0;--sub:#94a3b8;--dim:#475569;
-  --green:#4ade80;--red:#f87171;--yellow:#fbbf24;--orange:#fb923c;--blue:#60a5fa;
+  --bg:#f7f8fa;--sidebar:#ffffff;--card:#ffffff;--border:#e3e5ea;--inset:#f3f6f9;
+  --accent:#0b6aa2;--accent2:#1597d8;--text:#21242c;--sub:#5b5f6b;--dim:#9aa0ab;
+  --green:#15803d;--red:#dc2626;--yellow:#b45309;--orange:#c2410c;--blue:#0b6aa2;
   --cell-h:44px;
 }
-body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden;}
+body{font-family:'Lexend','Segoe UI',sans-serif;background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden;}
 
 /* SIDEBAR */
 .sidebar{width:220px;background:var(--sidebar);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;}
@@ -21,12 +22,12 @@ body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);di
 .sb-logo h2{font-size:1rem;font-weight:900;color:var(--text);}
 .sb-logo p{font-size:.72rem;color:var(--sub);margin-top:2px;}
 .sb-class{padding:10px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);}
-.sb-class input{flex:1;background:#0f172a;border:1px solid var(--border);border-radius:7px;padding:6px 9px;color:var(--text);font-size:.82rem;font-family:inherit;outline:none;}
+.sb-class input{flex:1;background:var(--inset);border:1px solid var(--border);border-radius:7px;padding:6px 9px;color:var(--text);font-size:.82rem;font-family:inherit;outline:none;}
 .sb-class input:focus{border-color:var(--accent);}
 .sb-nav{padding:8px 0;}
 .nav-item{display:flex;align-items:center;gap:9px;padding:10px 16px;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--sub);border-left:3px solid transparent;transition:all .15s;user-select:none;}
-.nav-item:hover{color:var(--text);background:rgba(255,255,255,.04);}
-.nav-item.active{color:var(--text);border-left-color:var(--accent);background:rgba(99,102,241,.12);}
+.nav-item:hover{color:var(--text);background:rgba(15,23,42,.04);}
+.nav-item.active{color:var(--text);border-left-color:var(--accent);background:rgba(11,106,162,.12);}
 .nav-item .ico{font-size:1rem;width:20px;text-align:center;flex-shrink:0;}
 .nav-badge{margin-left:auto;background:var(--red);color:#fff;border-radius:10px;padding:1px 7px;font-size:.68rem;font-weight:900;}
 
@@ -52,7 +53,7 @@ body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);di
 .btn-success{background:#059669;color:#fff;}
 .btn-danger{background:#dc2626;color:#fff;}
 .btn-warn{background:#d97706;color:#fff;}
-.btn-ghost{background:rgba(255,255,255,.07);color:var(--sub);border:1px solid var(--border);}
+.btn-ghost{background:rgba(15,23,42,.07);color:var(--sub);border:1px solid var(--border);}
 .btn-ghost:hover{color:var(--text);}
 .btn-sm{padding:5px 12px;font-size:.76rem;}
 
@@ -60,16 +61,16 @@ body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);di
 .form-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
 .form-group{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px;}
 .form-group label{font-size:.74rem;font-weight:700;color:var(--sub);}
-.finp{background:#0f172a;border:1px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--text);font-size:.85rem;font-family:inherit;outline:none;width:100%;}
+.finp{background:var(--inset);border:1px solid var(--border);border-radius:8px;padding:8px 11px;color:var(--text);font-size:.85rem;font-family:inherit;outline:none;width:100%;}
 .finp:focus{border-color:var(--accent);}
-select.finp option{background:#1e293b;}
+select.finp option{background:var(--card);}
 
 /* TABLE */
 .tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);}
 table.data-tbl{width:100%;border-collapse:collapse;font-size:.82rem;}
-table.data-tbl th{background:#0f172a;padding:10px 12px;text-align:left;font-weight:700;color:var(--sub);white-space:nowrap;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2;}
-table.data-tbl td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle;}
-table.data-tbl tr:hover td{background:rgba(255,255,255,.03);}
+table.data-tbl th{background:var(--inset);padding:10px 12px;text-align:left;font-weight:700;color:var(--sub);white-space:nowrap;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2;}
+table.data-tbl td{padding:9px 12px;border-bottom:1px solid rgba(15,23,42,.04);vertical-align:middle;}
+table.data-tbl tr:hover td{background:rgba(15,23,42,.03);}
 table.data-tbl tr:last-child td{border-bottom:none;}
 
 /* BADGES */
@@ -85,13 +86,13 @@ table.data-tbl tr:last-child td{border-bottom:none;}
 
 /* STAT GRID */
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:16px;}
-.stat-card{background:#0f172a;border:1px solid var(--border);border-radius:12px;padding:14px 16px;text-align:center;}
+.stat-card{background:var(--inset);border:1px solid var(--border);border-radius:12px;padding:14px 16px;text-align:center;}
 .stat-num{font-size:1.8rem;font-weight:900;margin-bottom:2px;}
 .stat-lbl{font-size:.72rem;color:var(--sub);font-weight:600;}
 
 /* ATTENDANCE GRID */
 .att-list{display:flex;flex-direction:column;gap:4px;}
-.att-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#0f172a;border-radius:9px;border:1px solid var(--border);}
+.att-row{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--inset);border-radius:9px;border:1px solid var(--border);}
 .att-name{flex:1;font-size:.88rem;font-weight:600;}
 .att-stt{width:28px;color:var(--sub);font-size:.75rem;}
 .att-btns{display:flex;gap:5px;}
@@ -101,34 +102,34 @@ table.data-tbl tr:last-child td{border-bottom:none;}
 .att-present{background:rgba(74,222,128,.2);color:var(--green);}
 .att-late{background:rgba(251,191,36,.2);color:var(--yellow);}
 .att-absent{background:rgba(248,113,113,.2);color:var(--red);}
-.att-note{background:#1e293b;border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:.75rem;font-family:inherit;outline:none;width:110px;}
+.att-note{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:4px 8px;color:var(--text);font-size:.75rem;font-family:inherit;outline:none;width:110px;}
 
 /* SEATING */
 .seating-wrap{display:flex;gap:16px;flex-wrap:wrap;}
 .seat-panel{flex:1;min-width:300px;}
-.classroom-grid{display:grid;gap:6px;background:#0f172a;border:2px solid var(--border);border-radius:12px;padding:14px;}
+.classroom-grid{display:grid;gap:6px;background:var(--inset);border:2px solid var(--border);border-radius:12px;padding:14px;}
 .seat-cell{background:var(--card);border:1.5px solid var(--border);border-radius:8px;min-height:48px;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;text-align:center;cursor:pointer;transition:all .15s;padding:4px;position:relative;}
-.seat-cell.occupied{background:rgba(99,102,241,.15);border-color:var(--accent);}
+.seat-cell.occupied{background:rgba(11,106,162,.15);border-color:var(--accent);}
 .seat-cell.empty{color:var(--dim);font-style:italic;}
-.seat-cell:hover{border-color:var(--accent);background:rgba(99,102,241,.1);}
-.teacher-desk{background:rgba(99,102,241,.2);border-color:var(--accent);color:var(--accent);font-weight:900;grid-column:1/-1;text-align:center;padding:10px;}
+.seat-cell:hover{border-color:var(--accent);background:rgba(11,106,162,.1);}
+.teacher-desk{background:rgba(11,106,162,.2);border-color:var(--accent);color:var(--accent);font-weight:900;grid-column:1/-1;text-align:center;padding:10px;}
 
 /* DUTY */
-.duty-today{background:linear-gradient(135deg,rgba(99,102,241,.2),rgba(139,92,246,.15));border:1px solid var(--accent);border-radius:14px;padding:16px 20px;margin-bottom:16px;}
+.duty-today{background:linear-gradient(135deg,rgba(11,106,162,.2),rgba(21,151,216,.15));border:1px solid var(--accent);border-radius:14px;padding:16px 20px;margin-bottom:16px;}
 .duty-date{font-size:.78rem;color:var(--sub);margin-bottom:4px;}
 .duty-names{font-size:1rem;font-weight:800;}
 
 /* CONTACT LOG */
-.contact-item{background:#0f172a;border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;}
+.contact-item{background:var(--inset);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;}
 .contact-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
 .contact-meta{font-size:.74rem;color:var(--sub);}
 
 /* DIARY */
-.diary-item{background:#0f172a;border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:12px 14px;margin-bottom:8px;}
+.diary-item{background:var(--inset);border-left:3px solid var(--accent);border-radius:0 10px 10px 0;padding:12px 14px;margin-bottom:8px;}
 .diary-date{font-size:.74rem;color:var(--sub);margin-bottom:4px;}
 
 /* TASK */
-.task-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#0f172a;border-radius:9px;border:1px solid var(--border);margin-bottom:6px;}
+.task-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--inset);border-radius:9px;border:1px solid var(--border);margin-bottom:6px;}
 .task-cb{width:18px;height:18px;border-radius:4px;border:2px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .13s;}
 .task-cb.done{background:var(--green);border-color:var(--green);color:#000;}
 .task-text{flex:1;font-size:.85rem;}
@@ -144,11 +145,11 @@ table.data-tbl tr:last-child td{border-bottom:none;}
 
 /* SEARCH BAR */
 .search-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center;}
-.search-inp{background:#0f172a;border:1px solid var(--border);border-radius:9px;padding:8px 14px;color:var(--text);font-size:.85rem;font-family:inherit;outline:none;min-width:200px;}
+.search-inp{background:var(--inset);border:1px solid var(--border);border-radius:9px;padding:8px 14px;color:var(--text);font-size:.85rem;font-family:inherit;outline:none;min-width:200px;}
 .search-inp:focus{border-color:var(--accent);}
 
 /* BIRTHDAY */
-.bday-card{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#0f172a;border-radius:10px;border:1px solid var(--border);margin-bottom:8px;}
+.bday-card{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--inset);border-radius:10px;border:1px solid var(--border);margin-bottom:8px;}
 .bday-cake{font-size:1.4rem;flex-shrink:0;}
 .bday-info{flex:1;}
 .bday-name{font-weight:700;font-size:.9rem;}
@@ -160,7 +161,7 @@ table.data-tbl tr:last-child td{border-bottom:none;}
 .report-section h4{font-size:.85rem;font-weight:800;color:var(--sub);margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:6px;}
 
 /* VIOLATION */
-.vio-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:9px;border:1px solid var(--border);background:#0f172a;margin-bottom:6px;}
+.vio-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:9px;border:1px solid var(--border);background:var(--inset);margin-bottom:6px;}
 .vio-type{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;flex-shrink:0;}
 .vio-type.violation{background:rgba(248,113,113,.2);color:var(--red);}
 .vio-type.commend{background:rgba(74,222,128,.2);color:var(--green);}
@@ -197,24 +198,24 @@ table.data-tbl td.col-hoTen{white-space:normal;min-width:160px;}
 /* SEATING DRAG & DROP */
 .seating-main{display:flex;gap:16px;align-items:flex-start;}
 .seat-layout-area{flex:1;min-width:0;}
-.seat-student-panel{width:200px;flex-shrink:0;background:#0f172a;border:1px solid var(--border);border-radius:12px;padding:10px;max-height:600px;overflow-y:auto;}
+.seat-student-panel{width:200px;flex-shrink:0;background:var(--inset);border:1px solid var(--border);border-radius:12px;padding:10px;max-height:600px;overflow-y:auto;}
 .seat-student-panel h4{font-size:.74rem;font-weight:800;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);}
 .drag-student{padding:7px 10px;background:var(--card);border:1px solid var(--border);border-radius:7px;font-size:.8rem;font-weight:600;cursor:grab;margin-bottom:4px;transition:all .12s;user-select:none;}
-.drag-student:hover{border-color:var(--accent);background:rgba(99,102,241,.1);}
+.drag-student:hover{border-color:var(--accent);background:rgba(11,106,162,.1);}
 .drag-student.dragging{opacity:.4;}
 .drag-student.in-seat{opacity:.5;font-style:italic;color:var(--dim);}
 .seat-cell{cursor:grab;}
-.seat-cell.drag-over{border-color:var(--accent)!important;background:rgba(99,102,241,.25)!important;}
+.seat-cell.drag-over{border-color:var(--accent)!important;background:rgba(11,106,162,.25)!important;}
 .seat-cell.occupied{cursor:pointer;}
-.classroom-wrap{background:#0f172a;border:2px solid var(--border);border-radius:12px;padding:16px;overflow-x:auto;}
-.teacher-row{text-align:center;padding:10px 0;margin-bottom:12px;background:rgba(99,102,241,.2);border:1px solid var(--accent);border-radius:8px;color:var(--accent);font-weight:900;font-size:.88rem;}
+.classroom-wrap{background:var(--inset);border:2px solid var(--border);border-radius:12px;padding:16px;overflow-x:auto;}
+.teacher-row{text-align:center;padding:10px 0;margin-bottom:12px;background:rgba(11,106,162,.2);border:1px solid var(--accent);border-radius:8px;color:var(--accent);font-weight:900;font-size:.88rem;}
 .layout-2day{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;}
 .layout-2day .day-col{display:flex;flex-direction:column;gap:6px;}
 .layout-4day{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
 .layout-4day .day-col{display:flex;flex-direction:column;gap:6px;}
 .seat-desk-row{display:flex;gap:4px;}
 .seat-cell-2{min-width:80px;background:var(--card);border:1.5px solid var(--border);border-radius:7px;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;text-align:center;padding:4px;transition:all .15s;position:relative;}
-.seat-cell-2.occupied{background:rgba(99,102,241,.15);border-color:var(--accent);}
+.seat-cell-2.occupied{background:rgba(11,106,162,.15);border-color:var(--accent);}
 .seat-cell-2.empty{color:var(--dim);font-style:italic;font-size:.7rem;}
 .seat-cell-2 .remove-seat-x{position:absolute;top:2px;right:4px;font-size:.6rem;color:var(--dim);cursor:pointer;opacity:0;}
 .seat-cell-2:hover .remove-seat-x{opacity:1;}
@@ -222,7 +223,7 @@ table.data-tbl td.col-hoTen{white-space:normal;min-width:160px;}
 .layout-radio{display:flex;gap:6px;}
 .layout-radio label{display:flex;align-items:center;gap:5px;padding:7px 14px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:700;transition:all .13s;}
 .layout-radio input{display:none;}
-.layout-radio label.active{border-color:var(--accent);background:rgba(99,102,241,.15);color:var(--accent);}
+.layout-radio label.active{border-color:var(--accent);background:rgba(11,106,162,.15);color:var(--accent);}
 
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:5px;height:5px;}
@@ -980,7 +981,7 @@ function renderDutyTasksList(){
     return;
   }
   el.innerHTML=dutyTasks.map((t,i)=>`
-    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:#0f172a;border-radius:9px;border:1px solid var(--border);margin-bottom:6px;">
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--inset);border-radius:9px;border:1px solid var(--border);margin-bottom:6px;">
       <div style="font-size:1.1rem;color:var(--accent)">🧹</div>
       <div style="flex:1">
         <div style="font-weight:700;font-size:.88rem">${t.name}</div>
@@ -1043,7 +1044,7 @@ function renderDuty(){
     } else if(d.students){
       content=d.students.map(id=>students.find(s=>String(s.id)===String(id))?.hoTen||'?').join(', ');
     }
-    return `<div style="display:flex;gap:12px;align-items:flex-start;padding:10px 14px;background:${isToday?'rgba(99,102,241,.12)':'#0f172a'};border-radius:9px;border:1px solid ${isToday?'var(--accent)':'var(--border)'};margin-bottom:5px;">
+    return `<div style="display:flex;gap:12px;align-items:flex-start;padding:10px 14px;background:${isToday?'rgba(11,106,162,.12)':'var(--inset)'};border-radius:9px;border:1px solid ${isToday?'var(--accent)':'var(--border)'};margin-bottom:5px;">
       <span style="width:100px;font-size:.8rem;color:${isToday?'var(--accent)':'var(--sub)'};font-weight:${isToday?'900':'600'};flex-shrink:0">${d.date}</span>
       <span style="flex:1;font-size:.83rem;line-height:1.6">${content||'—'}</span>
       <button class="btn btn-danger btn-sm" onclick="delDuty('${d.date}')">✕</button>

@@ -1,7 +1,7 @@
 /* EduTeacher Hub – Service Worker (tạo tự động bằng tools/tao_sw.py – không sửa tay)
    • Mở một lần khi có mạng → các trang đã mở dùng được khi mất mạng.
    • Nút “Tải sẵn để dùng offline” → tải toàn bộ công cụ về máy. */
-const VERSION = '52e510738c';
+const VERSION = '991d055172';
 const CACHE = 'eduhub-' + VERSION;
 const CORE = ["./", "index.html", "dashboard.html", "manifest.webmanifest", "eduhub_backup.js", "eduhub_search.js", "eduhub_pwa.js", "icons/icon-192.png"];
 const FILES = [
@@ -45,6 +45,7 @@ const FILES = [
 "eduhub_canvasfit.js",
 "eduhub_data.js",
 "eduhub_demo.js",
+"eduhub_fonts.css",
 "eduhub_help.js",
 "eduhub_pwa.js",
 "eduhub_qbank.js",
@@ -104,6 +105,12 @@ const FILES = [
 "lib/fonts/lexend-vietnamese-500-normal.woff2",
 "lib/fonts/lexend-vietnamese-600-normal.woff2",
 "lib/fonts/lexend-vietnamese-700-normal.woff2",
+"lib/fonts/nunito-latin-700-normal.woff2",
+"lib/fonts/nunito-latin-800-normal.woff2",
+"lib/fonts/nunito-latin-900-normal.woff2",
+"lib/fonts/nunito-vietnamese-700-normal.woff2",
+"lib/fonts/nunito-vietnamese-800-normal.woff2",
+"lib/fonts/nunito-vietnamese-900-normal.woff2",
 "lib/html2canvas.min.js",
 "lib/jsQR.min.js",
 "lib/jszip.min.js",

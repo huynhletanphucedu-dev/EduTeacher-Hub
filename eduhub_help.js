@@ -53,14 +53,14 @@
   var path = location.pathname.replace(/\\/g, '/'), key = Object.keys(H).filter(function (k) { return path.slice(-k.length) === k; })[0];
   var base = /\/tienphong\//.test(path) ? '../' : '';
 
-  var CSS = '.ehh-btn{position:fixed;right:14px;bottom:14px;z-index:9990;width:42px;height:42px;border-radius:50%;border:0;background:#2563eb;color:#fff;font:800 20px/42px "Segoe UI",system-ui,sans-serif;cursor:pointer;box-shadow:0 6px 18px rgba(37,99,235,.4)}' +
+  var CSS = '.ehh-btn{position:fixed;right:14px;bottom:14px;z-index:9990;width:42px;height:42px;border-radius:50%;border:0;background:#0b6aa2;color:#fff;font:800 20px/42px "Segoe UI",system-ui,sans-serif;cursor:pointer;box-shadow:0 6px 18px rgba(37,99,235,.4)}' +
     '.ehh-btn:hover{transform:scale(1.08)}.ehh-tip{position:fixed;right:64px;bottom:20px;z-index:9990;background:#0f172a;color:#fff;font:600 13px "Segoe UI",system-ui,sans-serif;padding:8px 12px;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.25);animation:ehhIn .3s}' +
     '@keyframes ehhIn{from{opacity:0;transform:translateX(8px)}}' +
     '.ehh-ov{position:fixed;inset:0;z-index:9995;background:rgba(15,23,42,.5);display:flex;align-items:center;justify-content:center;padding:16px;font-family:"Segoe UI",system-ui,sans-serif}' +
     '.ehh-box{background:#fff;color:#0f172a;border-radius:16px;max-width:520px;width:100%;max-height:88vh;overflow:auto;padding:20px 22px;box-shadow:0 20px 60px rgba(0,0,0,.35);line-height:1.55;font-size:14px}' +
     '.ehh-box h3{margin:0 0 4px;font-size:18px}.ehh-box .d{color:#475569;margin-bottom:10px}.ehh-box ol{padding-left:20px;margin:6px 0}.ehh-box li{margin:5px 0}' +
     '.ehh-box .m{background:#fef9c3;border-radius:10px;padding:8px 10px;margin-top:10px;font-size:13px}.ehh-box .ehh-f{display:flex;gap:8px;justify-content:space-between;align-items:center;margin-top:14px;flex-wrap:wrap}' +
-    '.ehh-box a{color:#2563eb;font-weight:600;text-decoration:none}.ehh-box button{border:0;background:#2563eb;color:#fff;border-radius:10px;padding:8px 18px;font:700 14px "Segoe UI",system-ui,sans-serif;cursor:pointer}' +
+    '.ehh-box a{color:#0b6aa2;font-weight:600;text-decoration:none}.ehh-box button{border:0;background:#0b6aa2;color:#fff;border-radius:10px;padding:8px 18px;font:700 14px "Segoe UI",system-ui,sans-serif;cursor:pointer}' +
     '@media print{.ehh-btn,.ehh-tip{display:none!important}}';
   function css() { if (document.getElementById('ehh-css')) return; var s = document.createElement('style'); s.id = 'ehh-css'; s.textContent = CSS; document.head.appendChild(s); }
 
@@ -138,10 +138,10 @@
     { sel: '.tb-setting-btn', t: '⚙️ Hồ sơ giáo viên', d: 'Nhập tên, trường, lớp chủ nhiệm – dùng để in tự động lên báo cáo, giấy khen, phiếu.' },
     { sel: null, t: '🎉 Sẵn sàng!', d: 'Mỗi công cụ có nút ? ở góc dưới phải để xem hướng dẫn. Trang “Hướng dẫn sử dụng” có đầy đủ cách dùng và câu hỏi thường gặp.', end: true }
   ];
-  var TCSS = '.eht-hole{position:fixed;z-index:9996;border-radius:12px;box-shadow:0 0 0 9999px rgba(15,23,42,.62);transition:all .25s;pointer-events:none;outline:3px solid #38bdf8}' +
+  var TCSS = '.eht-hole{position:fixed;z-index:9996;border-radius:12px;box-shadow:0 0 0 9999px rgba(15,23,42,.62);transition:all .25s;pointer-events:none;outline:3px solid #0b6aa2}' +
     '.eht-card{position:fixed;z-index:9997;background:#fff;color:#0f172a;border-radius:14px;padding:16px 18px;width:min(340px,calc(100vw - 24px));box-shadow:0 16px 50px rgba(0,0,0,.4);font:14px/1.55 "Segoe UI",system-ui,sans-serif;transition:top .25s,left .25s}' +
     '.eht-card h4{margin:0 0 6px;font-size:16px}.eht-card .n{color:#64748b;font-size:12px}.eht-card .b{display:flex;gap:8px;justify-content:flex-end;align-items:center;margin-top:12px}' +
-    '.eht-card button{border:0;border-radius:9px;padding:7px 14px;font:700 13px "Segoe UI",system-ui,sans-serif;cursor:pointer;background:#e2e8f0;color:#0f172a}.eht-card button.p{background:#2563eb;color:#fff}.eht-card .sk{background:none;color:#64748b;margin-right:auto;padding-left:0}' +
+    '.eht-card button{border:0;border-radius:9px;padding:7px 14px;font:700 13px "Segoe UI",system-ui,sans-serif;cursor:pointer;background:#e2e8f0;color:#0f172a}.eht-card button.p{background:#0b6aa2;color:#fff}.eht-card .sk{background:none;color:#64748b;margin-right:auto;padding-left:0}' +
     '.eht-dim{position:fixed;inset:0;z-index:9995;background:rgba(15,23,42,.62)}';
   var tour = null;
   function tStop(done) { if (!tour) return; tour.els.forEach(function (e) { e.remove(); }); tour = null; if (done) lsSet('ehub_tour_done', '1'); }
@@ -153,7 +153,7 @@
     tour.els.forEach(function (e) { e.remove(); }); tour.els = [];
     var card = document.createElement('div'); card.className = 'eht-card';
     card.innerHTML = '<div class="n">' + (i + 1) + ' / ' + list.length + '</div><h4>' + esc(s.t) + '</h4><div>' + esc(s.d) + '</div><div class="b">' + (s.end ? '' : '<button class="sk">Bỏ qua</button>') +
-      (i ? '<button class="pv">← Trước</button>' : '') + (s.end ? '<a href="huongdan.html" target="_blank" style="color:#2563eb;font-weight:700;text-decoration:none;margin-right:auto">📖 Hướng dẫn đầy đủ</a><button class="p nx">Bắt đầu dùng</button>' : '<button class="p nx">' + (i ? 'Tiếp →' : 'Xem nhanh →') + '</button>') + '</div>';
+      (i ? '<button class="pv">← Trước</button>' : '') + (s.end ? '<a href="huongdan.html" target="_blank" style="color:#0b6aa2;font-weight:700;text-decoration:none;margin-right:auto">📖 Hướng dẫn đầy đủ</a><button class="p nx">Bắt đầu dùng</button>' : '<button class="p nx">' + (i ? 'Tiếp →' : 'Xem nhanh →') + '</button>') + '</div>';
     if (el) {
       el.scrollIntoView({ block: 'nearest' });
       var r = el.getBoundingClientRect(), hole = document.createElement('div'); hole.className = 'eht-hole';
