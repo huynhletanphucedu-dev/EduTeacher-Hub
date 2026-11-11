@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<script src="eduhub_demo.js"></script>
 <title>EduTeacher Hub – ThS. Huỳnh Lê Tấn Phúc</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0b6aa2">
@@ -3769,7 +3770,8 @@ function applySettings(p){
   // Greeting
   const nm=(p.name||'').trim();
   const xung=p.gender||'Thầy/Cô';
-  const goi=nm?`${xung} ${nm.split(/\s+/).pop()}`:'Thầy/Cô';
+  let isDemo=false; try{isDemo=!!localStorage.getItem('etv1_demo');}catch(e){}
+  const goi=nm?`${xung} ${nm.split(/\s+/).pop()}`:(isDemo?'BGK':'Thầy/Cô');
   const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   const greet=document.getElementById('tb-greeting');
   if(greet) greet.innerHTML=`Xin chào, <strong>${esc(goi)}</strong>${nm?'':' 👋'}`;
@@ -5910,7 +5912,7 @@ const ZALO_PHONE = '0898904446';
 })();
 /* Lần đầu mở: hỏi tên để chào cho đúng */
 function needAskName(){
-  try{ if(localStorage.getItem('etv1_name_asked')) return false;
+  try{ if(localStorage.getItem('etv1_name_asked')||localStorage.getItem('etv1_demo')) return false;
        const s=JSON.parse(localStorage.getItem('etv1_settings')||'null'); return !(s&&s.name&&s.name.trim()); }catch(e){return false;}
 }
 function closeAskName(){document.getElementById('ask-name').hidden=true;try{localStorage.setItem('etv1_name_asked','1');}catch(e){}if(window.EHTour)EHTour.maybe();}
@@ -6061,7 +6063,6 @@ document.getElementById('vn-clear').onclick=()=>{if(!Object.keys(VN.ses).length)
 (function(){const _sp=showPage;showPage=function(id){_sp.apply(this,arguments);if(id==='gd-vuinhon')VN_init();};})();
 VN_count();
 </script>
-<script src="eduhub_demo.js"></script>
 <script>EHDemo.box(document.getElementById('ehd-box'));</script>
 <script src="eduhub_backup.js"></script>
 <script src="eduhub_search.js"></script>
