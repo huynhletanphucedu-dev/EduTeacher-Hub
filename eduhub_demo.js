@@ -125,6 +125,7 @@
   }
 
   var PREFIX = ['cn_', 'cnhom_', 'gtv_used_'], KEYS = ['etv1_sodiem_v2', 'td_v1', 'ths_v1', 'ths_class', 'etv1_gt_stats', 'cnhom_paste', 'goiten_vuinhon_v3', 'goiten_vuinhon_v2', 'gtvn_manual', 'gtvn_cfg'];
+  var DEMO_VER = 2;
   var EHDemo = {
     active: function () { return !!get('etv1_demo', null); },
     hasReal: function () {
@@ -135,7 +136,7 @@
     load: function () {
       if (EHDemo.hasReal()) { alert('Máy này đã có dữ liệu lớp thật nên không nạp lớp mẫu (để tránh ghi đè dữ liệu của thầy/cô).'); return false; }
       var d = build(); Object.keys(d).forEach(function (k) { set(k, d[k]); });
-      set('etv1_demo', { ts: Date.now() }); return true;
+      set('etv1_demo', { ts: Date.now(), v: DEMO_VER }); return true;
     },
     clear: function () {
       if (!EHDemo.active()) return false;
@@ -164,6 +165,8 @@
     }
   };
   window.EHDemo = EHDemo;
+  // lớp mẫu cũ (phiên bản trước) → tự làm mới để có đủ dữ liệu mới (chỉ đụng dữ liệu GIẢ, không đụng lớp thật)
+  try { var _dm = get('etv1_demo', null); if (_dm && _dm.v !== DEMO_VER) { EHDemo.clear(); var _d = build(); Object.keys(_d).forEach(function (k) { set(k, _d[k]); }); set('etv1_demo', { ts: Date.now(), v: DEMO_VER }); } } catch (e) { }
   // nhãn nhỏ "Lớp mẫu" ở mọi trang khi đang dùng dữ liệu giả
   function pill() {
     if (!EHDemo.active() || document.getElementById('ehd-pill')) return;
