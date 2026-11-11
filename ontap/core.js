@@ -68,7 +68,10 @@ function parseOwn(txt) {
 function getQuestions(cfg) {
   let raw = [];
   if (cfg.src === "bank") (cfg.lessons.length ? cfg.lessons : LESSONS.map(b => b.bai)).forEach(b => raw.push(...(BANK_T6[b] || [])));
-  else if (cfg.src === "custom") raw = (store.get("tp_custom_q", []) || []).filter(x => x && x.q && x.a);
+  else if (cfg.src === "custom") {
+    if (window.QB) { const L = QB.lessons(cfg.cusMon || null).map(b => b.id), pick = (cfg.cusLessons || []).filter(id => L.includes(id)); raw = QB.questions(pick.length ? pick : L); }
+    else raw = (store.get("tp_custom_q", []) || []).filter(x => x && x.q && x.a);
+  }
   else raw = parseOwn(cfg.own || "");
   raw = shuffle(raw);
   const n = cfg.count > 0 ? cfg.count : raw.length;
@@ -104,13 +107,13 @@ function setup(o) {
       <div class="ot-sec"><h3>📚 Câu hỏi</h3>
         <div class="ot-row"><select class="ot-sel" id="otSrc">
           <option value="bank">Ngân hàng Toán 6 – KNTT (${LESSONS.reduce((s, b) => s + BANK_T6[b.bai].length, 0)} câu)</option>
-          <option value="custom">Câu hỏi game của thầy/cô (${(store.get("tp_custom_q", []) || []).length} câu)</option>
+          <option value="custom">📝 Ngân hàng câu hỏi của thầy/cô (${window.QB ? QB.load().cau.length : (store.get("tp_custom_q", []) || []).length} câu)</option>
           <option value="own">Dán nhanh câu hỏi</option></select>
           ${o.count === null ? "" : `<span style="font-weight:700;font-size:.9rem">Số câu</span><div class="ot-seg" id="otCnt">${counts.map(c => `<button data-v="${c}">${c}</button>`).join("")}</div>`}</div>
         <div id="otBankBox" style="margin-top:8px"><div class="ot-chips" id="otLes"></div><div class="ot-hint">Bấm chọn một hoặc nhiều bài (không chọn = trộn tất cả các bài).</div></div>
         <div id="otOwnBox" hidden style="margin-top:8px"><textarea class="ot-ta" id="otOwn" placeholder="Mỗi dòng 1 câu:  Câu hỏi | Đáp án đúng | Sai 1 | Sai 2 | Sai 3&#10;VD:  2³ bằng bao nhiêu? | 8 | 6 | 9 | 5"></textarea>
           <div class="ot-hint">Dán từ Excel cũng được (mỗi cột 1 ô). Đáp án sẽ được trộn ngẫu nhiên khi chơi.</div></div>
-        <div id="otCusBox" hidden class="ot-hint">Câu hỏi soạn ở trang <a href="../tienphong/soan-cau-hoi.html" target="_blank">Quản lý câu hỏi game</a>.</div>
+        <div id="otCusBox" hidden style="margin-top:8px"><div class="ot-row"><span style="font-weight:700;font-size:.9rem">Môn</span><select class="ot-sel" id="otCusMon"></select></div><div class="ot-chips" id="otCusLes" style="margin-top:8px"></div><div class="ot-hint">Bấm chọn một hoặc nhiều bài (không chọn = trộn cả môn). Soạn câu hỏi ở trang <a href="../tienphong/soan-cau-hoi.html" target="_blank">Quản lý câu hỏi trò chơi</a>.</div></div>
       </div>
       ${o.teams ? `<div class="ot-sec"><h3>👥 Đội chơi</h3><div class="ot-row"><div class="ot-seg" id="otNT">${Array.from({ length: o.teams.max - o.teams.min + 1 }, (_, i) => `<button data-v="${i + o.teams.min}">${i + o.teams.min} đội</button>`).join("")}</div>
         <button class="ot-btn" id="otFromG" hidden>🧩 Lấy đội từ Chia nhóm gần nhất</button></div><div class="ot-teams" id="otTeams"></div><div class="ot-hint" id="otTH"></div></div>` : ""}
@@ -127,6 +130,16 @@ function setup(o) {
     const src = $("#otSrc", w); src.value = cfg.src;
     const updSrc = () => { cfg.src = src.value; $("#otBankBox", w).hidden = cfg.src !== "bank"; $("#otOwnBox", w).hidden = cfg.src !== "own"; $("#otCusBox", w).hidden = cfg.src !== "custom"; };
     src.onchange = updSrc; updSrc(); $("#otOwn", w).value = cfg.own || "";
+    if (window.QB) {   // môn + bài từ ngân hàng câu hỏi của giáo viên
+      const ms = $("#otCusMon", w), subs = QB.subjects().filter(m => m.soCau);
+      if (!subs.some(m => m.id === cfg.cusMon)) cfg.cusMon = subs[0] ? subs[0].id : "";
+      ms.innerHTML = subs.length ? subs.map(m => `<option value="${m.id}"${m.id === cfg.cusMon ? " selected" : ""}>${esc(m.ten)} (${m.soCau} câu)</option>`).join("") : '<option value="">(Chưa có câu hỏi nào)</option>';
+      const drawCus = () => { const L = QB.lessons(cfg.cusMon).filter(b => b.soCau); cfg.cusLessons = (cfg.cusLessons || []).filter(id => L.some(b => b.id === id));
+        $("#otCusLes", w).innerHTML = L.map(b => `<button class="ot-chip${cfg.cusLessons.includes(b.id) ? " on" : ""}" data-b="${b.id}">${b.khoi ? "K" + esc(b.khoi) + " · " : ""}${esc(b.ten.slice(0, 40))} (${b.soCau})</button>`).join("") || '<span class="ot-hint">Môn này chưa có bài nào có câu hỏi.</span>'; };
+      ms.onchange = () => { cfg.cusMon = ms.value; cfg.cusLessons = []; drawCus(); };
+      $("#otCusLes", w).onclick = e => { const c = e.target.closest(".ot-chip"); if (!c) return; const id = c.dataset.b; cfg.cusLessons = cfg.cusLessons.includes(id) ? cfg.cusLessons.filter(x => x !== id) : [...cfg.cusLessons, id]; c.classList.toggle("on"); };
+      drawCus();
+    }
     if (o.teams) {
       const G = lastGroups();
       const drawTeams = () => {

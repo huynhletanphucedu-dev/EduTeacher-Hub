@@ -158,10 +158,29 @@ function customItems(){
   try { return (JSON.parse(localStorage.getItem("tp_custom_q") || "[]") || []).filter(x => x && x.q && x.a && Array.isArray(x.w) && x.w.length); }
   catch (_) { return []; }
 }
-BANK_T6[0] = customItems();
+BANK_T6[0] = [];
+// Ngân hàng câu hỏi của giáo viên (Môn → Bài → Câu hỏi, soạn ở soan-cau-hoi.html, localStorage "etv1_qbank").
+// Mỗi bài của giáo viên được đánh số từ 1000 trở lên để chọn chung với các bài Toán 6 có sẵn.
+const TB = (() => {
+  let db = null; try { db = JSON.parse(localStorage.getItem("etv1_qbank") || "null"); } catch (_) {}
+  if (!db || !Array.isArray(db.mon)) {   // dữ liệu cũ: một danh sách câu hỏi tự soạn
+    const old = customItems();
+    db = { mon: old.length ? [{ id: "toan", ten: "Toán" }] : [], bai: old.length ? [{ id: "cu", mon: "toan", khoi: 6, ten: "Câu hỏi của tôi" }] : [], cau: old.map(x => ({ ...x, bai: "cu" })) };
+  }
+  return { mon: db.mon || [], bai: db.bai || [], cau: db.cau || [] };
+})();
+const TL = [];   // các bài của giáo viên có câu hỏi: { num, id, mon, ten, khoi }
+TB.bai.forEach((b, i) => {
+  const items = TB.cau.filter(c => c && c.bai === b.id && c.q && c.a && Array.isArray(c.w) && c.w.length).map(c => ({ q: c.q, a: c.a, w: c.w, g: c.g || "", b: 1000 + i }));
+  if (items.length) { BANK_T6[1000 + i] = items; TL.push({ num: 1000 + i, id: b.id, mon: b.mon, ten: b.ten, khoi: b.khoi }); }
+});
+// Môn đang chọn trong trò chơi: "toan6" = Toán 6 có sẵn (+ bài Toán của giáo viên), hoặc một môn của giáo viên
+const MONS = [{ id: "toan6", ten: "Toán 6 – KNTT (có sẵn)" }].concat(TB.mon.filter(m => m.id !== "toan" && TL.some(l => l.mon === m.id)).map(m => ({ id: m.id, ten: m.ten })));
+let MON = "toan6"; try { MON = localStorage.getItem("tp_mon") || "toan6"; } catch (_) {}
+if (!MONS.some(m => m.id === MON)) MON = "toan6";
 const byQ = new Map();          // nội dung câu hỏi → mục trong ngân hàng
 let player = null;
-const chuongOf = bai => bai === 0 ? "gv" : Number(Object.entries(CHUONG).find(([, [a, b]]) => bai >= a && bai <= b)?.[0]);
+const chuongOf = bai => (bai === 0 || bai >= 1000) ? "gv" : Number(Object.entries(CHUONG).find(([, [a, b]]) => bai >= a && bai <= b)?.[0]);
 
 const has = name => { try { return typeof eval(name) !== "undefined"; } catch (_) { return false; } };
 const G = name => { try { return eval(name); } catch (_) { return undefined; } };
@@ -184,15 +203,15 @@ function applyBank(open){
   }
   // Gói câu hỏi tự soạn của giáo viên
   let ck = PACKS.find(p => p.id === CUSTOM_ID);
-  const cItems = open.has(0) ? (BANK_T6[0] || []) : [];
+  const cItems = [...open].filter(b => b >= 1000).flatMap(b => BANK_T6[b] || []);
   if (!ck && cItems.length) { ck = { id: CUSTOM_ID, grade: 6, subject: "toan", order: 0, title: "Câu hỏi của thầy/cô", short: "Câu hỏi GV", open: true, topic: "tn", q: [], words: [] }; PACKS.unshift(ck); }
   for (let i = BANK.length - 1; i >= 0; i--) if (BANK[i][0] === CUSTOM_ID) BANK.splice(i, 1);
-  cItems.forEach(it => { it.b = 0; BANK.push([CUSTOM_ID, it.q, it.a, it.w, it.g || ""]); byQ.set(it.q, it); });
+  cItems.forEach(it => { it.b = it.b ?? 0; BANK.push([CUSTOM_ID, it.q, it.a, it.w, it.g || ""]); byQ.set(it.q, it); });
   if (ck) { ck.q = cItems.map(it => [it.q, it.a, it.w, it.g || ""]); ck.open = cItems.length > 0; }
   try { if (has("TOPICS")) G("TOPICS")[CUSTOM_ID] = "Câu hỏi GV"; } catch (_) {}
   // Chỉ chọn gói (chương) chứa các bài em chọn, khóa Khối 6 – Toán
   try { eval('grade = 6; subject = "toan"'); } catch (_) {}
-  const ids = new Set([...open].map(b => b === 0 ? CUSTOM_ID : "toan6-c" + chuongOf(b)));
+  const ids = new Set([...open].map(b => (b === 0 || b >= 1000) ? CUSTOM_ID : "toan6-c" + chuongOf(b)));
   const ch = G("chosen"); if (ch instanceof Set) { ch.clear(); ids.forEach(id => ch.add(id)); }
   // Xóa hàng đợi câu hỏi cũ (nếu game đã xếp sẵn trước khi có ngân hàng mới)
   for (const qn of ["queue", "mcQueue"]) { const a = G(qn); if (Array.isArray(a)) a.length = 0; }
@@ -209,6 +228,7 @@ function applyBank(open){
 // ---------- 3) Thống kê câu sai (lưu trên máy) ----------
 function log(loai, it, chon){
   if (!it) return;
+  try { window.dispatchEvent(new CustomEvent("tp:answer", { detail: { loai, q: String(it.q), b: it.b ?? null } })); } catch (_) {}   // cho chế độ link chia sẻ (tp-gate.js)
   try {
     const st = JSON.parse(localStorage.getItem("tp_stats") || "{}");
     const k = String(it.q).slice(0, 160), e = st[k] || { q: k, bai: it.b ?? null, dung: 0, sai: 0, sua: 0 };
@@ -221,13 +241,15 @@ function log(loai, it, chon){
 
 // ---------- 4) Chọn bài trong menu trò chơi ----------
 const LESSONS = SUBJECTS[0].bai;
-const shortL = b => { if (b === 0) return "📝 Câu hỏi của thầy/cô"; const L = LESSONS.find(x => x.bai === b); return L ? L.ten.replace(/^Bài (\d+)\.\s*/, "B$1 · ") : "Bài " + b; };
+const shortL = b => { if (b === 0) return "📝 Câu hỏi của thầy/cô"; if (b >= 1000) { const t = TL.find(x => x.num === b); return t ? "📝 " + (t.khoi ? "K" + t.khoi + " · " : "") + t.ten : "📝 Bài " + b; } const L = LESSONS.find(x => x.bai === b); return L ? L.ten.replace(/^Bài (\d+)\.\s*/, "B$1 · ") : "Bài " + b; };
 const PICK_KEY = "tp_chon_bai";
 function loadPick(open){
   let p = [];
   try { p = JSON.parse(localStorage.getItem(PICK_KEY) || "[]"); } catch (_) {}
   p = p.map(Number).filter(b => open.includes(b));
-  return p.length ? p : open.includes(0) ? [0] : open.filter(b => b >= 1 && b <= 7);
+  if (p.length) return p;
+  const d = MON === "toan6" ? open.filter(b => b >= 1 && b <= 7) : open.slice();
+  return d.length ? d : open.slice(0, 1);
 }
 function lessonMenu(open){
   const g = document.getElementById("grades"); if (!g) return null;
@@ -236,7 +258,9 @@ function lessonMenu(open){
     el.hidden = true; const l = el.previousElementSibling; if (l && l.classList.contains("lbl")) l.hidden = true;
   });
   const b = document.createElement("div"); b.className = "hanh-trinh";
-  b.innerHTML = `<b>📚 Chọn bài muốn ôn (Toán 6 – KNTT)</b><span class="ht-note"></span><div class="bai-list"></div>`;
+  b.innerHTML = `${MONS.length > 1 ? `<select class="mon-sel" aria-label="Chọn môn">${MONS.map(m => `<option value="${m.id}"${m.id === MON ? " selected" : ""}>📘 ${m.ten.replace(/[<>&]/g, "")}</option>`).join("")}</select>` : ""}<b>📚 Chọn bài muốn ôn (${MON === "toan6" ? "Toán 6 – KNTT" : (MONS.find(m => m.id === MON) || {}).ten})</b><span class="ht-note"></span><div class="bai-list"></div>`;
+  const ms = b.querySelector(".mon-sel");
+  if (ms) ms.onchange = () => { try { localStorage.setItem("tp_mon", ms.value); localStorage.removeItem(PICK_KEY); } catch (_) {} location.reload(); };
   const h1 = g.closest(".card")?.querySelector("h1");
   if (h1 && h1.parentNode === g.parentNode) h1.after(b); else { const lbl = g.previousElementSibling; (lbl || g).parentNode.insertBefore(b, lbl || g); }
   return b;
@@ -264,6 +288,7 @@ st.textContent = `.meo-nhac{display:flex;gap:8px;align-items:flex-start;text-ali
 .meo-tl{margin-top:8px;background:#fff;border:2px dashed #f0a050;border-radius:12px;padding:7px 10px;text-align:left;font-size:14px;line-height:1.45}
 .meo-tl b{color:#c0661a}
 .hanh-trinh{background:#fff8e1;border:2px solid #f0a050;border-radius:12px;padding:7px 10px;text-align:left;margin:4px 0}
+.hanh-trinh .mon-sel{width:100%;margin:0 0 6px;border:2px solid #f0a050;border-radius:10px;padding:6px 8px;font:700 14px 'Be Vietnam Pro',sans-serif;color:#27325c;background:#fff}
 .hanh-trinh b{display:block;font:800 15px 'Baloo 2','Be Vietnam Pro',sans-serif;color:#c0661a}.hanh-trinh span{font-size:13px;color:#5d6a8f}
 .bai-list{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;max-height:132px;overflow-y:auto}
 .bai-chip{font:600 12.5px 'Be Vietnam Pro',sans-serif;border:2px solid #e3d3b0;background:#fff;border-radius:10px;padding:4px 8px;cursor:pointer;color:#27325c;text-align:left}
@@ -310,9 +335,9 @@ function lessonsOpenNow(){
   let list = null;
   try { list = JSON.parse(localStorage.getItem("tp_mo_bai") || "null"); } catch (_) {}
   const all = LESSONS.map(x => x.bai).filter(b => (BANK_T6[b] || []).length);
-  const open = Array.isArray(list) && list.length ? all.filter(b => list.includes(b)) : all;
-  if ((BANK_T6[0] || []).length) open.unshift(0);
-  return open;
+  const open = MON !== "toan6" ? [] : Array.isArray(list) && list.length ? all.filter(b => list.includes(b)) : all;
+  const mine = TL.filter(l => MON === "toan6" ? l.mon === "toan" : l.mon === MON).map(l => l.num);
+  return MON === "toan6" ? mine.concat(open) : mine;
 }
 
 async function initJourney(p){
@@ -329,7 +354,7 @@ async function initJourney(p){
   };
   set(pick);
   hookQuiz();
-  window.JOURNEY = { byQ, log, lessons: () => pick, version: 4 };
+  window.JOURNEY = { byQ, log, lessons: () => pick, lessonName: shortL, subject: () => (MONS.find(m => m.id === MON) || {}).ten, version: 5 };
   return { blocked: false };
 }
 
@@ -409,6 +434,76 @@ if (mute) {
     m.querySelector(".quit").onclick = () => { location.reload(); };   // tải lại trang: về màn hình chọn bài, không lưu gì
   });
 }
+
+// ---- Link chia sẻ cho học sinh (?gt_session=…&gt_script=…): nhập tên → chơi → kết quả gửi về Google Sheet của giáo viên ----
+// Dùng chung Apps Script với các trò "Tạo Link Chia Sẻ" khác của EduTeacher Hub (cột: Thời gian, Phiên, Tên, Trò chơi, Điểm, Thời gian chơi, Ghi chú).
+(function shareMode(){
+  const P = new URLSearchParams(location.search), SES = P.get("gt_session"), SCR = P.get("gt_script");
+  if (!SES || !SCR) return;
+  const GAME = P.get("gt_game") || document.title.replace(/\s*[–-].*$/, "");
+  let name = ""; try { name = sessionStorage.getItem("tp_gt_name") || ""; } catch (_) {}
+  let t0 = 0, right = 0, wrong = 0, fixed = 0, wrongQ = [], round = 0;
+  const reset = () => { t0 = Date.now(); right = wrong = fixed = 0; wrongQ = []; };
+  window.addEventListener("tp:answer", e => { const d = e.detail || {};
+    if (d.loai === "dung") right++;
+    else if (d.loai === "sai") { wrong++; if (d.q && !wrongQ.includes(d.q)) wrongQ.push(d.q); }
+    else if (d.loai === "sua_dung") fixed++; });
+  const st = document.createElement("style");
+  st.textContent = `.gt-ov{position:fixed;inset:0;z-index:99999;background:rgba(39,50,92,.75);display:grid;place-items:center;padding:16px}
+.gt-ov .box{background:#fff;border:3px solid #27325c;border-radius:22px;box-shadow:0 6px 0 #27325c;max-width:360px;width:100%;padding:20px 18px;text-align:center;font-family:'Be Vietnam Pro',system-ui,sans-serif;color:#27325c}
+.gt-ov h3{margin:4px 0;font:800 22px 'Baloo 2','Be Vietnam Pro',sans-serif}.gt-ov p{margin:0 0 12px;font-size:14px;color:#5d6a8f}
+.gt-ov input{width:100%;box-sizing:border-box;border:3px solid #27325c;border-radius:14px;padding:11px;font:700 17px 'Be Vietnam Pro',sans-serif;text-align:center;color:#27325c}
+.gt-ov button{margin-top:12px;width:100%;font:800 19px 'Baloo 2','Be Vietnam Pro',sans-serif;border:3px solid #27325c;border-radius:14px;padding:10px;box-shadow:0 4px 0 #27325c;background:#22b07d;color:#fff;cursor:pointer}
+.gt-pill{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);z-index:99998;background:#27325c;color:#fff;font:700 13px 'Be Vietnam Pro',sans-serif;padding:6px 14px;border-radius:999px;box-shadow:0 3px 10px rgba(0,0,0,.25);max-width:94vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}`;
+  document.head.appendChild(st);
+  const pill = document.createElement("div"); pill.className = "gt-pill"; pill.setAttribute("data-no-mf", "");
+  const say = t => { pill.textContent = t; if (!pill.isConnected) document.body.appendChild(pill); };
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  function askName(){
+    const ov = document.createElement("div"); ov.className = "gt-ov";
+    ov.innerHTML = `<div class="box">${CAT ? `<img src="../img/${CAT}.png" alt="" style="width:90px;margin:-58px auto 0;display:block">` : ""}<h3>${esc(GAME)}</h3>
+      <p data-no-mf>Lớp / phiên: <b>${esc(SES)}</b><br>Nhập họ tên để bắt đầu – kết quả sẽ gửi cho thầy/cô.</p>
+      <input type="text" maxlength="60" placeholder="Họ và tên của em" autocomplete="name" value="${esc(name)}"><button type="button">Bắt đầu ▶</button></div>`;
+    document.body.appendChild(ov);
+    const inp = ov.querySelector("input"), go = () => { const v = inp.value.trim().replace(/\s+/g, " ");
+      if (v.length < 2) { inp.focus(); inp.style.borderColor = "#c0392b"; return; }
+      name = v; try { sessionStorage.setItem("tp_gt_name", v); } catch (_) {}
+      ov.remove(); say(`👤 ${name} · kết quả sẽ gửi cho thầy/cô (${SES})`); reset(); };
+    ov.querySelector("button").onclick = go; inp.addEventListener("keydown", e => { if (e.key === "Enter") go(); });
+    setTimeout(() => inp.focus(), 50);
+  }
+  function send(){
+    if (!name) return;
+    round++;
+    const over = document.getElementById("over"), sc = document.getElementById("oScore");
+    const scoreTxt = (sc ? sc.textContent : (over ? over.textContent : "")).trim();
+    const num = (scoreTxt.match(/-?\d+(?:[.,]\d+)?/) || ["0"])[0].replace(",", ".");
+    let bai = []; try { bai = JSON.parse(localStorage.getItem("tp_chon_bai") || "[]"); } catch (_) {}
+    const parts = [];
+    if (bai.length) parts.push("Bài: " + bai.map(b => b >= 1000 && window.JOURNEY && window.JOURNEY.lessonName ? window.JOURNEY.lessonName(b).replace(/^📝\s*/, "") : b === 0 ? "Câu GV" : "B" + b).join(", "));
+    if (right + wrong) parts.push(`Đúng ${right}/${right + wrong} câu` + (fixed ? ` (sửa lại đúng ${fixed})` : ""));
+    if (wrongQ.length) parts.push("Câu sai: " + wrongQ.slice(0, 6).map(q => q.length > 70 ? q.slice(0, 68) + "…" : q).join(" | ") + (wrongQ.length > 6 ? ` (+${wrongQ.length - 6} câu)` : ""));
+    if (!sc && scoreTxt) parts.push(scoreTxt.slice(0, 80));
+    if (round > 1) parts.push("Lượt " + round);
+    const data = { session: SES, student: name, game: GAME, score: Number(num) || 0,
+      time_seconds: t0 ? Math.round((Date.now() - t0) / 1000) : 0, timestamp: new Date().toLocaleString("vi-VN"), detail: parts.join(" · ").slice(0, 1200) };
+    say("⏳ Đang gửi kết quả cho thầy/cô…");
+    try {
+      const u = new URL(SCR); u.searchParams.set("edu_data", JSON.stringify(data));
+      fetch(u.toString(), { mode: "no-cors" }).then(() => say(`✅ Đã gửi kết quả lượt ${round} (${data.score} điểm) cho thầy/cô`)).catch(() => say("⚠️ Mất mạng – chưa gửi được kết quả. Em chụp màn hình gửi thầy/cô nhé!"));
+    } catch (_) { say("⚠️ Link chia sẻ bị lỗi – báo thầy/cô tạo link mới"); }
+  }
+  // Theo dõi màn hình: menu ẩn = bắt đầu chơi, bảng "over" hiện = kết thúc lượt
+  const vis = id => { const e = document.getElementById(id); return !!e && !e.hidden; };
+  let wasOver = vis("over"), wasMenu = vis("menu");
+  new MutationObserver(() => {
+    const o = vis("over"), m = vis("menu");
+    if (o && !wasOver) send();
+    if ((!o && wasOver && !m) || (!m && wasMenu)) reset();
+    wasOver = o; wasMenu = m;
+  }).observe(document.body, { subtree: true, attributes: true, attributeFilter: ["hidden"] });
+  askName();
+})();
 
 // ---- Bản offline: không cần đăng nhập ----
 window.PLAYER = { uid: "local", hoTen: "", lop: "", khoi: 6, role: "hs" };

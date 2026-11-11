@@ -6,6 +6,7 @@
 <title>Thẻ Hiệp Sĩ – EduTeacher Hub</title>
 <link rel="stylesheet" href="eduhub_ui.css">
 <script src="eduhub_data.js"></script>
+<script src="eduhub_qbank.js"></script>
 <script src="lib/xlsx.full.min.js"></script>
 <script src="lib/aruco/cv.js"></script>
 <script src="lib/aruco/aruco.js"></script>
@@ -183,7 +184,7 @@ $$('.tab').forEach(b=>b.onclick=()=>{$$('.tab').forEach(x=>x.classList.toggle('o
 // Câu hỏi: {text, opts:[4 chuỗi], correct:'A'..'D', errors:{B:'lỗi'...}, explain}
 function qEditor(host,id){
   host.innerHTML=`<div class="row">
-    <div class="f s"><label>Nguồn câu hỏi</label><select id="${id}src"><option value="own">✍️ Soạn nhanh / câu đã lưu</option><option value="bank">📚 Ngân hàng Toán 6 (685 câu)</option><option value="custom">📝 Câu hỏi game của thầy/cô</option></select></div>
+    <div class="f s"><label>Nguồn câu hỏi</label><select id="${id}src"><option value="own">✍️ Soạn nhanh / câu đã lưu</option><option value="bank">📚 Ngân hàng Toán 6 (685 câu)</option><option value="custom">📝 Ngân hàng câu hỏi của thầy/cô</option></select></div>
     <div class="f" id="${id}bw" hidden><label>Bài</label><select id="${id}bai"></select></div>
     <div class="f s" id="${id}rw"><label>&nbsp;</label><button class="btn l" id="${id}rand">🎲 Lấy ngẫu nhiên</button></div></div>
     <div class="bankl" id="${id}list" hidden></div>
@@ -200,17 +201,21 @@ function qEditor(host,id){
   E.set=q=>{g('text').value=q.text||'';host.querySelectorAll('.qopt').forEach((r,i)=>{r.querySelector('.ot').value=q.opts[i]||'';r.querySelector('.err').value=(q.errors||{})[r.dataset.l]||'';r.querySelector('input[type=radio]').checked=q.correct===r.dataset.l;});E.explain=q.explain||'';okUpd();};
   const listFor=()=>{const s=g('src').value;
     if(s==='bank'){const b=+g('bai').value;return (BANK&&BANK[b]||[]).map(fromBank);}
-    if(s==='custom')return (ED.get('tp_custom_q',[])||[]).map(fromBank);
+    if(s==='custom'){if(!window.QB)return (ED.get('tp_custom_q',[])||[]).map(fromBank);const v=g('bai').value;return (v?QB.questions(v):QB.load().cau.filter(QB.okQ)).map(fromBank);}
     return (ED.get('ths_q',[])||[]);};
-  const showList=()=>{const s=g('src').value,L=listFor();g('bw').hidden=s!=='bank';g('list').hidden=!L.length&&s==='own';
+  const showList=()=>{const s=g('src').value,L=listFor();g('bw').hidden=!(s==='bank'||(s==='custom'&&window.QB));g('list').hidden=!L.length&&s==='own';
     g('list').innerHTML=L.length?L.map((q,i)=>`<div data-i="${i}">${i+1}. ${esc(q.text||'(không có nội dung)')} <span class="hint">– ĐA ${q.correct}</span></div>`).join(''):`<div class="hint" style="cursor:default">${s==='bank'&&!BANK?'Đang tải ngân hàng…':'Chưa có câu nào'}</div>`;
     g('list').querySelectorAll('[data-i]').forEach(d=>d.onclick=()=>E.set(listFor()[+d.dataset.i]));};
   E.showList=showList;
-  g('src').onchange=showList;g('bai').onchange=showList;
+  g('src').onchange=()=>{E.fillLessons();};g('bai').onchange=showList;
   g('rand').onclick=()=>{const L=listFor();if(!L.length){ED.toast('Chưa có câu để lấy');return}E.set(L[Math.floor(Math.random()*L.length)]);};
   g('save').onclick=()=>{const q=E.get();if(!q.opts.some(Boolean)){ED.toast('Chưa nhập đáp án');return}const L=ED.get('ths_q',[])||[];L.unshift(q);ED.set('ths_q',L.slice(0,300));ED.toast('💾 Đã lưu câu hỏi');showList();};
   g('clear').onclick=()=>E.set({text:'',opts:['','','',''],correct:'A',errors:{}});
-  E.fillLessons=()=>{g('bai').innerHTML=LESSONS.map(b=>`<option value="${b.bai}">${esc(b.ten)}</option>`).join('');showList();};
+  E.fillLessons=()=>{const s=g('src').value;
+    if(s==='custom'&&window.QB){const subs=QB.subjects().filter(m=>m.soCau);   // ngân hàng câu hỏi của giáo viên: Môn → Bài
+      g('bai').innerHTML='<option value="">📝 Tất cả câu của thầy/cô</option>'+subs.map(m=>`<optgroup label="${esc(m.ten)}">${QB.lessons(m.id).filter(b=>b.soCau).map(b=>`<option value="${b.id}">${b.khoi?'K'+esc(b.khoi)+' · ':''}${esc(b.ten)} (${b.soCau})</option>`).join('')}</optgroup>`).join('');}
+    else g('bai').innerHTML=LESSONS.map(b=>`<option value="${b.bai}">${esc(b.ten)}</option>`).join('');
+    showList();};
   E.listFor=listFor;
   showList();return E;
 }

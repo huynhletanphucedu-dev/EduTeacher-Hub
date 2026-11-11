@@ -2939,12 +2939,12 @@ body.dark .sd-table tr:hover td{background:#162032;}
         <div class="tool-hub-grid">
 
           <div class="tool-card" onclick="window.open('tienphong/soan-cau-hoi.html','_blank')">
-            <div class="tool-card-title">Quản lý câu hỏi game</div>
+            <div class="tool-card-title">Quản lý câu hỏi trò chơi</div>
             <div class="tool-thumb-wrap">
               <span class="tool-num" style="background:#0f766e;">GV</span>
               <div class="tool-thumb" style="background:#f0fdfa;font-size:2.6rem">📝</div>
             </div>
-            <div class="tool-card-desc">Soạn câu hỏi riêng, chọn bài hiển thị, xem câu HS hay sai</div>
+            <div class="tool-card-desc">Chọn môn → tạo bài → soạn câu hỏi; dùng cho mọi trò chơi, chia sẻ cho đồng nghiệp</div>
           </div>
           <div class="tool-card" onclick="window.open('tienphong/games/lat-the.html','_blank')">
             <div class="tool-card-title">Lật Thẻ Trí Nhớ</div>
@@ -5790,7 +5790,7 @@ function TC_noiseLoop(){
     document.querySelectorAll('#tro-choi .tool-card').forEach(function(card){
       if(card.querySelector('.gt-link-badge')) return;
       const oc=card.getAttribute('onclick')||'';
-      const m2=oc.match(/window\.open\(['"](game_[^'"]+)['"]/);
+      const m2=oc.match(/window\.open\(['"]((?:game_|tienphong\/games\/)[^'"]+)['"]/);
       const gameFile=m2&&m2[1];
       if(!gameFile) return;
       const titleEl=card.querySelector('.tool-card-title');
@@ -5835,7 +5835,7 @@ function TC_noiseLoop(){
       <div class="gt-link-modal-box">
         <div class="gt-link-modal-title">🔗 Link Chia Sẻ – ${escH(gameName)}</div>
         <div class="gt-link-modal-sub">Phiên: <strong style="color:#38bdf8;">${escH(session)}</strong> · Gửi link này cho học sinh</div>
-        <textarea class="gt-link-url" rows="4" readonly id="gt-link-text">${url}</textarea>
+        <textarea class="gt-link-url" rows="4" readonly id="gt-link-text">${escH(url)}</textarea>
         <div class="gt-modal-actions">
           <button class="gt-btn-copy" onclick="gtCopyLink()">📋 Sao Chép Link</button>
           <button class="gt-btn-close-modal" onclick="document.getElementById('gt-link-modal').remove()">Đóng</button>
