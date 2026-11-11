@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>EduTeacher Hub – ThS. Huỳnh Lê Tấn Phúc</title>
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#3b7de9">
+<meta name="theme-color" content="#0b6aa2">
 <link rel="icon" type="image/png" href="icons/favicon-48.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1065,13 +1065,27 @@ body.dark .sd-table tr:hover td{background:#162032;}
 @media(max-width:700px){.sd-note{grid-template-columns:1fr auto;}.sd-note .why,.sd-note .tm{display:none}}
 </style>
 <script src="lib/xlsx.full.min.js"></script>
+<!-- Giao diện mới (hướng C – xanh nước biển). Xóa dòng dưới để quay về giao diện cũ. -->
+<link rel="stylesheet" href="eduhub_theme.css">
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ic-logo" viewBox="0 0 24 24"><path d="M3 9l9-5 9 5-9 5z"/><path d="M7 11.5V16c0 1.2 2.2 2.5 5 2.5s5-1.3 5-2.5v-4.5M21 9v5"/></symbol>
+  <symbol id="ic-book" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7M8 11h5"/></symbol>
+  <symbol id="ic-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c.8-3.6 3.2-5.5 6-5.5s5.2 1.9 6 5.5"/><path d="M15.5 4.8a3 3 0 0 1 0 6M17.5 14.8c1.8.6 3 2.3 3.5 5.2"/></symbol>
+  <symbol id="ic-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3M7.5 15h9"/></symbol>
+  <symbol id="ic-tool" viewBox="0 0 24 24"><path d="M14 6a4 4 0 0 0 5 5l-8 8a2 2 0 0 1-3-3l8-8a4 4 0 0 1-2-2z"/></symbol>
+  <symbol id="ic-game" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="11" rx="4"/><path d="M8 11v3M6.5 12.5h3M15 12h.01M17 14h.01"/></symbol>
+  <symbol id="ic-scan" viewBox="0 0 24 24"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 12h8"/></symbol>
+  <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+  <symbol id="ic-board" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4M7 12l3-3 2 2 4-4"/></symbol>
+  <symbol id="ic-shuffle" viewBox="0 0 24 24"><path d="M4 7h3c4 0 6 10 10 10h3M4 17h3c1.6 0 2.8-1.6 3.8-3.5M14 9.5C15 8 16 7 17 7h3M18 4l3 3-3 3M18 14l3 3-3 3"/></symbol>
+</svg>
 
 <!-- ══ SIDEBAR ══ -->
 <aside class="sidebar">
   <div class="sb-brand">
-    <div class="sb-logo">📚</div>
+    <div class="sb-logo"><svg class="ic"><use href="#ic-logo"/></svg></div>
     <div>
       <div class="sb-appname"><em>Edu</em><strong>Teacher</strong> Hub</div>
       <div class="sb-appsub">Hỗ trợ giáo viên</div>
@@ -1082,7 +1096,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
   <div class="nav-group" id="grp-giangday">
     <div class="nav-group-header" onclick="toggleGroup('grp-giangday')">
       <div class="gh-left">
-        <span class="gh-icon">🎯</span>
+        <span class="gh-icon"><svg class="ic"><use href="#ic-book"/></svg></span>
         <span class="gh-label">Giảng Dạy</span>
       </div>
       <span class="gh-arrow">▶</span>
@@ -1112,47 +1126,47 @@ body.dark .sd-table tr:hover td{background:#162032;}
   <div class="nav-group" id="grp-chunhiem">
     <div class="nav-group-header" onclick="toggleGroup('grp-chunhiem')">
       <div class="gh-left">
-        <span class="gh-icon">👨‍👩‍👧‍👦</span>
+        <span class="gh-icon"><svg class="ic"><use href="#ic-users"/></svg></span>
         <span class="gh-label">Chủ Nhiệm</span>
       </div>
       <span class="gh-arrow">▶</span>
     </div>
     <div class="nav-sub">
       <div class="nav-sub-item" onclick="showCN('t-students',this,'Chủ Nhiệm','Danh Sách HS')">
-        <span class="si-dot" style="background:#34d399"></span>📋 Danh Sách HS
+        <span class="si-dot" style="background:#34d399"></span>Danh Sách HS
       </div>
       <div class="nav-sub-item" onclick="showCN('t-attend',this,'Chủ Nhiệm','Điểm Danh')">
-        <span class="si-dot" style="background:#34d399"></span>✅ Điểm Danh
+        <span class="si-dot" style="background:#34d399"></span>Điểm Danh
       </div>
       <div class="nav-sub-item" onclick="showCN('t-discipline',this,'Chủ Nhiệm','Nề Nếp')">
-        <span class="si-dot" style="background:#34d399"></span>⚠️ Nề Nếp
+        <span class="si-dot" style="background:#34d399"></span>Nề Nếp
       </div>
       <div class="nav-sub-item" onclick="showCN('t-duty',this,'Chủ Nhiệm','Trực Nhật')">
-        <span class="si-dot" style="background:#34d399"></span>📅 Trực Nhật
+        <span class="si-dot" style="background:#34d399"></span>Trực Nhật
       </div>
       <div class="nav-sub-item" onclick="showCN('t-seating',this,'Chủ Nhiệm','Sơ Đồ Lớp')">
-        <span class="si-dot" style="background:#34d399"></span>🪑 Sơ Đồ Lớp
+        <span class="si-dot" style="background:#34d399"></span>Sơ Đồ Lớp
       </div>
       <div class="nav-sub-item" onclick="showCN('t-birthday',this,'Chủ Nhiệm','Sinh Nhật')">
-        <span class="si-dot" style="background:#34d399"></span>🎂 Sinh Nhật
+        <span class="si-dot" style="background:#34d399"></span>Sinh Nhật
       </div>
       <div class="nav-sub-item" onclick="showCN('t-contact',this,'Chủ Nhiệm','Liên Lạc PH')">
-        <span class="si-dot" style="background:#34d399"></span>📞 Liên Lạc PH
+        <span class="si-dot" style="background:#34d399"></span>Liên Lạc PH
       </div>
       <div class="nav-sub-item" onclick="showCN('t-report',this,'Chủ Nhiệm','Báo Cáo')">
-        <span class="si-dot" style="background:#34d399"></span>📊 Báo Cáo
+        <span class="si-dot" style="background:#34d399"></span>Báo Cáo
       </div>
       <div class="nav-sub-item" onclick="showCN('t-diary',this,'Chủ Nhiệm','Nhật Ký')">
-        <span class="si-dot" style="background:#34d399"></span>📝 Nhật Ký
+        <span class="si-dot" style="background:#34d399"></span>Nhật Ký
       </div>
       <div class="nav-sub-item" onclick="showPage('cn-nhanxet',this,'Chủ Nhiệm','Nhận Xét TT22')">
-        <span class="si-dot" style="background:#2dd4bf"></span>🧾 Nhận Xét TT22 <span style="margin-left:auto;font-size:.58rem;background:#ef4444;color:#fff;padding:1px 5px;border-radius:8px">MỚI</span>
+        <span class="si-dot" style="background:#2dd4bf"></span>Nhận Xét TT22 <span style="margin-left:auto;font-size:.58rem;background:#ef4444;color:#fff;padding:1px 5px;border-radius:8px">MỚI</span>
       </div>
       <div class="nav-sub-item" onclick="showPage('cn-thidua',this,'Chủ Nhiệm','Thi Đua Tuần')">
-        <span class="si-dot" style="background:#2dd4bf"></span>🏆 Thi Đua Tuần <span style="margin-left:auto;font-size:.58rem;background:#ef4444;color:#fff;padding:1px 5px;border-radius:8px">MỚI</span>
+        <span class="si-dot" style="background:#2dd4bf"></span>Thi Đua Tuần <span style="margin-left:auto;font-size:.58rem;background:#ef4444;color:#fff;padding:1px 5px;border-radius:8px">MỚI</span>
       </div>
       <div class="nav-sub-item" onclick="showPage('cn-tinnhan',this,'Chủ Nhiệm','Tin Nhắn Phụ Huynh')">
-        <span class="si-dot" style="background:#2dd4bf"></span>💬 Tin Nhắn PH <span style="margin-left:auto;font-size:.58rem;background:#ef4444;color:#fff;padding:1px 5px;border-radius:8px">MỚI</span>
+        <span class="si-dot" style="background:#2dd4bf"></span>Tin Nhắn PH <span style="margin-left:auto;font-size:.58rem;background:#ef4444;color:#fff;padding:1px 5px;border-radius:8px">MỚI</span>
       </div>
     </div>
   </div>
@@ -1163,7 +1177,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
   <div class="nav-group" id="grp-mophong">
     <div class="nav-group-header" onclick="toggleGroup('grp-mophong')">
       <div class="gh-left">
-        <span class="gh-icon">🔬</span>
+        <span class="gh-icon"><svg class="ic"><use href="#ic-flask"/></svg></span>
         <span class="gh-label">Mô Phỏng</span>
       </div>
       <span class="gh-arrow">▶</span>
@@ -1189,7 +1203,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
   <!-- 4. Công cụ khác -->
   <div class="nav-group-header" id="nav-congcu" onclick="showPage('cong-cu-khac',document.getElementById('nav-congcu'),'Công Cụ Khác','')" style="cursor:pointer;">
     <div class="gh-left">
-      <span class="gh-icon">🛠️</span>
+      <span class="gh-icon"><svg class="ic"><use href="#ic-tool"/></svg></span>
       <span class="gh-label">Công Cụ Khác</span>
     </div>
   </div>
@@ -1199,7 +1213,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
   <!-- 5. Trò chơi học tập -->
   <div class="nav-group-header" id="nav-trocchoi" onclick="showPage('tro-choi',document.getElementById('nav-trocchoi'),'Trò Chơi','Học Tập')" style="cursor:pointer;">
     <div class="gh-left">
-      <span class="gh-icon">🎮</span>
+      <span class="gh-icon"><svg class="ic"><use href="#ic-game"/></svg></span>
       <span class="gh-label">Trò Chơi Học Tập</span>
     </div>
   </div>
@@ -1234,9 +1248,9 @@ body.dark .sd-table tr:hover td{background:#162032;}
     <div class="tb-right">
       <div class="tb-date" id="tb-date"></div>
       <div class="tb-greeting" id="tb-greeting"></div>
-      <div class="tb-help"><button class="tb-setting-btn tb-help-btn" type="button" title="Hướng dẫn sử dụng" onclick="this.parentNode.classList.toggle('on')">❔</button>
+      <div class="tb-help"><button class="tb-setting-btn tb-help-btn" type="button" title="Hướng dẫn sử dụng" onclick="this.parentNode.classList.toggle('on')" style="font-weight:700;font-size:.95rem">?</button>
         <div class="tb-help-menu"><a href="huongdan.html" target="_blank">📖 Hướng dẫn sử dụng</a><a href="#" onclick="this.closest('.tb-help').classList.remove('on');EHTour.start();return false">🧭 Xem lại tour giới thiệu</a><a href="#" onclick="this.closest('.tb-help').classList.remove('on');EHFeedback&&EHFeedback.open();return false">💬 Góp ý / báo lỗi</a></div></div>
-      <button class="tb-setting-btn" onclick="openDrawer()" title="Cài đặt hồ sơ">⚙️</button>
+      <button class="tb-setting-btn" onclick="openDrawer()" title="Cài đặt hồ sơ"><svg class="ic" style="width:18px;height:18px" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.6 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
     </div>
   </div>
 
@@ -1245,76 +1259,36 @@ body.dark .sd-table tr:hover td{background:#162032;}
 
     <!-- ── WELCOME ── -->
     <div class="page active" id="page-welcome" style="padding:0;">
-      <div style="min-height:100vh;background:linear-gradient(135deg,#0f172a 0%,#1e293b 50%,#0f2d1a 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;">
-
-        <!-- Logo & title -->
-        <div style="margin-bottom:32px;">
-          <div style="font-size:3.5rem;margin-bottom:12px;">🏫</div>
-          <h1 style="margin:0;font-size:2rem;font-weight:900;background:linear-gradient(135deg,#38bdf8,#34d399);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">EduTeacher Hub</h1>
-          <p style="margin:6px 0 0;color:#94a3b8;font-size:1rem;">Bộ công cụ hỗ trợ giáo viên<span id="welcomeSchool"></span></p>
+      <div class="wl">
+        <div class="wl-head">
+          <div>
+            <h1 class="wl-hi">Chào <strong id="welcomeName">Thầy/Cô</strong></h1>
+            <div class="wl-date"><span id="welcomeDate"></span><span id="welcomeSchool"></span></div>
+          </div>
+          <button type="button" class="ehs-hero" id="ehs-hero"><svg class="ic" style="width:17px;height:17px"><use href="#ic-search"/></svg><span>Tìm nhanh công cụ, mô phỏng, trò chơi…</span><kbd>Ctrl K</kbd></button>
         </div>
 
-        <!-- Greeting -->
-        <div style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:20px 32px;margin-bottom:36px;max-width:500px;">
-          <p style="margin:0;color:#e2e8f0;font-size:1.05rem;">Xin chào, <strong style="color:#38bdf8;" id="welcomeName">Thầy/Cô</strong> 👋</p>
-          <p style="margin:8px 0 0;color:#64748b;font-size:.88rem;" id="welcomeDate"></p>
+        <div class="wl-quick">
+          <div class="wl-q" onclick="showPage('gd-sodiem',null,'Giảng Dạy','Sổ Điểm Cá Nhân')"><svg class="ic"><use href="#ic-book"/></svg><b>Sổ điểm</b><span>Nhập và theo dõi điểm</span></div>
+          <div class="wl-q" onclick="showPage('gd-goiten',null,'Giảng Dạy','Gọi Tên Học Sinh')"><svg class="ic"><use href="#ic-shuffle"/></svg><b>Gọi tên</b><span>Ngẫu nhiên, chiếu lên bảng</span></div>
+          <div class="wl-q" onclick="showPage('cn-hoso',null,'Chủ Nhiệm','')"><svg class="ic"><use href="#ic-users"/></svg><b>Chủ nhiệm</b><span>Điểm danh, nề nếp, liên lạc</span></div>
+          <div class="wl-q" onclick="window.open('cong_cu_chamtn.html','_blank')"><svg class="ic"><use href="#ic-scan"/></svg><b>Chấm trắc nghiệm</b><span>Quét phiếu bằng camera</span></div>
+          <div class="wl-q" onclick="window.open('cong_cu_bangtrang.html','_blank')"><svg class="ic"><use href="#ic-board"/></svg><b>Bảng trắng</b><span>Ô ly, Oxy, compa</span></div>
+          <div class="wl-q" onclick="showPage('cong-cu-khac',null,'Công Cụ','Khác')"><svg class="ic"><use href="#ic-tool"/></svg><b>Công cụ khác</b><span>Đề, PDF, giấy khen…</span></div>
         </div>
 
-        <!-- Đếm ngược sự kiện -->
-        <div id="cd-box" class="cd-box"></div>
-
-        <!-- Lớp mẫu (dữ liệu giả) cho người mới -->
-        <div id="ehd-box" style="width:100%"></div>
-
-        <!-- Tìm kiếm nhanh -->
-        <button type="button" class="ehs-hero" id="ehs-hero">🔍 <span>Tìm nhanh công cụ, mô phỏng, trò chơi…</span><kbd>Ctrl K</kbd></button>
-
-        <!-- Quick access cards -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;max-width:720px;width:100%;margin-bottom:36px;">
-          <div onclick="showPage('gd-sodiem',null,'Giảng Dạy','Sổ Điểm Cá Nhân')" style="background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.25);border-radius:14px;padding:18px 12px;cursor:pointer;transition:.2s;" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform=''">
-            <div style="font-size:1.8rem;margin-bottom:8px;">📊</div>
-            <div style="font-weight:700;color:#38bdf8;font-size:.88rem;">Sổ Điểm</div>
-            <div style="font-size:.73rem;color:#64748b;margin-top:3px;">Nhập & theo dõi điểm</div>
+        <div class="wl-cols">
+          <div>
+            <div class="wl-card"><div id="cd-box" class="cd-box"></div></div>
+            <div class="wl-card"><div id="ehs-quick"></div></div>
           </div>
-          <div onclick="showPage('gd-goiten',null,'Giảng Dạy','Gọi Tên Học Sinh')" style="background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);border-radius:14px;padding:18px 12px;cursor:pointer;transition:.2s;" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform=''">
-            <div style="font-size:1.8rem;margin-bottom:8px;">🎲</div>
-            <div style="font-weight:700;color:#34d399;font-size:.88rem;">Gọi Tên</div>
-            <div style="font-size:.73rem;color:#64748b;margin-top:3px;">Random học sinh</div>
-          </div>
-          <div onclick="showPage('mp-toan',null,'Mô Phỏng','Toán Học')" style="background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);border-radius:14px;padding:18px 12px;cursor:pointer;transition:.2s;" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform=''">
-            <div style="font-size:1.8rem;margin-bottom:8px;">🔬</div>
-            <div style="font-weight:700;color:#a78bfa;font-size:.88rem;">Mô Phỏng</div>
-            <div style="font-size:.73rem;color:#64748b;margin-top:3px;">Toán, KHTN, Sử, Địa</div>
-          </div>
-          <div onclick="showPage('tro-choi',null,'Trò Chơi','Học Tập')" style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:14px;padding:18px 12px;cursor:pointer;transition:.2s;" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform=''">
-            <div style="font-size:1.8rem;margin-bottom:8px;">🎮</div>
-            <div style="font-weight:700;color:#fbbf24;font-size:.88rem;">Trò Chơi</div>
-            <div style="font-size:.73rem;color:#64748b;margin-top:3px;">Game học tập cho HS</div>
-          </div>
-          <div onclick="showPage('cong-cu-khac',null,'Công Cụ','Khác')" style="background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);border-radius:14px;padding:18px 12px;cursor:pointer;transition:.2s;" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform=''">
-            <div style="font-size:1.8rem;margin-bottom:8px;">🛠️</div>
-            <div style="font-weight:700;color:#f87171;font-size:.88rem;">Công Cụ</div>
-            <div style="font-size:.73rem;color:#64748b;margin-top:3px;">QR, xếp lịch, biểu mẫu</div>
-          </div>
-          <div onclick="showPage('cn-hoso',null,'Chủ Nhiệm','')" style="background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.25);border-radius:14px;padding:18px 12px;cursor:pointer;transition:.2s;" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform=''">
-            <div style="font-size:1.8rem;margin-bottom:8px;">👨‍👩‍👧‍👦</div>
-            <div style="font-weight:700;color:#22d3ee;font-size:.88rem;">Chủ Nhiệm</div>
-            <div style="font-size:.73rem;color:#64748b;margin-top:3px;">Điểm danh, liên lạc</div>
+          <div>
+            <div id="ehd-box"></div>
+            <div class="wl-card"><div id="ehp-box"></div></div>
           </div>
         </div>
 
-        <!-- Yêu thích & gần đây -->
-        <div id="ehs-quick"></div>
-
-        <!-- Cài như ứng dụng / dùng offline -->
-        <div id="ehp-box"></div>
-
-        <!-- Stats / quote -->
-        <div style="color:#475569;font-size:.82rem;max-width:400px;line-height:1.6;">
-          <p style="margin:0;font-style:italic;">"Nghề dạy học là nghề cao quý nhất trong những nghề cao quý."</p>
-          <p style="margin:4px 0 0;color:#334155;">— Phạm Văn Đồng</p>
-        </div>
-
+        <div class="wl-foot"><i>“Nghề dạy học là nghề cao quý nhất trong những nghề cao quý.”</i> – Phạm Văn Đồng</div>
       </div>
     </div>
 
@@ -2632,11 +2606,11 @@ body.dark .sd-table tr:hover td{background:#162032;}
     <div class="page" id="cong-cu-khac">
       <div class="tool-hub-wrap">
         <div class="tool-hub-header">
-          <h2 class="tool-hub-title">⚙️ Công Cụ Khác</h2>
+          <h2 class="tool-hub-title">Công Cụ Khác</h2>
           <p class="tool-hub-sub">Bộ công cụ hỗ trợ giáo viên · bấm ☆ trên thẻ để ghim công cụ hay dùng lên đầu</p>
         </div>
         <div class="cck-bar" id="cck-bar">
-          <div class="cck-search"><span>🔍</span><input id="cck-q" type="search" placeholder="Tìm công cụ… (vd: pdf, đề, ảnh, excel)" autocomplete="off"></div>
+          <div class="cck-search"><svg class="ic" style="width:17px;height:17px;color:var(--muted)"><use href="#ic-search"/></svg><input id="cck-q" type="search" placeholder="Tìm công cụ… (vd: pdf, đề, ảnh, excel)" autocomplete="off"></div>
           <div class="cck-chips" id="cck-chips"></div>
         </div>
         <div class="cck-empty" id="cck-empty" hidden>Không tìm thấy công cụ phù hợp. Thầy/cô thử từ khóa khác nhé.</div>
@@ -6287,12 +6261,12 @@ VN_count();
 (function(){
   var page=document.getElementById('cong-cu-khac'); if(!page) return;
   var grid=page.querySelector('.tool-hub-grid');
-  var G=[['kt','📝 Kiểm tra & đánh giá',['taode','tronde','matran','chamtn','thongke','phongthi','phieutoan']],
-         ['vb','📄 Văn bản & in ấn',['baocao','baocaock','bieumau','tronthu','thetenban','giaykhen']],
-         ['lich','🗓️ Lịch & công việc',['lichday','lichbaogiang','congviec']],
-         ['anh','🖼️ Ảnh & tài liệu',['pdf','anh','scan','ocr','phanloaianh']],
-         ['dl','📊 Danh sách & Excel',['danhsach','excel']],
-         ['ti','🧰 Tiện ích trên lớp',['bangtrang','qr','rutgon']]];
+  var G=[['kt','Kiểm tra & đánh giá',['taode','tronde','matran','chamtn','thongke','phongthi','phieutoan']],
+         ['vb','Văn bản & in ấn',['baocao','baocaock','bieumau','tronthu','thetenban','giaykhen']],
+         ['lich','Lịch & công việc',['lichday','lichbaogiang','congviec']],
+         ['anh','Ảnh & tài liệu',['pdf','anh','scan','ocr','phanloaianh']],
+         ['dl','Danh sách & Excel',['danhsach','excel']],
+         ['ti','Tiện ích trên lớp',['bangtrang','qr','rutgon']]];
   var cur='all';
   function norm(s){return String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d');}
   function favs(){try{return JSON.parse(localStorage.getItem('ehs_favs'))||[];}catch(e){return [];}}
@@ -6303,7 +6277,7 @@ VN_count();
   });
   function chips(){
     var f=favs(), nf=cards.filter(function(c){return f.indexOf(c.url)>=0;}).length;
-    var list=[['all','Tất cả',cards.length],['fav','⭐ Yêu thích',nf]].concat(G.map(function(g){return [g[0],g[1],cards.filter(function(c){return c.g===g[0];}).length];}));
+    var list=[['all','Tất cả',cards.length],['fav','Yêu thích',nf]].concat(G.map(function(g){return [g[0],g[1],cards.filter(function(c){return c.g===g[0];}).length];}));
     document.getElementById('cck-chips').innerHTML=list.map(function(x){return '<button class="cck-chip'+(x[0]===cur?' on':'')+'" data-g="'+x[0]+'">'+x[1]+'<small>'+x[2]+'</small></button>';}).join('');
   }
   function apply(){
