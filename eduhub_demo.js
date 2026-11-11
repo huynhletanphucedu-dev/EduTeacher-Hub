@@ -46,6 +46,9 @@
         hoTenMe: pick(HO) + ' ' + pick(DEM_NU) + ' ' + pick(TEN_NU), ngheNghiepMe: pick(NGHE), namSinhMe: String(1982 + Math.floor(R() * 10)), sdtMe: '0000 222 ' + pad(i + 1, 3)
       };
     });
+    // vài em có sinh nhật đúng hôm nay / ngày mai → tab Sinh Nhật luôn có nội dung khi trình diễn
+    var _t = new Date(), _m = new Date(); _m.setDate(_m.getDate() + 1);
+    [[3, _t], [17, _t], [26, _m]].forEach(function (x) { if (stu[x[0]]) stu[x[0]].ngaySinh = pad(x[1].getDate(), 2) + '/' + pad(x[1].getMonth() + 1, 2) + '/2015'; });
     data.cn_students = stu; data.cn_className = cls;
     // học lực "ẩn" của từng em để điểm số, thi đua… có quy luật hợp lí
     var abil = {}; stu.forEach(function (s) { abil[s.id] = 4.8 + R() * 4.4; });
@@ -76,6 +79,48 @@
     for (var j = 0; j < 46; j++) { var st = pick(stu), c = R() < .7 ? pick(CRIT.slice(0, 4)) : pick(CRIT.slice(4, 9)); ev.push({ id: 'dm' + j, ts: Date.now() - j * 3600e3, date: pick(wk), sid: String(st.id), to: assign[String(st.id)], cid: c.id, name: c.name, pts: c.pts, note: '' }); }
     for (var t = 0; t < 6; t++) { var cc = pick(CRIT.slice(9)); ev.push({ id: 'dt' + t, ts: Date.now() - t * 7200e3, date: pick(wk), sid: null, to: t % 4, cid: cc.id, name: cc.name, pts: cc.pts, note: '' }); }
     data.td_v1 = { teams: [['Tổ 1', '#2563eb'], ['Tổ 2', '#dc2626'], ['Tổ 3', '#059669'], ['Tổ 4', '#7c3aed']].map(function (x) { return { name: x[0], color: x[1] }; }), assign: assign, crit: CRIT, events: ev, sync: false };
+
+    // ===== Trực nhật · Liên lạc PH · Nhật ký & việc cần làm (dữ liệu giả) =====
+    function addD(n) { var d = new Date(); d.setHours(12); d.setDate(d.getDate() + n); return d; }
+    function wdRange(from, to) { var out = []; for (var n = from; n <= to; n++) { var d = addD(n), w = d.getDay(); if (w > 0 && w < 6) out.push(iso(d)); } return out; }
+    var DT = [{ id: 7001, name: 'Quét lớp', count: 2, note: 'Đầu giờ & cuối buổi' }, { id: 7002, name: 'Lau bảng', count: 1, note: 'Sau mỗi tiết' }, { id: 7003, name: 'Đổ rác – kê bàn ghế', count: 1, note: 'Cuối buổi học' }];
+    data.cn_dutyTasks = DT;
+    var rot = 0, roster = [];
+    wdRange(-14, 21).forEach(function (dt) {
+      roster.push({ date: dt, tasks: DT.map(function (t) { var g = []; for (var j = 0; j < t.count; j++) { g.push(stu[rot % stu.length].id); rot++; } return { taskId: t.id, students: g }; }) });
+    });
+    data.cn_duty = roster;
+    var CT = [
+      [-12, 4, 'Zalo', 'Mẹ', 'Thông báo em nghỉ học 1 buổi không phép.', 'Mẹ cho biết em bị sốt, sẽ viết giấy phép bổ sung.'],
+      [-10, 9, 'Gọi điện', 'Cha', 'Em quên làm bài tập Toán 3 lần trong tuần.', 'Cha hứa kèm em làm bài mỗi tối.'],
+      [-9, 15, 'Gặp trực tiếp', 'Mẹ', 'Trao đổi kết quả học tập giữa kỳ, em tiến bộ môn Toán.', 'Phụ huynh vui, đề nghị GV tiếp tục động viên.'],
+      [-7, 21, 'Nhắn tin', 'Mẹ', 'Nhắc em mang đồng phục thể dục đúng lịch.', 'Đã nhận tin, sẽ nhắc em.'],
+      [-6, 2, 'Zalo', 'Cha', 'Khen em nhặt được của rơi trả lại bạn.', 'Gia đình cảm ơn cô/thầy đã tuyên dương.'],
+      [-5, 30, 'Gọi điện', 'Người thân khác', 'Em đi học trễ 2 buổi liên tiếp.', 'Bà ngoại đưa đón, hứa cho em đi sớm hơn.'],
+      [-3, 12, 'Gặp trực tiếp', 'Cha', 'Em nói chuyện riêng nhiều trong giờ học.', 'Thống nhất theo dõi qua sổ liên lạc mỗi tuần.'],
+      [-2, 35, 'Zalo', 'Mẹ', 'Mời phụ huynh họp Ban đại diện CMHS.', 'Mẹ xác nhận sẽ tham dự.'],
+      [-1, 26, 'Nhắn tin', 'Mẹ', 'Báo em đạt điểm 10 bài kiểm tra 15 phút.', 'Mẹ rất vui, sẽ khen thưởng em.'],
+      [0, 7, 'Gọi điện', 'Cha', 'Hỏi thăm tình hình sức khỏe sau khi em nghỉ ốm.', 'Em đã khỏe, đi học lại bình thường.']
+    ];
+    data.cn_contacts = CT.map(function (c, i) { return { id: 800000 + i, date: iso(addD(c[0])), studentId: String(stu[c[1]].id), method: c[2], 'with': c[3], note: c[4], result: c[5] }; });
+    var DI = [
+      [0, 'Sinh hoạt lớp đầu tuần', 'Phổ biến kế hoạch thi đua chào mừng 20/11. Tổ 2 dẫn đầu tuần trước, tuyên dương trước lớp.'],
+      [-2, 'Hoạt động trải nghiệm', 'Lớp tham gia trang trí báo tường chủ đề "Tri ân thầy cô". Các em hào hứng, phân công theo tổ.'],
+      [-4, 'Theo dõi học sinh', 'Một số em còn quên bài tập về nhà, đã nhắc nhở và liên hệ phụ huynh 2 trường hợp.'],
+      [-7, 'Họp tổ chuyên môn', 'Thống nhất ma trận đề kiểm tra cuối kỳ I theo Công văn 7991, phân công ra đề.'],
+      [-9, 'Kiểm tra giữa kỳ', 'Lớp hoàn thành kiểm tra giữa kỳ, không có học sinh vi phạm quy chế.'],
+      [-13, 'Lao động vệ sinh', 'Cả lớp lao động vệ sinh khuôn viên, trồng thêm cây xanh ở góc lớp.']
+    ];
+    data.cn_diary = DI.map(function (d, i) { return { id: 810000 + i, date: iso(addD(d[0])), title: d[1], content: d[2] }; });
+    var TK = [
+      ['Nộp kế hoạch chủ nhiệm tháng 11', 1, 'high', false],
+      ['Tổng hợp điểm thi đua tuần gửi Đội', 2, 'normal', false],
+      ['Chuẩn bị tiết mục văn nghệ 20/11', 5, 'high', false],
+      ['Nhập điểm thường xuyên lên hệ thống', 7, 'normal', false],
+      ['Gửi tin nhắn kết quả học tập cho phụ huynh', -1, 'normal', true],
+      ['Họp Ban đại diện CMHS', -3, 'normal', true]
+    ];
+    data.cn_tasks = TK.map(function (t, i) { return { id: 820000 + i, text: t[0], deadline: iso(addD(t[1])), priority: t[2], done: t[3] }; });
     return data;
   }
 
