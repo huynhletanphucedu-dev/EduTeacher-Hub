@@ -26,7 +26,9 @@ const isHTML = req => req.mode === 'navigate' || (req.headers.get('accept') || '
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
-  if (isHTML(req)) {
+  // trang HTML và mã riêng của Hub (eduhub_*.js/.css, sw không đổi tên file khi sửa) → ưu tiên bản mới trên mạng
+  const own = /\/(eduhub_[^/]*\.(js|css)|game_tracker\.js|cong_cu_pdf\.js)$/.test(new URL(req.url).pathname);
+  if (isHTML(req) || own) {
     // trang: ưu tiên bản mới trên mạng (chờ tối đa 3,5 giây), mất mạng thì dùng bản đã lưu
     e.respondWith((async () => {
       const cache = await caches.open(CACHE);
@@ -35,7 +37,7 @@ self.addEventListener('fetch', e => {
         if (net && net.ok) cache.put(req, net.clone());
         return net;
       } catch (_) {
-        return (await cache.match(req, { ignoreSearch: true })) || (await cache.match('dashboard.html')) || Response.error();
+        return (await cache.match(req, { ignoreSearch: true })) || (isHTML(req) ? await cache.match('dashboard.html') : null) || Response.error();
       }
     })());
   } else {

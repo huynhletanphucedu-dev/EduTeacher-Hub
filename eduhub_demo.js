@@ -172,9 +172,9 @@
   // nhãn nhỏ "Lớp mẫu" ở mọi trang khi đang dùng dữ liệu giả
   function pill() {
     if (!EHDemo.active() || document.getElementById('ehd-pill')) return;
-    var p = document.createElement('div'); p.id = 'ehd-pill'; p.title = 'Đang dùng lớp mẫu (học sinh giả). Xóa ở trang chính EduTeacher Hub.';
+    var p = document.createElement('div'); p.id = 'ehd-pill'; p.title = 'Kính chào Ban Giám khảo – đang dùng lớp mẫu (học sinh giả). Xóa ở trang chính EduTeacher Hub.';
     p.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:99990;background:#f59e0b;color:#111;font:800 12px/1 "Segoe UI",system-ui,sans-serif;padding:6px 10px;border-radius:999px;box-shadow:0 3px 10px rgba(0,0,0,.3);pointer-events:none;opacity:.92';
-    p.textContent = '🧪 Lớp mẫu – học sinh giả'; document.body.appendChild(p);
+    p.textContent = '👋 Chào BGK · Lớp mẫu – học sinh giả'; document.body.appendChild(p);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pill); else pill();
 })();
