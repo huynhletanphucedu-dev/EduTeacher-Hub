@@ -167,6 +167,8 @@
   window.EHDemo = EHDemo;
   // lớp mẫu cũ (phiên bản trước) → tự làm mới để có đủ dữ liệu mới (chỉ đụng dữ liệu GIẢ, không đụng lớp thật)
   try { var _dm = get('etv1_demo', null); if (_dm && _dm.v !== DEMO_VER) { EHDemo.clear(); var _d = build(); Object.keys(_d).forEach(function (k) { set(k, _d[k]); }); set('etv1_demo', { ts: Date.now(), v: DEMO_VER }); } } catch (e) { }
+  // mở link có ?demo=1 (mã QR cho BGK / người dùng thử) → tự nạp lớp mẫu nếu máy chưa có lớp thật
+  try { if (/[?&]demo=1(&|$)/.test(location.search) && !EHDemo.active() && !EHDemo.hasReal()) EHDemo.load(); } catch (e) { }
   // nhãn nhỏ "Lớp mẫu" ở mọi trang khi đang dùng dữ liệu giả
   function pill() {
     if (!EHDemo.active() || document.getElementById('ehd-pill')) return;

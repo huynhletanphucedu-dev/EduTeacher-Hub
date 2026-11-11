@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
+<script src="eduhub_demo.js"></script>
 <title>Chủ Nhiệm – EduTeacher Hub</title>
 <link rel="stylesheet" href="eduhub_fonts.css">
 <script src="lib/xlsx.full.min.js"></script>
@@ -231,7 +232,7 @@ table.data-tbl td.col-hoTen{white-space:normal;min-width:160px;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 
 /* RESPONSIVE */
-@media(max-width:640px){.sidebar{width:52px;}.nav-item span{display:none;}.sb-logo p,.sb-logo h2,.sb-class{display:none;}}
+@media(max-width:640px){body{flex-direction:column;}.sidebar{width:100%;max-height:none;flex-direction:row;overflow-x:auto;overflow-y:hidden;border-right:0;border-bottom:1px solid var(--border);}.sb-logo,.sb-class{display:none;}.sb-nav{display:flex;padding:0;}.nav-item{flex-direction:column;gap:2px;padding:7px 10px;font-size:.66rem;white-space:nowrap;border-left:0;border-bottom:3px solid transparent;}.nav-item.active{border-bottom-color:var(--accent);}.nav-badge{display:none!important;}.main{min-height:0;}}
 </style>
 </head>
 <body>
