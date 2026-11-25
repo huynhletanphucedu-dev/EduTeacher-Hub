@@ -1331,7 +1331,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
         </div>
         <div class="sd-toolbar-right">
           <button class="btn btn-ghost sd-btn" onclick="openImportModal()">📥 Import danh sách</button>
-          <label class="btn btn-ghost sd-btn" style="cursor:pointer;" title="Import từ Excel">📂 Excel<input type="file" id="sd-excel-upload" accept=".xlsx,.xls" style="display:none;" onchange="sdImportExcel(this)"/></label>
+          <label class="btn btn-ghost sd-btn" style="cursor:pointer;" title="Nhập từ Excel: file sổ điểm xuất từ Hub, hoặc Bảng điểm học kỳ tải từ CSDL ngành (tự nhận môn, lớp, học kỳ và các cột TX, GK, CK)">📂 Excel<input type="file" id="sd-excel-upload" accept=".xlsx,.xls" style="display:none;" onchange="sdImportExcel(this)"/></label>
           <button class="btn btn-blue sd-btn" onclick="openCreateBook()">＋ Tạo Sổ Mới</button>
         </div>
       </div>
@@ -5364,6 +5364,8 @@ function sdImportExcel(input){
         alert(`✅ Đã khôi phục sổ điểm "${meta.mon} – Lớp ${meta.lop}" với ${meta.students.length} học sinh!`);
         input.value=''; return;
       }
+      // ── Bảng điểm tải từ CSDL ngành (có cột "Họ và tên" + "ĐĐGtx") ──
+      if(sdImportCSDL(wb, file.name)){ input.value=''; return; }
       // ── Fallback: file Excel thông thường – chỉ import tên ──
       const data = sdLoad();
       if(!data.books.length){ alert('File này không phải xuất từ hệ thống. Hãy tạo sổ điểm trước, rồi dùng "Import danh sách" để thêm học sinh.'); input.value=''; return; }
@@ -5392,6 +5394,92 @@ function sdImportExcel(input){
   reader.readAsArrayBuffer(file);
 }
 
+
+/* ═════ Nhập BẢNG ĐIỂM HỌC KỲ tải từ CSDL ngành (csdl.moet / phần mềm của Sở) ═════
+   Mẫu: tiêu đề có "Lớp: 6/4", "Môn học: TOÁN - GV: …", "Học kỳ: I"; dòng tiêu đề cột có "Họ và tên", "ĐĐGtx"
+   (dòng dưới đánh số 1..5), "ĐĐG gk", "ĐĐG ck". Mỗi sheet một môn → nhập được nhiều môn một lần.
+   Quy tắc: ô có điểm trong file CSDL sẽ ghi vào Hub; ô trống trong file KHÔNG xóa điểm đang có trong Hub. */
+function sdCsdlNorm(t){return String(t??'').normalize('NFC').replace(/\s+/g,' ').trim().toLowerCase();}
+function sdCsdlFlat(t){return sdCsdlNorm(t).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d');}
+function sdCsdlMon(raw){
+  const f=sdCsdlFlat(raw);
+  const map=[['toan','Toán'],['ngu van','Ngữ văn'],['tieng anh','Tiếng Anh'],['ngoai ngu','Tiếng Anh'],['khoa hoc tu nhien','KHTN'],['khtn','KHTN'],
+    ['lich su','Lịch sử & Địa lý'],['dia li','Lịch sử & Địa lý'],['cong nghe','Công nghệ'],['tin hoc','Tin'],['giao duc cong dan','GDCD'],['gdcd','GDCD'],
+    ['nghe thuat','Nghệ thuật'],['am nhac','Nghệ thuật'],['mi thuat','Nghệ thuật'],['my thuat','Nghệ thuật'],['the chat','GDTC'],['gdtc','GDTC'],
+    ['dia phuong','GDĐP'],['trai nghiem','HĐTN-HN'],['hdtn','HĐTN-HN']];
+  const m=map.find(([k])=>f.includes(k));return m?m[1]:null;}
+function sdCsdlVal(v){if(v===null||v===undefined)return null;const t=String(v).trim();if(!t)return null;
+  const n=parseFloat(t.replace(',','.'));if(!isNaN(n)&&/^[\d.,\s]+$/.test(t))return Math.round(n*100)/100;
+  const u=t.toUpperCase();return (u==='Đ'||u==='CĐ')?u:t;}
+function sdCsdlFixRef(sheet){   // file CSDL hay khai báo sai vùng dữ liệu (!ref chỉ 6 dòng) → đo lại theo các ô thật
+  let R=0,C=0;Object.keys(sheet).forEach(k=>{if(k[0]==='!')return;try{const c=XLSX.utils.decode_cell(k);if(c.r>R)R=c.r;if(c.c>C)C=c.c;}catch(e){}});
+  sheet['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:R,c:C}});}
+function sdCsdlParse(sheet, sheetName){
+  sdCsdlFixRef(sheet);
+  const rows=XLSX.utils.sheet_to_json(sheet,{header:1,defval:'',raw:false});
+  let h=-1;for(let i=0;i<Math.min(rows.length,30);i++){const r=rows[i].map(sdCsdlFlat);if(r.includes('ho va ten')&&r.some(c=>c.startsWith('ddg'))){h=i;break;}}
+  if(h<0)return null;
+  const head=rows[h].map(sdCsdlFlat),meta={lop:'',monRaw:'',hk:null,namhoc:''};
+  rows.slice(0,h).flat().forEach(c=>{const t=String(c||'');let m;
+    if(!meta.lop&&(m=t.match(/L[ớo]p\s*:\s*([^\s,;]+)/i)))meta.lop=m[1].trim();
+    if(!meta.monRaw&&(m=t.match(/M[ôo]n(?:\s*h[ọo]c)?\s*:\s*(.+?)(?:\s+-\s*GV.*)?$/i)))meta.monRaw=m[1].trim();
+    if(!meta.hk&&(m=t.match(/H[ọo]c\s*k[ỳy]\s*:\s*(II|I|2|1)\b/i)))meta.hk=/^(II|2)$/i.test(m[1])?'hk2':'hk1';
+    if(!meta.namhoc&&(m=t.match(/N[ăa]m\s*h[ọo]c\s*:\s*(\d{4}\s*[-–]\s*\d{4})/i)))meta.namhoc=m[1].replace(/\s/g,'');});
+  const nameCol=head.indexOf('ho va ten'),txCol=head.findIndex(c=>c.replace(/\s/g,'').startsWith('ddgtx'));
+  const gkCol=head.findIndex(c=>/^ddg\s*gk$/.test(c.replace(/\n/g,' '))),ckCol=head.findIndex(c=>/^ddg\s*ck$/.test(c.replace(/\n/g,' ')));
+  const sub=rows[h+1]||[];let nTx=0,start=h+1;
+  if(txCol>=0&&String(sub[txCol]).trim()==='1'){while(String(sub[txCol+nTx]).trim()===String(nTx+1))nTx++;start=h+2;}else if(txCol>=0)nTx=1;
+  const students=[];
+  for(let i=start;i<rows.length;i++){const r=rows[i],ten=String(r[nameCol]||'').replace(/\s+/g,' ').trim();if(!ten)continue;
+    if(/^(t[ổo]ng|gi[áa]o vi[êe]n|ng[ưu][ờo]i l[ậa]p)/i.test(ten))break;
+    students.push({ten,tx:Array.from({length:nTx},(_,j)=>sdCsdlVal(r[txCol+j])),gk:gkCol>=0?sdCsdlVal(r[gkCol]):null,ck:ckCol>=0?sdCsdlVal(r[ckCol]):null});}
+  if(!students.length)return null;
+  meta.mon=sdCsdlMon(meta.monRaw)||sdCsdlMon(sheetName);
+  return {meta,students,sheetName};
+}
+function sdImportCSDL(wb, fileName){
+  const parts=wb.SheetNames.map(n=>sdCsdlParse(wb.Sheets[n],n)).filter(Boolean);
+  if(!parts.length)return false;
+  const data=sdLoad();const plans=[];
+  for(const P of parts){const M=P.meta;
+    if(!M.mon){alert(`Sheet "${P.sheetName}": không nhận ra môn "${M.monRaw}". Bỏ qua sheet này.`);continue;}
+    if(!M.lop){M.lop=(prompt(`Sheet "${P.sheetName}" (${M.mon}) không ghi tên lớp. Nhập tên lớp:`)||'').trim();if(!M.lop)continue;}
+    if(!M.hk){M.hk=confirm(`Sheet "${P.sheetName}": không thấy ghi học kỳ.\nBấm OK = Học kỳ I, Cancel = Học kỳ II`)?'hk1':'hk2';}
+    const book=data.books.find(b=>b.mon===M.mon&&sdCsdlNorm(b.lop)===sdCsdlNorm(M.lop));
+    const khoi=book?book.khoi:(parseInt(M.lop)||6),nTX=getTX(M.mon,khoi);
+    const list=book?((book[M.hk]&&book[M.hk].students)||[]):[];const used=new Set();
+    let match=0,add=0,cells=0,over=0,conf=0,extra=0;
+    P.students.forEach(st=>{const s=list.find(x=>!used.has(x.id)&&sdCsdlNorm(x.ten)===sdCsdlNorm(st.ten));
+      if(s){used.add(s.id);match++;}else add++;
+      const cur=s&&s[M.hk]||{tx:[],gk:null,ck:null};
+      st.tx.forEach((v,j)=>{if(v===null)return;if(j>=nTX){extra++;return;}cells++;const o=cur.tx&&cur.tx[j];if(o!==null&&o!==undefined&&o!==''&&String(o)!==String(v))conf++;});
+      [['gk',st.gk],['ck',st.ck]].forEach(([k,v])=>{if(v===null)return;cells++;const o=cur[k];if(o!==null&&o!==undefined&&o!==''&&String(o)!==String(v))conf++;});});
+    const onlyHub=list.filter(x=>!used.has(x.id)).length;
+    plans.push({P,M,book,khoi,nTX,match,add,cells,conf,extra,onlyHub});}
+  if(!plans.length)return true;
+  const msg=plans.map(x=>`• ${x.M.mon} – Lớp ${x.M.lop} – ${x.M.hk==='hk1'?'Học kỳ I':'Học kỳ II'}${x.book?'':' (SỔ MỚI sẽ được tạo)'}\n   ${x.P.students.length} học sinh: khớp ${x.match}${x.add?`, thêm mới ${x.add}`:''} · ${x.cells} ô điểm sẽ ghi`
+    +(x.conf?`\n   ⚠️ ${x.conf} ô đang có điểm KHÁC trong Hub sẽ bị thay bằng điểm CSDL`:'')
+    +(x.extra?`\n   ⚠️ ${x.extra} ô ở cột TX vượt quá ${x.nTX} cột của sổ – sẽ bỏ qua`:'')
+    +(x.onlyHub?`\n   ℹ️ ${x.onlyHub} em có trong Hub nhưng không có trong file – giữ nguyên`:'')).join('\n\n');
+  if(!confirm(`📥 Nhập bảng điểm CSDL từ file "${fileName}":\n\n${msg}\n\nÔ trống trong file sẽ KHÔNG xóa điểm đang có. Hub tự sao lưu trước khi nhập.\nTiếp tục?`))return true;
+  try{if(window.EHBackup&&EHBackup.snapshotNow)EHBackup.snapshotNow();}catch(e){}
+  let lastId=null;
+  plans.forEach(x=>{const M=x.M;let book=x.book;
+    if(!book){book={id:uid(),mon:M.mon,lop:M.lop,khoi:x.khoi,namhoc:M.namhoc||'',history:[],hk1:{students:[]},hk2:{students:[]}};data.books.push(book);}
+    else if(!book.namhoc&&M.namhoc)book.namhoc=M.namhoc;
+    ['hk1','hk2'].forEach(k=>{if(!book[k])book[k]={students:[]};});
+    const used=new Set();const blank=()=>({tx:Array(x.nTX).fill(null),gk:null,ck:null});
+    x.P.students.forEach(st=>{let s=book[M.hk].students.find(q=>!used.has(q.id)&&sdCsdlNorm(q.ten)===sdCsdlNorm(st.ten));
+      if(!s){const id=uid();const n={id,ten:st.ten,thuong:0,hk1:blank(),hk2:blank()};
+        book.hk1.students.push(n);book.hk2.students.push(JSON.parse(JSON.stringify(n)));s=book[M.hk].students.find(q=>q.id===id);}
+      used.add(s.id);const sc=s[M.hk]||(s[M.hk]=blank());if(!Array.isArray(sc.tx))sc.tx=[];while(sc.tx.length<x.nTX)sc.tx.push(null);
+      st.tx.forEach((v,j)=>{if(v!==null&&j<x.nTX)sc.tx[j]=v;});if(st.gk!==null)sc.gk=st.gk;if(st.ck!==null)sc.ck=st.ck;});
+    {const _h=SD.hk;SD.hk=M.hk==='hk1'?1:2;logHistory(book,'(Cả lớp – '+x.P.students.length+' em)','📥 Nhập CSDL',null,x.cells+' ô điểm');SD.hk=_h;}
+    lastId=book.id;});
+  sdSave(data);renderBookTabs(data);if(lastId){selectBook(lastId);const hk=plans[plans.length-1].M.hk;if(hk==='hk2')switchHK(2);}
+  showToast(`✅ Đã nhập bảng điểm CSDL: ${plans.map(x=>x.M.mon+' '+x.M.lop).join(', ')}`);
+  return true;
+}
 
 
 /* ════════════════════════════════════════════
