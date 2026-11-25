@@ -1026,6 +1026,14 @@ body.dark .sd-table tr:hover td{background:#162032;}
 
 
 /* ── Gọi Tên Vui Nhộn ── */
+.del-stu-list{max-height:52vh;overflow:auto;border:1px solid var(--border);border-radius:10px}
+.del-stu-row{display:flex;align-items:center;gap:10px;padding:7px 12px;border-bottom:1px solid var(--border);cursor:pointer;font-size:.88rem}
+.del-stu-row:last-child{border-bottom:0}
+.del-stu-row:hover{background:var(--bg)}
+.del-stu-row:has(.del-cb:checked){background:rgba(239,68,68,.1)}
+.del-stu-row .ds-stt{width:24px;color:var(--muted);font-size:.75rem;text-align:right}
+.del-stu-row .ds-name{font-weight:600}
+.del-cb{width:16px;height:16px;accent-color:#ef4444}
 .gt-prio{display:flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;color:var(--gt-text,#e2e8f0);margin:2px 0 8px;cursor:pointer}
 .vn-wrap{display:flex;flex-direction:column;height:100%}
 .vn-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 14px;background:var(--white);border-bottom:1px solid var(--border);font-size:.85rem;font-weight:700}
@@ -4606,7 +4614,8 @@ function delSelectAll(val){
 function confirmDeleteStudents(){
   const ids = new Set([...document.querySelectorAll('.del-cb:checked')].map(cb=>cb.value));
   if(ids.size===0){ alert('Chưa chọn học sinh nào!'); return; }
-  if(!confirm(`Xóa ${ids.size} học sinh đã chọn? Điểm số sẽ mất vĩnh viễn.`)) return;
+  const _nm=[...document.querySelectorAll('.del-cb:checked')].map(cb=>cb.closest('.del-stu-row').querySelector('.ds-name').textContent);
+  if(!confirm(`Xóa ${ids.size} học sinh khỏi sổ (cả HK1 và HK2)?\n\n• ${_nm.slice(0,12).join('\n• ')}${_nm.length>12?'\n…':''}\n\nĐiểm của các em này sẽ bị xóa theo. Lỡ tay thì bấm ↩ Hoàn tác (Ctrl+Z) ngay sau đó.`)) return;
   const data = sdLoad();
   const book = data.books.find(b=>b.id===SD.bookId);
   if(!book) return;
@@ -4616,6 +4625,7 @@ function confirmDeleteStudents(){
   sdSave(data);
   closeModal('modal-del-students');
   renderTable();
+  showToast(`🗑️ Đã xóa ${ids.size} học sinh – bấm ↩ Hoàn tác nếu lỡ tay`);
 }
 
 /* ── DELETE BOOK ── */
@@ -4635,7 +4645,7 @@ function deleteBook(){
 
 /* ── CREATE BOOK ── */
 function openCreateBook(){
-  document.getElementById('cb-namhoc').value = '2025-2026';
+  {const d=new Date(),y=d.getMonth()>=7?d.getFullYear():d.getFullYear()-1;document.getElementById('cb-namhoc').value=y+'-'+(y+1);}
   updateTXPreview();
   openModal('modal-create-book');
 }
@@ -5988,15 +5998,21 @@ function TC_noiseLoop(){
 
 <!-- ══ MODAL: Xóa Học Sinh ══ -->
 <div class="modal-overlay" id="modal-del-students">
-  <div class="modal-box" style="max-width:360px;">
+  <div class="modal-box" style="max-width:440px;">
     <div class="modal-head">
       <h3>🗑️ Xóa Học Sinh</h3>
       <button class="modal-close" onclick="closeModal('modal-del-students')">✕</button>
     </div>
     <div class="modal-body">
-      <p style="color:var(--muted);font-size:.88rem;margin-bottom:16px;">Xóa toàn bộ học sinh trong sổ điểm này? Hành động không thể hoàn tác.</p>
-      <div style="display:flex;gap:8px;">
-        <button class="btn" style="flex:1;background:#ef4444;color:#fff;border-color:#ef4444;" onclick="confirmDeleteStudents()">🗑️ Xóa Tất Cả</button>
+      <p style="color:var(--muted);font-size:.84rem;margin-bottom:10px;">Đánh dấu các em cần xóa khỏi sổ (cả HK1 và HK2). Lỡ tay thì bấm <b>↩ Hoàn tác</b> (Ctrl+Z) ngay sau đó.</p>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+        <span id="del-sel-count" style="flex:1;font-weight:700;font-size:.84rem;">Chọn học sinh cần xóa</span>
+        <button class="btn btn-ghost" style="padding:4px 10px;font-size:.78rem;" onclick="delSelectAll(true)">Chọn tất cả</button>
+        <button class="btn btn-ghost" style="padding:4px 10px;font-size:.78rem;" onclick="delSelectAll(false)">Bỏ chọn</button>
+      </div>
+      <div id="del-student-list" class="del-stu-list"></div>
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <button class="btn" style="flex:1;background:#ef4444;color:#fff;border-color:#ef4444;" onclick="confirmDeleteStudents()">🗑️ Xóa các em đã chọn</button>
         <button class="btn" onclick="closeModal('modal-del-students')" style="flex:1;">Hủy</button>
       </div>
     </div>
