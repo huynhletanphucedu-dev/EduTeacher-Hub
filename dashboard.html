@@ -1026,6 +1026,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
 
 
 /* ── Gọi Tên Vui Nhộn ── */
+.gt-prio{display:flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;color:var(--gt-text,#e2e8f0);margin:2px 0 8px;cursor:pointer}
 .vn-wrap{display:flex;flex-direction:column;height:100%}
 .vn-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 14px;background:var(--white);border-bottom:1px solid var(--border);font-size:.85rem;font-weight:700}
 .vn-bar select,.vn-mtools select{border:1.5px solid var(--border);border-radius:8px;padding:5px 8px;font:inherit;font-weight:600;background:var(--white);color:var(--text);max-width:260px}
@@ -1036,6 +1037,19 @@ body.dark .sd-table tr:hover td{background:#162032;}
 .vn-manual[hidden]{display:none}
 .vn-manual textarea{flex:1;min-height:90px;border:1.5px solid var(--border);border-radius:10px;padding:8px;font:inherit;font-size:.85rem;resize:vertical;background:var(--white);color:var(--text)}
 .vn-hint{font-size:.76rem;color:var(--muted);margin-top:6px;line-height:1.4}
+.vn-remote{flex:1;overflow:auto;padding:22px;display:flex;flex-direction:column;gap:14px;align-items:center;background:var(--bg)}
+.vn-remote[hidden],.vn-frame[hidden]{display:none}
+.vn-rt{font-weight:800;color:var(--muted)}
+.vn-rlast{font-size:1.9rem;font-weight:900;color:var(--text);text-align:center;min-height:2.4rem}
+.vn-rbtns{display:grid;grid-template-columns:repeat(4,minmax(120px,190px));gap:12px}
+.vn-rbig{border:0;border-radius:16px;padding:20px 10px;font:inherit;font-size:1.15rem;font-weight:900;color:#fff;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+.vn-rbig:active{transform:translateY(3px);box-shadow:none}
+.vn-rbig small{font-size:.7rem;font-weight:700;opacity:.85}
+.vn-rbig.go{background:#ef4444}.vn-rbig.ok{background:#16a34a}.vn-rbig.no{background:#f97316}.vn-rbig.cl{background:#2563eb}
+.vn-rrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;font-weight:700;font-size:.85rem}
+.vn-rrow select{border:1.5px solid var(--border);border-radius:8px;padding:5px 8px;font:inherit;background:var(--white);color:var(--text)}
+#vn-rhint{max-width:720px;font-size:.82rem}
+@media(max-width:760px){.vn-rbtns{grid-template-columns:repeat(2,1fr)}}
 .vn-frame{flex:1;position:relative;background:#111;min-height:0}
 .vn-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .vn-load[hidden]{display:none}
@@ -1068,6 +1082,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
 <script src="lib/xlsx.full.min.js"></script>
 <!-- Giao diện mới (hướng C – xanh nước biển). Xóa dòng dưới để quay về giao diện cũ. -->
 <link rel="stylesheet" href="eduhub_theme.css">
+<script src="eduhub_goiten.js"></script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -1423,6 +1438,7 @@ body.dark .sd-table tr:hover td{background:#162032;}
       </div>
     </div>
 
+    <label class="gt-prio" title="Trong các em chưa được gọi, em chưa có điểm thường xuyên hoặc điểm thấp sẽ dễ được gọi hơn (vẫn ngẫu nhiên)"><input type="checkbox" id="gt-prio" onchange="EHGoiTen.setCfg({prio:this.checked})"> 🎯 Ưu tiên em chưa có điểm / điểm thấp</label>
     <!-- Play button -->
     <div class="gt-play-area">
       <button class="gt-play-btn" onclick="GT2_play()">🎰 BẮT ĐẦU</button>
@@ -1450,7 +1466,10 @@ body.dark .sd-table tr:hover td{background:#162032;}
   <div class="gt-right">
     <div class="gt-right-head">
       <h2 id="gt-right-title">📋 Danh Sách Lớp</h2>
-      <button class="gt-reset-btn" onclick="GT2_resetSession()">🔄 Phiên Mới</button>
+      <span style="display:flex;gap:6px;">
+        <button class="gt-reset-btn" onclick="GT2_resetSession()" title="Xóa các thẻ bên trái. Lịch sử ai đã được gọi vẫn được giữ.">🧹 Xóa thẻ</button>
+        <button class="gt-reset-btn" onclick="GT2_newRound()" title="Bỏ qua phần còn lại của vòng này, cả lớp được gọi lại từ đầu">⏭ Vòng mới</button>
+      </span>
     </div>
     <div class="gt-right-table" id="gt-right-table">
       <div style="padding:32px;text-align:center;color:rgba(255,255,255,.2);font-size:.85rem;">Chọn sổ điểm để xem danh sách</div>
@@ -1757,8 +1776,11 @@ body.dark .sd-table tr:hover td{background:#162032;}
           <label>📋 Danh sách <select id="vn-src"></select></label>
           <label>🪑 Chỗ ngồi <select id="vn-seat"><option value="rand">Ngẫu nhiên</option><option value="map">Theo Sơ đồ lớp</option></select></label>
           <label class="vn-ck" title="Dùng khi chỗ ngồi trong trò chơi bị ngược trái/phải so với lớp thật"><input type="checkbox" id="vn-flip"> ↔ Đảo trái/phải</label>
+          <label class="vn-ck" title="Trong các em chưa được gọi, em chưa có điểm thường xuyên hoặc điểm thấp sẽ dễ được gọi hơn (vẫn ngẫu nhiên)"><input type="checkbox" id="vn-prio"> 🎯 Ưu tiên chưa có điểm/điểm thấp</label>
           <span class="vn-info" id="vn-info"></span>
           <span style="flex:1"></span>
+          <button class="btn btn-ghost vn-b" id="vn-round" title="Bỏ qua phần còn lại của vòng, cả lớp được gọi lại từ đầu">⏭ Vòng mới</button>
+          <button class="btn btn-blue vn-b" id="vn-tv" title="Mở trò chơi trong cửa sổ riêng trên màn hình TV/máy chiếu; điều khiển từ máy tính">📺 Chiếu lên TV</button>
           <button class="btn btn-ghost vn-b" id="vn-res">📝 Kết quả phiên <b id="vn-cnt">0</b></button>
           <button class="btn btn-ghost vn-b" id="vn-full">⛶ Toàn màn hình</button>
         </div>
@@ -1767,6 +1789,20 @@ body.dark .sd-table tr:hover td{background:#162032;}
           <div><button class="btn btn-blue vn-b" id="vn-save-names">✔ Dùng danh sách này</button><div class="vn-hint">Danh sách được lưu lại trên máy cho lần sau.</div></div>
         </div>
         <div class="vn-frame" id="vn-box"><iframe id="vn-frame" title="Gọi tên vui nhộn" allow="fullscreen; autoplay" allowfullscreen></iframe><div class="vn-load" id="vn-load">⏳ Đang tải trò chơi (lần đầu hơi lâu, các lần sau sẽ nhanh)…</div></div>
+        <div class="vn-remote" id="vn-remote" hidden>
+          <div class="vn-rt">📺 Trò chơi đang chiếu trên TV · <span id="vn-rstat">đang kết nối…</span></div>
+          <div class="vn-rlast" id="vn-rlast">Chưa gọi bạn nào</div>
+          <div class="vn-rbtns">
+            <button class="vn-rbig go" data-c="go">🎲 GỌI TÊN<small>phím Space</small></button>
+            <button class="vn-rbig ok" data-c="ok">✔ Đúng<small>phím D</small></button>
+            <button class="vn-rbig no" data-c="no">✘ Sai<small>phím S</small></button>
+            <button class="vn-rbig cl" data-c="close">↩ Đóng khung tên<small>phím Enter</small></button>
+          </div>
+          <div class="vn-rrow"><label>🎮 Trò chơi <select id="vn-rgame"></select></label>
+            <button class="btn btn-ghost vn-b" id="vn-rfocus" title="Đưa cửa sổ TV lên trên (khi bị slide PowerPoint che)">⤴ Đưa TV lên trên</button>
+            <button class="btn btn-ghost vn-b" id="vn-rclose" style="color:var(--red)">⏹ Thu về (tắt TV)</button></div>
+          <div class="vn-hint" id="vn-rhint">• Trên TV: <b>nhấp đúp</b> vào trò chơi một lần để bật toàn màn hình.<br>• Muốn quay lại slide: bấm <b>⏹ Thu về</b> – cửa sổ TV đóng, slide PowerPoint hiện lại. Lịch sử gọi tên vẫn giữ nguyên.<br>• Nếu cửa sổ không tự sang TV: bấm vào cửa sổ đó rồi nhấn <b>Win + Shift + →</b>, sau đó <b>F11</b>.</div>
+        </div>
       </div>
       <div class="vn-modal" id="vn-modal" hidden><div class="vn-mbox">
         <div class="vn-mhead"><h3>📝 Kết quả phiên gọi tên</h3><button class="btn btn-ghost vn-b" id="vn-mclose">✕</button></div>
@@ -4740,6 +4776,21 @@ let GT2 = {
   pendingWinner: null,
 };
 
+/* ── Lịch sử gọi tên lâu dài (eduhub_goiten.js) ── */
+function GT2_book(){const data=sdLoad();return GT2.bookId?data.books.find(b=>b.id===GT2.bookId):null;}
+function GT2_sync(book,students){
+  book=book||GT2_book();students=students||GT2_students(book);
+  if(!book||!window.EHGoiTen){GT2.calledIds=new Set();return;}
+  const set=new Set(EHGoiTen.calledSet(book.lop,students.map(s=>s.ten)));
+  GT2.calledIds=new Set(students.filter(s=>set.has(s.ten)).map(s=>s.id));
+}
+function GT2_newRound(){
+  const book=GT2_book(),students=GT2_students(book);if(!book||!students.length){showToast('Chọn sổ điểm trước');return;}
+  const inf=EHGoiTen.info(book.lop,students.map(s=>s.ten));
+  if(!confirm(`Bắt đầu vòng mới cho lớp ${book.lop}?\n\nVòng ${inf.round} còn ${inf.left} em chưa được gọi – các em này sẽ được tính như đã gọi.`))return;
+  EHGoiTen.newRound(book.lop,students.map(s=>s.ten));GT2_sync(book,students);GT2_renderRight();GT2_updateProgress();showToast('Đã bắt đầu vòng mới');
+}
+
 /* helper: get students array from book+hk */
 function GT2_students(book, hk){
   if(!book) return [];
@@ -4756,7 +4807,8 @@ function GT2_init(){
   sel.innerHTML = '<option value="">-- Chọn sổ điểm --</option>' +
     data.books.map(b=>`<option value="${b.id}">${b.mon} · Lớp ${b.lop}</option>`).join('');
   if(cur){ sel.value = cur; }
-  if(GT2.bookId) GT2_renderRight();
+  const pr=document.getElementById('gt-prio');if(pr&&window.EHGoiTen)pr.checked=EHGoiTen.cfg().prio;
+  if(GT2.bookId){ GT2_sync(); GT2_renderRight(); GT2_updateProgress(); }
   GT2_renderDataList();
 }
 
@@ -4785,7 +4837,7 @@ function GT2_resetSession(){
   const sids = students.map(s=>s.id);
   for(let i=sids.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[sids[i],sids[j]]=[sids[j],sids[i]];}
   GT2.queue = sids;
-  GT2.calledIds = new Set();
+  GT2_sync(book, students);   // lấy lại danh sách đã gọi từ lịch sử lâu dài – không còn bị mất khi đổi lớp / mở lại
   GT2.sessionNotes = {};
   const area = document.getElementById('gt-cards-area');
   if(area) area.innerHTML = '<div style="text-align:center;padding:30px 0;color:rgba(255,255,255,.2);font-size:.82rem;">Chưa có học sinh nào được gọi</div>';
@@ -4812,17 +4864,12 @@ function GT2_play(){
   if(!students.length){showToast('Sổ điểm chưa có học sinh');return;}
   if(GT2.animating) return;
 
-  if(!GT2.queue.length){
-    const remaining = students.filter(s=>!GT2.calledIds.has(s.id));
-    const pool = remaining.length ? remaining : students;
-    const sids = pool.map(s=>s.id);
-    for(let i=sids.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[sids[i],sids[j]]=[sids[j],sids[i]];}
-    GT2.queue = sids;
-    if(!remaining.length) showToast('Đã gọi hết! Bắt đầu vòng mới...');
-  }
-
-  const sid = GT2.queue.shift();
-  const student = students.find(s=>s.id===sid);
+  GT2_sync(book, students);
+  let pool = students.filter(s=>!GT2.calledIds.has(s.id));
+  if(!pool.length) pool = students.slice();
+  const prio = document.getElementById('gt-prio') ? document.getElementById('gt-prio').checked : true;
+  const W = prio ? EHGoiTen.weightsFor(book.lop, pool.map(s=>s.ten), {book, hk:GT2.hk}) : {};
+  const student = EHGoiTen.pick(pool, s=>prio ? W[s.ten] : 1);
   if(!student) return;
 
   if(GT2.gameMode === 'fast'){
@@ -4854,7 +4901,13 @@ function gtStatsSave(data){
 }
 
 function GT2_callStudent(student, allStudents){
-  GT2.calledIds.add(student.id);
+  const _bk = GT2_book();
+  if(_bk && window.EHGoiTen){
+    EHGoiTen.rec(_bk.lop, student.ten);
+    GT2_sync(_bk, allStudents);
+    if(!GT2.calledIds.size && allStudents.length>1) showToast('🎉 Cả lớp đã được gọi đủ lượt – tự chuyển sang vòng mới!');
+    else GT2.calledIds.add(student.id);
+  } else GT2.calledIds.add(student.id);
   GT2.queue = GT2.queue.filter(id=>id!==student.id);
   GT2_addCard(student, allStudents);
   GT2_renderRight();
@@ -5044,6 +5097,7 @@ function GT2_renderRight(){
   const txHeaders = Array.from({length:nTX},(_,i)=>`<th>TX${i+1}</th>`).join('') +
     (isQual ? '' : '<th>GK</th><th>CK</th>');
 
+  const _cnt = window.EHGoiTen ? EHGoiTen.counts(book.lop, students.map(s=>s.ten)) : {};
   const rows = students.map((s,i)=>{
     const called = GT2.calledIds.has(s.id);
     const hkScore = s[GT2.hk] || {tx:Array(nTX).fill(null),gk:null,ck:null};
@@ -5059,10 +5113,11 @@ function GT2_renderRight(){
       <td style="font-weight:600;">${s.ten}</td>
       ${txCells}${extraCells}
       <td style="color:#f59e0b;font-weight:800;">${s.thuong?'+'+s.thuong:''}</td>
+      <td style="color:var(--gt-muted);font-weight:700;" title="Số lần được gọi từ trước tới nay">${_cnt[s.ten]||0}</td>
     </tr>`;
   }).join('');
 
-  rt.innerHTML=`<table><thead><tr><th>#</th><th style="text-align:left;">Họ và Tên</th>${txHeaders}<th>🏆</th></tr></thead><tbody>${rows}</tbody></table>`;
+  rt.innerHTML=`<table><thead><tr><th>#</th><th style="text-align:left;">Họ và Tên</th>${txHeaders}<th>🏆</th><th title="Số lần được gọi">🎯</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 /* ── PROGRESS ── */
@@ -5072,12 +5127,13 @@ function GT2_updateProgress(){
   const total = GT2_students(book).length;
   const called = GT2.calledIds.size;
   const pct = total ? Math.round(called/total*100) : 0;
+  const _inf = (book && window.EHGoiTen) ? EHGoiTen.info(book.lop, GT2_students(book).map(s=>s.ten)) : {round:1};
   const fill = document.getElementById('gt-prog-fill2');
   const cnt  = document.getElementById('gt-prog-count');
   const lbl  = document.getElementById('gt-prog-label');
   if(fill) fill.style.width = pct+'%';
   if(cnt)  cnt.textContent = `${called} / ${total}`;
-  if(lbl)  lbl.textContent = called===0?'Chưa bắt đầu':called===total?'Đã gọi hết lớp':`Còn ${GT2.queue.length} chưa gọi`;
+  if(lbl)  lbl.textContent = !total?'Chưa bắt đầu':`Vòng ${_inf.round} · còn ${total-called} em chưa gọi`;
 }
 
 /* ── STATS ── */
@@ -5969,7 +6025,7 @@ function sdNoteDel(uid){if(!confirm('Xóa ghi chú này?'))return;sdNoteEdit(b=>
 function sdClearDoneNotes(){sdNoteEdit(b=>{const n=b.notes.filter(x=>x.done).length;if(!n){showToast('Không có ghi chú đã xử lý');return;}if(confirm('Xóa '+n+' ghi chú đã xử lý?'))b.notes=b.notes.filter(x=>!x.done);});}
 
 /* ═════ Gọi Tên Vui Nhộn (games/GoiTen_VuiNhon.html, nối qua cổng goiten:*) ═════ */
-const VN={src:null,ready:false,loaded:false,ses:{}};
+const VN={src:null,ready:false,loaded:false,ses:{},tv:null,tvReady:false,games:[],cls:''};
 try{VN.ses=JSON.parse(sessionStorage.getItem('gtvn_session')||'{}')||{};}catch(e){}
 const vnGet=(k,d)=>{try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}};
 const vnSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
@@ -6006,23 +6062,36 @@ function VN_data(){
     if(b){className=b.lop;students=((b.hk1&&b.hk1.students)||[]).map(s=>({id:'sd_'+b.id+'_'+s.id,name:String(s.ten||'').trim()})).filter(s=>s.name);}}
   else{className='Danh sách tự nhập';students=(vnGet('gtvn_manual',[])||[]).map(n=>({id:null,name:n}));}
   students.forEach(s=>{const g=gm[vnNorm(s.name)];if(g)s.gender=g;});
-  const d={className,scoreColumns:[],students:students.slice(0,48)};
+  const d={className,scoreColumns:[],students:students.slice(0,48),longTerm:true};
+  const _names=d.students.map(s=>s.name);VN.cls=className;
+  if(window.EHGoiTen){d.called=EHGoiTen.calledSet(className,_names);
+    if(document.getElementById('vn-prio').checked)d.weights=EHGoiTen.weightsFor(className,_names,{bookId:VN.src&&VN.src.startsWith('b:')?VN.src.slice(2):null});}
   const seatMode=document.getElementById('vn-seat').value,sg=seatMode==='map'?VN_seating(d.students):null;if(sg)d.seating=sg;
-  const info=[];if(students.length>48)info.push('⚠️ Trò chơi hiển thị tối đa 48 em');
+  const info=[];if(window.EHGoiTen&&_names.length){const f=EHGoiTen.info(className,_names);info.push(`🔁 Vòng ${f.round}: còn ${f.left}/${f.total} em chưa gọi`);}
+  if(students.length>48)info.push('⚠️ Trò chơi hiển thị tối đa 48 em');
   if(seatMode==='map')info.push(sg?'🪑 Đã xếp theo Sơ đồ lớp':'🪑 Chưa có Sơ đồ lớp khớp danh sách → xếp ngẫu nhiên');
   document.getElementById('vn-info').textContent=info.join(' · ');
   return d;}
-function VN_send(){const fr=document.getElementById('vn-frame');if(!VN.ready||!fr.contentWindow)return;
+function VN_tvOn(){return !!(VN.tv&&!VN.tv.closed);}
+function VN_win(){return VN_tvOn()?VN.tv:document.getElementById('vn-frame').contentWindow;}
+function VN_send(){const tv=VN_tvOn(),w=VN_win();if(!(tv?VN.tvReady:VN.ready)||!w)return;
   const d=VN_data();if(!d.students.length){showToast(VN.src==='manual'?'Hãy dán danh sách rồi bấm “Dùng danh sách này”':'Danh sách trống');return;}
-  fr.contentWindow.postMessage({type:'goiten:setClass',payload:d},'*');}
-function VN_init(){VN_fill();const fr=document.getElementById('vn-frame');
+  w.postMessage({type:'goiten:setClass',payload:d},'*');}
+function VN_init(){VN_fill();document.getElementById('vn-prio').checked=window.EHGoiTen?EHGoiTen.cfg().prio:true;const fr=document.getElementById('vn-frame');
+  if(VN_tvOn()){VN_send();VN_count();return;}
   if(!VN.loaded){VN.loaded=true;fr.onload=VN_fix;fr.src='games/GoiTen_VuiNhon.html';}else VN_send();VN_count();}
 /* Khung trò chơi 1600×900 bị co lại (flex-shrink) khi cửa sổ hẹp hơn 1600px → bị cắt hai bên. Thêm 1 dòng CSS từ ngoài, không sửa file trò chơi. */
 function VN_fix(){try{const d=document.getElementById('vn-frame').contentDocument;if(!d||d.getElementById('hub-fix'))return;
   const st=d.createElement('style');st.id='hub-fix';st.textContent='#stage{flex-shrink:0}';d.head.appendChild(st);document.getElementById('vn-frame').contentWindow.dispatchEvent(new Event('resize'));}catch(e){}}
-window.addEventListener('message',e=>{const fr=document.getElementById('vn-frame');if(!fr||e.source!==fr.contentWindow)return;const m=e.data||{};
-  if(m.type==='goiten:ready'){VN.ready=true;document.getElementById('vn-load').hidden=true;VN_send();}
-  if(m.type==='goiten:result'&&m.payload&&m.payload.uid){VN.ses[m.payload.uid]=m.payload;try{sessionStorage.setItem('gtvn_session',JSON.stringify(VN.ses));}catch(_){}VN_count();
+window.addEventListener('message',e=>{const fr=document.getElementById('vn-frame');const fromTV=!!(VN.tv&&e.source===VN.tv);
+  if(!fr||(!fromTV&&e.source!==fr.contentWindow))return;const m=e.data||{};
+  if(m.type==='goiten:ready'){if(fromTV){VN.tvReady=true;VN.games=m.games||[];VN_rgames(m.game);document.getElementById('vn-rstat').textContent='đã kết nối ✔';}
+    else{VN.ready=true;document.getElementById('vn-load').hidden=true;}VN_send();}
+  if(m.type==='goiten:newRound'){const d=VN_data();if(window.EHGoiTen)EHGoiTen.newRound(d.className,d.students.map(s=>s.name));VN_send();showToast('Đã bắt đầu vòng gọi tên mới');}
+  if(m.type==='goiten:result'&&m.payload&&m.payload.uid){
+    if(!VN.ses[m.payload.uid]&&window.EHGoiTen){EHGoiTen.rec(m.payload.className||VN.cls,m.payload.name);VN_data();}
+    if(fromTV)document.getElementById('vn-rlast').textContent='🎯 '+m.payload.name+(m.payload.result==='ok'?'  ✔':m.payload.result==='no'?'  ✘':'');
+    VN.ses[m.payload.uid]=m.payload;try{sessionStorage.setItem('gtvn_session',JSON.stringify(VN.ses));}catch(_){}VN_count();
     if(!document.getElementById('vn-modal').hidden)VN_table();}});
 function VN_list(){return Object.values(VN.ses).sort((a,b)=>a.time<b.time?1:-1);}
 function VN_count(){document.getElementById('vn-cnt').textContent=Object.keys(VN.ses).length;}
@@ -6060,6 +6129,42 @@ document.getElementById('vn-mclose').onclick=()=>{document.getElementById('vn-mo
 document.getElementById('vn-modal').onclick=e=>{if(e.target.id==='vn-modal')e.target.hidden=true;};
 document.getElementById('vn-move').onclick=VN_move;document.getElementById('vn-xls').onclick=VN_xls;
 document.getElementById('vn-clear').onclick=()=>{if(!Object.keys(VN.ses).length)return;if(confirm('Xóa toàn bộ kết quả của phiên này (bảng “Kết quả” trong trò chơi vẫn giữ)?')){VN.ses={};try{sessionStorage.removeItem('gtvn_session');}catch(_){}VN_count();VN_table();}};
+/* ── 📺 Chiếu lên TV: mở trò chơi ở cửa sổ riêng trên màn hình thứ hai (chế độ Extend), điều khiển từ máy tính ── */
+function VN_rgames(cur){const sel=document.getElementById('vn-rgame');sel.innerHTML=VN.games.map(g=>`<option value="${escHtml(g.id)}"${g.id===cur?' selected':''}>${escHtml((g.ic||'')+' '+g.name)}</option>`).join('');}
+function VN_cmd(c){if(VN_tvOn())VN.tv.postMessage({type:'goiten:cmd',payload:c},'*');}
+async function VN_tvOpen(){
+  if(VN_tvOn()){VN.tv.close();VN_tvClosed();return;}
+  let feat='popup=yes,width=1280,height=720',scr=null;
+  try{if('getScreenDetails' in window){const sd=await window.getScreenDetails();const o=sd.screens.filter(x=>x!==sd.currentScreen);scr=o.find(x=>!x.isInternal)||o[0]||null;
+      if(scr)feat=`popup=yes,left=${scr.availLeft},top=${scr.availTop},width=${scr.availWidth},height=${scr.availHeight}`;}}catch(e){}
+  const w=window.open('games/GoiTen_VuiNhon.html?tv=1','ehub_goiten_tv',feat);
+  if(!w){showToast('Trình duyệt vừa chặn cửa sổ – bấm “📺 Chiếu lên TV” thêm một lần nữa');return;}
+  VN.tv=w;VN.tvReady=false;
+  if(scr){try{w.moveTo(scr.availLeft,scr.availTop);w.resizeTo(scr.availWidth,scr.availHeight);}catch(e){}}
+  else showToast('Chưa nhận ra màn hình TV → bấm vào cửa sổ mới rồi nhấn Win + Shift + → , sau đó F11',6000);
+  const fr=document.getElementById('vn-frame');fr.onload=null;fr.src='about:blank';VN.loaded=false;VN.ready=false;   // tránh 2 trò chơi chạy cùng lúc
+  document.getElementById('vn-box').hidden=true;document.getElementById('vn-remote').hidden=false;
+  document.getElementById('vn-rstat').textContent='đang kết nối…';document.getElementById('vn-rlast').textContent='Chưa gọi bạn nào';
+  const b=document.getElementById('vn-tv');b.textContent='⏹ Thu về (tắt TV)';b.classList.remove('btn-blue');b.classList.add('btn-ghost');
+  clearInterval(VN.tvPoll);VN.tvPoll=setInterval(()=>{if(VN.tv&&VN.tv.closed)VN_tvClosed();},700);
+}
+function VN_tvClosed(){clearInterval(VN.tvPoll);VN.tv=null;VN.tvReady=false;
+  document.getElementById('vn-remote').hidden=true;document.getElementById('vn-box').hidden=false;document.getElementById('vn-load').hidden=false;
+  const b=document.getElementById('vn-tv');b.textContent='📺 Chiếu lên TV';b.classList.add('btn-blue');b.classList.remove('btn-ghost');
+  if(document.getElementById('gd-vuinhon').classList.contains('active'))VN_init();}
+document.getElementById('vn-tv').onclick=VN_tvOpen;
+document.getElementById('vn-rclose').onclick=()=>{if(VN_tvOn())VN.tv.close();VN_tvClosed();};
+document.getElementById('vn-rfocus').onclick=()=>{if(VN_tvOn())VN.tv.focus();};
+document.querySelectorAll('.vn-rbig').forEach(b=>b.onclick=()=>VN_cmd(b.dataset.c));
+document.getElementById('vn-rgame').onchange=e=>{if(VN_tvOn())VN.tv.postMessage({type:'goiten:setGame',payload:e.target.value},'*');};
+document.getElementById('vn-prio').onchange=e=>{if(window.EHGoiTen)EHGoiTen.setCfg({prio:e.target.checked});VN_send();};
+document.getElementById('vn-round').onclick=()=>{const d=VN_data(),n=d.students.map(s=>s.name);if(!n.length||!window.EHGoiTen)return;const f=EHGoiTen.info(d.className,n);
+  if(!confirm(`Bắt đầu vòng mới cho ${d.className}?\n\nVòng ${f.round} còn ${f.left} em chưa được gọi – các em này sẽ được tính như đã gọi.`))return;EHGoiTen.newRound(d.className,n);VN_send();VN_data();showToast('Đã bắt đầu vòng mới');};
+/* phím tắt trên máy tính khi đang chiếu TV */
+document.addEventListener('keydown',e=>{if(!VN_tvOn()||!document.getElementById('gd-vuinhon').classList.contains('active'))return;
+  if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName)||e.ctrlKey||e.altKey||e.metaKey)return;
+  const c=e.code==='Space'?'go':e.code==='Enter'?'close':(e.key==='d'||e.key==='D')?'ok':(e.key==='s'||e.key==='S')?'no':null;if(c){e.preventDefault();VN_cmd(c);}});
+addEventListener('beforeunload',()=>{try{if(VN_tvOn())VN.tv.close();}catch(e){}});
 (function(){const _sp=showPage;showPage=function(id){_sp.apply(this,arguments);if(id==='gd-vuinhon')VN_init();};})();
 VN_count();
 </script>

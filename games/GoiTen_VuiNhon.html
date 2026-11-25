@@ -137,6 +137,8 @@ html,body{width:100%;height:100%;background:#111;overflow:hidden;font-family:var
 #cntRow{display:flex;gap:10px;align-items:center;margin-top:16px;font-size:24px;font-weight:800}
 #cntRow button{font-size:26px;padding:2px 20px}#cntRow button.on{background:#ffd23f}
 #toast{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);z-index:8000;background:#222;color:#fff;font-weight:800;font-size:26px;padding:8px 26px;border-radius:16px;display:none}
+#stage{flex-shrink:0}
+#tvHint{position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:99999;background:rgba(15,23,42,.88);color:#fff;padding:10px 18px;border-radius:12px;font:700 15px system-ui,sans-serif;transition:opacity .6s;pointer-events:none}
 </style>
 </head>
 <body>
@@ -637,14 +639,19 @@ function render(){
 function updProg(){$('prog').textContent=`${S.hub&&S.hub.className?S.hub.className+' · ':''}Đã gọi ${Object.keys(S.called).length}/${S.students.length}`}
 async function play(){
   if(busy||$('ov').classList.contains('show')||document.querySelector('.modal.show'))return;
-  const pool=SPR.filter(p=>!S.called[p.s.name]);if(!pool.length){toast('Cả lớp đã được gọi hết! Bấm ↺ Lượt mới');return}
-  busy=true;$('go').disabled=true;const g=G[S.game];const K=g.multi?Math.max(1,Math.min(callCount(),pool.length)):1;const wins=shuffle(pool).slice(0,K);const win=wins[0];
+  let pool=SPR.filter(p=>!S.called[p.s.name]);
+  if(!pool.length&&S.hubLong&&SPR.length){S.called={};save();render();toast('🎉 Cả lớp đã được gọi đủ lượt – bắt đầu vòng mới!');pool=SPR.slice()}
+  if(!pool.length){toast('Cả lớp đã được gọi hết! Bấm ↺ Lượt mới');return}
+  busy=true;$('go').disabled=true;const g=G[S.game];const K=g.multi?Math.max(1,Math.min(callCount(),pool.length)):1;const wins=S.w?wpick(pool,K):shuffle(pool).slice(0,K);const win=wins[0];
   const hb=setInterval(()=>{if(!S.music)SFX.beat()},700);musicStart();
   try{await g.run(pool,win,wins)}catch(e){console.error(e)}
   clearInterval(hb);musicStop();if(K>1){showWinners(wins);return}
   if(!g.noZoom)await zoomTo(win);
   showWinner(win);
 }
+/* bốc có trọng số (Hub gửi: em chưa có điểm / điểm thấp được ưu tiên) */
+function wpick(pool,K){const a=pool.slice(),out=[];while(out.length<K&&a.length){const ws=a.map(p=>Math.max(.05,+(S.w&&S.w[p.s.name])||1));
+  let r=Math.random()*ws.reduce((x,y)=>x+y,0),i=0;for(;i<a.length-1;i++){r-=ws[i];if(r<=0)break}out.push(a.splice(i,1)[0])}return out}
 function shakeWorld(){$('world').animate([{translate:'0 0'},{translate:'-12px 6px'},{translate:'10px -8px'},{translate:'-6px 4px'},{translate:'0 0'}],{duration:380})}
 async function zoomTo(w){if(w.y>1000||w.y<0)return;const W=$('world');const x=Math.max(250,Math.min(1350,w.x)),y=Math.max(200,Math.min(800,w.y-w.h/2));W.style.transformOrigin=`${x}px ${y}px`;W.style.transform='scale(1.9)';await sleep(1000)}
 let CURS=[];
@@ -689,7 +696,11 @@ $('bLines').onclick=()=>{if(!busy)openLines()};
 $('lnSave').onclick=()=>{const sp=id=>$(id).value.split(/\r?\n/).map(s=>s.trim()).filter(Boolean);S.lines={hu:sp('lnHu'),tha:sp('lnTha'),bat:sp('lnBat')};S.nextReason=$('lnNext').value;S.bipStops=+$('lnStops').value;save();$('linesM').classList.remove('show');toast('Đã lưu câu thoại của Bíp')};
 $('lnReset').onclick=()=>{$('lnHu').value=DEF_LINES.hu.join('\n');$('lnTha').value=DEF_LINES.tha.join('\n');$('lnBat').value=DEF_LINES.bat.join('\n')};
 $('linesM').onclick=e=>{if(e.target.id==='linesM')$('linesM').classList.remove('show')};$('bMenu').onclick=$('title').onclick=()=>{if(!busy)openMenu()};
-$('bReset').onclick=()=>{if(busy)return;S.called={};save();render();toast('Bắt đầu lượt gọi mới!')};
+$('bReset').onclick=()=>{if(busy)return;
+  if(S.hubLong&&hubWin()){const left=S.students.filter(s=>!S.called[s.name]).length;
+    if(left&&!confirm('Bắt đầu vòng mới?\n\nCòn '+left+' bạn chưa được gọi ở vòng này – các bạn đó sẽ được tính như đã gọi.'))return;
+    hubWin().postMessage({type:'goiten:newRound'},'*');return}
+  S.called={};save();render();toast('Bắt đầu lượt gọi mới!')};
 $('bSnd').onclick=()=>{S.sound=!S.sound;$('bSnd').textContent=S.sound?'🔊':'🔇';save()};
 $('bFull').onclick=()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen()};
 function openTeam(){const T=team().map(r=>r.id);const B=$('teamList');B.innerHTML='';
@@ -725,7 +736,9 @@ function setLog(ent,ch){if(!ent)return;const e=(S.log||[]).find(x=>x.uid===ent.u
 const CBS=[];
 function emit(ent){const d=JSON.parse(JSON.stringify(ent));CBS.forEach(f=>{try{f(d)}catch(e){console.error(e)}});
   try{window.dispatchEvent(new CustomEvent('goiten:result',{detail:d}))}catch(e){}
-  try{if(window.parent&&window.parent!==window)window.parent.postMessage({type:'goiten:result',payload:d},'*')}catch(e){}}
+  try{const h=hubWin();if(h)h.postMessage({type:'goiten:result',payload:d},'*')}catch(e){}}
+/* cửa sổ Hub: khung cha (nhúng trong Hub) hoặc cửa sổ mở ra (chế độ 📺 chiếu TV) */
+function hubWin(){try{if(window.parent&&window.parent!==window)return window.parent;if(window.opener&&!window.opener.closed)return window.opener}catch(e){}return null}
 function drawLog(){const L=$('logList');if(!L)return;const log=S.log||[];$('bLog').textContent='📋 Kết quả'+(log.length?' ('+log.length+')':'');L.innerHTML='';
   if(!log.length){L.innerHTML='<div class="hint" style="padding:10px">Chưa có bạn nào bị gọi. Bấm nút đỏ để bắt đầu!</div>';return}
   const cols=(S.hub&&S.hub.scoreColumns)||[];
@@ -750,17 +763,27 @@ window.GoiTen={version:'1.0',
   const off=hash(S.students.map(s=>s.name).join('|'));S.students.forEach(s=>{if(!s.c)s.c=s.g==='m'?BOYS[(bi++ +off)%6]:GIRLS[(gi++ +off)%6]});
   S.seatMap=null;let flat=null;if(Array.isArray(data.seating)){flat=Array.isArray(data.seating[0])?data.seating.slice(0,6).flatMap(r=>{const a=r.slice(0,8);while(a.length<8)a.push(null);return a}):data.seating.slice(0,48)}
   if(flat){while(flat.length<48)flat.push(null);const idx=Object.fromEntries(S.students.map((s,i)=>[String(s.id??s.name),i]));S.seatMap=flat.map(v=>v==null?-1:(idx[String(v)]??-1))}
-  S.order=shuffle(S.students.map((_,i)=>i));S.hub={className:data.className||'',scoreColumns:Array.isArray(data.scoreColumns)?data.scoreColumns:[]};S.called={};save();render();drawLog();return true},
+  S.order=shuffle(S.students.map((_,i)=>i));S.hub={className:data.className||'',scoreColumns:Array.isArray(data.scoreColumns)?data.scoreColumns:[]};S.called={};
+  /* lịch sử gọi tên lâu dài từ Hub: các em đã gọi trong vòng này + trọng số ưu tiên */
+  S.hubLong=!!data.longTerm;S.w=data.weights&&typeof data.weights==='object'?data.weights:null;
+  if(Array.isArray(data.called)){const has=new Set(S.students.map(s=>s.name));data.called.forEach(n=>{if(has.has(n))S.called[n]='hit'})}
+  save();render();drawLog();return true},
  onResult(cb){if(typeof cb==='function')CBS.push(cb)},
  getLog(){return JSON.parse(JSON.stringify(S.log||[]))},
  clearLog(){S.log=[];save();drawLog()},
  setGame(id){if(G[id]&&!busy){S.game=id;save();render()}}};
 window.addEventListener('message',e=>{const m=e.data;if(!m||typeof m!=='object')return;
-  if(m.type==='goiten:setClass')window.GoiTen.setClass(m.payload);else if(m.type==='goiten:setGame')window.GoiTen.setGame(m.payload)});
+  if(m.type==='goiten:setClass')window.GoiTen.setClass(m.payload);else if(m.type==='goiten:setGame')window.GoiTen.setGame(m.payload);
+  else if(m.type==='goiten:cmd'){const c=m.payload,open=$('ov').classList.contains('show');   // điều khiển từ máy tính khi chiếu TV
+    if(c==='go'){open?closeOv():play()}else if(c==='ok')result(true);else if(c==='no')result(false);else if(c==='close'&&open)closeOv()}});
 
 load();if(!G[S.game])S.game='xoai';$('bSnd').textContent=S.sound?'🔊':'🔇';musLabel();render();drawLog();if(S.sideOpen)$('side').classList.add('open');
 if(window.GOITEN_INIT)window.GoiTen.setClass(window.GOITEN_INIT);
-try{if(window.parent&&window.parent!==window)window.parent.postMessage({type:'goiten:ready'},'*')}catch(e){}
+try{const h=hubWin();if(h)h.postMessage({type:'goiten:ready',game:S.game,games:Object.entries(G).map(([k,g])=>({id:k,name:g.name,ic:g.ic}))},'*')}catch(e){}
+/* 📺 cửa sổ chiếu TV: nhấp đúp để toàn màn hình */
+if(/[?&]tv=1/.test(location.search)){document.title='📺 Gọi tên – màn hình TV';const h=document.createElement('div');h.id='tvHint';h.textContent='🖱️ Nhấp đúp vào đây để bật toàn màn hình';document.body.appendChild(h);
+  setTimeout(()=>h.style.opacity='0',7000);
+  document.addEventListener('dblclick',()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});h.style.opacity='0'})}
 </script>
 </body>
 </html>
